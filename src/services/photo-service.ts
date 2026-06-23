@@ -1,9 +1,12 @@
 import { supabase } from "@/lib/supabase";
+import { queries } from "@/lib/queries";
+import { mutations } from "@/lib/mutations";
 import {
   buildPhotoPath,
   compressToWebP,
   STORAGE_BUCKET,
 } from "@/lib/compress-image";
+import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 
 export type InspectionPhoto = {
   id: string;
@@ -22,14 +25,13 @@ export type InspectionPhoto = {
 
 export const photoService = {
   async listByInspection(inspectionId: string): Promise<InspectionPhoto[]> {
-    const { data, error } = await supabase
-      .from("inspection_photos")
-      .select("*")
-      .eq("inspection_id", inspectionId)
-      .is("deleted_at", null)
-      .order("created_at");
-    if (error) throw error;
-    return (data ?? []) as InspectionPhoto[];
+    try {
+      const { data, error } = await queries.photos.byInspection(inspectionId);
+      if (error) throw error;
+      return (data ?? []) as InspectionPhoto[];
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
   },
 
   async upload(
@@ -42,48 +44,49 @@ export const photoService = {
       longitude?: number | null;
     },
   ): Promise<InspectionPhoto> {
-    const webp = await compressToWebP(file);
-    const fileName = `${Date.now()}.webp`;
-    const storagePath = buildPhotoPath(
-      params.companyId,
-      params.inspectionId,
-      params.category,
-      fileName,
-    );
+    try {
+      const webp = await compressToWebP(file);
+      const fileName = `${Date.now()}.webp`;
+      const storagePath = buildPhotoPath(
+        params.companyId,
+        params.inspectionId,
+        params.category,
+        fileName,
+      );
 
-    const { error: uploadError } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
-    if (uploadError) throw uploadError;
+      const { error: uploadError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
+      if (uploadError) throw uploadError;
 
-    const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
+      const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
 
-    const { data, error } = await supabase
-      .from("inspection_photos")
-      .insert({
-        company_id: params.companyId,
-        inspection_id: params.inspectionId,
-        category: params.category,
-        storage_path: storagePath,
-        public_url: urlData.publicUrl,
-        file_size: webp.size,
-        mime_type: "image/webp",
-        latitude: params.latitude ?? null,
-        longitude: params.longitude ?? null,
-        watermark_applied: true,
-      })
-      .select("*")
-      .single();
-    if (error) throw error;
-    return data as InspectionPhoto;
+      return throwIfError(
+        await mutations.photos.create({
+          company_id: params.companyId,
+          inspection_id: params.inspectionId,
+          category: params.category,
+          storage_path: storagePath,
+          public_url: urlData.publicUrl,
+          file_size: webp.size,
+          mime_type: "image/webp",
+          latitude: params.latitude ?? null,
+          longitude: params.longitude ?? null,
+        }),
+        "Erro ao registrar foto",
+      ) as InspectionPhoto;
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
   },
 
   async remove(id: string, storagePath: string): Promise<void> {
-    await supabase.storage.from(STORAGE_BUCKET).remove([storagePath]);
-    const { error } = await supabase
-      .from("inspection_photos")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) throw error;
+    try {
+      await supabase.storage.from(STORAGE_BUCKET).remove([storagePath]);
+      const { error } = await mutations.photos.softDelete(id);
+      if (error) throw error;
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
   },
 };

@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 import { photoService } from "@/services/photo-service";
+import { pdfService } from "@/services/pdf-service";
 import { useAuth } from "@/hooks/use-auth";
+import { invalidateInspectionQueries } from "@/lib/cache-invalidation";
 
 export function useInspectionPhotos(inspectionId: string | undefined) {
   return useQuery({
@@ -37,7 +39,7 @@ export function useUploadPhoto(inspectionId: string) {
       });
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.photos(inspectionId) });
+      invalidateInspectionQueries(qc, inspectionId);
     },
   });
 }
@@ -48,7 +50,13 @@ export function useDeletePhoto(inspectionId: string) {
     mutationFn: ({ id, storagePath }: { id: string; storagePath: string }) =>
       photoService.remove(id, storagePath),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.photos(inspectionId) });
+      invalidateInspectionQueries(qc, inspectionId);
     },
+  });
+}
+
+export function useGeneratePdfPayload() {
+  return useMutation({
+    mutationFn: (inspectionId: string) => pdfService.fetchInspectionPayload(inspectionId),
   });
 }

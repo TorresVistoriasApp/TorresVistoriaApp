@@ -6,11 +6,21 @@ import {
 } from "@/services/inspection-service";
 import type { VistoriaInput } from "@/schemas/vistoria";
 import { useAuth } from "@/hooks/use-auth";
+import { invalidateDashboardQueries, invalidateInspectionQueries } from "@/lib/cache-invalidation";
 
 export function useInspections(filters?: InspectionFilters) {
   return useQuery({
     queryKey: queryKeys.inspections.list(filters),
     queryFn: () => inspectionService.list(filters),
+  });
+}
+
+export function useSearchInspections(params?: InspectionFilters) {
+  const { profile } = useAuth();
+  return useQuery({
+    queryKey: queryKeys.inspections.search(params),
+    queryFn: () => inspectionService.search(profile!.company_id, params),
+    enabled: !!profile?.company_id,
   });
 }
 
@@ -29,8 +39,8 @@ export function useCreateInspection() {
       });
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.inspections.all });
-      void qc.invalidateQueries({ queryKey: queryKeys.dashboard.metrics });
+      invalidateInspectionQueries(qc);
+      invalidateDashboardQueries(qc);
     },
   });
 }
@@ -40,8 +50,8 @@ export function useUpdateInspection(id: string) {
   return useMutation({
     mutationFn: (input: Partial<VistoriaInput>) => inspectionService.update(id, input),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.inspections.detail(id) });
-      void qc.invalidateQueries({ queryKey: queryKeys.inspections.all });
+      invalidateInspectionQueries(qc, id);
+      invalidateDashboardQueries(qc);
     },
   });
 }
@@ -51,7 +61,26 @@ export function useDeleteInspection() {
   return useMutation({
     mutationFn: (id: string) => inspectionService.softDelete(id),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.inspections.all });
+      invalidateInspectionQueries(qc);
+      invalidateDashboardQueries(qc);
     },
+  });
+}
+
+export function useGenerateReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ inspectionId, storagePath }: { inspectionId: string; storagePath?: string }) =>
+      inspectionService.generateReport(inspectionId, storagePath),
+    onSuccess: (_, { inspectionId }) => {
+      invalidateInspectionQueries(qc, inspectionId);
+      invalidateDashboardQueries(qc);
+    },
+  });
+}
+
+export function useValidateReport() {
+  return useMutation({
+    mutationFn: (verificationCode: string) => inspectionService.validateReport(verificationCode),
   });
 }

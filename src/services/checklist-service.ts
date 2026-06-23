@@ -1,4 +1,7 @@
 import { supabase } from "@/lib/supabase";
+import { queries } from "@/lib/queries";
+import { mutations } from "@/lib/mutations";
+import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 import type { ChecklistItemInput } from "@/schemas/checklist";
 
 export type ChecklistItem = {
@@ -13,15 +16,13 @@ export type ChecklistItem = {
 
 export const checklistService = {
   async listByInspection(inspectionId: string): Promise<ChecklistItem[]> {
-    const { data, error } = await supabase
-      .from("inspection_checklists")
-      .select("*")
-      .eq("inspection_id", inspectionId)
-      .is("deleted_at", null)
-      .order("category")
-      .order("item_name");
-    if (error) throw error;
-    return (data ?? []) as ChecklistItem[];
+    try {
+      const { data, error } = await queries.checklist.byInspection(inspectionId);
+      if (error) throw error;
+      return (data ?? []) as ChecklistItem[];
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
   },
 
   async upsertItems(
@@ -29,26 +30,32 @@ export const checklistService = {
     companyId: string,
     items: ChecklistItemInput[],
   ): Promise<void> {
-    const rows = items.map((item) => ({
-      ...item,
-      inspection_id: inspectionId,
-      company_id: companyId,
-    }));
-
-    const { error } = await supabase
-      .from("inspection_checklists")
-      .upsert(rows, { onConflict: "inspection_id,category,item_name" });
-    if (error) throw error;
+    try {
+      const rows = items.map(({ photo_ids: _photoIds, ...item }) => ({
+        ...item,
+        inspection_id: inspectionId,
+        company_id: companyId,
+      }));
+      const { error } = await supabase
+        .from("inspection_checklists")
+        .upsert(rows, { onConflict: "inspection_id,category,item_name" });
+      if (error) throw error;
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
   },
 
   async updateItem(
     id: string,
     patch: Partial<Pick<ChecklistItemInput, "status" | "notes">>,
-  ): Promise<void> {
-    const { error } = await supabase
-      .from("inspection_checklists")
-      .update(patch)
-      .eq("id", id);
-    if (error) throw error;
+  ): Promise<ChecklistItem> {
+    try {
+      return throwIfError(
+        await mutations.checklist.updateItem(id, patch),
+        "Erro ao atualizar item do checklist",
+      ) as ChecklistItem;
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
   },
 };

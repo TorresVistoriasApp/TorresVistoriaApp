@@ -3,19 +3,23 @@ import { queryKeys } from "@/lib/queries";
 import { financialService } from "@/services/financial-service";
 import type { FinancialEntryInput } from "@/schemas/financial";
 import { useAuth } from "@/hooks/use-auth";
+import { invalidateFinancialQueries } from "@/lib/cache-invalidation";
 
 export function useFinancialEntries() {
   const { profile } = useAuth();
   return useQuery({
     queryKey: queryKeys.financial.all,
     queryFn: () => financialService.list(profile?.company_id),
+    enabled: !!profile?.company_id,
   });
 }
 
-export function useFinancialSummary() {
+export function useFinancialSummary(startDate?: string, endDate?: string) {
+  const { profile } = useAuth();
   return useQuery({
-    queryKey: queryKeys.financial.summary,
-    queryFn: () => financialService.getSummary(),
+    queryKey: queryKeys.financial.summary(startDate, endDate),
+    queryFn: () => financialService.getSummary(profile!.company_id, startDate, endDate),
+    enabled: !!profile?.company_id,
   });
 }
 
@@ -32,9 +36,7 @@ export function useCreateFinancialEntry() {
       });
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.financial.all });
-      void qc.invalidateQueries({ queryKey: queryKeys.financial.summary });
-      void qc.invalidateQueries({ queryKey: queryKeys.dashboard.metrics });
+      invalidateFinancialQueries(qc);
     },
   });
 }

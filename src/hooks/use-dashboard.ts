@@ -4,6 +4,7 @@ import { queryKeys } from "@/lib/queries";
 import { dashboardService } from "@/services/report-service";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
+import { invalidateDashboardQueries } from "@/lib/cache-invalidation";
 
 function useDashboardRealtime() {
   const qc = useQueryClient();
@@ -22,11 +23,7 @@ function useDashboardRealtime() {
           table: "inspections",
           filter: `company_id=eq.${profile.company_id}`,
         },
-        () => {
-          void qc.invalidateQueries({ queryKey: queryKeys.dashboard.metrics });
-          void qc.invalidateQueries({ queryKey: queryKeys.dashboard.recent });
-          void qc.invalidateQueries({ queryKey: queryKeys.inspections.all });
-        },
+        () => invalidateDashboardQueries(qc),
       )
       .on(
         "postgres_changes",
@@ -36,10 +33,7 @@ function useDashboardRealtime() {
           table: "financial_entries",
           filter: `company_id=eq.${profile.company_id}`,
         },
-        () => {
-          void qc.invalidateQueries({ queryKey: queryKeys.dashboard.metrics });
-          void qc.invalidateQueries({ queryKey: queryKeys.financial.summary });
-        },
+        () => invalidateDashboardQueries(qc),
       )
       .subscribe();
 
@@ -50,10 +44,13 @@ function useDashboardRealtime() {
 }
 
 export function useDashboardMetrics() {
+  const { profile } = useAuth();
   useDashboardRealtime();
+
   return useQuery({
     queryKey: queryKeys.dashboard.metrics,
-    queryFn: () => dashboardService.getMetrics(),
+    queryFn: () => dashboardService.getMetrics(profile!.company_id),
+    enabled: !!profile?.company_id,
   });
 }
 
@@ -61,5 +58,23 @@ export function useRecentInspections() {
   return useQuery({
     queryKey: queryKeys.dashboard.recent,
     queryFn: () => dashboardService.getRecentInspections(),
+  });
+}
+
+export function useMonthlyInspections(year?: number) {
+  const { profile } = useAuth();
+  return useQuery({
+    queryKey: queryKeys.dashboard.monthly(year),
+    queryFn: () => dashboardService.getMonthlyInspections(profile!.company_id, year),
+    enabled: !!profile?.company_id,
+  });
+}
+
+export function useInspectionsByBrand() {
+  const { profile } = useAuth();
+  return useQuery({
+    queryKey: queryKeys.dashboard.brands,
+    queryFn: () => dashboardService.getInspectionsByBrand(profile!.company_id),
+    enabled: !!profile?.company_id,
   });
 }
