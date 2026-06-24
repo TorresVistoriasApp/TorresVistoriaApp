@@ -1,13 +1,4 @@
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 import { formatCurrency } from "@/lib/formatters";
 import {
   CHART_COLORS,
@@ -17,7 +8,9 @@ import {
   formatMonthRangeLabel,
   yAxisRevenueUpperBound,
 } from "@/lib/chart-theme";
+import { ChartResponsiveContainer } from "@/components/charts/chart-responsive-container";
 import { MonthlyChartNavigation } from "@/components/charts/monthly-chart-navigation";
+import { useSvgGradientRef } from "@/hooks/use-svg-gradient";
 
 export type MonthlyChartPoint = {
   month: string;
@@ -44,6 +37,7 @@ export function RevenueChart({
   onPrevious,
   onNext,
 }: RevenueChartProps) {
+  const barGradient = useSvgGradientRef("revenueBar");
   const chartData = data.map((row) => ({
     ...row,
     label: formatMonthLabel(row.month),
@@ -61,31 +55,40 @@ export function RevenueChart({
   const firstMonth = visibleData.at(0)?.month;
   const lastMonth = visibleData.at(-1)?.month;
   const rangeLabel = firstMonth && lastMonth ? formatMonthRangeLabel(firstMonth, lastMonth) : "";
-  const maxRevenue = Math.max(...visibleData.map((d) => d.revenue), 0);
+  const maxRevenue = Math.max(...visibleData.map((d) => Number(d.revenue) || 0), 0);
   const yMax = yAxisRevenueUpperBound(maxRevenue);
+  const navigation =
+    onPrevious && onNext ? (
+      <MonthlyChartNavigation
+        rangeLabel={rangeLabel}
+        canPrevious={canPrevious}
+        canNext={canNext}
+        onPrevious={onPrevious}
+        onNext={onNext}
+      />
+    ) : null;
+
+  if (maxRevenue <= 0) {
+    return (
+      <div>
+        {navigation}
+        <p className="flex h-[220px] min-h-[200px] items-center justify-center text-sm text-muted-foreground sm:h-[260px] md:h-[280px]">
+          Nenhuma receita registrada neste período
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
-      {onPrevious && onNext && (
-        <MonthlyChartNavigation
-          rangeLabel={rangeLabel}
-          canPrevious={canPrevious}
-          canNext={canNext}
-          onPrevious={onPrevious}
-          onNext={onNext}
-        />
-      )}
+      {navigation}
       <div className="chart-responsive">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={visibleData} margin={{ top: 12, right: 12, left: -4, bottom: 4 }}>
+        <ChartResponsiveContainer>
+          <BarChart data={visibleData} margin={{ top: 12, right: 12, left: 0, bottom: 4 }}>
             <defs>
-              <linearGradient id="revenueBarGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={barGradient.id} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={CHART_COLORS.primaryLight} />
                 <stop offset="100%" stopColor={CHART_COLORS.primary} />
-              </linearGradient>
-              <linearGradient id="revenueBarHover" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#FDBA74" />
-                <stop offset="100%" stopColor={CHART_COLORS.primaryDark} />
               </linearGradient>
             </defs>
             <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="6 6" vertical={false} />
@@ -107,17 +110,13 @@ export function RevenueChart({
             />
             <Bar
               dataKey="revenue"
-              fill="url(#revenueBarGradient)"
+              fill={barGradient.url}
               name="Receita"
               radius={[10, 10, 4, 4]}
               maxBarSize={56}
-            >
-              {visibleData.map((_, index) => (
-                <Cell key={`bar-${index}`} fill="url(#revenueBarGradient)" />
-              ))}
-            </Bar>
+            />
           </BarChart>
-        </ResponsiveContainer>
+        </ChartResponsiveContainer>
       </div>
     </div>
   );

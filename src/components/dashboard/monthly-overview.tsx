@@ -2,7 +2,6 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -15,7 +14,9 @@ import {
   formatMonthRangeLabel,
   yAxisUpperBound,
 } from "@/lib/chart-theme";
+import { ChartResponsiveContainer } from "@/components/charts/chart-responsive-container";
 import { MonthlyChartNavigation } from "@/components/charts/monthly-chart-navigation";
+import { useSvgGradientRef } from "@/hooks/use-svg-gradient";
 
 export type MonthlyOverviewPoint = {
   month: string;
@@ -42,6 +43,8 @@ export function MonthlyOverview({
   onPrevious,
   onNext,
 }: MonthlyOverviewProps) {
+  const areaGradient = useSvgGradientRef("countArea");
+  const lineGradient = useSvgGradientRef("countLine");
   const chartData = data.map((row) => ({
     ...row,
     label: formatMonthLabel(row.month),
@@ -74,15 +77,15 @@ export function MonthlyOverview({
         />
       )}
       <div className="chart-responsive">
-        <ResponsiveContainer width="100%" height="100%">
+        <ChartResponsiveContainer>
           <AreaChart data={visibleData} margin={{ top: 12, right: 12, left: -8, bottom: 4 }}>
             <defs>
-              <linearGradient id="countAreaGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={areaGradient.id} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={CHART_COLORS.primary} stopOpacity={0.35} />
                 <stop offset="50%" stopColor={CHART_COLORS.primaryLight} stopOpacity={0.12} />
                 <stop offset="100%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="countLineGradient" x1="0" y1="0" x2="1" y2="0">
+              <linearGradient id={lineGradient.id} x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor={CHART_COLORS.primaryDark} />
                 <stop offset="100%" stopColor={CHART_COLORS.primaryLight} />
               </linearGradient>
@@ -104,9 +107,9 @@ export function MonthlyOverview({
             <Area
               type="monotone"
               dataKey="count"
-              stroke="url(#countLineGradient)"
+              stroke={lineGradient.url}
               strokeWidth={3}
-              fill="url(#countAreaGradient)"
+              fill={areaGradient.url}
               name="Vistorias"
               dot={{
                 fill: CHART_COLORS.primary,
@@ -122,7 +125,7 @@ export function MonthlyOverview({
               }}
             />
           </AreaChart>
-        </ResponsiveContainer>
+        </ChartResponsiveContainer>
       </div>
     </div>
   );
