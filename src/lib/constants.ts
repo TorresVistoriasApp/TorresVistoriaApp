@@ -24,6 +24,7 @@ export const ROUTE_SLUGS = {
   profile: "perfil",
   users: "usuarios",
   audit: "auditoria",
+  changePassword: "trocar-senha",
 } as const;
 
 const route = (...segments: string[]) => `/${segments.join("/")}`;
@@ -58,6 +59,7 @@ export const ROUTES = {
   settingsProfile: settingsRoute(ROUTE_SLUGS.profile),
   settingsUsers: settingsRoute(ROUTE_SLUGS.users),
   settingsAudit: settingsRoute(ROUTE_SLUGS.audit),
+  changePassword: route(ROUTE_SLUGS.changePassword),
 } as const;
 
 export const ROUTE_PATTERNS = {

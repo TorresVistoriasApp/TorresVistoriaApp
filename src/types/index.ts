@@ -15,6 +15,9 @@ export interface Profile {
   full_name: string;
   role: import("@/lib/enums").UserRole;
   avatar_url: string | null;
+  email: string | null;
+  is_active: boolean;
+  must_change_password: boolean;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

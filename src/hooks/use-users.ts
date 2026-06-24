@@ -5,4 +5,7 @@ export {
   useUploadUserAvatar,
   useUpdateUserRole,
   useInviteUser,
+  useCreateUser,
+  useUpdateUser,
+  useSetUserActive,
 } from "@/hooks/use-user";

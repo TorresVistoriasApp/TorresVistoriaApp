@@ -59,9 +59,35 @@ export function useUpdateUserRole() {
 }
 
 export function useInviteUser() {
+  return useCreateUser();
+}
+
+export function useCreateUser() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: import("@/schemas/auth").InviteUserInput) => authService.inviteUser(input),
+    mutationFn: (input: import("@/schemas/auth").CreateUserInput) => authService.createUser(input),
+    onSuccess: () => {
+      invalidateUserQueries(qc);
+    },
+  });
+}
+
+export function useUpdateUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, input }: { userId: string; input: import("@/schemas/auth").UpdateUserInput }) =>
+      authService.updateUser(userId, input),
+    onSuccess: () => {
+      invalidateUserQueries(qc);
+    },
+  });
+}
+
+export function useSetUserActive() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, isActive }: { userId: string; isActive: boolean }) =>
+      authService.setUserActive(userId, isActive),
     onSuccess: () => {
       invalidateUserQueries(qc);
     },

@@ -18,15 +18,15 @@ const queryClient = new QueryClient({
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ErrorBoundary>
           {children}
           <ToastViewport />
           <LgpdConsentBanner />
           {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-        </AuthProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+        </ErrorBoundary>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

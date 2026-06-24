@@ -31,16 +31,21 @@ describe("loginSchema", () => {
 });
 
 describe("resetPasswordSchema", () => {
-  it("exige senhas iguais", () => {
+  it("exige senhas iguais e fortes", () => {
     const ok = resetPasswordSchema.safeParse({
+      password: "NovaSenha1!",
+      confirmPassword: "NovaSenha1!",
+    });
+    const fail = resetPasswordSchema.safeParse({
+      password: "NovaSenha1!",
+      confirmPassword: "outra",
+    });
+    const weak = resetPasswordSchema.safeParse({
       password: "nova123",
       confirmPassword: "nova123",
     });
-    const fail = resetPasswordSchema.safeParse({
-      password: "nova123",
-      confirmPassword: "outra",
-    });
     expect(ok.success).toBe(true);
     expect(fail.success).toBe(false);
+    expect(weak.success).toBe(false);
   });
 });

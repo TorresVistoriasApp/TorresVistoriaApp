@@ -14,11 +14,11 @@ export function MobileNav({ className }: MobileNavProps) {
       aria-label="Navegação principal"
     >
       <div className="flex items-stretch justify-around rounded-2xl border border-border/50 bg-card/95 px-1 py-1 shadow-elevated backdrop-blur-xl safe-area-inset-bottom">
-        {NAV_ITEMS.map(({ to, shortLabel, icon: Icon }) => (
+        {NAV_ITEMS.map(({ to, shortLabel, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
-            end={to === ROUTES.dashboard}
+            end={end ?? to === ROUTES.dashboard}
             className={({ isActive }) =>
               cn(
                 "touch-target flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-bold transition-all duration-200",
