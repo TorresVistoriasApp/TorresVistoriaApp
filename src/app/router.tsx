@@ -5,6 +5,7 @@ import { AuthLayout } from "@/app/(auth)/layout";
 import { PublicLayout } from "@/app/(public)/layout";
 import { DashboardLayout } from "@/app/(dashboard)/layout";
 import { ProtectedRoute } from "@/components/shared/protected-route";
+import { RequirePasswordChanged } from "@/components/shared/require-password-changed";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ROUTE_PATTERNS, ROUTES } from "@/lib/constants";
 
@@ -66,8 +67,15 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           {
-            element: <DashboardLayout />,
+            path: ROUTES.changePassword,
+            element: lazyPage(() => import("@/app/(auth)/trocar-senha/page")),
+          },
+          {
+            element: <RequirePasswordChanged />,
             children: [
+              {
+                element: <DashboardLayout />,
+                children: [
               { index: true, element: lazyPage(() => import("@/app/(dashboard)/page")) },
               {
                 path: ROUTES.inspections,
@@ -133,6 +141,8 @@ export const router = createBrowserRouter([
                 path: ROUTES.settingsAudit,
                 element: lazyPage(() => import("@/app/(dashboard)/configuracoes/auditoria/page")),
               },
+            ],
+          },
             ],
           },
         ],

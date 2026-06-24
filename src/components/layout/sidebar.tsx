@@ -1,10 +1,12 @@
-import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { APP_NAME, ROUTES } from "@/lib/constants";
-import { NAV_ITEMS } from "@/lib/nav-items";
+import { APP_NAME } from "@/lib/constants";
+import { getNavSections } from "@/lib/nav-items";
+import { isSuperAdmin } from "@/lib/rbac";
+import { useAuth } from "@/hooks/use-auth";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { SidebarProfile } from "@/components/layout/sidebar-profile";
 import { SidebarCollapseToggle } from "@/components/layout/sidebar-collapse-toggle";
+import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { useUiStore } from "@/stores/ui-store";
 
 interface SidebarProps {
@@ -14,9 +16,11 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, onNavigate, embedded }: SidebarProps) {
+  const { profile } = useAuth();
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebarCollapsed = useUiStore((s) => s.toggleSidebarCollapsed);
   const collapsed = !embedded && sidebarCollapsed;
+  const navSections = getNavSections(isSuperAdmin(profile?.role));
 
   return (
     <aside className={cn("flex h-full w-full flex-col", className)}>
@@ -40,61 +44,8 @@ export function Sidebar({ className, onNavigate, embedded }: SidebarProps) {
 
       {!embedded && <SidebarProfile className={cn("mb-5", collapsed && "mb-6")} collapsed={collapsed} />}
 
-      {!collapsed && (
-        <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-          Menu
-        </p>
-      )}
-
-      <nav className={cn("flex-1 space-y-1", collapsed && "space-y-1.5")}>
-        {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === ROUTES.dashboard}
-            onClick={onNavigate}
-            title={collapsed ? label : undefined}
-            aria-label={collapsed ? label : undefined}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center rounded-xl text-sm font-semibold transition-all duration-200",
-                collapsed
-                  ? cn(
-                      "mx-auto h-10 w-10 justify-center p-0",
-                      isActive
-                        ? "bg-primary/12 text-primary"
-                        : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-                    )
-                  : cn(
-                      "gap-3 px-3 py-2.5",
-                      isActive
-                        ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/15"
-                        : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-                    ),
-              )
-            }
-          >
-            {({ isActive }) =>
-              collapsed ? (
-                <Icon className="h-[18px] w-[18px]" strokeWidth={isActive ? 2.25 : 2} />
-              ) : (
-                <>
-                  <span
-                    className={cn(
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
-                      isActive
-                        ? "bg-primary/15 text-primary"
-                        : "bg-muted/60 text-muted-foreground",
-                    )}
-                  >
-                    <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
-                  </span>
-                  {label}
-                </>
-              )
-            }
-          </NavLink>
-        ))}
+      <nav className={cn("flex-1", collapsed && "space-y-1.5")}>
+        <SidebarNav sections={navSections} collapsed={collapsed} onNavigate={onNavigate} />
       </nav>
 
       {!embedded && !collapsed && (

@@ -55,9 +55,9 @@ Deno.serve(async (req) => {
 
     const { supabase, adminProfile, adminId } = auth;
     const body = await req.json();
-    const action = body.action as string | undefined;
+    const action = body.action as string;
 
-    if (action === "create" || body.password) {
+    if (action === "create") {
       const { email, fullName, role, password } = body;
       if (!email || !fullName || !role || !password) {
         throw new Error("email, fullName, role e password são obrigatórios");
@@ -69,10 +69,8 @@ Deno.serve(async (req) => {
       const passwordError = validatePassword(password);
       if (passwordError) throw new Error(passwordError);
 
-      const normalizedEmail = String(email).trim().toLowerCase();
-
       const { data: created, error: createError } = await supabase.auth.admin.createUser({
-        email: normalizedEmail,
+        email: String(email).trim().toLowerCase(),
         password,
         email_confirm: true,
         user_metadata: {
@@ -93,7 +91,7 @@ Deno.serve(async (req) => {
         .update({
           full_name: fullName,
           role,
-          email: normalizedEmail,
+          email: String(email).trim().toLowerCase(),
           must_change_password: true,
           is_active: true,
         })
@@ -198,40 +196,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, fullName, role } = body;
-    if (!email || !fullName || !role) {
-      throw new Error("email, fullName e role são obrigatórios");
-    }
-
-    const origin = req.headers.get("origin") ?? Deno.env.get("SITE_URL") ?? "";
-    const { data: invited, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
-      email,
-      {
-        data: { full_name: fullName },
-        redirectTo: origin ? `${origin}/login` : undefined,
-      },
-    );
-
-    if (inviteError) throw inviteError;
-    if (!invited.user) throw new Error("Falha ao convidar usuário");
-
-    const { error: updateError } = await supabase.auth.admin.updateUserById(invited.user.id, {
-      app_metadata: {
-        company_id: adminProfile.company_id,
-        role,
-      },
-    });
-
-    if (updateError) throw updateError;
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        userId: invited.user.id,
-        message: "Convite enviado por e-mail",
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
-    );
+    throw new Error("Ação inválida");
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro desconhecido";
     return new Response(JSON.stringify({ error: message }), {

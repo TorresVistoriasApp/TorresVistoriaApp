@@ -13,6 +13,9 @@ export type TeamProfile = {
   full_name: string;
   role: string;
   avatar_url: string | null;
+  email: string | null;
+  is_active: boolean;
+  must_change_password: boolean;
   created_at: string;
 };
 
@@ -65,19 +68,20 @@ export const userService = {
   async updateAvatar(userId: string, file: File): Promise<string> {
     try {
       const compressed = await compressToWebP(file);
-      const path = `avatars/${userId}/${Date.now()}.webp`;
+      const path = `${userId}/avatar.webp`;
       const { error: uploadError } = await db.storage
         .from("avatars")
         .upload(path, compressed, { contentType: "image/webp", upsert: true });
       if (uploadError) throw uploadError;
 
       const { data: urlData } = db.storage.from("avatars").getPublicUrl(path);
+      const avatarUrl = `${urlData.publicUrl}?v=${Date.now()}`;
       const { error } = await db
         .from("profiles")
-        .update({ avatar_url: urlData.publicUrl })
+        .update({ avatar_url: avatarUrl })
         .eq("id", userId);
       if (error) throw error;
-      return urlData.publicUrl;
+      return avatarUrl;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

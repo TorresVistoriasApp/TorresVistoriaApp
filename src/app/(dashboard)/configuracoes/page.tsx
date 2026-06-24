@@ -1,5 +1,4 @@
 import { useRef, useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Building2, Camera, MapPin, UserRound } from "lucide-react";
@@ -15,7 +14,6 @@ import { useUpdateUserProfile, useUploadUserAvatar } from "@/hooks/use-users";
 import { useToast } from "@/hooks/use-toast";
 import { userProfileSchema, type UserProfileInput } from "@/schemas/user";
 import { companySchema, type CompanyInput } from "@/schemas/settings";
-import { ROUTES } from "@/lib/constants";
 import { UserRole } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 import { companyToAddressInput } from "@/lib/cep";
@@ -267,18 +265,6 @@ export function Page() {
       <PageHeader
         title="Configurações"
         description="Gerencie seu perfil e os dados da empresa em um só lugar"
-        actions={
-          isAdmin ? (
-            <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm" className="touch-target">
-                <Link to={ROUTES.settingsUsers}>Usuários</Link>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="touch-target">
-                <Link to={ROUTES.settingsAudit}>Auditoria</Link>
-              </Button>
-            </div>
-          ) : undefined
-        }
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)] lg:gap-8">

@@ -1,11 +1,9 @@
-export { useAuthContext as useAuth } from "@/app/auth-context";
+export { useAuth, useAuthContext } from "@/app/auth-context";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 import { authService } from "@/services/auth-service";
-import { invalidateUserQueries } from "@/lib/cache-invalidation";
 import { useAuthContext } from "@/app/auth-context";
-import type { InviteUserInput } from "@/schemas/auth";
 
 export function useAuthProfile() {
   const { user } = useAuthContext();
@@ -22,12 +20,9 @@ export function useUpdatePassword() {
   });
 }
 
-export function useInviteUser() {
-  const qc = useQueryClient();
+export function useCompletePasswordChange() {
   return useMutation({
-    mutationFn: (input: InviteUserInput) => authService.inviteUser(input),
-    onSuccess: () => {
-      invalidateUserQueries(qc);
-    },
+    mutationFn: (input: import("@/schemas/auth").ChangePasswordInput) =>
+      authService.completePasswordChange(input),
   });
 }
