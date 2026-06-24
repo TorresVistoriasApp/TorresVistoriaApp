@@ -31,7 +31,19 @@ describe("authService", () => {
   });
 
   it("signIn resolve sem erro", async () => {
-    mockAuth.signInWithPassword.mockResolvedValue({ error: null });
+    mockAuth.signInWithPassword.mockResolvedValue({
+      error: null,
+      data: { user: { id: "u1" } },
+    });
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          is: () => ({
+            maybeSingle: () => Promise.resolve({ data: { is_active: true }, error: null }),
+          }),
+        }),
+      }),
+    });
     await expect(authService.signIn("a@b.com", "ok1234")).resolves.toBeUndefined();
   });
 

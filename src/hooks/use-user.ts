@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 import { userService } from "@/services/user-service";
-import { authService } from "@/services/auth-service";
 import type { UserRole } from "@/lib/enums";
 import type { UserProfileInput } from "@/schemas/user";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,42 +51,6 @@ export function useUpdateUserRole() {
   return useMutation({
     mutationFn: ({ profileId, role }: { profileId: string; role: UserRole }) =>
       userService.updateRole(profileId, role),
-    onSuccess: () => {
-      invalidateUserQueries(qc);
-    },
-  });
-}
-
-export function useInviteUser() {
-  return useCreateUser();
-}
-
-export function useCreateUser() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: import("@/schemas/auth").CreateUserInput) => authService.createUser(input),
-    onSuccess: () => {
-      invalidateUserQueries(qc);
-    },
-  });
-}
-
-export function useUpdateUser() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ userId, input }: { userId: string; input: import("@/schemas/auth").UpdateUserInput }) =>
-      authService.updateUser(userId, input),
-    onSuccess: () => {
-      invalidateUserQueries(qc);
-    },
-  });
-}
-
-export function useSetUserActive() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ userId, isActive }: { userId: string; isActive: boolean }) =>
-      authService.setUserActive(userId, isActive),
     onSuccess: () => {
       invalidateUserQueries(qc);
     },

@@ -4,8 +4,11 @@ export {
   useUpdateUserProfile,
   useUploadUserAvatar,
   useUpdateUserRole,
-  useInviteUser,
-  useCreateUser,
-  useUpdateUser,
-  useSetUserActive,
 } from "@/hooks/use-user";
+
+export {
+  useCreateUser,
+  useInviteUser,
+  useSetUserActive,
+  useUpdateUser,
+} from "@/features/users/hooks/use-admin-users";

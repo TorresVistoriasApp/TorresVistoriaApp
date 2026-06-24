@@ -1,69 +1,11 @@
 import { corsHeaders } from "../_shared/cors.ts";
-import { createServiceClient, createUserClient } from "../_shared/supabase-client.ts";
+import { jsonErrorResponse } from "../_shared/auth-errors.ts";
+import { validatePassword } from "../_shared/password-policy.ts";
+import { requireSuperAdmin } from "../_shared/require-super-admin.ts";
 
 const ALLOWED_ROLES = ["SUPER_ADMIN", "VISTORIADOR"] as const;
 
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
-
-function validatePassword(password: string): string | null {
-  if (password.length < 8) return "Senha deve ter no mínimo 8 caracteres";
-  if (!/[A-Z]/.test(password)) return "Senha deve conter uma letra maiúscula";
-  if (!/[a-z]/.test(password)) return "Senha deve conter uma letra minúscula";
-  if (!/[0-9]/.test(password)) return "Senha deve conter um número";
-  if (!/[^A-Za-z0-9]/.test(password)) return "Senha deve conter um caractere especial";
-  return null;
-}
-
-async function requireSuperAdmin(req: Request) {
-  const userClient = createUserClient(req);
-  const {
-    data: { user },
-    error: authError,
-  } = await userClient.auth.getUser();
-
-  if (authError || !user) {
-    return { error: "Sessão não autenticada. Efetue login novamente.", status: 401 as const };
-  }
-
-  const supabase = createServiceClient();
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role, company_id")
-    .eq("id", user.id)
-    .is("deleted_at", null)
-    .single();
-
-  if (profileError) throw profileError;
-  if (profile?.role !== "SUPER_ADMIN") {
-    return { error: "Você não possui permissão para executar esta operação.", status: 403 as const };
-  }
-
-  return { supabase, adminProfile: profile, adminId: user.id };
-}
-
-function formatAuthError(message: string): string {
-  const normalized = message.trim();
-  if (/already been registered|already registered|user already exists/i.test(normalized)) {
-    return "Já existe um usuário cadastrado com este endereço de e-mail.";
-  }
-  if (/invalid email|unable to validate email/i.test(normalized)) {
-    return "O endereço de e-mail informado é inválido.";
-  }
-  if (/password/i.test(normalized) && /(weak|least|short|invalid)/i.test(normalized)) {
-    return "A senha informada não atende aos requisitos mínimos de segurança.";
-  }
-  if (/duplicate key|unique constraint/i.test(normalized)) {
-    return "Já existe um registro com estes dados. Verifique as informações informadas.";
-  }
-  return normalized;
-}
-
-function errorResponse(message: string, status = 400) {
-  return new Response(JSON.stringify({ error: formatAuthError(message) }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status,
-  });
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -258,6 +200,6 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro desconhecido";
-    return errorResponse(message);
+    return jsonErrorResponse(message, corsHeaders);
   }
 });

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
-import { createUserSchema, type CreateUserInput } from "@/schemas/auth";
+import { createUserSchema, type CreateUserInput } from "@/features/users/schemas/user-admin";
 import { UserRole } from "@/lib/enums";
 import {
   Dialog,

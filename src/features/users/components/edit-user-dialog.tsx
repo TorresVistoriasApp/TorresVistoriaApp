@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { updateUserSchema, type UpdateUserInput } from "@/schemas/auth";
+import { updateUserSchema, type UpdateUserInput } from "@/features/users/schemas/user-admin";
 import { UserRole } from "@/lib/enums";
 import type { TeamProfile } from "@/services/user-service";
 import {

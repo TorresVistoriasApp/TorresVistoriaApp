@@ -41,21 +41,10 @@ Copie `.env.example` para `.env.local`. Nunca commite secrets.
 | `VITE_APP_URL` | URL pública do app (redirects de auth) |
 | `VITE_DEMO_MODE` | `false` em produção |
 
-Deploy e configuração de infraestrutura: [docs/DEPLOY.md](docs/DEPLOY.md).
-
-## Documentação
-
-| Doc | Conteúdo |
-|-----|----------|
-| [docs/CONVENCOES.md](docs/CONVENCOES.md) | Padrões de código, arquitetura e nomenclatura |
-| [docs/SEGURANCA.md](docs/SEGURANCA.md) | RLS, headers, rate limit, checklist |
-| [docs/LGPD.md](docs/LGPD.md) | Consentimento, exportação, exclusão |
-| [docs/DEPLOY.md](docs/DEPLOY.md) | Deploy, migrations e edge functions |
-
 ## Checklist Passo 6
 
 - [x] Segurança: sanitização, rate limit, CSP, env validation
 - [x] LGPD: banner, política, export/delete, RPC anonimização
 - [x] Performance: lazy routes, code splitting, compressão fotos
-- [x] Produção: headers HTTP, docs deploy
+- [x] Produção: headers HTTP
 - [x] Validação pública de laudo: `/validar/:codigo`
