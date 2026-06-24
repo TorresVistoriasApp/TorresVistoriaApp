@@ -15,10 +15,17 @@ async function parseFunctionInvokeError(
 ): Promise<string> {
   if (data?.error) return String(data.error);
 
-  const fnError = error as { context?: Response; message?: string };
+  const fnError = error as { context?: Response; message?: string; name?: string };
   if (fnError.context) {
     try {
-      const payload = (await fnError.context.json()) as { error?: string; message?: string };
+      const payload = (await fnError.context.json()) as {
+        error?: string;
+        message?: string;
+        code?: string;
+      };
+      if (payload.code === "NOT_FOUND" || payload.message?.includes("not found")) {
+        return "A função invite-user ainda não foi publicada no Supabase. No terminal, execute: npx supabase login && npx supabase functions deploy invite-user --project-ref ljzttzfjtskblxekmquu";
+      }
       if (payload.error) return payload.error;
       if (payload.message) return payload.message;
     } catch {
@@ -27,8 +34,11 @@ async function parseFunctionInvokeError(
   }
 
   const message = getErrorMessage(error);
+  if (/not found|404/i.test(message)) {
+    return "A função invite-user ainda não foi publicada no Supabase. No terminal, execute: npx supabase login && npx supabase functions deploy invite-user --project-ref ljzttzfjtskblxekmquu";
+  }
   if (/edge function|non-2xx|failed to fetch/i.test(message)) {
-    return "Não foi possível contactar a função invite-user no Supabase. Publique a Edge Function e aplique as migrations pendentes.";
+    return "Não foi possível contactar a função invite-user no Supabase. Verifique se a Edge Function foi publicada.";
   }
 
   return message;
