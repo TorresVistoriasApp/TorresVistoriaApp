@@ -6,7 +6,7 @@ import {
 } from "@/services/inspection-service";
 import type { VistoriaInput } from "@/schemas/vistoria";
 import { useAuth } from "@/hooks/use-auth";
-import { invalidateDashboardQueries, invalidateInspectionQueries } from "@/lib/cache-invalidation";
+import { invalidateDashboardQueries, invalidateFinancialQueries, invalidateInspectionQueries } from "@/lib/cache-invalidation";
 import { InspectionStatus } from "@/lib/enums";
 
 export function useInspections(filters?: InspectionFilters) {
@@ -42,6 +42,7 @@ export function useCreateInspection() {
     onSuccess: () => {
       invalidateInspectionQueries(qc);
       invalidateDashboardQueries(qc);
+      invalidateFinancialQueries(qc);
     },
   });
 }
@@ -53,6 +54,7 @@ export function useUpdateInspection(id: string) {
     onSuccess: () => {
       invalidateInspectionQueries(qc, id);
       invalidateDashboardQueries(qc);
+      invalidateFinancialQueries(qc);
     },
   });
 }
@@ -64,6 +66,7 @@ export function useDeleteInspection() {
     onSuccess: () => {
       invalidateInspectionQueries(qc);
       invalidateDashboardQueries(qc);
+      invalidateFinancialQueries(qc);
     },
   });
 }

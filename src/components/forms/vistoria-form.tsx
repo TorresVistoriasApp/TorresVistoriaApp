@@ -3,10 +3,11 @@ import { Controller, useForm } from "react-hook-form";
 import { vistoriaSchema, type VistoriaInput } from "@/schemas/vistoria";
 import {
   InspectionOpinion,
-  InspectionPurpose,
   InspectionSituation,
   InspectionStatus,
 } from "@/lib/enums";
+import { useInspectionTypes } from "@/hooks/use-inspection-types";
+import { formatCurrency } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MaskedInput } from "@/components/ui/masked-input";
@@ -18,7 +19,6 @@ import { maskCurrency } from "@/lib/masks";
 import { cn } from "@/lib/utils";
 
 const opinionOptions = Object.values(InspectionOpinion);
-const purposeOptions = Object.values(InspectionPurpose);
 
 interface VistoriaFormProps {
   defaultValues?: Partial<VistoriaInput>;
@@ -37,17 +37,18 @@ export function VistoriaForm({
   wizardMode = false,
   onBack,
 }: VistoriaFormProps) {
+  const { data: inspectionTypes = [], isLoading: typesLoading } = useInspectionTypes(true);
   const {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<VistoriaInput>({
     resolver: zodResolver(vistoriaSchema),
     defaultValues: {
       inspection_date: new Date().toISOString().slice(0, 10),
       inspection_time: new Date().toTimeString().slice(0, 5),
-      inspection_purpose: InspectionPurpose.CAUTELAR,
       situation: InspectionSituation.PARTICULAR,
       status: InspectionStatus.DRAFT,
       client_phone: "",
@@ -57,6 +58,9 @@ export function VistoriaForm({
       ...defaultValues,
     },
   });
+
+  const selectedTypeId = watch("inspection_type_id");
+  const selectedType = inspectionTypes.find((type) => type.id === selectedTypeId);
 
   const formContent = (
     <>
@@ -79,20 +83,35 @@ export function VistoriaForm({
           >
             <Input {...register("location")} placeholder="Endereço da vistoria" />
           </FormField>
-          <FormField label="Finalidade" error={errors.inspection_purpose?.message}>
+          <FormField label="Tipo de vistoria" error={errors.inspection_type_id?.message}>
             <select
-              {...register("inspection_purpose")}
+              {...register("inspection_type_id")}
+              disabled={typesLoading || inspectionTypes.length === 0}
               className={cn(
                 "flex h-11 w-full rounded-xl border border-border bg-card px-4 text-sm shadow-soft",
                 "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+                "disabled:cursor-not-allowed disabled:opacity-60",
               )}
             >
-              {purposeOptions.map((purpose) => (
-                <option key={purpose} value={purpose}>
-                  {purpose.replace(/_/g, " ")}
+              <option value="">
+                {typesLoading ? "Carregando tipos..." : "Selecione o tipo de vistoria"}
+              </option>
+              {inspectionTypes.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.name} — {formatCurrency(type.amount)}
                 </option>
               ))}
             </select>
+            {inspectionTypes.length === 0 && !typesLoading && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Cadastre tipos de vistoria em Configurações antes de continuar.
+              </p>
+            )}
+            {selectedType && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Valor de referência interna: {formatCurrency(selectedType.amount)} (não aparece no PDF).
+              </p>
+            )}
           </FormField>
           <FormField label="Solicitante" error={errors.requester_name?.message}>
             <Input {...register("requester_name")} placeholder="Nome de quem solicitou a vistoria" />

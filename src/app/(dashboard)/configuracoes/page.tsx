@@ -18,6 +18,7 @@ import { UserRole } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 import { companyToAddressInput } from "@/lib/cep";
 import { CompanyAddressFields } from "@/features/settings/components/company-address-fields";
+import { InspectionTypesSection } from "@/features/settings/components/inspection-types-section";
 
 function SettingsSection({
   icon: Icon,
@@ -274,6 +275,7 @@ export function Page() {
           avatarUrl={profile?.avatar_url}
         />
         <CompanySection canEdit={isAdmin} />
+        <InspectionTypesSection canEdit={isAdmin} />
       </div>
     </div>
   );

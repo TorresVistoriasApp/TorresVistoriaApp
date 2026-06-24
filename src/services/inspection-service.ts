@@ -6,6 +6,24 @@ import { AppError, getErrorMessage, throwIfEdgeError, throwIfError } from "@/lib
 import type { VistoriaInput } from "@/schemas/vistoria";
 import type { InspectionStatus } from "@/lib/enums";
 
+async function withInspectionPurpose<T extends Partial<VistoriaInput>>(data: T): Promise<T> {
+  if (!data.inspection_type_id) return data;
+
+  const { data: type, error } = await db
+    .from("inspection_types")
+    .select("name")
+    .eq("id", data.inspection_type_id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error || !type?.name) return data;
+
+  return {
+    ...data,
+    inspection_purpose: type.name,
+  };
+}
+
 export type Inspection = {
   id: string;
   company_id: string;
@@ -15,6 +33,7 @@ export type Inspection = {
   inspection_time: string;
   location: string;
   inspection_purpose: string | null;
+  inspection_type_id: string | null;
   requester_name: string | null;
   requester_document: string | null;
   buyer_name: string | null;
@@ -159,8 +178,9 @@ export const inspectionService = {
     meta: { companyId: string; inspectorId: string },
   ): Promise<Inspection> {
     try {
+      const payload = await withInspectionPurpose(input);
       const inspection = throwIfError(
-        await mutations.inspections.create(input, meta.inspectorId, meta.companyId),
+        await mutations.inspections.create(payload, meta.inspectorId, meta.companyId),
         "Erro ao criar vistoria",
       );
 
@@ -178,8 +198,9 @@ export const inspectionService = {
 
   async update(id: string, input: Partial<VistoriaInput>): Promise<Inspection> {
     try {
+      const payload = await withInspectionPurpose(input);
       return throwIfError(
-        await mutations.inspections.update(id, input),
+        await mutations.inspections.update(id, payload),
         "Erro ao atualizar vistoria",
       ) as Inspection;
     } catch (error) {

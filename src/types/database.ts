@@ -157,6 +157,7 @@ export type Database = {
           entry_type: string
           id: string
           inspection_id: string | null
+          source: string
           updated_at: string
         }
         Insert: {
@@ -170,6 +171,7 @@ export type Database = {
           entry_type: string
           id?: string
           inspection_id?: string | null
+          source?: string
           updated_at?: string
         }
         Update: {
@@ -183,6 +185,7 @@ export type Database = {
           entry_type?: string
           id?: string
           inspection_id?: string | null
+          source?: string
           updated_at?: string
         }
         Relationships: [
@@ -508,6 +511,50 @@ export type Database = {
           },
         ]
       }
+      inspection_types: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          company_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inspections: {
         Row: {
           brand: string
@@ -526,6 +573,7 @@ export type Database = {
           fuel: string
           id: string
           inspection_purpose: string | null
+          inspection_type_id: string | null
           inspection_date: string
           inspection_number: number
           inspection_time: string
@@ -580,6 +628,7 @@ export type Database = {
           fuel: string
           id?: string
           inspection_purpose?: string | null
+          inspection_type_id?: string | null
           inspection_date: string
           inspection_number?: number
           inspection_time: string
@@ -634,6 +683,7 @@ export type Database = {
           fuel?: string
           id?: string
           inspection_purpose?: string | null
+          inspection_type_id?: string | null
           inspection_date?: string
           inspection_number?: number
           inspection_time?: string

@@ -7,6 +7,7 @@ const basePayload = {
   inspection_date: "2026-06-23",
   inspection_time: "14:30",
   location: "São Paulo",
+  inspection_type_id: "11111111-1111-4111-8111-111111111111",
   client_name: "João Silva",
   client_document: "123.456.789-01",
   plate: "ABC-1D23",

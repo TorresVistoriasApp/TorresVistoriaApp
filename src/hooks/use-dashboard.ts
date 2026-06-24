@@ -71,6 +71,16 @@ function useDashboardRealtime() {
         },
         () => invalidateDashboardQueries(qc),
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "inspection_types",
+          filter: `company_id=eq.${profile.company_id}`,
+        },
+        () => invalidateDashboardQueries(qc),
+      )
       .subscribe();
 
     return () => {

@@ -25,6 +25,11 @@ export const queryKeys = {
     detail: (id: string) => ["company", id] as const,
     settings: (id: string) => ["company", id, "settings"] as const,
   },
+  inspectionTypes: {
+    all: ["inspection-types"] as const,
+    list: (companyId?: string, activeOnly?: boolean) =>
+      ["inspection-types", companyId, activeOnly] as const,
+  },
   users: {
     team: ["users", "team"] as const,
   },
@@ -41,7 +46,7 @@ export const queries = {
     base() {
       return db.from("inspections").select(`
         id, inspection_number, inspection_date, inspection_time, location,
-        inspection_purpose, requester_name, requester_document,
+        inspection_purpose, inspection_type_id, requester_name, requester_document,
         buyer_name, buyer_document, seller_name, seller_document,
         judicial_process, judicial_court, judicial_district,
         client_name, client_document, client_phone, client_email,
