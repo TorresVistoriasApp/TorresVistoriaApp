@@ -8,14 +8,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
+import { CreateUserDialog } from "@/features/users/components/create-user-dialog";
+import { EditUserDialog } from "@/features/users/components/edit-user-dialog";
+import { UserCard } from "@/features/users/components/user-card";
 import {
-  CreateUserDialog,
-  EditUserDialog,
-  UserCard,
   useCreateUser,
   useSetUserActive,
   useUpdateUser,
-} from "@/features/users";
+} from "@/features/users/hooks/use-admin-users";
 import { useTeamProfiles } from "@/hooks/use-users";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
