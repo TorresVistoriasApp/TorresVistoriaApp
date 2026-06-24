@@ -1,6 +1,6 @@
 /**
  * Tipos gerados ? Supabase TorresVistorias (ljzttzfjtskblxekmquu)
- * Regenerar: Supabase MCP generate_typescript_types
+ * Regenerar: npm run db:types
  */
 
 export type Json =

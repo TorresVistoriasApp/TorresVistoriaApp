@@ -54,6 +54,7 @@ Integração Git: conecte o repo `TorresVistoriaApp` em [vercel.com/new](https:/
 
 | Doc | Conteúdo |
 |-----|----------|
+| [docs/CONVENCOES.md](docs/CONVENCOES.md) | Padrões de código, arquitetura e nomenclatura |
 | [docs/SEGURANCA.md](docs/SEGURANCA.md) | RLS, headers, rate limit, checklist |
 | [docs/LGPD.md](docs/LGPD.md) | Consentimento, exportação, exclusão |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Vercel, Supabase, Edge Functions |
