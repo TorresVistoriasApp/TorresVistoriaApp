@@ -1,27 +1,13 @@
+import imageCompression from "browser-image-compression";
+
 const STORAGE_BUCKET = "inspection-photos";
-const MAX_WIDTH = 1920;
-const WEBP_QUALITY = 0.82;
 
-export async function compressToWebP(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_WIDTH / bitmap.width);
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas não suportado");
-  ctx.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("Falha na compressão"))),
-      "image/webp",
-      WEBP_QUALITY,
-    );
+export async function compressToWebP(file: File): Promise<File> {
+  return imageCompression(file, {
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+    fileType: "image/webp",
+    initialQuality: 0.82,
   });
 }
 
