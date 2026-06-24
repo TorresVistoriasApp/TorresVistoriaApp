@@ -1,5 +1,13 @@
 import { Link } from "react-router-dom";
-import { ClipboardList, DollarSign, Plus, TrendingUp, Users } from "lucide-react";
+import {
+  BarChart3,
+  ClipboardList,
+  DollarSign,
+  PieChart,
+  Plus,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import {
   useDashboardMetrics,
   useMonthlyInspections,
@@ -11,6 +19,7 @@ import { RevenueChart } from "@/components/charts/revenue-chart";
 import { InspectionsPieChart } from "@/components/charts/inspections-pie-chart";
 import { MonthlyOverview } from "@/components/dashboard/monthly-overview";
 import { RecentInspections } from "@/components/dashboard/recent-inspections";
+import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { ROUTES } from "@/lib/constants";
@@ -27,18 +36,19 @@ export function Page() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Indicadores em tempo real</p>
-        </div>
-        <Button asChild className="touch-target">
-          <Link to={ROUTES.inspectionNew}>
-            <Plus className="h-4 w-4" />
-            Nova vistoria
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        badge="Visão geral"
+        description="Indicadores em tempo real do seu negócio de vistorias cautelares"
+        actions={
+          <Button asChild className="touch-target w-full sm:w-auto" size="lg">
+            <Link to={ROUTES.inspectionNew}>
+              <Plus className="h-4 w-4" />
+              Nova vistoria
+            </Link>
+          </Button>
+        }
+      />
 
       <StatsGrid
         items={[
@@ -71,21 +81,38 @@ export function Page() {
         ]}
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartWrapper title="Visão mensal">
+      <div className="grid gap-4 xl:grid-cols-12 xl:gap-5">
+        <ChartWrapper
+          className="xl:col-span-7"
+          title="Visão mensal"
+          description="Evolução de vistorias realizadas"
+          icon={BarChart3}
+        >
           <MonthlyOverview data={monthly} />
         </ChartWrapper>
-        <div className="space-y-6">
-          <ChartWrapper title="Receita">
-            <RevenueChart data={monthly} />
-          </ChartWrapper>
-          <ChartWrapper title="Vistorias por marca">
-            <InspectionsPieChart data={brands} />
-          </ChartWrapper>
+
+        <ChartWrapper
+          className="xl:col-span-5"
+          title="Receita"
+          description="Faturamento mensal consolidado"
+          icon={TrendingUp}
+        >
+          <RevenueChart data={monthly} />
+        </ChartWrapper>
+
+        <ChartWrapper
+          className="xl:col-span-5"
+          title="Vistorias por marca"
+          description="Participação por fabricante"
+          icon={PieChart}
+        >
+          <InspectionsPieChart data={brands} />
+        </ChartWrapper>
+
+        <div className="xl:col-span-7">
+          <RecentInspections />
         </div>
       </div>
-
-      <RecentInspections />
     </div>
   );
 }

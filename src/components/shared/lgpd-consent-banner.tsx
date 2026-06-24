@@ -12,20 +12,20 @@ export function LgpdConsentBanner() {
       role="dialog"
       aria-labelledby="lgpd-title"
       aria-describedby="lgpd-desc"
-      className="fixed inset-x-0 bottom-0 z-[100] border-t border-border bg-background p-4 shadow-lg md:bottom-4 md:left-4 md:right-auto md:max-w-md md:rounded-lg md:border"
+      className="surface-elevated fixed inset-x-4 bottom-20 z-[100] p-5 md:bottom-6 md:left-6 md:right-auto md:max-w-md"
     >
-      <h2 id="lgpd-title" className="text-sm font-semibold">
+      <h2 id="lgpd-title" className="font-display text-base font-normal tracking-tight">
         Privacidade e cookies
       </h2>
-      <p id="lgpd-desc" className="mt-1 text-xs text-muted-foreground">
+      <p id="lgpd-desc" className="mt-2 text-xs leading-relaxed text-muted-foreground">
         Usamos cookies essenciais para autenticação e preferências. Consulte nossa{" "}
-        <Link to="/privacidade" className="text-primary underline">
+        <Link to="/privacidade" className="font-medium text-accent hover:underline">
           Política de Privacidade
         </Link>
         .
       </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button type="button" size="sm" className="touch-target" onClick={() => accept(false)}>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="accent" className="touch-target" onClick={() => accept(false)}>
           Aceitar essenciais
         </Button>
         <Button type="button" size="sm" variant="outline" className="touch-target" onClick={() => accept(true)}>

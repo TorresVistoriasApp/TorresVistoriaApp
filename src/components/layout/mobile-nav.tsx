@@ -10,13 +10,10 @@ interface MobileNavProps {
 export function MobileNav({ className }: MobileNavProps) {
   return (
     <nav
-      className={cn(
-        "fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background safe-area-inset-bottom md:hidden",
-        className,
-      )}
+      className={cn("fixed bottom-3 left-3 right-3 z-40 md:hidden", className)}
       aria-label="Navegação principal"
     >
-      <div className="grid grid-cols-5">
+      <div className="flex items-stretch justify-around rounded-2xl border border-border/50 bg-card/95 px-1 py-1 shadow-elevated backdrop-blur-xl safe-area-inset-bottom">
         {NAV_ITEMS.map(({ to, shortLabel, icon: Icon }) => (
           <NavLink
             key={to}
@@ -24,12 +21,14 @@ export function MobileNav({ className }: MobileNavProps) {
             end={to === ROUTES.dashboard}
             className={({ isActive }) =>
               cn(
-                "touch-target flex min-h-[44px] flex-col items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground",
+                "touch-target flex min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-xl py-1.5 text-[10px] font-bold transition-all duration-200",
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground",
               )
             }
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
             <span>{shortLabel}</span>
           </NavLink>
         ))}

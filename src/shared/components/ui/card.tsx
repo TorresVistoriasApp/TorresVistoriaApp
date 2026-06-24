@@ -10,7 +10,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-background shadow-sm",
+        "surface overflow-hidden transition-shadow duration-300 hover:shadow-elevated",
         className,
       )}
     >
@@ -26,7 +26,11 @@ export function CardHeader({
   className?: string;
   children: React.ReactNode;
 }) {
-  return <div className={cn("flex flex-col gap-1.5 p-4 md:p-6", className)}>{children}</div>;
+  return (
+    <div className={cn("flex flex-col gap-1.5 border-b border-border/60 p-5 md:p-6", className)}>
+      {children}
+    </div>
+  );
 }
 
 export function CardTitle({
@@ -36,7 +40,11 @@ export function CardTitle({
   className?: string;
   children: React.ReactNode;
 }) {
-  return <h3 className={cn("text-lg font-semibold leading-none", className)}>{children}</h3>;
+  return (
+    <h3 className={cn("font-display text-xl font-normal leading-none tracking-tight", className)}>
+      {children}
+    </h3>
+  );
 }
 
 export function CardDescription({
@@ -47,7 +55,7 @@ export function CardDescription({
   children: React.ReactNode;
 }) {
   return (
-    <p className={cn("text-sm text-muted-foreground", className)}>{children}</p>
+    <p className={cn("text-sm leading-relaxed text-muted-foreground", className)}>{children}</p>
   );
 }
 
@@ -58,5 +66,5 @@ export function CardContent({
   className?: string;
   children: React.ReactNode;
 }) {
-  return <div className={cn("p-4 pt-0 md:p-6 md:pt-0", className)}>{children}</div>;
+  return <div className={cn("p-5 md:p-6", className)}>{children}</div>;
 }

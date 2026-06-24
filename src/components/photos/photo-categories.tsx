@@ -32,10 +32,10 @@ export function PhotoCategories({
           type="button"
           onClick={() => onSelect(cat)}
           className={cn(
-            "touch-target rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+            "touch-target rounded-full px-3 py-1.5 text-xs font-semibold transition-all",
             selected === cat
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-background hover:bg-muted",
+              ? "gradient-primary text-primary-foreground shadow-glow"
+              : "border border-border bg-card text-muted-foreground hover:border-primary/30",
           )}
         >
           {categoryLabels[cat] ?? cat.replace(/_/g, " ")}

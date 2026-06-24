@@ -8,17 +8,17 @@ const labels: Record<string, string> = {
 };
 
 const styles: Record<string, string> = {
-  [InspectionStatus.DRAFT]: "bg-warning/15 text-warning",
-  [InspectionStatus.COMPLETED]: "bg-success/15 text-success",
-  [InspectionStatus.ARCHIVED]: "bg-muted text-muted-foreground",
+  [InspectionStatus.DRAFT]: "border-warning/30 bg-warning/10 text-warning",
+  [InspectionStatus.COMPLETED]: "border-success/30 bg-success/10 text-success",
+  [InspectionStatus.ARCHIVED]: "border-border bg-muted/50 text-muted-foreground",
 };
 
 export function VistoriaStatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
-        styles[status] ?? "bg-muted",
+        "inline-flex rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+        styles[status] ?? "border-border bg-muted",
       )}
     >
       {labels[status] ?? status}

@@ -2,6 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/use-auth";
+import { PageHeader } from "@/components/shared/page-header";
 import { RequireRole } from "@/app/require-role";
 import { UserRole } from "@/lib/enums";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,20 +39,23 @@ export function Page() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Configurações</h1>
-        {isAdmin && (
-          <div className="flex gap-2 text-sm">
-            <Button asChild variant="outline" size="sm" className="touch-target">
-              <Link to="/configuracoes/usuarios">Usuários</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="touch-target">
-              <Link to="/configuracoes/auditoria">Auditoria</Link>
-            </Button>
-          </div>
-        )}
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="Configurações"
+        description="Perfil, empresa e preferências da conta"
+        actions={
+          isAdmin ? (
+            <div className="flex gap-2">
+              <Button asChild variant="outline" size="sm" className="touch-target">
+                <Link to="/configuracoes/usuarios">Usuários</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="touch-target">
+                <Link to="/configuracoes/auditoria">Auditoria</Link>
+              </Button>
+            </div>
+          ) : undefined
+        }
+      />
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>

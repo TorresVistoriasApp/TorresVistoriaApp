@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PageHeader } from "@/components/shared/page-header";
 import { RequirePermission } from "@/app/require-role";
 import { useInspections } from "@/hooks/use-inspections";
 import { VistoriaFilters } from "@/components/vistoria/vistoria-filters";
@@ -59,23 +60,21 @@ export function Page() {
 
   return (
     <RequirePermission permission="reports.export">
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold">Relatórios</h1>
-            <p className="text-sm text-muted-foreground">
-              {data.length} vistoria{data.length !== 1 ? "s" : ""} encontrada{data.length !== 1 ? "s" : ""}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="touch-target" onClick={exportCsv} disabled={data.length === 0}>
-              Exportar CSV
-            </Button>
-            <Button className="touch-target" onClick={() => void exportExcel()} disabled={data.length === 0}>
-              Exportar Excel
-            </Button>
-          </div>
-        </div>
+      <div className="space-y-8">
+        <PageHeader
+          title="Relatórios"
+          description={`${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`}
+          actions={
+            <>
+              <Button variant="outline" className="touch-target" onClick={exportCsv} disabled={data.length === 0}>
+                Exportar CSV
+              </Button>
+              <Button variant="accent" className="touch-target" onClick={() => void exportExcel()} disabled={data.length === 0}>
+                Exportar Excel
+              </Button>
+            </>
+          }
+        />
 
         <VistoriaFilters filters={filters} onChange={setFilters} />
 

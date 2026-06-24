@@ -17,19 +17,22 @@ type DataTableProps<T> = {
 export function DataTable<T>({ columns, rows, rowKey, emptyMessage }: DataTableProps<T>) {
   if (rows.length === 0) {
     return (
-      <p className="py-6 text-center text-sm text-muted-foreground">
+      <p className="py-8 text-center text-sm text-muted-foreground">
         {emptyMessage ?? "Nenhum registro encontrado."}
       </p>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
+    <div className="overflow-x-auto rounded-xl border border-border/60">
       <table className="w-full text-sm">
-        <thead className="bg-muted/50">
-          <tr>
+        <thead>
+          <tr className="border-b border-border/60 bg-muted/40">
             {columns.map((col) => (
-              <th key={col.key} className={`px-4 py-2 text-left ${col.className ?? ""}`}>
+              <th
+                key={col.key}
+                className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground ${col.className ?? ""}`}
+              >
                 {col.header}
               </th>
             ))}
@@ -37,9 +40,12 @@ export function DataTable<T>({ columns, rows, rowKey, emptyMessage }: DataTableP
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={rowKey(row)} className="border-t border-border">
+            <tr
+              key={rowKey(row)}
+              className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/30"
+            >
               {columns.map((col) => (
-                <td key={col.key} className={`px-4 py-2 ${col.className ?? ""}`}>
+                <td key={col.key} className={`px-4 py-3 ${col.className ?? ""}`}>
                   {col.render(row)}
                 </td>
               ))}
