@@ -60,6 +60,17 @@ export type Inspection = {
   updated_at: string;
 };
 
+export type InspectionProfile = {
+  id: string;
+  full_name: string;
+  role?: string | null;
+  avatar_url?: string | null;
+};
+
+export type InspectionDetail = Inspection & {
+  inspector?: InspectionProfile | null;
+};
+
 export type InspectionFilters = {
   plate?: string;
   status?: InspectionStatus;
@@ -135,9 +146,9 @@ export const inspectionService = {
     }
   },
 
-  async getById(id: string): Promise<Inspection> {
+  async getById(id: string): Promise<InspectionDetail> {
     try {
-      return throwIfError(await queries.inspections.byId(id), "Vistoria não encontrada");
+      return throwIfError(await queries.inspections.byId(id), "Vistoria não encontrada") as InspectionDetail;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

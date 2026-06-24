@@ -2,14 +2,16 @@ import { cn } from "@/lib/utils";
 
 interface UserAvatarProps {
   name?: string | null;
+  avatarUrl?: string | null;
   className?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 const sizeMap = {
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
   lg: "h-12 w-12 text-base",
+  xl: "h-20 w-20 text-xl",
 };
 
 function getInitials(name?: string | null) {
@@ -22,7 +24,21 @@ function getInitials(name?: string | null) {
     .join("");
 }
 
-export function UserAvatar({ name, className, size = "md" }: UserAvatarProps) {
+export function UserAvatar({ name, avatarUrl, className, size = "md" }: UserAvatarProps) {
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name ? `Foto de ${name}` : "Foto de perfil"}
+        className={cn(
+          "shrink-0 rounded-full object-cover shadow-sm ring-2 ring-white",
+          sizeMap[size],
+          className,
+        )}
+      />
+    );
+  }
+
   return (
     <div
       className={cn(

@@ -4,21 +4,25 @@ import { companyService } from "@/services/company-service";
 import type { CompanyInput, SettingsInput } from "@/schemas/settings";
 import { useAuth } from "@/hooks/use-auth";
 
-export function useCompany() {
+export function useCompany(companyId?: string) {
   const { profile } = useAuth();
+  const resolvedCompanyId = companyId ?? profile?.company_id ?? "";
+
   return useQuery({
-    queryKey: queryKeys.company.detail(profile?.company_id ?? ""),
-    queryFn: () => companyService.getCompany(profile!.company_id),
-    enabled: !!profile?.company_id,
+    queryKey: queryKeys.company.detail(resolvedCompanyId),
+    queryFn: () => companyService.getCompany(resolvedCompanyId),
+    enabled: !!resolvedCompanyId,
   });
 }
 
-export function useCompanySettings() {
+export function useCompanySettings(companyId?: string) {
   const { profile } = useAuth();
+  const resolvedCompanyId = companyId ?? profile?.company_id ?? "";
+
   return useQuery({
-    queryKey: queryKeys.company.settings(profile?.company_id ?? ""),
-    queryFn: () => companyService.getSettings(profile!.company_id),
-    enabled: !!profile?.company_id,
+    queryKey: queryKeys.company.settings(resolvedCompanyId),
+    queryFn: () => companyService.getSettings(resolvedCompanyId),
+    enabled: !!resolvedCompanyId,
   });
 }
 

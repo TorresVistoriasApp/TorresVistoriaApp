@@ -6,6 +6,7 @@ import { ArrowRight, Eye, EyeOff, LockKeyhole, LogIn, Mail, ShieldCheck } from "
 import { useAuth } from "@/hooks/use-auth";
 import { checkRateLimit, formatRetryAfter, resetRateLimit } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
+import { saveLgpdConsent } from "@/lib/lgpd";
 import { PUBLIC_IMAGES } from "@/lib/public-images";
 import { loginSchema, type LoginInput } from "@/schemas/auth";
 import { BrandLogo } from "@/components/shared/brand-logo";
@@ -24,7 +25,10 @@ export function Page() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { acceptTerms: false },
+  });
 
   if (loading) return <LoadingScreen />;
   if (session) return <Navigate to={ROUTES.dashboard} replace />;
@@ -38,6 +42,7 @@ export function Page() {
     }
     try {
       await signIn(values.email, values.password);
+      saveLgpdConsent(false);
       resetRateLimit("login");
     } catch (err) {
       logger.warn("Falha no login");
@@ -172,6 +177,27 @@ export function Page() {
                     <p className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
                       {error}
                     </p>
+                  )}
+                  <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm leading-relaxed text-slate-600">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-primary focus:ring-primary"
+                      {...register("acceptTerms")}
+                    />
+                    <span>
+                      Li e concordo com a{" "}
+                      <Link
+                        to={ROUTES.privacy}
+                        target="_blank"
+                        className="font-semibold text-primary hover:underline"
+                      >
+                        Política de Privacidade
+                      </Link>{" "}
+                      e os termos da LGPD.
+                    </span>
+                  </label>
+                  {errors.acceptTerms && (
+                    <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
                   )}
                   <Button
                     type="submit"

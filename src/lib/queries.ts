@@ -52,14 +52,14 @@ export const queries = {
         market_fipe_value, market_average_value, insurance_acceptance_percent, vehicle_condition,
         situation, opinion, status, technical_notes, internal_notes,
         company_id, inspector_id, created_at, updated_at,
-        inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url)
+        inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url, role)
       `);
     },
 
     withRelations() {
       return db.from("inspections").select(`
         *,
-        inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url),
+        inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url, role),
         inspection_checklists(*),
         inspection_photos(*),
         inspection_comments(*)

@@ -1,4 +1,10 @@
-/** Aplica máscara de CPF (11 dígitos) ou CNPJ (14 dígitos) conforme o tamanho. */
+/** Máscara de CEP brasileiro (00000-000). */
+export function maskCep(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
 export function maskCpfCnpj(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 14);
   if (digits.length <= 11) {
@@ -87,7 +93,7 @@ export function maskChassis(value: string): string {
     .slice(0, 17);
 }
 
-export type MaskType = "cpfCnpj" | "phone" | "plate" | "renavam" | "km" | "currency" | "chassis";
+export type MaskType = "cpfCnpj" | "phone" | "plate" | "renavam" | "km" | "currency" | "chassis" | "cep";
 
 const maskFns: Record<MaskType, (value: string) => string> = {
   cpfCnpj: maskCpfCnpj,
@@ -97,6 +103,7 @@ const maskFns: Record<MaskType, (value: string) => string> = {
   km: maskKm,
   currency: maskCurrency,
   chassis: maskChassis,
+  cep: maskCep,
 };
 
 export function applyMask(type: MaskType, value: string): string {

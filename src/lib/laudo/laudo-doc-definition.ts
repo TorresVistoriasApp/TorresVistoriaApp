@@ -390,8 +390,9 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       ["Empresa", value(company?.name)],
       ["CPF/CNPJ", formatDocument(company?.document)],
       ["Telefone", formatPhone(company?.phone)],
+      ["Endereço", value(company?.address)],
       ["Data e hora", `${formatDate(inspection.inspection_date)} às ${inspection.inspection_time.slice(0, 5)}`],
-      ["Local", inspection.location],
+      ["Local da vistoria", inspection.location],
       ["Vistoriador", value(inspector?.full_name)],
       ["Finalidade", value(extra(inspection, "inspection_purpose"))],
       ["Solicitante/Cliente", inspection.client_name],
@@ -481,7 +482,11 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     content,
     footer: (currentPage: number, pageCount: number) => ({
       columns: [
-        { text: "Torres Vistorias · Laudo cautelar veicular", style: "small", margin: [36, 0, 0, 0] },
+        {
+          text: `${company?.name?.trim() || "Torres Vistorias"} · Laudo cautelar veicular`,
+          style: "small",
+          margin: [36, 0, 0, 0],
+        },
         { text: `Página ${currentPage} de ${pageCount}`, style: "small", alignment: "right", margin: [0, 0, 36, 0] },
       ],
     }),
