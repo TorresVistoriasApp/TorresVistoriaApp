@@ -2,6 +2,7 @@ import { db } from "@/lib/db-client";
 import { queries } from "@/lib/queries";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 import { compressToWebP } from "@/lib/compress-image";
+import { buildCompanyAddress, buildCompanyLocation } from "@/lib/cep";
 import type { CompanyInput, SettingsInput } from "@/schemas/settings";
 
 export type Company = {
@@ -11,6 +12,15 @@ export type Company = {
   email: string | null;
   phone: string | null;
   logo_url: string | null;
+  location: string | null;
+  address: string | null;
+  address_cep: string | null;
+  address_street: string | null;
+  address_number: string | null;
+  address_complement: string | null;
+  address_neighborhood: string | null;
+  address_city: string | null;
+  address_state: string | null;
 };
 
 export type CompanySettings = {
@@ -39,8 +49,15 @@ export const companyService = {
         .update({
           name: input.name,
           document: input.document ?? null,
-          email: input.email || null,
-          phone: input.phone ?? null,
+          address_cep: input.address_cep || null,
+          address_street: input.address_street || null,
+          address_number: input.address_number || null,
+          address_complement: input.address_complement || null,
+          address_neighborhood: input.address_neighborhood || null,
+          address_city: input.address_city || null,
+          address_state: input.address_state?.toUpperCase() || null,
+          location: buildCompanyLocation(input),
+          address: buildCompanyAddress(input),
         })
         .eq("id", companyId)
         .select("*")

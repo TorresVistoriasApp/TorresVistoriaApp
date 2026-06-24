@@ -33,7 +33,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-3 rounded-2xl border border-border/60 bg-muted/30 px-3 py-1.5 sm:flex">
-            <UserAvatar name={profile?.full_name} size="sm" />
+            <UserAvatar name={profile?.full_name} avatarUrl={profile?.avatar_url} size="sm" />
             <div className="hidden min-w-0 md:block">
               <p className="truncate text-sm font-semibold">{profile?.full_name ?? "Usuário"}</p>
               <p className="text-[10px] text-muted-foreground">Online</p>

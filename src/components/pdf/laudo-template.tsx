@@ -3,7 +3,7 @@ import type { ChecklistItem } from "@/services/checklist-service";
 import type { InspectionPhoto } from "@/services/photo-service";
 import type { LaudoCompany, LaudoInspector, LaudoSettings } from "@/lib/laudo/laudo-model";
 import { getOpinionLabel, summarizeLaudoChecklist } from "@/lib/laudo/laudo-model";
-import { formatDate, formatKM, formatPlate } from "@/lib/formatters";
+import { formatDate, formatDocument, formatKM, formatPlate } from "@/lib/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
@@ -39,6 +39,9 @@ export function LaudoTemplate({
             <p className="mt-1 text-sm text-muted-foreground">
               {company?.name ?? "Empresa vistoriadora"} · {formatDate(inspection.inspection_date)}
             </p>
+            {company?.document && (
+              <p className="text-xs text-muted-foreground">CNPJ: {formatDocument(company.document)}</p>
+            )}
           </div>
           <span
             className={cn(
@@ -107,6 +110,26 @@ export function LaudoTemplate({
             <p className="text-xs text-muted-foreground">Cliente</p>
             <p className="font-medium">{inspection.client_name}</p>
           </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border bg-muted/30 p-3">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Dados da vistoria</p>
+          <div className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
+            <p>
+              <span className="text-muted-foreground">Vistoriador:</span>{" "}
+              <span className="font-medium">{inspector?.full_name ?? "Não informado"}</span>
+            </p>
+            <p>
+              <span className="text-muted-foreground">Local:</span>{" "}
+              <span className="font-medium">{inspection.location}</span>
+            </p>
+            {company?.address && (
+              <p className="sm:col-span-2">
+                <span className="text-muted-foreground">Endereço da empresa:</span>{" "}
+                <span className="font-medium">{company.address}</span>
+              </p>
+            )}
           </div>
         </div>
 

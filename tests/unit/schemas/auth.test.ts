@@ -6,12 +6,26 @@ describe("loginSchema", () => {
     const result = loginSchema.safeParse({
       email: "admin@torresvistorias.com.br",
       password: "TorresDemo2026!",
+      acceptTerms: true,
     });
     expect(result.success).toBe(true);
   });
 
   it("rejeita e-mail inválido", () => {
-    const result = loginSchema.safeParse({ email: "invalido", password: "123456" });
+    const result = loginSchema.safeParse({
+      email: "invalido",
+      password: "123456",
+      acceptTerms: true,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("exige aceite dos termos LGPD", () => {
+    const result = loginSchema.safeParse({
+      email: "admin@torresvistorias.com.br",
+      password: "TorresDemo2026!",
+      acceptTerms: false,
+    });
     expect(result.success).toBe(false);
   });
 });

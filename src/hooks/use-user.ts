@@ -36,6 +36,17 @@ export function useUpdateUserProfile() {
   });
 }
 
+export function useUploadUserAvatar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, file }: { userId: string; file: File }) =>
+      userService.updateAvatar(userId, file),
+    onSuccess: () => {
+      invalidateUserQueries(qc);
+    },
+  });
+}
+
 export function useUpdateUserRole() {
   const qc = useQueryClient();
   return useMutation({

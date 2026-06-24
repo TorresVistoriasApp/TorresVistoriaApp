@@ -9,6 +9,7 @@ export type LaudoCompany = {
   phone?: string | null;
   email?: string | null;
   logo_url?: string | null;
+  address?: string | null;
 };
 
 export type LaudoSettings = {

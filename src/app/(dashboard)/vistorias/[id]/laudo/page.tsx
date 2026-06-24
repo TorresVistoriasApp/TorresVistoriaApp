@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { PdfDownloadButton } from "@/components/pdf/pdf-download-button";
 import { PdfPreview } from "@/components/pdf/pdf-preview";
@@ -12,6 +12,7 @@ import { InspectionWizardShell } from "@/components/vistoria/inspection-wizard-s
 import { validateChecklistCompletion } from "@/components/forms/checklist-form";
 import { pdfService } from "@/services/pdf-service";
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
+import { companyToLaudoCompany, inspectorToLaudoInspector } from "@/lib/laudo/laudo-context";
 import { ArrowLeft, CheckCircle, Download, FileText, ShieldAlert } from "lucide-react";
 import { MANDATORY_PHOTO_CATEGORIES, ROUTES } from "@/lib/constants";
 
@@ -23,11 +24,17 @@ export function Page() {
   const { data: inspection, isLoading: loadingInspection } = useInspection(id);
   const { data: checklist = [], isLoading: loadingChecklist } = useInspectionChecklist(id);
   const { data: photos = [], isLoading: loadingPhotos } = useInspectionPhotos(id);
-  const { data: company, isLoading: loadingCompany } = useCompany();
-  const { data: settings, isLoading: loadingSettings } = useCompanySettings();
+  const { data: company, isLoading: loadingCompany } = useCompany(inspection?.company_id);
+  const { data: settings, isLoading: loadingSettings } = useCompanySettings(inspection?.company_id);
   const { toast } = useToast();
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+
+  const laudoCompany = useMemo(() => companyToLaudoCompany(company), [company]);
+  const laudoInspector = useMemo(
+    () => inspectorToLaudoInspector(inspection?.inspector),
+    [inspection?.inspector],
+  );
 
   const handleGenerate = async () => {
     if (!id || !inspection) return;
@@ -37,17 +44,15 @@ export function Page() {
       return;
     }
 
-    const inspector = (inspection as unknown as { inspector?: { full_name?: string | null; role?: string | null } })
-      .inspector;
     setGenerating(true);
     try {
       const result = await pdfService.registerProfessionalLaudo({
         inspection,
         checklist,
         photos,
-        company,
+        company: laudoCompany,
         settings,
-        inspector,
+        inspector: laudoInspector,
       });
       setVerificationCode(result.verificationCode);
       toast("Laudo profissional registrado e baixado com sucesso");
@@ -62,8 +67,6 @@ export function Page() {
     return <LoadingSpinner />;
   }
 
-  const inspector = (inspection as unknown as { inspector?: { full_name?: string | null; role?: string | null } })
-    .inspector;
   const blockers = getLaudoBlockers(inspection, checklist, photos);
   const content = (
     <div className="space-y-4">
@@ -99,9 +102,9 @@ export function Page() {
         inspection={inspection}
         checklist={checklist}
         photos={photos}
-        company={company}
+        company={laudoCompany}
         settings={settings}
-        inspector={inspector}
+        inspector={laudoInspector}
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -123,16 +126,16 @@ export function Page() {
           inspection={inspection}
           checklist={checklist}
           photos={photos}
-          company={company}
+          company={laudoCompany}
           settings={settings}
-          inspector={inspector}
+          inspector={laudoInspector}
         />
       </div>
 
       <div className="rounded-xl border border-border bg-muted/20 p-4 text-xs text-muted-foreground">
         <Download className="mr-1 inline h-3.5 w-3.5" />
-        O botão principal gera o PDF completo, salva no bucket de laudos, registra hash SHA-256 e
-        cria código/QR de validação pública.
+        O laudo usa os dados de Configurações: razão social, CNPJ, endereço da empresa e nome do
+        vistoriador responsável pela vistoria.
       </div>
 
       <Button variant="ghost" className="w-full touch-target" onClick={() => navigate(ROUTES.inspections)}>

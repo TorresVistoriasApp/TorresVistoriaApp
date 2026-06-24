@@ -84,33 +84,60 @@ export type Database = {
       }
       companies: {
         Row: {
+          address: string | null
+          address_cep: string | null
+          address_city: string | null
+          address_complement: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_state: string | null
+          address_street: string | null
           created_at: string
           deleted_at: string | null
           document: string | null
           email: string | null
           id: string
+          location: string | null
           logo_url: string | null
           name: string
           phone: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
+          address_cep?: string | null
+          address_city?: string | null
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
           created_at?: string
           deleted_at?: string | null
           document?: string | null
           email?: string | null
           id?: string
+          location?: string | null
           logo_url?: string | null
           name: string
           phone?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
+          address_cep?: string | null
+          address_city?: string | null
+          address_complement?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
           created_at?: string
           deleted_at?: string | null
           document?: string | null
           email?: string | null
           id?: string
+          location?: string | null
           logo_url?: string | null
           name?: string
           phone?: string | null
