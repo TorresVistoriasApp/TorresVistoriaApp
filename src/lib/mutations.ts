@@ -48,10 +48,7 @@ export const mutations = {
     },
 
     softDelete(id: string) {
-      return supabase
-        .from("inspections")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", id);
+      return supabase.from("inspections").delete().eq("id", id);
     },
   },
 
