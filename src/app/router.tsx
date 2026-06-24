@@ -1,37 +1,128 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { ProtectedRoute } from "@/features/auth/components/protected-route";
-import { AppLayout } from "@/shared/components/layout/app-layout";
-import { LoginPage } from "@/features/auth/pages/login-page";
-import { ForgotPasswordPage } from "@/features/auth/pages/forgot-password-page";
-import { DashboardPage } from "@/features/dashboard/pages/dashboard-page";
-import { InspectionsListPage } from "@/features/inspections/pages/inspections-list-page";
-import { InspectionFormPage } from "@/features/inspections/pages/inspection-form-page";
-import { FinancialPage } from "@/features/financial/pages/financial-page";
-import { ReportsPage } from "@/features/reports/pages/reports-page";
-import { SettingsPage } from "@/features/settings/pages/settings-page";
+import { lazy, Suspense, type ComponentType } from "react";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import { RootLayout } from "@/app/layout";
+import { AuthLayout } from "@/app/(auth)/layout";
+import { DashboardLayout } from "@/app/(dashboard)/layout";
+import { ProtectedRoute } from "@/components/shared/protected-route";
+import { LoadingSpinner } from "@/components/shared/loading-spinner";
 
-export function AppRouter() {
+function lazyPage(loader: () => Promise<{ Page: ComponentType }>) {
+  const Lazy = lazy(async () => {
+    const { Page } = await loader();
+    return { default: Page };
+  });
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
-
-        <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/vistorias" element={<InspectionsListPage />} />
-            <Route path="/vistorias/nova" element={<InspectionFormPage />} />
-            <Route path="/vistorias/:id" element={<InspectionFormPage />} />
-            <Route path="/financeiro" element={<FinancialPage />} />
-            <Route path="/relatorios" element={<ReportsPage />} />
-            <Route path="/configuracoes" element={<SettingsPage />} />
-          </Route>
-        </Route>
-
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      }
+    >
+      <Lazy />
+    </Suspense>
   );
 }
+
+export const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      {
+        path: "/dashboard",
+        element: <Navigate to="/" replace />,
+      },
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: "/login", element: lazyPage(() => import("@/app/(auth)/login/page")) },
+          {
+            path: "/recuperar-senha",
+            element: lazyPage(() => import("@/app/(auth)/recuperar-senha/page")),
+          },
+          {
+            path: "/redefinir-senha",
+            element: lazyPage(() => import("@/app/(auth)/redefinir-senha/page")),
+          },
+        ],
+      },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            element: <DashboardLayout />,
+            children: [
+              { index: true, element: lazyPage(() => import("@/app/(dashboard)/page")) },
+              {
+                path: "/vistorias",
+                element: lazyPage(() => import("@/app/(dashboard)/vistorias/page")),
+              },
+              {
+                path: "/vistorias/nova",
+                element: lazyPage(() => import("@/app/(dashboard)/vistorias/nova/page")),
+              },
+              {
+                path: "/vistorias/:id",
+                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/page")),
+              },
+              {
+                path: "/vistorias/:id/editar",
+                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/editar/page")),
+              },
+              {
+                path: "/vistorias/:id/fotos",
+                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/fotos/page")),
+              },
+              {
+                path: "/vistorias/:id/checklist",
+                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/checklist/page")),
+              },
+              {
+                path: "/vistorias/:id/laudo",
+                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/laudo/page")),
+              },
+              {
+                path: "/financeiro",
+                element: lazyPage(() => import("@/app/(dashboard)/financeiro/page")),
+              },
+              {
+                path: "/financeiro/receitas",
+                element: lazyPage(() => import("@/app/(dashboard)/financeiro/receitas/page")),
+              },
+              {
+                path: "/financeiro/despesas",
+                element: lazyPage(() => import("@/app/(dashboard)/financeiro/despesas/page")),
+              },
+              {
+                path: "/relatorios",
+                element: lazyPage(() => import("@/app/(dashboard)/relatorios/page")),
+              },
+              {
+                path: "/configuracoes",
+                element: lazyPage(() => import("@/app/(dashboard)/configuracoes/page")),
+              },
+              {
+                path: "/configuracoes/empresa",
+                element: lazyPage(() => import("@/app/(dashboard)/configuracoes/empresa/page")),
+              },
+              {
+                path: "/configuracoes/perfil",
+                element: lazyPage(() => import("@/app/(dashboard)/configuracoes/perfil/page")),
+              },
+              {
+                path: "/configuracoes/usuarios",
+                element: lazyPage(() => import("@/app/(dashboard)/configuracoes/usuarios/page")),
+              },
+              {
+                path: "/configuracoes/auditoria",
+                element: lazyPage(() => import("@/app/(dashboard)/configuracoes/auditoria/page")),
+              },
+            ],
+          },
+        ],
+      },
+      { path: "*", element: <Navigate to="/" replace /> },
+    ],
+  },
+]);
