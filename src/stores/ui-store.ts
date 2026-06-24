@@ -11,10 +11,13 @@ export interface Toast {
 
 interface UiStoreState {
   sidebarOpen: boolean;
+  sidebarCollapsed: boolean;
   theme: "light";
   toasts: Toast[];
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  toggleSidebarCollapsed: () => void;
   setTheme: (theme: UiStoreState["theme"]) => void;
   addToast: (toast: Omit<Toast, "id">) => void;
   dismissToast: (id: string) => void;
@@ -22,10 +25,13 @@ interface UiStoreState {
 
 export const useUiStore = create<UiStoreState>((set, get) => ({
   sidebarOpen: false,
+  sidebarCollapsed: false,
   theme: "light",
   toasts: [],
   setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
   toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
+  setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
+  toggleSidebarCollapsed: () => set({ sidebarCollapsed: !get().sidebarCollapsed }),
   setTheme: (theme) => set({ theme }),
   addToast: ({ title, description, type = "default" }) => {
     const id = Math.random().toString(36).slice(2, 9);

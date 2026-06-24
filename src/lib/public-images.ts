@@ -3,6 +3,7 @@ export const PUBLIC_IMAGES = {
   brand: {
     trim: "/images/brand/official-trim.webp",
     full: "/images/brand/official-full.webp",
+    mark: "/images/brand/logo-curta-sidebar.webp",
   },
   auth: {
     loginBanner: "/images/auth/inspection-1.webp",

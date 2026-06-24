@@ -1,4 +1,5 @@
 import { PUBLIC_IMAGES } from "@/lib/public-images";
+import { BrandMark } from "@/components/shared/brand-mark";
 import { cn } from "@/lib/utils";
 
 const LOGO_SRC = PUBLIC_IMAGES.brand.trim;
@@ -8,6 +9,8 @@ interface BrandLogoProps {
   showTagline?: boolean;
   align?: "left" | "center";
   size?: "sm" | "md" | "lg" | "xl";
+  /** `mark` exibe apenas o T estilizado (sidebar recolhida). */
+  variant?: "full" | "mark";
 }
 
 const sizeStyles = {
@@ -26,9 +29,21 @@ export function BrandLogo({
   showTagline = false,
   align = "left",
   size = "md",
+  variant = "full",
 }: BrandLogoProps) {
   const s = sizeStyles[size];
   const centered = align === "center";
+
+  if (variant === "mark") {
+    return (
+      <div
+        className={cn(centered && "mx-auto", className)}
+        aria-label="Torres Vistoria"
+      >
+        <BrandMark />
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex flex-col gap-2", centered && "items-center text-center", className)}>

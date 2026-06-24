@@ -6,6 +6,7 @@ import { getOpinionLabel, summarizeLaudoChecklist } from "@/lib/laudo/laudo-mode
 import { formatDate, formatKM, formatPlate } from "@/lib/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
 
 export function LaudoTemplate({
   inspection,
@@ -24,6 +25,7 @@ export function LaudoTemplate({
   const stats = summarizeLaudoChecklist(checklist);
   const opinion = getOpinionLabel(inspection.opinion);
   const firstPhoto = photos.find((photo) => photo.public_url)?.public_url;
+  const brandLogoPath = getBrandLogoPath(inspection.brand);
 
   return (
     <Card className="overflow-hidden border-2">
@@ -59,7 +61,23 @@ export function LaudoTemplate({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="flex gap-4">
+          <div className="flex w-24 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-foreground/80 bg-muted/30 p-3">
+            {brandLogoPath ? (
+              <img
+                src={brandLogoPath}
+                alt={`Logo ${inspection.brand}`}
+                className="h-10 w-full object-contain"
+              />
+            ) : (
+              <p className="text-center text-sm font-bold">{inspection.brand}</p>
+            )}
+            <p className="mt-2 text-[10px] uppercase tracking-wide text-muted-foreground">
+              Marca do veículo
+            </p>
+          </div>
+
+          <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3">
           <div>
             <p className="text-xs text-muted-foreground">Placa</p>
             <p className="font-mono text-lg font-bold">{formatPlate(inspection.plate)}</p>
@@ -85,9 +103,10 @@ export function LaudoTemplate({
               {inspection.model_year} · {formatKM(inspection.mileage)}
             </p>
           </div>
-          <div className="col-span-2 sm:col-span-4">
+          <div className="col-span-2 sm:col-span-3">
             <p className="text-xs text-muted-foreground">Cliente</p>
             <p className="font-medium">{inspection.client_name}</p>
+          </div>
           </div>
         </div>
 

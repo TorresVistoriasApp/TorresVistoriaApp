@@ -5,11 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField } from "@/components/forms/form-field";
 import { MaskedField, OptionalMaskedField } from "@/components/forms/masked-fields";
+import { CAR_BRANDS } from "@/lib/vehicle-brands";
 import { cn } from "@/lib/utils";
 
 const situationOptions = Object.values(InspectionSituation);
 
 const FUEL_OPTIONS = ["Flex", "Gasolina", "Etanol", "Diesel", "GNV", "Elétrico", "Híbrido"];
+
+const selectClassName = cn(
+  "flex h-11 w-full rounded-xl border border-border bg-card px-4 text-sm shadow-soft",
+  "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+);
 
 export function VeiculoForm({
   control,
@@ -69,7 +75,31 @@ export function VeiculoForm({
         </FormField>
 
         <FormField label="Marca" error={errors.brand?.message}>
-          <Input {...register("brand")} placeholder="Ex.: Volkswagen" />
+          <Controller
+            control={control}
+            name="brand"
+            render={({ field }) => {
+              const brandOptions =
+                field.value && !CAR_BRANDS.includes(field.value as (typeof CAR_BRANDS)[number])
+                  ? [field.value, ...CAR_BRANDS]
+                  : CAR_BRANDS;
+
+              return (
+                <select
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  className={selectClassName}
+                >
+                  <option value="">Selecione a marca...</option>
+                  {brandOptions.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </select>
+              );
+            }}
+          />
         </FormField>
 
         <FormField label="Modelo" error={errors.model?.message}>
@@ -97,10 +127,7 @@ export function VeiculoForm({
               <select
                 value={field.value ?? ""}
                 onChange={field.onChange}
-                className={cn(
-                  "flex h-11 w-full rounded-xl border border-border bg-card px-4 text-sm shadow-soft",
-                  "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-                )}
+                className={selectClassName}
               >
                 <option value="">Selecione...</option>
                 {FUEL_OPTIONS.map((fuel) => (
@@ -176,13 +203,7 @@ export function VeiculoForm({
         />
 
         <FormField label="Situação" error={errors.situation?.message}>
-          <select
-            {...register("situation")}
-            className={cn(
-              "flex h-11 w-full rounded-xl border border-border bg-card px-4 text-sm shadow-soft",
-              "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-            )}
-          >
+          <select {...register("situation")} className={selectClassName}>
             {situationOptions.map((o) => (
               <option key={o} value={o}>
                 {o.replace(/_/g, " ")}

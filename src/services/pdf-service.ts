@@ -6,6 +6,7 @@ import type { InspectionPhoto } from "@/services/photo-service";
 import { buildLaudoDocDefinition } from "@/lib/laudo/laudo-doc-definition";
 import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoSettings } from "@/lib/laudo/laudo-model";
 import { PUBLIC_IMAGES } from "@/lib/public-images";
+import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
 
 const REPORTS_BUCKET = "reports";
 
@@ -133,6 +134,7 @@ export const pdfService = {
     const baseHash =
       options.integrityHash ??
       (await sha256Bytes(JSON.stringify({ inspection, checklist, photos, verificationCode })));
+    const brandLogoPath = getBrandLogoPath(inspection.brand);
     const payload: LaudoPayload = {
       inspection,
       checklist,
@@ -144,6 +146,7 @@ export const pdfService = {
       integrityHash: baseHash,
       validationUrl: options.validationUrl,
       logoDataUrl: await imageUrlToJpegDataUrl(PUBLIC_IMAGES.brand.trim),
+      brandLogoDataUrl: brandLogoPath ? await imageUrlToJpegDataUrl(brandLogoPath) : undefined,
       generatedAt: new Date(),
     };
 
