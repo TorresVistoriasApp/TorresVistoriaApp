@@ -59,6 +59,23 @@ export function formatMonthLabel(month: string) {
   return `${names[Number(m) - 1] ?? m}/${year.slice(2)}`;
 }
 
+export function formatMonthRangeLabel(startMonth: string, endMonth: string) {
+  const [startYear, startM] = startMonth.split("-");
+  const [endYear, endM] = endMonth.split("-");
+  const names = [
+    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+    "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+  ];
+  const startLabel = names[Number(startM) - 1] ?? startM;
+  const endLabel = names[Number(endM) - 1] ?? endM;
+
+  if (startYear === endYear) {
+    return `${startLabel} a ${endLabel} de ${startYear}`;
+  }
+
+  return `${startLabel}/${startYear.slice(2)} a ${endLabel}/${endYear.slice(2)}`;
+}
+
 /** Escala Y com respiro — evita ponto/barra colados no topo com poucos dados */
 export function yAxisUpperBound(maxValue: number): number {
   if (maxValue <= 0) return 5;

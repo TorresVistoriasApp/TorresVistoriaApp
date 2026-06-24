@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ArrowLeft, ClipboardList } from "lucide-react";
 import { PhotoSlotGrid } from "@/components/photos/photo-slot-grid";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
+import {
+  InspectionWizardShell,
+  WizardNavButtons,
+} from "@/components/vistoria/inspection-wizard-shell";
 import { useInspectionPhotos, useUploadPhoto } from "@/hooks/use-photos";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ClipboardList } from "lucide-react";
 
 export function Page() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isWizardFlow = searchParams.get("fluxo") === "nova";
   const { data: photos = [], isLoading } = useInspectionPhotos(id);
   const upload = useUploadPhoto(id!);
   const { toast } = useToast();
@@ -41,6 +47,56 @@ export function Page() {
     }
   };
 
+  const goToChecklist = () => {
+    const suffix = isWizardFlow ? "?fluxo=nova" : "";
+    navigate(`/vistorias/${id}/checklist${suffix}`);
+  };
+
+  const content = (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
+        <p className="text-sm text-muted-foreground">
+          Toque em cada molde para enviar a foto correspondente
+        </p>
+        <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+          {photos.length} enviadas
+        </span>
+      </div>
+
+      {isLoading ? (
+        <LoadingSpinner label="Carregando fotos..." />
+      ) : (
+        <PhotoSlotGrid
+          photos={photos}
+          uploading={upload.isPending}
+          uploadingCategory={uploadingCategory}
+          onUpload={handleUpload}
+        />
+      )}
+
+      {isWizardFlow ? (
+        <WizardNavButtons
+          onBack={() => navigate(`/vistorias/${id}/editar?fluxo=nova`)}
+          onNext={goToChecklist}
+          nextLabel="Continuar para checklist"
+        />
+      ) : (
+        <Button className="w-full touch-target" size="lg" onClick={goToChecklist}>
+          <ClipboardList className="mr-2 h-4 w-4" />
+          Continuar para checklist
+        </Button>
+      )}
+    </div>
+  );
+
+  if (isWizardFlow) {
+    return (
+      <InspectionWizardShell currentStep={2} inspectionId={id}>
+        {content}
+      </InspectionWizardShell>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-3">
@@ -55,33 +111,9 @@ export function Page() {
         <PageHeader
           title="Fotos da vistoria"
           description="Passo 2 de 3 — preencha cada molde com a foto correspondente"
-          actions={
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-              {photos.length} enviadas
-            </span>
-          }
         />
       </div>
-
-      {isLoading ? (
-        <LoadingSpinner label="Carregando fotos..." />
-      ) : (
-        <PhotoSlotGrid
-          photos={photos}
-          uploading={upload.isPending}
-          uploadingCategory={uploadingCategory}
-          onUpload={handleUpload}
-        />
-      )}
-
-      <Button
-        className="w-full touch-target"
-        size="lg"
-        onClick={() => navigate(`/vistorias/${id}/checklist`)}
-      >
-        <ClipboardList className="h-4 w-4" />
-        Continuar para checklist
-      </Button>
+      {content}
     </div>
   );
 }

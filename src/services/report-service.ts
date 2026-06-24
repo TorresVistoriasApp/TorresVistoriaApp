@@ -4,6 +4,33 @@ import type { DashboardMetrics } from "@/types";
 import type { RecentInspection } from "@/types/api";
 import { supabase } from "@/lib/supabase";
 
+type MonthlyInspectionRow = {
+  month: string;
+  count: number;
+  revenue: number;
+};
+
+function createYearlyMonthlySeries(
+  rows: MonthlyInspectionRow[],
+  year: number,
+): MonthlyInspectionRow[] {
+  const byMonth = new Map(
+    rows.map((row) => [
+      row.month,
+      {
+        month: row.month,
+        count: Number(row.count ?? 0),
+        revenue: Number(row.revenue ?? 0),
+      },
+    ]),
+  );
+
+  return Array.from({ length: 12 }, (_, index) => {
+    const month = `${year}-${String(index + 1).padStart(2, "0")}`;
+    return byMonth.get(month) ?? { month, count: 0, revenue: 0 };
+  });
+}
+
 export const dashboardService = {
   async getMetrics(companyId: string): Promise<DashboardMetrics> {
     try {
@@ -36,11 +63,11 @@ export const dashboardService = {
     }
   },
 
-  async getMonthlyInspections(companyId: string, year?: number) {
+  async getMonthlyInspections(companyId: string, year = new Date().getFullYear()) {
     try {
       const { data, error } = await queries.dashboard.monthly(companyId, year);
       if (error) throw error;
-      return data ?? [];
+      return createYearlyMonthlySeries((data ?? []) as MonthlyInspectionRow[], year);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

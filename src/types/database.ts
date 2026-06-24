@@ -433,6 +433,8 @@ export type Database = {
       inspections: {
         Row: {
           brand: string
+          buyer_document: string | null
+          buyer_name: string | null
           chassis: string
           client_document: string
           client_email: string | null
@@ -442,29 +444,51 @@ export type Database = {
           company_id: string
           created_at: string
           deleted_at: string | null
+          engine_displacement: number | null
           fuel: string
           id: string
+          inspection_purpose: string | null
           inspection_date: string
           inspection_number: number
           inspection_time: string
           inspector_id: string
           internal_notes: string | null
+          insurance_acceptance_percent: number | null
+          judicial_court: string | null
+          judicial_district: string | null
+          judicial_process: string | null
           location: string
+          market_average_value: number | null
+          market_fipe_value: number | null
           manufacture_year: number
           mileage: number | null
           model: string
           model_year: number
+          motor_number: string | null
           opinion: string | null
+          passenger_capacity: number | null
           plate: string
+          power_cv: number | null
           renavam: string | null
+          registration_city_uf: string | null
+          requester_document: string | null
+          requester_name: string | null
+          seller_document: string | null
+          seller_name: string | null
           situation: string
           status: string
           technical_notes: string | null
           updated_at: string
+          vehicle_category: string | null
+          vehicle_condition: string | null
+          vehicle_species: string | null
+          vehicle_uf: string | null
           version: string | null
         }
         Insert: {
           brand: string
+          buyer_document?: string | null
+          buyer_name?: string | null
           chassis: string
           client_document: string
           client_email?: string | null
@@ -474,29 +498,51 @@ export type Database = {
           company_id: string
           created_at?: string
           deleted_at?: string | null
+          engine_displacement?: number | null
           fuel: string
           id?: string
+          inspection_purpose?: string | null
           inspection_date: string
           inspection_number?: number
           inspection_time: string
           inspector_id: string
           internal_notes?: string | null
+          insurance_acceptance_percent?: number | null
+          judicial_court?: string | null
+          judicial_district?: string | null
+          judicial_process?: string | null
           location: string
+          market_average_value?: number | null
+          market_fipe_value?: number | null
           manufacture_year: number
           mileage?: number | null
           model: string
           model_year: number
+          motor_number?: string | null
           opinion?: string | null
+          passenger_capacity?: number | null
           plate: string
+          power_cv?: number | null
           renavam?: string | null
+          registration_city_uf?: string | null
+          requester_document?: string | null
+          requester_name?: string | null
+          seller_document?: string | null
+          seller_name?: string | null
           situation: string
           status?: string
           technical_notes?: string | null
           updated_at?: string
+          vehicle_category?: string | null
+          vehicle_condition?: string | null
+          vehicle_species?: string | null
+          vehicle_uf?: string | null
           version?: string | null
         }
         Update: {
           brand?: string
+          buyer_document?: string | null
+          buyer_name?: string | null
           chassis?: string
           client_document?: string
           client_email?: string | null
@@ -506,25 +552,45 @@ export type Database = {
           company_id?: string
           created_at?: string
           deleted_at?: string | null
+          engine_displacement?: number | null
           fuel?: string
           id?: string
+          inspection_purpose?: string | null
           inspection_date?: string
           inspection_number?: number
           inspection_time?: string
           inspector_id?: string
           internal_notes?: string | null
+          insurance_acceptance_percent?: number | null
+          judicial_court?: string | null
+          judicial_district?: string | null
+          judicial_process?: string | null
           location?: string
+          market_average_value?: number | null
+          market_fipe_value?: number | null
           manufacture_year?: number
           mileage?: number | null
           model?: string
           model_year?: number
+          motor_number?: string | null
           opinion?: string | null
+          passenger_capacity?: number | null
           plate?: string
+          power_cv?: number | null
           renavam?: string | null
+          registration_city_uf?: string | null
+          requester_document?: string | null
+          requester_name?: string | null
+          seller_document?: string | null
+          seller_name?: string | null
           situation?: string
           status?: string
           technical_notes?: string | null
           updated_at?: string
+          vehicle_category?: string | null
+          vehicle_condition?: string | null
+          vehicle_species?: string | null
+          vehicle_uf?: string | null
           version?: string | null
         }
         Relationships: [

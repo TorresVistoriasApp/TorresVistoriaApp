@@ -5,10 +5,10 @@ import { useInspections } from "@/hooks/use-inspections";
 import { VistoriaFilters } from "@/components/vistoria/vistoria-filters";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { DataTable } from "@/components/shared/data-table";
+import { ExportButton } from "@/components/shared/export-button";
 import { formatDate } from "@/lib/formatters";
-import { Button } from "@/components/ui/button";
 import { exportToExcel } from "@/lib/export-excel";
-import { exportToCsv } from "@/lib/export-csv";
+import { exportToPdf } from "@/lib/export-pdf";
 import type { InspectionFilters } from "@/services/inspection-service";
 import type { Inspection } from "@/services/inspection-service";
 
@@ -16,7 +16,7 @@ export function Page() {
   const [filters, setFilters] = useState<InspectionFilters>({});
   const { data = [], isLoading } = useInspections(filters);
 
-  const exportRows = useMemo(
+  const exportSpreadsheetRows = useMemo(
     () =>
       data.map((i) => ({
         numero: i.inspection_number,
@@ -30,21 +30,41 @@ export function Page() {
     [data],
   );
 
-  const exportCsv = () => {
-    exportToCsv(exportRows, [
-      { header: "Numero", key: "numero" },
-      { header: "Placa", key: "placa" },
-      { header: "Cliente", key: "cliente" },
-      { header: "Data", key: "data" },
-      { header: "Status", key: "status" },
-      { header: "Marca", key: "marca" },
-      { header: "Modelo", key: "modelo" },
-    ], "relatorio-vistorias.csv");
+  const exportPdfRows = useMemo(
+    () =>
+      data.map((i) => ({
+        numero: i.inspection_number,
+        placa: i.plate,
+        cliente: i.client_name,
+        data: formatDate(i.inspection_date),
+        status: i.status,
+        marca: i.brand,
+        modelo: i.model,
+      })),
+    [data],
+  );
+
+  const exportPdf = async () => {
+    await exportToPdf(
+      exportPdfRows,
+      [
+        { header: "Número", key: "numero" },
+        { header: "Placa", key: "placa" },
+        { header: "Cliente", key: "cliente" },
+        { header: "Data", key: "data" },
+        { header: "Status", key: "status" },
+        { header: "Marca", key: "marca" },
+        { header: "Modelo", key: "modelo" },
+      ],
+      "relatorio-vistorias.pdf",
+      "Relatório de vistorias",
+      `${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`,
+    );
   };
 
   const exportExcel = async () => {
     await exportToExcel(
-      exportRows,
+      exportSpreadsheetRows,
       [
         { header: "Número", key: "numero", width: 10 },
         { header: "Placa", key: "placa", width: 12 },
@@ -55,6 +75,11 @@ export function Page() {
         { header: "Modelo", key: "modelo", width: 16 },
       ],
       "relatorio-vistorias.xlsx",
+      {
+        title: "Relatório de vistorias",
+        subtitle: `${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`,
+        sheetName: "Vistorias",
+      },
     );
   };
 
@@ -65,14 +90,12 @@ export function Page() {
           title="Relatórios"
           description={`${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`}
           actions={
-            <>
-              <Button variant="outline" className="touch-target" onClick={exportCsv} disabled={data.length === 0}>
-                Exportar CSV
-              </Button>
-              <Button variant="accent" className="touch-target" onClick={() => void exportExcel()} disabled={data.length === 0}>
-                Exportar Excel
-              </Button>
-            </>
+            <ExportButton
+              size="default"
+              onExportPdf={exportPdf}
+              onExportExcel={exportExcel}
+              disabled={data.length === 0}
+            />
           }
         />
 
