@@ -1,9 +1,29 @@
-const REQUIRED_IN_PROD = ["VITE_API_URL", "VITE_API_ANON_KEY"] as const;
+const DEV_PLACEHOLDER_URL = "http://127.0.0.1:54321";
+const DEV_PLACEHOLDER_KEY = "dev-only-placeholder";
+
+export function getApiUrl(): string | undefined {
+  return import.meta.env.VITE_API_URL || import.meta.env.VITE_SUPABASE_URL || undefined;
+}
+
+export function getApiAnonKey(): string | undefined {
+  return import.meta.env.VITE_API_ANON_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || undefined;
+}
+
+export function isBackendConfigured(): boolean {
+  return Boolean(getApiUrl() && getApiAnonKey());
+}
+
+export function getMissingProductionEnvVars(): string[] {
+  const missing: string[] = [];
+  if (!getApiUrl()) missing.push("VITE_API_URL");
+  if (!getApiAnonKey()) missing.push("VITE_API_ANON_KEY");
+  return missing;
+}
 
 export function validateEnv(): void {
   if (!import.meta.env.PROD) return;
 
-  const missing = REQUIRED_IN_PROD.filter((key) => !import.meta.env[key]);
+  const missing = getMissingProductionEnvVars();
   if (missing.length > 0) {
     throw new Error(`Variáveis obrigatórias ausentes: ${missing.join(", ")}`);
   }
@@ -22,7 +42,7 @@ export function isProduction(): boolean {
 }
 
 export function getApiOrigin(): string | undefined {
-  const url = import.meta.env.VITE_API_URL;
+  const url = getApiUrl();
   if (!url) return undefined;
 
   try {
@@ -30,4 +50,8 @@ export function getApiOrigin(): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+export function getDevBackendFallback(): { url: string; key: string } {
+  return { url: DEV_PLACEHOLDER_URL, key: DEV_PLACEHOLDER_KEY };
 }

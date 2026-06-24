@@ -1,26 +1,32 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
-
-const apiUrl = import.meta.env.VITE_API_URL;
-const apiAnonKey = import.meta.env.VITE_API_ANON_KEY;
+import { getApiAnonKey, getApiUrl, getDevBackendFallback, isBackendConfigured } from "@/lib/env";
 
 function createDbClient(): SupabaseClient<Database> {
+  const apiUrl = getApiUrl();
+  const apiAnonKey = getApiAnonKey();
+
   if (!apiUrl || !apiAnonKey) {
-    if (import.meta.env.PROD) {
-      throw new Error(
-        "Backend não configurado. Defina VITE_API_URL e VITE_API_ANON_KEY.",
+    if (!import.meta.env.PROD) {
+      console.warn(
+        "Backend não configurado. Copie .env.example para .env.local e preencha as variáveis.",
       );
+      const fallback = getDevBackendFallback();
+      return createClient<Database>(fallback.url, fallback.key, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      });
     }
 
-    console.warn(
-      "Backend não configurado. Copie .env.example para .env.local e preencha as variáveis.",
-    );
-
-    return createClient<Database>("http://127.0.0.1:54321", "dev-only-placeholder", {
+    const fallback = getDevBackendFallback();
+    return createClient<Database>(fallback.url, fallback.key, {
       auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
       },
     });
   }
@@ -34,4 +40,5 @@ function createDbClient(): SupabaseClient<Database> {
   });
 }
 
+export { isBackendConfigured };
 export const db = createDbClient();
