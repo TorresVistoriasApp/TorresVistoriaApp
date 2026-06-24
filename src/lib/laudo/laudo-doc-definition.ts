@@ -82,6 +82,41 @@ function infoGrid(rows: [string, string][], columnsCount = 3): PdfNode {
   };
 }
 
+function buildBrandLogoCell(brand: string, brandLogoDataUrl?: string): PdfNode {
+  const caption = { text: "Marca do veículo", alignment: "center", fontSize: 7, color: "#64748b" };
+
+  if (brandLogoDataUrl) {
+    return {
+      stack: [
+        {
+          image: brandLogoDataUrl,
+          width: 72,
+          fit: [72, 36],
+          alignment: "center",
+          margin: [0, 10, 0, 4],
+        },
+        caption,
+      ],
+      fillColor: "#f8fafc",
+    };
+  }
+
+  return {
+    stack: [
+      {
+        text: brand || "Marca",
+        alignment: "center",
+        bold: true,
+        color: "#0f172a",
+        fontSize: 14,
+        margin: [0, 16, 0, 2],
+      },
+      caption,
+    ],
+    fillColor: "#f8fafc",
+  };
+}
+
 function statCard(label: string, valueText: string, color: string): PdfNode {
   return {
     stack: [
@@ -315,8 +350,8 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
         {
           stack: [
             payload.logoDataUrl
-              ? { image: payload.logoDataUrl, width: 145, fit: [145, 58], margin: [0, 0, 0, 2] }
-              : { text: "TORRES VISTORIAS", style: "brand", color },
+              ? { image: payload.logoDataUrl, width: 145, fit: [145, 58], margin: [0, 0, 0, 10] }
+              : { text: "TORRES VISTORIAS", style: "brand", color, margin: [0, 0, 0, 10] },
             { text: "Laudo cautelar veicular", style: "muted" },
             { text: `Nº ${inspection.inspection_number}`, fontSize: 12, bold: true, margin: [0, 8, 0, 0] },
           ],
@@ -368,22 +403,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
           table: {
             widths: ["*"],
             body: [
-              [
-                {
-                  stack: [
-                    {
-                      text: inspection.brand || "Marca",
-                      alignment: "center",
-                      bold: true,
-                      color: "#0f172a",
-                      fontSize: 14,
-                      margin: [0, 16, 0, 2],
-                    },
-                    { text: "Marca do veículo", alignment: "center", fontSize: 7, color: "#64748b" },
-                  ],
-                  fillColor: "#f8fafc",
-                },
-              ],
+              [buildBrandLogoCell(inspection.brand, payload.brandLogoDataUrl)],
             ],
           },
           layout: {
