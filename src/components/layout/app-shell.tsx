@@ -22,7 +22,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
         <div
           className={cn(
             "flex h-full w-full flex-col overflow-y-auto overflow-x-visible",
-            sidebarCollapsed ? "items-center px-2.5 pt-5 pb-4" : "p-5 lg:p-6",
+            sidebarCollapsed ? "items-center px-2.5 pt-1.5 pb-4" : "p-5 lg:p-6",
           )}
         >
           <Sidebar />

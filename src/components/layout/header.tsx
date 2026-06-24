@@ -1,4 +1,4 @@
-import { LogOut, Menu } from "lucide-react";
+import { Car, LogOut, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
@@ -25,9 +25,10 @@ export function Header() {
           <BrandLogo size="sm" />
         </div>
 
-        <div className="hidden flex-1 md:block">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Painel administrativo
+        <div className="hidden flex-1 items-center gap-2 md:flex">
+          <Car className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+          <p className="truncate text-sm font-semibold text-foreground">
+            Boas vindas, {profile?.full_name ?? "Usuário"}!
           </p>
         </div>
 

@@ -37,7 +37,7 @@ function SidebarNavLink({
                   : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
               )
             : cn(
-                "gap-3 px-3 py-2.5",
+                "gap-2.5 px-2.5 py-1.5",
                 isActive
                   ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/15"
                   : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
@@ -52,7 +52,7 @@ function SidebarNavLink({
           <>
             <span
               className={cn(
-                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
                 isActive ? "bg-primary/15 text-primary" : "bg-muted/60 text-muted-foreground",
               )}
             >
@@ -73,12 +73,12 @@ export function SidebarNav({ sections, collapsed, onNavigate }: SidebarNavProps)
         <div
           key={section.title}
           className={cn(
-            "space-y-1",
-            index > 0 && (collapsed ? "mt-3 border-t border-border/60 pt-3" : "mt-5 border-t border-border/60 pt-4"),
+            "space-y-0.5",
+            index > 0 && (collapsed ? "mt-2 border-t border-border/60 pt-2" : "mt-3 border-t border-border/60 pt-2.5"),
           )}
         >
           {!collapsed && (
-            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className="mb-1 px-2.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               {section.title}
             </p>
           )}

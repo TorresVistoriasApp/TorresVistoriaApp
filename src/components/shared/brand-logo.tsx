@@ -24,6 +24,13 @@ const sizeStyles = {
   },
 };
 
+const markSizeStyles = {
+  sm: "h-10 w-10",
+  md: "h-14 w-14",
+  lg: "h-16 w-16",
+  xl: "h-20 w-20",
+};
+
 export function BrandLogo({
   className,
   showTagline = false,
@@ -37,10 +44,14 @@ export function BrandLogo({
   if (variant === "mark") {
     return (
       <div
-        className={cn(centered && "mx-auto", className)}
+        className={cn(
+          "flex justify-center overflow-hidden",
+          className ?? markSizeStyles[size],
+          centered && "mx-auto",
+        )}
         aria-label="Torres Vistoria"
       >
-        <BrandMark />
+        <BrandMark className="block w-[195%] max-w-none -translate-y-[18%] object-contain object-top" />
       </div>
     );
   }
