@@ -1,9 +1,16 @@
-import { Car, LogOut, Menu } from "lucide-react";
+import { Car, ChevronDown, LogOut, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useUiStore } from "@/stores/ui-store";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const { profile, signOut } = useAuth();
@@ -31,23 +38,40 @@ export function Header() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <div className="hidden items-center gap-3 rounded-2xl border border-border/60 bg-muted/30 px-3 py-1.5 sm:flex">
-              <UserAvatar name={profile?.full_name} avatarUrl={profile?.avatar_url} size="sm" />
-              <div className="hidden min-w-0 md:block">
-                <p className="truncate text-sm font-semibold">{displayName}</p>
-                <p className="text-[10px] text-muted-foreground">Online</p>
-              </div>
-            </div>
             <NotificationBell />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => void signOut()}
-              aria-label="Sair"
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Abrir menu da conta"
+                  className={cn(
+                    "group flex items-center gap-2 rounded-2xl border border-border/60 bg-muted/30 px-2 py-1.5 transition-colors",
+                    "hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+                    "data-[state=open]:border-primary/30 data-[state=open]:bg-muted/50",
+                    "sm:gap-3 sm:px-3",
+                  )}
+                >
+                  <UserAvatar name={profile?.full_name} avatarUrl={profile?.avatar_url} size="sm" />
+                  <div className="hidden min-w-0 text-left md:block">
+                    <p className="truncate text-sm font-semibold">{displayName}</p>
+                    <p className="text-[10px] text-muted-foreground">Online</p>
+                  </div>
+                  <ChevronDown
+                    className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180"
+                    aria-hidden
+                  />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => void signOut()}
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
