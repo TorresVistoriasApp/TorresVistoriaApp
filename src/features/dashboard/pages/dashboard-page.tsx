@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { formatCurrency } from "@/shared/lib/utils";
+import { ROUTES } from "@/lib/constants";
 
 const metrics = [
   { label: "Total de vistorias", value: "0" },
@@ -22,7 +23,7 @@ export function DashboardPage() {
           </p>
         </div>
         <Button asChild>
-          <Link to="/vistorias/nova">
+          <Link to={ROUTES.inspectionNew}>
             <Plus className="h-4 w-4" />
             Nova vistoria
           </Link>

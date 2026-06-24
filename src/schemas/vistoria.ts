@@ -6,6 +6,7 @@ import {
   InspectionPurpose,
   InspectionStatus,
 } from "@/lib/enums";
+import { parseCurrency } from "@/lib/masks";
 
 const opinionEnum = z.enum([
   InspectionOpinion.APROVADO,
@@ -29,7 +30,11 @@ const purposeEnum = z.enum([
 ]);
 
 const optionalNumericField = (schema: z.ZodNumber) =>
-  z.preprocess((value) => (value === "" ? null : value), schema.optional().nullable());
+  z.preprocess((value) => {
+    if (value === "") return null;
+    if (typeof value === "string" && value.includes("R$")) return parseCurrency(value);
+    return value;
+  }, schema.optional().nullable());
 
 export const vistoriaSchema = z
   .object({

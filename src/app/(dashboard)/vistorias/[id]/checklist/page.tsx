@@ -10,6 +10,7 @@ import { useInspectionChecklist, useUpdateChecklistItem } from "@/hooks/use-chec
 import { Button } from "@/components/ui/button";
 import { ChecklistStatus } from "@/lib/enums";
 import { useToast } from "@/hooks/use-toast";
+import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 
 export function Page() {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +33,9 @@ export function Page() {
         return;
       }
     }
-    const suffix = isWizardFlow ? "?fluxo=nova" : "";
-    navigate(`/vistorias/${id}/laudo${suffix}`);
+    if (!id) return;
+    const path = ROUTES.inspectionReport(id);
+    navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
   };
 
   const checklistContent = (
@@ -64,7 +66,7 @@ export function Page() {
 
       {isWizardFlow ? (
         <WizardNavButtons
-          onBack={() => navigate(`/vistorias/${id}/fotos?fluxo=nova`)}
+          onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)))}
           onNext={goToLaudo}
           nextLabel="Revisar e gerar laudo"
         />
@@ -92,7 +94,7 @@ export function Page() {
           variant="ghost"
           size="icon"
           className="touch-target"
-          onClick={() => navigate(`/vistorias/${id}`)}
+          onClick={() => id && navigate(ROUTES.inspection(id))}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>

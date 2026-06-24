@@ -11,6 +11,7 @@ import {
 import { useInspectionPhotos, useUploadPhoto } from "@/hooks/use-photos";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 
 export function Page() {
   const { id } = useParams<{ id: string }>();
@@ -48,15 +49,16 @@ export function Page() {
   };
 
   const goToChecklist = () => {
-    const suffix = isWizardFlow ? "?fluxo=nova" : "";
-    navigate(`/vistorias/${id}/checklist${suffix}`);
+    if (!id) return;
+    const path = ROUTES.inspectionChecklist(id);
+    navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
   };
 
   const content = (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
         <p className="text-sm text-muted-foreground">
-          Toque em cada molde para enviar a foto correspondente
+          Toque em cada seção para enviar evidências, documentação opcional, pontos de pintura e fotos extras.
         </p>
         <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
           {photos.length} enviadas
@@ -76,7 +78,7 @@ export function Page() {
 
       {isWizardFlow ? (
         <WizardNavButtons
-          onBack={() => navigate(`/vistorias/${id}/editar?fluxo=nova`)}
+          onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionEdit(id)))}
           onNext={goToChecklist}
           nextLabel="Continuar para checklist"
         />
@@ -104,7 +106,7 @@ export function Page() {
           variant="ghost"
           size="icon"
           className="mt-1 shrink-0"
-          onClick={() => navigate(`/vistorias/${id}`)}
+          onClick={() => id && navigate(ROUTES.inspection(id))}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>

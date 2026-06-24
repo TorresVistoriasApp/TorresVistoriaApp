@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { vistoriaSchema, type VistoriaInput } from "@/schemas/vistoria";
 import {
   InspectionOpinion,
@@ -9,10 +9,12 @@ import {
 } from "@/lib/enums";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MaskedInput } from "@/components/ui/masked-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClienteForm } from "@/components/forms/cliente-form";
 import { VeiculoForm } from "@/components/forms/veiculo-form";
 import { FormField } from "@/components/forms/form-field";
+import { maskCurrency } from "@/lib/masks";
 import { cn } from "@/lib/utils";
 
 const opinionOptions = Object.values(InspectionOpinion);
@@ -125,7 +127,23 @@ export function VistoriaForm({
             <Input {...register("judicial_court")} placeholder="Vara, comarca ou órgão solicitante" />
           </FormField>
           <FormField label="Valor FIPE" error={errors.market_fipe_value?.message}>
-            <Input type="number" step="0.01" {...register("market_fipe_value")} placeholder="0,00" />
+            <Controller
+              control={control}
+              name="market_fipe_value"
+              render={({ field }) => (
+                <MaskedInput
+                  mask="currency"
+                  value={
+                    typeof field.value === "number"
+                      ? maskCurrency(String(field.value))
+                      : (field.value ?? "")
+                  }
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder="R$ 0"
+                />
+              )}
+            />
           </FormField>
           <FormField label="Aceitação seguro (%)" error={errors.insurance_acceptance_percent?.message}>
             <Input type="number" min={0} max={100} {...register("insurance_acceptance_percent")} />

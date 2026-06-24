@@ -5,6 +5,7 @@ import type { ChecklistItem } from "@/services/checklist-service";
 import type { InspectionPhoto } from "@/services/photo-service";
 import { buildLaudoDocDefinition } from "@/lib/laudo/laudo-doc-definition";
 import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoSettings } from "@/lib/laudo/laudo-model";
+import { PUBLIC_IMAGES } from "@/lib/public-images";
 
 const REPORTS_BUCKET = "reports";
 
@@ -142,6 +143,7 @@ export const pdfService = {
       verificationCode,
       integrityHash: baseHash,
       validationUrl: options.validationUrl,
+      logoDataUrl: await imageUrlToJpegDataUrl(options.company?.logo_url || PUBLIC_IMAGES.brand.trim),
       generatedAt: new Date(),
     };
 

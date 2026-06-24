@@ -9,6 +9,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { LoadingScreen } from "@/shared/components/ui/loading-screen";
 import { useState } from "react";
+import { ROUTES } from "@/lib/constants";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -29,7 +30,7 @@ export function LoginPage() {
   });
 
   if (loading) return <LoadingScreen />;
-  if (session) return <Navigate to="/dashboard" replace />;
+  if (session) return <Navigate to={ROUTES.dashboard} replace />;
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
@@ -73,7 +74,7 @@ export function LoginPage() {
               {isSubmitting ? "Entrando..." : "Entrar"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              <Link to="/recuperar-senha" className="text-primary hover:underline">
+              <Link to={ROUTES.forgotPassword} className="text-primary hover:underline">
                 Esqueci minha senha
               </Link>
             </p>

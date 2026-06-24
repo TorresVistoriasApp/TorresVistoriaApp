@@ -14,14 +14,14 @@ const STATUS_CONFIG = {
     short: "C",
     icon: Check,
     active: "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30",
-    idle: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300",
+    idle: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
   },
   [ChecklistStatus.NAO_CONFORME]: {
     label: "Não conforme",
     short: "NC",
     icon: X,
     active: "bg-destructive text-white shadow-sm ring-2 ring-destructive/30",
-    idle: "bg-red-50 text-destructive hover:bg-red-100 dark:bg-red-950 dark:text-red-300",
+    idle: "bg-red-50 text-destructive hover:bg-red-100",
   },
   [ChecklistStatus.NA]: {
     label: "Não se aplica",

@@ -42,14 +42,14 @@ export function ChecklistCategory({
               className={cn(
                 "rounded-full px-2.5 py-1 font-semibold",
                 allDone
-                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+                  ? "bg-emerald-100 text-emerald-800"
                   : "bg-muted text-muted-foreground",
               )}
             >
               {evaluated}/{items.length}
             </span>
             {nonConform > 0 && (
-              <span className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-destructive dark:bg-red-950">
+              <span className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-destructive">
                 {nonConform} NC
               </span>
             )}

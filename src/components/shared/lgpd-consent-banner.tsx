@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLgpdConsent } from "@/hooks/use-lgpd-consent";
+import { ROUTES } from "@/lib/constants";
 
 export function LgpdConsentBanner() {
   const { hasConsent, accept } = useLgpdConsent();
@@ -18,9 +19,9 @@ export function LgpdConsentBanner() {
         Privacidade e cookies
       </h2>
       <p id="lgpd-desc" className="mt-2 text-xs leading-relaxed text-muted-foreground">
-        Usamos cookies essenciais para autenticação e preferências. Consulte nossa{" "}
-        <Link to="/privacidade" className="font-medium text-accent hover:underline">
-          Política de Privacidade
+        Usamos cookies essenciais para autenticação e preferências. Consulte nossos{" "}
+        <Link to={ROUTES.privacy} className="font-medium text-accent hover:underline">
+          Termos de Uso e LGPD
         </Link>
         .
       </p>

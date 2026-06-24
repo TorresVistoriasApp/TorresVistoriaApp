@@ -51,4 +51,14 @@ describe("vistoriaSchema", () => {
     expect(result.data?.market_average_value).toBeNull();
     expect(result.data?.insurance_acceptance_percent).toBeNull();
   });
+
+  it("converte valor FIPE formatado em real para número", () => {
+    const result = vistoriaSchema.safeParse({
+      ...basePayload,
+      market_fipe_value: "R$ 78.000",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.market_fipe_value).toBe(78000);
+  });
 });

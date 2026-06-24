@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
+import { ROUTES } from "@/lib/constants";
 
 export function Page() {
-  return <Navigate to="/configuracoes?tab=empresa" replace />;
+  return <Navigate to={`${ROUTES.settings}?tab=empresa`} replace />;
 }

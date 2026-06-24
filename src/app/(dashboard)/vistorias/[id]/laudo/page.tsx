@@ -13,6 +13,7 @@ import { validateChecklistCompletion } from "@/components/forms/checklist-form";
 import { pdfService } from "@/services/pdf-service";
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
 import { ArrowLeft, CheckCircle, Download, FileText, ShieldAlert } from "lucide-react";
+import { ROUTES } from "@/lib/constants";
 
 const REQUIRED_PHOTO_CATEGORIES = [
   "FRENTE_45_DIREITA",
@@ -76,10 +77,10 @@ export function Page() {
   const content = (
     <div className="space-y-4">
       {verificationCode && (
-        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:bg-green-950/20">
+        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
           <CheckCircle className="h-5 w-5 text-green-600" />
           <div>
-            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+            <p className="text-sm font-medium text-green-800">
               Laudo registrado
             </p>
             {verificationCode && (
@@ -90,7 +91,7 @@ export function Page() {
       )}
 
       {blockers.length > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           <div className="mb-2 flex items-center gap-2 font-semibold">
             <ShieldAlert className="h-4 w-4" />
             Pendências antes do laudo profissional
@@ -143,7 +144,7 @@ export function Page() {
         cria código/QR de validação pública.
       </div>
 
-      <Button variant="ghost" className="w-full touch-target" onClick={() => navigate("/vistorias")}>
+      <Button variant="ghost" className="w-full touch-target" onClick={() => navigate(ROUTES.inspections)}>
         Voltar para lista
       </Button>
     </div>
@@ -164,7 +165,7 @@ export function Page() {
           variant="ghost"
           size="icon"
           className="touch-target"
-          onClick={() => navigate(`/vistorias/${id}`)}
+          onClick={() => id && navigate(ROUTES.inspection(id))}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>

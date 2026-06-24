@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
@@ -34,32 +32,6 @@
   --shadow-glow: 0 0 0 1px rgb(234 88 12 / 0.1), 0 8px 24px rgb(234 88 12 / 0.15);
   --shadow-card: 0 1px 3px rgb(15 23 42 / 0.04), 0 6px 20px rgb(15 23 42 / 0.05);
   --shadow-sidebar: 4px 0 24px rgb(15 23 42 / 0.04);
-}
-
-.dark {
-  --color-primary: #f97316;
-  --color-primary-foreground: #ffffff;
-  --color-accent: #fb923c;
-  --color-accent-foreground: #0f172a;
-  --color-background: #0b1120;
-  --color-canvas: #0b1120;
-  --color-sidebar: #0f172a;
-  --color-foreground: #f8fafc;
-  --color-card: #111827;
-  --color-card-foreground: #f8fafc;
-  --color-muted: #1e293b;
-  --color-muted-foreground: #94a3b8;
-  --color-border: #1e293b;
-  --color-destructive: #ef4444;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-ring: #f97316;
-
-  --shadow-soft: 0 1px 3px rgb(0 0 0 / 0.25), 0 4px 20px rgb(0 0 0 / 0.3);
-  --shadow-elevated: 0 12px 40px rgb(0 0 0 / 0.35);
-  --shadow-glow: 0 0 0 1px rgb(249 115 22 / 0.15), 0 8px 32px rgb(249 115 22 / 0.1);
-  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.2), 0 6px 20px rgb(0 0 0 / 0.25);
-  --shadow-sidebar: 4px 0 24px rgb(0 0 0 / 0.25);
 }
 
 @layer base {
@@ -152,12 +124,6 @@
     background-image:
       radial-gradient(at 20% 0%, rgb(234 88 12 / 0.06) 0, transparent 50%),
       radial-gradient(at 80% 20%, rgb(148 163 184 / 0.08) 0, transparent 45%);
-  }
-
-  .dark .gradient-mesh {
-    background-image:
-      radial-gradient(at 20% 0%, rgb(249 115 22 / 0.08) 0, transparent 50%),
-      radial-gradient(at 80% 20%, rgb(30 41 59 / 0.5) 0, transparent 45%);
   }
 
   .text-gradient-brand {

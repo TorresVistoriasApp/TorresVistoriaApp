@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatPlate } from "@/lib/formatters";
 import { CheckCircle, XCircle } from "lucide-react";
+import { ROUTES } from "@/lib/constants";
 
 type ValidationResult = {
   valid: boolean;
@@ -124,7 +125,7 @@ export function Page() {
           </p>
         )}
         <Button asChild variant="outline" className="touch-target">
-          <Link to="/login">Acessar sistema</Link>
+          <Link to={ROUTES.login}>Acessar sistema</Link>
         </Button>
       </CardContent>
     </Card>

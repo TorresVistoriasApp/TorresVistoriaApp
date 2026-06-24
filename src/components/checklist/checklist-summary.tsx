@@ -35,7 +35,7 @@ export function ChecklistSummary({
           </p>
         </div>
         {pending > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
             <Clock className="size-3.5" />
             {pending} pendente{pending > 1 ? "s" : ""}
           </span>
@@ -89,8 +89,8 @@ function StatCard({
   sub?: string;
 }) {
   const tones = {
-    success: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-    danger: "border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    danger: "border-red-200 bg-red-50 text-red-800",
     muted: "border-border bg-muted/50 text-muted-foreground",
   };
 

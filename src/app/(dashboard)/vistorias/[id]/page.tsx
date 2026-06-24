@@ -15,6 +15,7 @@ import {
   formatPlate,
 } from "@/lib/formatters";
 import { UserRole } from "@/lib/enums";
+import { ROUTES } from "@/lib/constants";
 import { Camera, ClipboardList, Edit, FileText, ArrowLeft } from "lucide-react";
 
 export function Page() {
@@ -36,7 +37,7 @@ export function Page() {
     return (
       <div className="space-y-4 text-center py-12">
         <p className="text-muted-foreground">Vistoria não encontrada</p>
-        <Button onClick={() => navigate("/vistorias")}>Voltar</Button>
+        <Button onClick={() => navigate(ROUTES.inspections)}>Voltar</Button>
       </div>
     );
   }
@@ -52,7 +53,7 @@ export function Page() {
               variant="ghost"
               size="sm"
               className="mt-0.5 shrink-0 touch-target"
-              onClick={() => navigate("/vistorias")}
+              onClick={() => navigate(ROUTES.inspections)}
             >
               <ArrowLeft className="h-4 w-4" />
               Voltar
@@ -70,13 +71,13 @@ export function Page() {
 
           <div className="flex w-full shrink-0 flex-wrap justify-end gap-2 lg:w-auto">
             <Button asChild variant="outline" size="sm" className="touch-target">
-              <Link to={`/vistorias/${id}/editar`}>
+              <Link to={ROUTES.inspectionEdit(inspection.id)}>
                 <Edit className="h-4 w-4" />
                 Editar
               </Link>
             </Button>
             <Button asChild size="sm" className="touch-target">
-              <Link to={`/vistorias/${id}/laudo`}>
+              <Link to={ROUTES.inspectionReport(inspection.id)}>
                 <FileText className="h-4 w-4" />
                 Gerar laudo
               </Link>
@@ -89,7 +90,7 @@ export function Page() {
         <Button
           variant="outline"
           className="flex h-auto touch-target flex-col py-3"
-          onClick={() => navigate(`/vistorias/${id}/editar`)}
+          onClick={() => navigate(ROUTES.inspectionEdit(inspection.id))}
         >
           <Edit className="mb-1 h-5 w-5" />
           <span className="text-xs">Editar</span>
@@ -97,7 +98,7 @@ export function Page() {
         <Button
           variant="outline"
           className="flex h-auto touch-target flex-col py-3"
-          onClick={() => navigate(`/vistorias/${id}/fotos`)}
+          onClick={() => navigate(ROUTES.inspectionPhotos(inspection.id))}
         >
           <Camera className="mb-1 h-5 w-5" />
           <span className="text-xs">Fotos</span>
@@ -105,7 +106,7 @@ export function Page() {
         <Button
           variant="outline"
           className="flex h-auto touch-target flex-col py-3"
-          onClick={() => navigate(`/vistorias/${id}/checklist`)}
+          onClick={() => navigate(ROUTES.inspectionChecklist(inspection.id))}
         >
           <ClipboardList className="mb-1 h-5 w-5" />
           <span className="text-xs">Checklist</span>
@@ -113,7 +114,7 @@ export function Page() {
         <Button
           variant="outline"
           className="flex h-auto touch-target flex-col py-3"
-          onClick={() => navigate(`/vistorias/${id}/laudo`)}
+          onClick={() => navigate(ROUTES.inspectionReport(inspection.id))}
         >
           <FileText className="mb-1 h-5 w-5" />
           <span className="text-xs">Laudo</span>
@@ -205,7 +206,7 @@ export function Page() {
               ))}
             </div>
             <Button asChild variant="ghost" className="mt-2 px-0">
-              <Link to={`/vistorias/${id}/fotos`}>Ver todas</Link>
+              <Link to={ROUTES.inspectionPhotos(inspection.id)}>Ver todas</Link>
             </Button>
           </CardContent>
         </Card>
@@ -224,9 +225,9 @@ export function Page() {
 
       <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
         {inspection.internal_notes && (
-          <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+          <Card className="border-amber-200 bg-amber-50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-amber-800 dark:text-amber-200">
+              <CardTitle className="text-sm text-amber-800">
                 Comentários internos
               </CardTitle>
             </CardHeader>

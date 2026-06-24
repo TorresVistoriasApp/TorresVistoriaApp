@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ChevronRight, ClipboardList } from "lucide-react";
 import { useRecentInspections } from "@/hooks/use-dashboard";
 import { formatDate } from "@/lib/formatters";
+import { ROUTES } from "@/lib/constants";
 import { VistoriaStatusBadge } from "@/components/vistoria/vistoria-status-badge";
 
 export function RecentInspections() {
@@ -34,7 +35,7 @@ export function RecentInspections() {
           recent.map((inspection) => (
             <Link
               key={inspection.id}
-              to={`/vistorias/${inspection.id}`}
+              to={ROUTES.inspection(inspection.id)}
               className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-primary/[0.03] md:px-6"
             >
               <div className="flex min-w-0 items-center gap-4">

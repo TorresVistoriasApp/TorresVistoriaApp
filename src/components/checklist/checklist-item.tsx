@@ -36,8 +36,8 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
     <li
       className={cn(
         "border-b border-border/60 p-4 transition-colors last:border-b-0",
-        isPending && "bg-amber-50/40 dark:bg-amber-950/10",
-        isNonConform && "bg-red-50/30 dark:bg-red-950/10",
+        isPending && "bg-amber-50/40",
+        isNonConform && "bg-red-50/30",
       )}
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">

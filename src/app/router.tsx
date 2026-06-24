@@ -6,6 +6,7 @@ import { PublicLayout } from "@/app/(public)/layout";
 import { DashboardLayout } from "@/app/(dashboard)/layout";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
+import { ROUTE_PATTERNS, ROUTES } from "@/lib/constants";
 
 function lazyPage(loader: () => Promise<{ Page: ComponentType }>) {
   const Lazy = lazy(async () => {
@@ -31,18 +32,18 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       {
-        path: "/dashboard",
-        element: <Navigate to="/" replace />,
+        path: ROUTES.legacyDashboard,
+        element: <Navigate to={ROUTES.dashboard} replace />,
       },
       {
         element: <PublicLayout />,
         children: [
           {
-            path: "/privacidade",
+            path: ROUTES.privacy,
             element: lazyPage(() => import("@/app/(public)/privacidade/page")),
           },
           {
-            path: "/validar/:codigo",
+            path: ROUTE_PATTERNS.validateReport,
             element: lazyPage(() => import("@/app/(public)/validar/[codigo]/page")),
           },
         ],
@@ -50,13 +51,13 @@ export const router = createBrowserRouter([
       {
         element: <AuthLayout />,
         children: [
-          { path: "/login", element: lazyPage(() => import("@/app/(auth)/login/page")) },
+          { path: ROUTES.login, element: lazyPage(() => import("@/app/(auth)/login/page")) },
           {
-            path: "/recuperar-senha",
+            path: ROUTES.forgotPassword,
             element: lazyPage(() => import("@/app/(auth)/recuperar-senha/page")),
           },
           {
-            path: "/redefinir-senha",
+            path: ROUTES.resetPassword,
             element: lazyPage(() => import("@/app/(auth)/redefinir-senha/page")),
           },
         ],
@@ -69,74 +70,74 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: lazyPage(() => import("@/app/(dashboard)/page")) },
               {
-                path: "/vistorias",
+                path: ROUTES.inspections,
                 element: lazyPage(() => import("@/app/(dashboard)/vistorias/page")),
               },
               {
-                path: "/vistorias/nova",
+                path: ROUTES.inspectionNew,
                 element: lazyPage(() => import("@/app/(dashboard)/vistorias/nova/page")),
               },
               {
-                path: "/vistorias/:id",
+                path: ROUTE_PATTERNS.inspection,
                 element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/page")),
               },
               {
-                path: "/vistorias/:id/editar",
+                path: ROUTE_PATTERNS.inspectionEdit,
                 element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/editar/page")),
               },
               {
-                path: "/vistorias/:id/fotos",
+                path: ROUTE_PATTERNS.inspectionPhotos,
                 element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/fotos/page")),
               },
               {
-                path: "/vistorias/:id/checklist",
+                path: ROUTE_PATTERNS.inspectionChecklist,
                 element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/checklist/page")),
               },
               {
-                path: "/vistorias/:id/laudo",
+                path: ROUTE_PATTERNS.inspectionReport,
                 element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/laudo/page")),
               },
               {
-                path: "/financeiro",
+                path: ROUTES.financial,
                 element: lazyPage(() => import("@/app/(dashboard)/financeiro/page")),
               },
               {
-                path: "/financeiro/receitas",
+                path: ROUTES.financialRevenue,
                 element: lazyPage(() => import("@/app/(dashboard)/financeiro/receitas/page")),
               },
               {
-                path: "/financeiro/despesas",
+                path: ROUTES.financialExpenses,
                 element: lazyPage(() => import("@/app/(dashboard)/financeiro/despesas/page")),
               },
               {
-                path: "/relatorios",
+                path: ROUTES.reports,
                 element: lazyPage(() => import("@/app/(dashboard)/relatorios/page")),
               },
               {
-                path: "/configuracoes",
+                path: ROUTES.settings,
                 element: lazyPage(() => import("@/app/(dashboard)/configuracoes/page")),
               },
               {
-                path: "/configuracoes/empresa",
+                path: ROUTES.settingsCompany,
                 element: lazyPage(() => import("@/app/(dashboard)/configuracoes/empresa/page")),
               },
               {
-                path: "/configuracoes/perfil",
+                path: ROUTES.settingsProfile,
                 element: lazyPage(() => import("@/app/(dashboard)/configuracoes/perfil/page")),
               },
               {
-                path: "/configuracoes/usuarios",
+                path: ROUTES.settingsUsers,
                 element: lazyPage(() => import("@/app/(dashboard)/configuracoes/usuarios/page")),
               },
               {
-                path: "/configuracoes/auditoria",
+                path: ROUTES.settingsAudit,
                 element: lazyPage(() => import("@/app/(dashboard)/configuracoes/auditoria/page")),
               },
             ],
           },
         ],
       },
-      { path: "*", element: <Navigate to="/" replace /> },
+      { path: "*", element: <Navigate to={ROUTES.dashboard} replace /> },
     ],
   },
 ]);

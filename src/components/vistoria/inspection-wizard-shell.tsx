@@ -6,6 +6,7 @@ import {
   type WizardStep,
 } from "@/components/vistoria/inspection-wizard-stepper";
 import { cn } from "@/lib/utils";
+import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 
 interface InspectionWizardShellProps {
   currentStep: WizardStep;
@@ -18,13 +19,13 @@ interface InspectionWizardShellProps {
 function getStepPath(step: WizardStep, inspectionId: string): string {
   switch (step) {
     case 1:
-      return `/vistorias/${inspectionId}/editar?fluxo=nova`;
+      return withNewInspectionFlow(ROUTES.inspectionEdit(inspectionId));
     case 2:
-      return `/vistorias/${inspectionId}/fotos?fluxo=nova`;
+      return withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId));
     case 3:
-      return `/vistorias/${inspectionId}/checklist?fluxo=nova`;
+      return withNewInspectionFlow(ROUTES.inspectionChecklist(inspectionId));
     case 4:
-      return `/vistorias/${inspectionId}/laudo?fluxo=nova`;
+      return withNewInspectionFlow(ROUTES.inspectionReport(inspectionId));
   }
 }
 
@@ -44,20 +45,20 @@ export function InspectionWizardShell({
 
   const handleBack = () => {
     if (currentStep === 1) {
-      navigate("/vistorias");
+      navigate(ROUTES.inspections);
       return;
     }
     if (!inspectionId) return;
     if (currentStep === 2) {
-      navigate(`/vistorias/${inspectionId}/editar?fluxo=nova`);
+      navigate(withNewInspectionFlow(ROUTES.inspectionEdit(inspectionId)));
       return;
     }
     if (currentStep === 3) {
-      navigate(`/vistorias/${inspectionId}/fotos?fluxo=nova`);
+      navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId)));
       return;
     }
     if (currentStep === 4) {
-      navigate(`/vistorias/${inspectionId}/checklist?fluxo=nova`);
+      navigate(withNewInspectionFlow(ROUTES.inspectionChecklist(inspectionId)));
     }
   };
 

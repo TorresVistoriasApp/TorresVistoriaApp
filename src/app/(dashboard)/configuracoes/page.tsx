@@ -22,7 +22,7 @@ import { useUpdateUserProfile } from "@/hooks/use-users";
 import { useToast } from "@/hooks/use-toast";
 import { userProfileSchema, type UserProfileInput } from "@/schemas/user";
 import { companySchema, settingsSchema, type CompanyInput, type SettingsInput } from "@/schemas/settings";
-import { DEFAULT_PRIMARY_COLOR } from "@/lib/constants";
+import { DEFAULT_PRIMARY_COLOR, ROUTES } from "@/lib/constants";
 import { useExportMyData, useRequestAccountDeletion } from "@/hooks/use-lgpd";
 import { lgpdService } from "@/services/lgpd-service";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -47,10 +47,10 @@ export function Page() {
           isAdmin ? (
             <div className="flex gap-2">
               <Button asChild variant="outline" size="sm" className="touch-target">
-                <Link to="/configuracoes/usuarios">Usuários</Link>
+                <Link to={ROUTES.settingsUsers}>Usuários</Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="touch-target">
-                <Link to="/configuracoes/auditoria">Auditoria</Link>
+                <Link to={ROUTES.settingsAudit}>Auditoria</Link>
               </Button>
             </div>
           ) : undefined
@@ -238,7 +238,7 @@ function ThemeTab() {
     resolver: zodResolver(settingsSchema),
     values: {
       primary_color: settings?.primary_color ?? DEFAULT_PRIMARY_COLOR,
-      theme_mode: (settings?.theme_mode as SettingsInput["theme_mode"]) ?? "light",
+      theme_mode: "light",
       legal_footer: settings?.legal_footer ?? "",
       signature_image_url: settings?.signature_image_url ?? "",
       watermark_enabled: settings?.watermark_enabled ?? true,
@@ -271,30 +271,17 @@ function ThemeTab() {
           className="space-y-4"
           onSubmit={form.handleSubmit(async (data) => {
             try {
-              await updateSettings.mutateAsync(data);
-              toast("Tema atualizado");
+              await updateSettings.mutateAsync({ ...data, theme_mode: "light" });
+              toast("Aparência atualizada");
             } catch (err) {
               toast(err instanceof Error ? err.message : "Erro ao salvar");
             }
           })}
         >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="primary_color">Cor primária</Label>
-              <Input id="primary_color" type="color" {...form.register("primary_color")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="theme_mode">Tema</Label>
-              <select
-                id="theme_mode"
-                className="flex h-11 w-full touch-target rounded-md border border-input bg-background px-3 text-sm"
-                {...form.register("theme_mode")}
-              >
-                <option value="light">Claro</option>
-                <option value="dark">Escuro</option>
-                <option value="system">Sistema</option>
-              </select>
-            </div>
+          <input type="hidden" value="light" {...form.register("theme_mode")} />
+          <div className="space-y-2">
+            <Label htmlFor="primary_color">Cor primária</Label>
+            <Input id="primary_color" type="color" {...form.register("primary_color")} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="legal_footer">Rodapé jurídico (PDF)</Label>
@@ -310,7 +297,7 @@ function ThemeTab() {
             Marca d&apos;água nas fotos
           </label>
           <Button type="submit" className="touch-target" disabled={updateSettings.isPending}>
-            Salvar tema
+            Salvar aparência
           </Button>
         </form>
       </CardContent>
@@ -338,7 +325,7 @@ function PrivacyTab() {
     try {
       await deleteAccount.mutateAsync();
       toast("Conta anonimizada. Você será desconectado.");
-      window.location.assign("/login");
+      window.location.assign(ROUTES.login);
     } catch (err) {
       toast(err instanceof Error ? err.message : "Erro ao excluir conta");
     } finally {
@@ -366,7 +353,7 @@ function PrivacyTab() {
             Exportar meus dados (JSON)
           </Button>
           <Button asChild variant="outline" className="touch-target">
-            <Link to="/privacidade" target="_blank">
+            <Link to={ROUTES.privacy} target="_blank">
               Política de privacidade
             </Link>
           </Button>

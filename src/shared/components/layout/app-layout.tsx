@@ -1,26 +1,15 @@
 import { NavLink, Outlet } from "react-router-dom";
 import {
-  BarChart3,
-  Car,
-  LayoutDashboard,
   LogOut,
   Menu,
-  Settings,
-  Wallet,
   X,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/features/auth/context/auth-context";
 import { Button } from "@/shared/components/ui/button";
 import { cn } from "@/shared/lib/utils";
-
-const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/vistorias", label: "Vistorias", icon: Car },
-  { to: "/financeiro", label: "Financeiro", icon: Wallet },
-  { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
-  { to: "/configuracoes", label: "Configurações", icon: Settings },
-];
+import { NAV_ITEMS } from "@/lib/nav-items";
+import { ROUTES } from "@/lib/constants";
 
 export function AppLayout() {
   const { profile, signOut } = useAuth();
@@ -57,10 +46,11 @@ export function AppLayout() {
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
         <aside className="hidden w-56 shrink-0 md:block">
           <nav className="sticky top-24 space-y-1">
-            {navItems.map(({ to, label, icon: Icon }) => (
+            {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
+                end={to === ROUTES.dashboard}
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
@@ -103,10 +93,11 @@ export function AppLayout() {
               </Button>
             </div>
             <nav className="space-y-1">
-              {navItems.map(({ to, label, icon: Icon }) => (
+              {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
+                  end={to === ROUTES.dashboard}
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     cn(
@@ -126,10 +117,11 @@ export function AppLayout() {
 
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background md:hidden">
         <div className="grid grid-cols-5">
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
+              end={to === ROUTES.dashboard}
               className={({ isActive }) =>
                 cn(
                   "flex flex-col items-center gap-1 py-2 text-[10px] font-medium",
