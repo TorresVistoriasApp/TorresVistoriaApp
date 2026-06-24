@@ -7,6 +7,7 @@ import {
 import type { VistoriaInput } from "@/schemas/vistoria";
 import { useAuth } from "@/hooks/use-auth";
 import { invalidateDashboardQueries, invalidateInspectionQueries } from "@/lib/cache-invalidation";
+import { InspectionStatus } from "@/lib/enums";
 
 export function useInspections(filters?: InspectionFilters) {
   return useQuery({
@@ -62,6 +63,32 @@ export function useDeleteInspection() {
     mutationFn: (id: string) => inspectionService.softDelete(id),
     onSuccess: () => {
       invalidateInspectionQueries(qc);
+      invalidateDashboardQueries(qc);
+    },
+  });
+}
+
+export function useArchiveInspection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      inspectionService.update(id, { status: InspectionStatus.ARCHIVED }),
+    onSuccess: (_, id) => {
+      invalidateInspectionQueries(qc, id);
+      invalidateDashboardQueries(qc);
+    },
+  });
+}
+
+export function useUnarchiveInspection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, opinion }: { id: string; opinion: string | null }) =>
+      inspectionService.update(id, {
+        status: opinion ? InspectionStatus.COMPLETED : InspectionStatus.DRAFT,
+      }),
+    onSuccess: (_, { id }) => {
+      invalidateInspectionQueries(qc, id);
       invalidateDashboardQueries(qc);
     },
   });

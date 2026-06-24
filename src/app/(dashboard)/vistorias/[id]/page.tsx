@@ -17,6 +17,7 @@ import {
 import { UserRole } from "@/lib/enums";
 import { ROUTES } from "@/lib/constants";
 import { Camera, ClipboardList, Edit, FileText, ArrowLeft } from "lucide-react";
+import { VistoriaActionsMenu } from "@/components/vistoria/vistoria-actions-menu";
 
 export function Page() {
   const { id } = useParams<{ id: string }>();
@@ -69,7 +70,7 @@ export function Page() {
             </div>
           </div>
 
-          <div className="flex w-full shrink-0 flex-wrap justify-end gap-2 lg:w-auto">
+          <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 lg:w-auto">
             <Button asChild variant="outline" size="sm" className="touch-target">
               <Link to={ROUTES.inspectionEdit(inspection.id)}>
                 <Edit className="h-4 w-4" />
@@ -82,6 +83,7 @@ export function Page() {
                 Gerar laudo
               </Link>
             </Button>
+            <VistoriaActionsMenu inspection={inspection} redirectOnDelete />
           </div>
         </div>
       </div>
