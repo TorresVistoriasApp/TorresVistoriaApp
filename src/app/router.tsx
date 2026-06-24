@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { RootLayout } from "@/app/layout";
 import { AuthLayout } from "@/app/(auth)/layout";
+import { PublicLayout } from "@/app/(public)/layout";
 import { DashboardLayout } from "@/app/(dashboard)/layout";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
@@ -32,6 +33,19 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard",
         element: <Navigate to="/" replace />,
+      },
+      {
+        element: <PublicLayout />,
+        children: [
+          {
+            path: "/privacidade",
+            element: lazyPage(() => import("@/app/(public)/privacidade/page")),
+          },
+          {
+            path: "/validar/:codigo",
+            element: lazyPage(() => import("@/app/(public)/validar/[codigo]/page")),
+          },
+        ],
       },
       {
         element: <AuthLayout />,

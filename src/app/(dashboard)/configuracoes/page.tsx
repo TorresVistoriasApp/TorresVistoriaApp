@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/use-auth";
@@ -22,7 +22,10 @@ import { useToast } from "@/hooks/use-toast";
 import { userProfileSchema, type UserProfileInput } from "@/schemas/user";
 import { companySchema, settingsSchema, type CompanyInput, type SettingsInput } from "@/schemas/settings";
 import { DEFAULT_PRIMARY_COLOR } from "@/lib/constants";
-import { Link } from "react-router-dom";
+import { useExportMyData, useRequestAccountDeletion } from "@/hooks/use-lgpd";
+import { lgpdService } from "@/services/lgpd-service";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useState } from "react";
 
 export function Page() {
   const { profile, user } = useAuth();
@@ -53,12 +56,17 @@ export function Page() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="perfil">Perfil</TabsTrigger>
+          <TabsTrigger value="privacidade">Privacidade</TabsTrigger>
           {isAdmin && <TabsTrigger value="empresa">Empresa</TabsTrigger>}
           {isAdmin && <TabsTrigger value="tema">Tema</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="perfil">
           <ProfileTab profileId={profile?.id} fullName={profile?.full_name} email={user?.email} />
+        </TabsContent>
+
+        <TabsContent value="privacidade">
+          <PrivacyTab />
         </TabsContent>
 
         {isAdmin && (
@@ -301,6 +309,88 @@ function ThemeTab() {
             Salvar tema
           </Button>
         </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PrivacyTab() {
+  const exportData = useExportMyData();
+  const deleteAccount = useRequestAccountDeletion();
+  const { toast } = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const handleExport = async () => {
+    try {
+      const data = await exportData.mutateAsync();
+      lgpdService.downloadExport(data);
+      toast("Dados exportados");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Erro ao exportar");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteAccount.mutateAsync();
+      toast("Conta anonimizada. Você será desconectado.");
+      window.location.assign("/login");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Erro ao excluir conta");
+    } finally {
+      setConfirmOpen(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Privacidade e LGPD</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm">
+        <p className="text-muted-foreground">
+          Exercite seus direitos previstos na Lei Geral de Proteção de Dados (LGPD).
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="touch-target"
+            disabled={exportData.isPending}
+            onClick={() => void handleExport()}
+          >
+            Exportar meus dados (JSON)
+          </Button>
+          <Button asChild variant="outline" className="touch-target">
+            <Link to="/privacidade" target="_blank">
+              Política de privacidade
+            </Link>
+          </Button>
+        </div>
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+          <p className="font-medium text-destructive">Excluir minha conta</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Anonimiza seu perfil e encerra a sessão. Vistorias e laudos permanecem por obrigação legal.
+          </p>
+          <Button
+            type="button"
+            variant="destructive"
+            className="mt-3 touch-target"
+            onClick={() => setConfirmOpen(true)}
+          >
+            Solicitar exclusão
+          </Button>
+        </div>
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title="Confirmar exclusão da conta?"
+          description="Esta ação anonimiza seu perfil e não pode ser desfeita pelo app."
+          confirmLabel="Excluir conta"
+          destructive
+          loading={deleteAccount.isPending}
+          onConfirm={handleDelete}
+        />
       </CardContent>
     </Card>
   );

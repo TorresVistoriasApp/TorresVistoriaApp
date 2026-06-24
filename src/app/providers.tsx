@@ -4,6 +4,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "@/app/auth-context";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { ToastViewport } from "@/components/shared/toast-viewport";
+import { LgpdConsentBanner } from "@/components/shared/lgpd-consent-banner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <AuthProvider>
           {children}
           <ToastViewport />
+          <LgpdConsentBanner />
           {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
         </AuthProvider>
       </QueryClientProvider>

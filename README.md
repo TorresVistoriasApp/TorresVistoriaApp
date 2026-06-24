@@ -49,3 +49,19 @@ React 19 · Vite 6 · Tailwind 4 · Supabase · React Query · Zod · Zustand
    - **Redirect URLs:** `https://seu-app.vercel.app/**` e `/redefinir-senha`
 
 Integração Git: conecte o repo `TorresVistoriaApp` em [vercel.com/new](https://vercel.com/new).
+
+## Documentação
+
+| Doc | Conteúdo |
+|-----|----------|
+| [docs/SEGURANCA.md](docs/SEGURANCA.md) | RLS, headers, rate limit, checklist |
+| [docs/LGPD.md](docs/LGPD.md) | Consentimento, exportação, exclusão |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Vercel, Supabase, Edge Functions |
+
+## Checklist Passo 6
+
+- [x] Segurança: sanitização, rate limit, CSP, env validation
+- [x] LGPD: banner, política, export/delete, RPC anonimização
+- [x] Performance: lazy routes, code splitting, compressão fotos
+- [x] Produção: vercel.json, docs deploy
+- [x] Validação pública de laudo: `/validar/:codigo`

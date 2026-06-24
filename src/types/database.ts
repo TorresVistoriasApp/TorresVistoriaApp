@@ -840,6 +840,7 @@ export type Database = {
           total_count: number
         }[]
       }
+      anonymize_user_account: { Args: { p_user_id: string }; Returns: undefined }
       validate_report: { Args: { p_verification_code: string }; Returns: Json }
     }
     Enums: {

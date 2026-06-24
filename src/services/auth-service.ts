@@ -1,11 +1,13 @@
 import { supabase } from "@/lib/supabase";
 import { AppError, getErrorMessage, throwIfEdgeError } from "@/lib/errors";
+import { sanitizeEmail } from "@/lib/sanitize";
 import type { Profile } from "@/types";
 import type { InviteUserInput } from "@/schemas/auth";
 
 export const authService = {
   async signIn(email: string, password: string): Promise<void> {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const safeEmail = sanitizeEmail(email);
+    const { error } = await supabase.auth.signInWithPassword({ email: safeEmail, password });
     if (error) throw new AppError(getErrorMessage(error));
   },
 
@@ -15,7 +17,8 @@ export const authService = {
   },
 
   async resetPassword(email: string, redirectTo: string): Promise<void> {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    const safeEmail = sanitizeEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(safeEmail, { redirectTo });
     if (error) throw new AppError(getErrorMessage(error));
   },
 

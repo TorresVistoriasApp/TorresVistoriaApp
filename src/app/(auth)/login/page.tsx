@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { Link, Navigate } from "react-router-dom";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { checkRateLimit, formatRetryAfter, resetRateLimit } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 import { loginSchema, type LoginInput } from "@/schemas/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +31,9 @@ export function Page() {
     setValue("password", password);
     try {
       await signIn(email, password);
+      resetRateLimit("login");
     } catch (err) {
+      logger.warn("Falha no login demo");
       setError(err instanceof Error ? err.message : "Falha ao entrar");
     }
   };
@@ -39,9 +43,16 @@ export function Page() {
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
+    const limit = checkRateLimit("login", 5, 15 * 60 * 1000);
+    if (!limit.allowed) {
+      setError(`Muitas tentativas. Tente novamente em ${formatRetryAfter(limit.retryAfterMs)}.`);
+      return;
+    }
     try {
       await signIn(values.email, values.password);
+      resetRateLimit("login");
     } catch (err) {
+      logger.warn("Falha no login");
       setError(err instanceof Error ? err.message : "Falha ao entrar");
     }
   });
@@ -120,6 +131,10 @@ export function Page() {
             <p className="text-center text-sm text-muted-foreground">
               <Link to={ROUTES.forgotPassword} className="text-primary hover:underline">
                 Esqueci minha senha
+              </Link>
+              {" · "}
+              <Link to="/privacidade" className="text-primary hover:underline">
+                Privacidade
               </Link>
             </p>
           </form>
