@@ -14,7 +14,7 @@ export const DEMO_USERS = {
 
 export const IS_DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true";
 export const APP_VERSION = "0.1.0";
-export const DEFAULT_PRIMARY_COLOR = "#1e40af";
+export const DEFAULT_PRIMARY_COLOR = "#ea580c";
 export const DEFAULT_COMPANY_ID = "00000000-0000-4000-8000-000000000001";
 export const SUPABASE_PROJECT_ID = "ljzttzfjtskblxekmquu";
 

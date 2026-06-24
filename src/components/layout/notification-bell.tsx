@@ -43,13 +43,13 @@ export function NotificationBell() {
             aria-label="Fechar notificações"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border border-border bg-background shadow-lg">
-            <div className="flex items-center justify-between border-b border-border px-4 py-2">
-              <p className="text-sm font-semibold">Notificações</p>
+          <div className="surface-elevated absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
+              <p className="font-display text-sm font-normal tracking-tight">Notificações</p>
               {unread > 0 && (
                 <button
                   type="button"
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs font-medium text-accent hover:underline"
                   onClick={() => void markAllRead.mutateAsync()}
                 >
                   Marcar todas como lidas
@@ -86,7 +86,7 @@ export function NotificationBell() {
                           {inspectionId && (
                             <Link
                               to={`/vistorias/${inspectionId}`}
-                              className="mt-1 inline-block text-xs text-primary hover:underline"
+                              className="mt-1 inline-block text-xs font-medium text-accent hover:underline"
                               onClick={() => {
                                 if (!n.read_at) void markRead.mutateAsync(n.id);
                                 setOpen(false);
@@ -99,7 +99,7 @@ export function NotificationBell() {
                         {!n.read_at && (
                           <button
                             type="button"
-                            className="shrink-0 text-xs text-primary hover:underline"
+                            className="shrink-0 text-xs font-medium text-accent hover:underline"
                             onClick={() => void markRead.mutateAsync(n.id)}
                           >
                             Lida

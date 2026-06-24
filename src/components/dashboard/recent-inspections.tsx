@@ -1,25 +1,33 @@
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ClipboardList } from "lucide-react";
 import { useRecentInspections } from "@/hooks/use-dashboard";
 import { formatDate } from "@/lib/formatters";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VistoriaStatusBadge } from "@/components/vistoria/vistoria-status-badge";
 
 export function RecentInspections() {
   const { data: recent = [], isLoading } = useRecentInspections();
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium">Últimas vistorias</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <div className="surface-interactive overflow-hidden">
+      <div className="flex items-center justify-between border-b border-border/50 px-5 py-4 md:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ClipboardList className="h-5 w-5" strokeWidth={2} />
+          </div>
+          <div>
+            <h3 className="text-base font-bold">Últimas vistorias</h3>
+            <p className="text-xs text-muted-foreground">Acesso rápido aos laudos recentes</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="divide-y divide-border/50">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-14 animate-pulse rounded-lg bg-muted" />
+            <div key={i} className="h-20 animate-pulse bg-muted/30" />
           ))
         ) : recent.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
+          <p className="py-12 text-center text-sm text-muted-foreground">
             Nenhuma vistoria encontrada
           </p>
         ) : (
@@ -27,25 +35,32 @@ export function RecentInspections() {
             <Link
               key={inspection.id}
               to={`/vistorias/${inspection.id}`}
-              className="flex items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+              className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-primary/[0.03] md:px-6"
             >
-              <div className="min-w-0 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium">#{inspection.inspection_number}</span>
-                  <VistoriaStatusBadge status={inspection.status} />
+              <div className="flex min-w-0 items-center gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted/80 text-xs font-bold text-primary">
+                  #{inspection.inspection_number}
                 </div>
-                <p className="truncate text-xs text-muted-foreground">
-                  {inspection.brand} {inspection.model} — {inspection.plate}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {inspection.client_name} · {formatDate(inspection.inspection_date)}
-                </p>
+                <div className="min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-bold">
+                      {inspection.brand} {inspection.model}
+                    </span>
+                    <VistoriaStatusBadge status={inspection.status} />
+                  </div>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {inspection.plate} · {inspection.client_name}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {formatDate(inspection.inspection_date)}
+                  </p>
+                </div>
               </div>
-              <ChevronRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
             </Link>
           ))
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,8 @@
 import { LogOut, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/shared/brand-logo";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { useUiStore } from "@/stores/ui-store";
 
@@ -9,28 +11,43 @@ export function Header() {
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-20 border-b border-border/50 bg-card/80 backdrop-blur-xl">
+      <div className="flex h-14 items-center justify-between gap-4 px-4 lg:px-8">
+        <div className="flex items-center gap-3 md:hidden">
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
             onClick={() => setSidebarOpen(true)}
             aria-label="Abrir menu"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <div>
-            <p className="text-sm font-semibold text-primary">Torres Vistoria</p>
-            <p className="text-xs text-muted-foreground">{profile?.full_name ?? "Usuário"}</p>
-          </div>
+          <BrandLogo size="sm" />
         </div>
+
+        <div className="hidden flex-1 md:block">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Painel administrativo
+          </p>
+        </div>
+
         <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-3 rounded-2xl border border-border/60 bg-muted/30 px-3 py-1.5 sm:flex">
+            <UserAvatar name={profile?.full_name} size="sm" />
+            <div className="hidden min-w-0 md:block">
+              <p className="truncate text-sm font-semibold">{profile?.full_name ?? "Usuário"}</p>
+              <p className="text-[10px] text-muted-foreground">Online</p>
+            </div>
+          </div>
           <NotificationBell />
-          <Button variant="ghost" size="sm" onClick={() => void signOut()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => void signOut()}
+            aria-label="Sair"
+            className="text-muted-foreground hover:text-destructive"
+          >
             <LogOut className="h-4 w-4" />
-            Sair
           </Button>
         </div>
       </div>

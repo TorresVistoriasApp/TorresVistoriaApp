@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RequirePermission } from "@/app/require-role";
+import { PageHeader } from "@/components/shared/page-header";
 import { FinancialEntryForm } from "@/components/forms/financial-entry-form";
 import {
   useFinancialEntries,
@@ -80,37 +81,42 @@ export function Page() {
 
   return (
     <RequirePermission permission="financial.manage">
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="flex-1 text-2xl font-bold">Financeiro</h1>
-          <Button asChild variant="outline" size="sm" className="touch-target">
-            <Link to="/financeiro/receitas">Receitas</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="touch-target">
-            <Link to="/financeiro/despesas">Despesas</Link>
-          </Button>
-          <Button variant="outline" size="sm" className="touch-target" onClick={exportCsv} disabled={entries.length === 0}>
-            Exportar CSV
-          </Button>
-          <Button variant="outline" size="sm" className="touch-target" onClick={() => void exportExcel()} disabled={entries.length === 0}>
-            Exportar Excel
-          </Button>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="touch-target">
-                <Plus className="h-4 w-4" />
-                Novo lançamento
+      <div className="space-y-8">
+        <PageHeader
+          title="Financeiro"
+          description="Receitas, despesas e fluxo de caixa"
+          actions={
+            <>
+              <Button asChild variant="outline" size="sm" className="touch-target">
+                <Link to="/financeiro/receitas">Receitas</Link>
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Novo lançamento</DialogTitle>
-                <DialogDescription>Registre receita, despesa ou custo</DialogDescription>
-              </DialogHeader>
-              <FinancialEntryForm onSubmit={handleSubmit} />
-            </DialogContent>
-          </Dialog>
-        </div>
+              <Button asChild variant="outline" size="sm" className="touch-target">
+                <Link to="/financeiro/despesas">Despesas</Link>
+              </Button>
+              <Button variant="outline" size="sm" className="touch-target" onClick={exportCsv} disabled={entries.length === 0}>
+                Exportar CSV
+              </Button>
+              <Button variant="outline" size="sm" className="touch-target" onClick={() => void exportExcel()} disabled={entries.length === 0}>
+                Exportar Excel
+              </Button>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="accent" className="touch-target">
+                    <Plus className="h-4 w-4" />
+                    Novo lançamento
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Novo lançamento</DialogTitle>
+                    <DialogDescription>Registre receita, despesa ou custo</DialogDescription>
+                  </DialogHeader>
+                  <FinancialEntryForm onSubmit={handleSubmit} />
+                </DialogContent>
+              </Dialog>
+            </>
+          }
+        />
 
         {isLoading ? (
           <LoadingSpinner />
