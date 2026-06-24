@@ -58,7 +58,7 @@ export function Page() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
         <p className="text-sm text-muted-foreground">
-          Toque em cada seção para enviar evidências, documentação opcional, pontos de pintura e fotos extras.
+          Toque em cada seção para enviar as evidências obrigatórias, incluindo os 13 pontos de pintura.
         </p>
         <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
           {photos.length} enviadas

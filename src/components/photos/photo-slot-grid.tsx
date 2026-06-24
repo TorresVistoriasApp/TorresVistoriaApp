@@ -11,7 +11,7 @@ import {
   Tag,
   Wrench,
 } from "lucide-react";
-import { PAINT_PHOTO_CATEGORIES, PHOTO_CATEGORIES } from "@/lib/constants";
+import { OPTIONAL_PHOTO_CATEGORIES, PAINT_PHOTO_CATEGORIES, PHOTO_CATEGORIES } from "@/lib/constants";
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
 import type { InspectionPhoto } from "@/services/photo-service";
 import { cn } from "@/lib/utils";
@@ -81,23 +81,23 @@ const CATEGORY_HINTS: Record<string, string> = {
   CINTOS_AIRBAGS: "Cintos, airbags e segurança",
   DOCUMENTOS: "Opcional · CRLV/CRV/ATPV-e",
   DANOS: "Avarias encontradas",
-  PINTURA_CAPO: "Ponto 01 da avaliação de pintura",
-  PINTURA_TETO: "Ponto 02 da avaliação de pintura",
-  PINTURA_TAMPA_PORTA_MALAS: "Ponto 03 da avaliação de pintura",
-  PINTURA_PARALAMA_DIANTEIRO_ESQUERDO: "Ponto 04 da avaliação de pintura",
-  PINTURA_PORTA_DIANTEIRA_ESQUERDA: "Ponto 05 da avaliação de pintura",
-  PINTURA_PORTA_TRASEIRA_ESQUERDA: "Ponto 06 da avaliação de pintura",
-  PINTURA_TRASEIRA_ESQUERDA: "Ponto 07 da avaliação de pintura",
-  PINTURA_TRASEIRA_DIREITA: "Ponto 08 da avaliação de pintura",
-  PINTURA_PORTA_TRASEIRA_DIREITA: "Ponto 09 da avaliação de pintura",
-  PINTURA_PORTA_DIANTEIRA_DIREITA: "Ponto 10 da avaliação de pintura",
-  PINTURA_PARALAMA_DIANTEIRO_DIREITO: "Ponto 11 da avaliação de pintura",
-  PINTURA_PARACHOQUE_DIANTEIRO: "Ponto 12 da avaliação de pintura",
-  PINTURA_PARACHOQUE_TRASEIRO: "Ponto 13 da avaliação de pintura",
+  PINTURA_CAPO: "Evidência do capô",
+  PINTURA_TETO: "Evidência do teto",
+  PINTURA_TAMPA_PORTA_MALAS: "Evidência da tampa do porta-malas",
+  PINTURA_PARALAMA_DIANTEIRO_ESQUERDO: "Evidência do paralama dianteiro esquerdo",
+  PINTURA_PORTA_DIANTEIRA_ESQUERDA: "Evidência da porta dianteira esquerda",
+  PINTURA_PORTA_TRASEIRA_ESQUERDA: "Evidência da porta traseira esquerda",
+  PINTURA_TRASEIRA_ESQUERDA: "Evidência da traseira esquerda",
+  PINTURA_TRASEIRA_DIREITA: "Evidência da traseira direita",
+  PINTURA_PORTA_TRASEIRA_DIREITA: "Evidência da porta traseira direita",
+  PINTURA_PORTA_DIANTEIRA_DIREITA: "Evidência da porta dianteira direita",
+  PINTURA_PARALAMA_DIANTEIRO_DIREITO: "Evidência do paralama dianteiro direito",
+  PINTURA_PARACHOQUE_DIANTEIRO: "Evidência do para-choque dianteiro",
+  PINTURA_PARACHOQUE_TRASEIRO: "Evidência do para-choque traseiro",
   EXTRAS: "Opcional · quantas fotos forem necessárias",
 };
 
-const OPTIONAL_CATEGORIES = new Set(["DOCUMENTOS", "EXTRAS"]);
+const OPTIONAL_CATEGORIES = new Set<string>(OPTIONAL_PHOTO_CATEGORIES);
 const DOCUMENT_CATEGORY = "DOCUMENTOS";
 const EXTRA_CATEGORY = "EXTRAS";
 const PAINT_CATEGORIES = new Set<string>(PAINT_PHOTO_CATEGORIES);
@@ -108,18 +108,20 @@ const PHOTO_SECTIONS = [
     description: "Registros principais da vistoria cautelar.",
     categories: PHOTO_CATEGORIES.filter(
       (category) =>
-        category !== DOCUMENT_CATEGORY && category !== EXTRA_CATEGORY && !PAINT_CATEGORIES.has(category),
+        category !== DOCUMENT_CATEGORY &&
+        category !== EXTRA_CATEGORY &&
+        !PAINT_CATEGORIES.has(category),
     ),
+  },
+  {
+    title: "Pintura",
+    description: "Obrigatório: uma foto de evidência para cada ponto de pintura.",
+    categories: [...PAINT_PHOTO_CATEGORIES],
   },
   {
     title: "Documentação do veículo",
     description: "Opcional: CRLV, CRV, ATPV-e ou outros documentos do veículo.",
     categories: [DOCUMENT_CATEGORY],
-  },
-  {
-    title: "Pintura",
-    description: "Fotos por ponto de pintura, seguindo a numeração do laudo.",
-    categories: PAINT_PHOTO_CATEGORIES,
   },
   {
     title: "Fotos extras",

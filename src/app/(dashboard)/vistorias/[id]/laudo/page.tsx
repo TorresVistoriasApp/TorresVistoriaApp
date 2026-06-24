@@ -13,16 +13,7 @@ import { validateChecklistCompletion } from "@/components/forms/checklist-form";
 import { pdfService } from "@/services/pdf-service";
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
 import { ArrowLeft, CheckCircle, Download, FileText, ShieldAlert } from "lucide-react";
-import { ROUTES } from "@/lib/constants";
-
-const REQUIRED_PHOTO_CATEGORIES = [
-  "FRENTE_45_DIREITA",
-  "TRASEIRA_45_ESQUERDA",
-  "PLACA_TRASEIRA",
-  "CHASSI",
-  "MOTOR_NUMERO",
-  "HODOMETRO",
-] as const;
+import { MANDATORY_PHOTO_CATEGORIES, ROUTES } from "@/lib/constants";
 
 export function Page() {
   const { id } = useParams<{ id: string }>();
@@ -194,7 +185,7 @@ function getLaudoBlockers(
   }
 
   const available = new Set(photos.map((photo) => photo.category));
-  const missingPhotos = REQUIRED_PHOTO_CATEGORIES.filter((category) => !available.has(category));
+  const missingPhotos = MANDATORY_PHOTO_CATEGORIES.filter((category) => !available.has(category));
   if (missingPhotos.length > 0) {
     const labels = missingPhotos
       .map((category) => PHOTO_CATEGORY_LABELS[category] ?? category)
