@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { hasPermission, type Permission } from "@/lib/rbac";
 import type { UserRole } from "@/lib/enums";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ROUTES } from "@/lib/constants";
 
 export function RequirePermission({
   permission,
@@ -37,7 +38,7 @@ export function RequireRole({
 }) {
   const { profile } = useAuth();
   if (!profile?.role || !roles.includes(profile.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={ROUTES.dashboard} replace />;
   }
   return <>{children}</>;
 }

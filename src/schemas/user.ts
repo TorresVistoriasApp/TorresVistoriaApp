@@ -8,7 +8,7 @@ export const userProfileSchema = z.object({
 });
 
 export const userSettingsSchema = z.object({
-  theme: z.enum(["light", "dark", "system"]),
+  theme: z.literal("light"),
   notifications: z.boolean(),
   language: z.enum(["pt-BR"]),
 });

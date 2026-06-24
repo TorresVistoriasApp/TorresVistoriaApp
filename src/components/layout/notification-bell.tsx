@@ -10,6 +10,7 @@ import { notificationService } from "@/services/notification-service";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/formatters";
+import { ROUTES } from "@/lib/constants";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -85,7 +86,7 @@ export function NotificationBell() {
                           </p>
                           {inspectionId && (
                             <Link
-                              to={`/vistorias/${inspectionId}`}
+                              to={ROUTES.inspection(inspectionId)}
                               className="mt-1 inline-block text-xs font-medium text-accent hover:underline"
                               onClick={() => {
                                 if (!n.read_at) void markRead.mutateAsync(n.id);

@@ -11,7 +11,7 @@ export interface Toast {
 
 interface UiStoreState {
   sidebarOpen: boolean;
-  theme: "light" | "dark" | "system";
+  theme: "light";
   toasts: Toast[];
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
@@ -22,7 +22,7 @@ interface UiStoreState {
 
 export const useUiStore = create<UiStoreState>((set, get) => ({
   sidebarOpen: false,
-  theme: "system",
+  theme: "light",
   toasts: [],
   setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
   toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),

@@ -8,6 +8,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import { ROUTES } from "@/lib/constants";
 
 const schema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -58,7 +59,7 @@ export function ForgotPasswordPage() {
               Enviar link
             </Button>
             <p className="text-center text-sm">
-              <Link to="/login" className="text-primary hover:underline">
+              <Link to={ROUTES.login} className="text-primary hover:underline">
                 Voltar ao login
               </Link>
             </p>

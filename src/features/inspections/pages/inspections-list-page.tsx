@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { ROUTES } from "@/lib/constants";
 
 export function InspectionsListPage() {
   return (
@@ -12,7 +13,7 @@ export function InspectionsListPage() {
           <p className="text-sm text-muted-foreground">Histórico e gestão de laudos</p>
         </div>
         <Button asChild>
-          <Link to="/vistorias/nova">
+          <Link to={ROUTES.inspectionNew}>
             <Plus className="h-4 w-4" />
             Nova
           </Link>

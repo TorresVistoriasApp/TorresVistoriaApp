@@ -10,6 +10,7 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/shared/lib/supabase";
 import type { Profile } from "@/shared/types/domain";
+import { ROUTES } from "@/lib/constants";
 
 interface AuthContextValue {
   session: Session | null;
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = useCallback(async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/recuperar-senha`,
+      redirectTo: `${window.location.origin}${ROUTES.resetPassword}`,
     });
     if (error) throw error;
   }, []);

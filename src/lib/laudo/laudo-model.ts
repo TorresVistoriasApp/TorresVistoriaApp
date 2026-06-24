@@ -39,6 +39,7 @@ export type LaudoPayload = {
   verificationCode: string;
   integrityHash: string;
   validationUrl?: string;
+  logoDataUrl?: string;
   generatedAt: Date;
 };
 

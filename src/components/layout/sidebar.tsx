@@ -4,7 +4,6 @@ import { APP_NAME, ROUTES } from "@/lib/constants";
 import { NAV_ITEMS } from "@/lib/nav-items";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { SidebarProfile } from "@/components/layout/sidebar-profile";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface SidebarProps {
   className?: string;
@@ -64,10 +63,6 @@ export function Sidebar({ className, onNavigate, embedded }: SidebarProps) {
 
       {!embedded && (
         <div className="mt-6 space-y-3 border-t border-border/60 pt-4">
-          <div className="flex items-center justify-between rounded-xl bg-muted/40 px-3 py-2">
-            <span className="text-xs font-medium text-muted-foreground">Tema</span>
-            <ThemeToggle />
-          </div>
           <p className="px-1 text-[10px] text-muted-foreground">{APP_NAME} · v0.1</p>
         </div>
       )}

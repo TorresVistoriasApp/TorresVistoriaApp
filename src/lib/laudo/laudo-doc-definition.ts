@@ -1,4 +1,5 @@
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
+import { PAINT_PHOTO_CATEGORIES } from "@/lib/constants";
 import { getChecklistCategoryLabel, getChecklistStatusLabel } from "@/lib/checklist-catalog";
 import { formatDate, formatDocument, formatKM, formatPhone, formatPlate } from "@/lib/formatters";
 import {
@@ -60,6 +61,27 @@ function statCard(label: string, valueText: string, color: string): PdfNode {
   };
 }
 
+function checklistStatusNode(status: string): PdfNode {
+  const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
+    CONFORME: { label: "Conforme", color: "#16a34a", icon: "✓" },
+    NAO_CONFORME: { label: "Não conforme", color: "#dc2626", icon: "✕" },
+    NA: { label: "Não se aplica", color: "#64748b", icon: "–" },
+    PENDENTE: { label: "Pendente", color: "#f59e0b", icon: "!" },
+  };
+  const config = statusConfig[status] ?? {
+    label: getChecklistStatusLabel(status),
+    color: "#64748b",
+    icon: "•",
+  };
+
+  return {
+    text: `${config.icon} ${config.label}`,
+    fontSize: 8,
+    bold: true,
+    color: config.color,
+  };
+}
+
 function checklistBarChart(payload: LaudoPayload): PdfNode {
   const stats = summarizeLaudoChecklist(payload.checklist);
   const total = Math.max(stats.total, 1);
@@ -111,8 +133,13 @@ function buildChecklistSection(payload: LaudoPayload, color: string): PdfNode[] 
   return Object.entries(grouped).flatMap(([category, items]) => {
     const rows = items.map((item) => [
       { text: item.item_name, fontSize: 8 },
-      { text: getChecklistStatusLabel(item.status), fontSize: 8, bold: true },
-      { text: item.notes || "—", fontSize: 8 },
+      checklistStatusNode(item.status),
+      {
+        text: item.notes || "—",
+        fontSize: 8,
+        color: item.status === "NAO_CONFORME" ? "#991b1b" : "#0f172a",
+        bold: item.status === "NAO_CONFORME",
+      },
     ]);
 
     return [
@@ -171,15 +198,51 @@ function buildPhotoSection(photos: LaudoPhoto[], color: string): PdfNode[] {
     ];
   }
 
-  const pairs: PdfNode[][] = [];
-  for (let index = 0; index < photos.length; index += 2) {
-    pairs.push([photoNode(photos[index]), photos[index + 1] ? photoNode(photos[index + 1]) : {}]);
+  const documentation = photos.filter((photo) => photo.category === "DOCUMENTOS");
+  const extras = photos.filter((photo) => photo.category === "EXTRAS");
+  const paintCategories = new Set<string>(PAINT_PHOTO_CATEGORIES);
+  const painting = photos.filter((photo) => paintCategories.has(photo.category));
+  const standard = photos.filter(
+    (photo) =>
+      photo.category !== "DOCUMENTOS" &&
+      photo.category !== "EXTRAS" &&
+      !paintCategories.has(photo.category),
+  );
+
+  function photoPairs(items: LaudoPhoto[]) {
+    const pairs: PdfNode[][] = [];
+    for (let index = 0; index < items.length; index += 2) {
+      pairs.push([photoNode(items[index]), items[index + 1] ? photoNode(items[index + 1]) : {}]);
+    }
+    return pairs.map((columns) => ({ columns, columnGap: 12, margin: [0, 0, 0, 4] }));
   }
 
-  return [
-    sectionTitle("Registro fotográfico completo", color),
-    ...pairs.map((columns) => ({ columns, columnGap: 12, margin: [0, 0, 0, 4] })),
-  ];
+  const nodes: PdfNode[] = [sectionTitle("Registro fotográfico completo", color), ...photoPairs(standard)];
+
+  if (painting.length) {
+    if (standard.length) nodes.push({ text: "", pageBreak: "before" });
+    nodes.push(
+      sectionTitle("Pintura", color),
+      {
+        text: "Registro por pontos de pintura conforme numeração do veículo.",
+        fontSize: 8,
+        color: "#64748b",
+        margin: [0, 0, 0, 8],
+      },
+      ...photoPairs(painting),
+    );
+  }
+
+  if (documentation.length) {
+    nodes.push({ text: "", pageBreak: "before" }, sectionTitle("Documentação do veículo", color), ...photoPairs(documentation));
+  }
+
+  if (extras.length) {
+    if (!documentation.length) nodes.push({ text: "", pageBreak: "before" });
+    nodes.push(sectionTitle("Fotos extras", color), ...photoPairs(extras));
+  }
+
+  return nodes;
 }
 
 export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, unknown> {
@@ -196,7 +259,9 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       columns: [
         {
           stack: [
-            { text: "TORRES VISTORIAS", style: "brand", color },
+            payload.logoDataUrl
+              ? { image: payload.logoDataUrl, width: 145, fit: [145, 58], margin: [0, 0, 0, 2] }
+              : { text: "TORRES VISTORIAS", style: "brand", color },
             { text: "Laudo cautelar veicular", style: "muted" },
             { text: `Nº ${inspection.inspection_number}`, fontSize: 12, bold: true, margin: [0, 8, 0, 0] },
           ],
@@ -230,6 +295,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       margin: [0, 0, 0, 10],
     },
     checklistBarChart(payload),
+    { text: "", pageBreak: "before" },
     sectionTitle("Dados da vistoria", color),
     infoTable([
       ["Empresa", value(company?.name)],
@@ -263,6 +329,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       fontSize: 10,
       margin: [0, 0, 0, 8],
     },
+    { text: "", pageBreak: "before" },
     ...buildChecklistSection(payload, color),
     { text: "", pageBreak: "before" },
     ...buildPhotoSection(payload.photos, color),

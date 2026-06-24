@@ -11,7 +11,7 @@ import {
   Tag,
   Wrench,
 } from "lucide-react";
-import { PHOTO_CATEGORIES } from "@/lib/constants";
+import { PAINT_PHOTO_CATEGORIES, PHOTO_CATEGORIES } from "@/lib/constants";
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
 import type { InspectionPhoto } from "@/services/photo-service";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,19 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   CINTOS_AIRBAGS: AlertTriangle,
   DOCUMENTOS: FileTextIcon,
   DANOS: AlertTriangle,
+  PINTURA_CAPO: Car,
+  PINTURA_TETO: Car,
+  PINTURA_TAMPA_PORTA_MALAS: Car,
+  PINTURA_PARALAMA_DIANTEIRO_ESQUERDO: Car,
+  PINTURA_PORTA_DIANTEIRA_ESQUERDA: Car,
+  PINTURA_PORTA_TRASEIRA_ESQUERDA: Car,
+  PINTURA_TRASEIRA_ESQUERDA: Car,
+  PINTURA_TRASEIRA_DIREITA: Car,
+  PINTURA_PORTA_TRASEIRA_DIREITA: Car,
+  PINTURA_PORTA_DIANTEIRA_DIREITA: Car,
+  PINTURA_PARALAMA_DIANTEIRO_DIREITO: Car,
+  PINTURA_PARACHOQUE_DIANTEIRO: Car,
+  PINTURA_PARACHOQUE_TRASEIRO: Car,
   EXTRAS: Plus,
 };
 
@@ -66,10 +79,54 @@ const CATEGORY_HINTS: Record<string, string> = {
   ETIQUETAS: "Etiquetas de identificação",
   INTERIOR: "Bancos, acabamento e comandos",
   CINTOS_AIRBAGS: "Cintos, airbags e segurança",
-  DOCUMENTOS: "CRLV/CRV/ATPV-e",
+  DOCUMENTOS: "Opcional · CRLV/CRV/ATPV-e",
   DANOS: "Avarias encontradas",
-  EXTRAS: "Fotos complementares",
+  PINTURA_CAPO: "Ponto 01 da avaliação de pintura",
+  PINTURA_TETO: "Ponto 02 da avaliação de pintura",
+  PINTURA_TAMPA_PORTA_MALAS: "Ponto 03 da avaliação de pintura",
+  PINTURA_PARALAMA_DIANTEIRO_ESQUERDO: "Ponto 04 da avaliação de pintura",
+  PINTURA_PORTA_DIANTEIRA_ESQUERDA: "Ponto 05 da avaliação de pintura",
+  PINTURA_PORTA_TRASEIRA_ESQUERDA: "Ponto 06 da avaliação de pintura",
+  PINTURA_TRASEIRA_ESQUERDA: "Ponto 07 da avaliação de pintura",
+  PINTURA_TRASEIRA_DIREITA: "Ponto 08 da avaliação de pintura",
+  PINTURA_PORTA_TRASEIRA_DIREITA: "Ponto 09 da avaliação de pintura",
+  PINTURA_PORTA_DIANTEIRA_DIREITA: "Ponto 10 da avaliação de pintura",
+  PINTURA_PARALAMA_DIANTEIRO_DIREITO: "Ponto 11 da avaliação de pintura",
+  PINTURA_PARACHOQUE_DIANTEIRO: "Ponto 12 da avaliação de pintura",
+  PINTURA_PARACHOQUE_TRASEIRO: "Ponto 13 da avaliação de pintura",
+  EXTRAS: "Opcional · quantas fotos forem necessárias",
 };
+
+const OPTIONAL_CATEGORIES = new Set(["DOCUMENTOS", "EXTRAS"]);
+const DOCUMENT_CATEGORY = "DOCUMENTOS";
+const EXTRA_CATEGORY = "EXTRAS";
+const PAINT_CATEGORIES = new Set<string>(PAINT_PHOTO_CATEGORIES);
+
+const PHOTO_SECTIONS = [
+  {
+    title: "Fotos obrigatórias e evidências",
+    description: "Registros principais da vistoria cautelar.",
+    categories: PHOTO_CATEGORIES.filter(
+      (category) =>
+        category !== DOCUMENT_CATEGORY && category !== EXTRA_CATEGORY && !PAINT_CATEGORIES.has(category),
+    ),
+  },
+  {
+    title: "Documentação do veículo",
+    description: "Opcional: CRLV, CRV, ATPV-e ou outros documentos do veículo.",
+    categories: [DOCUMENT_CATEGORY],
+  },
+  {
+    title: "Pintura",
+    description: "Fotos por ponto de pintura, seguindo a numeração do laudo.",
+    categories: PAINT_PHOTO_CATEGORIES,
+  },
+  {
+    title: "Fotos extras",
+    description: "Opcional: adicione quantas fotos complementares forem necessárias.",
+    categories: [EXTRA_CATEGORY],
+  },
+] as const;
 
 interface PhotoSlotGridProps {
   photos: InspectionPhoto[];
@@ -132,14 +189,21 @@ export function PhotoSlotGrid({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {PHOTO_CATEGORIES.map((category) => {
+      {PHOTO_SECTIONS.map((section) => (
+        <section key={section.title} className="space-y-3">
+          <div>
+            <h3 className="text-sm font-bold">{section.title}</h3>
+            <p className="text-xs text-muted-foreground">{section.description}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {section.categories.map((category) => {
           const categoryPhotos = photosByCategory[category] ?? [];
           const photo = categoryPhotos[categoryPhotos.length - 1];
           const Icon = CATEGORY_ICONS[category] ?? Camera;
           const label = PHOTO_CATEGORY_LABELS[category] ?? category;
           const hint = CATEGORY_HINTS[category] ?? "";
           const isUploading = uploading && uploadingCategory === category;
+          const isOptional = OPTIONAL_CATEGORIES.has(category);
 
           return (
             <button
@@ -180,7 +244,7 @@ export function PhotoSlotGrid({
                     </div>
                     <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-primary/70">
                       <ImagePlus className="h-3 w-3" />
-                      Adicionar evidência
+                      {isOptional ? "Adicionar opcional" : "Adicionar evidência"}
                     </div>
                   </div>
                 )}
@@ -199,11 +263,16 @@ export function PhotoSlotGrid({
                     ? `${categoryPhotos.length} foto${categoryPhotos.length === 1 ? "" : "s"} · ${hint}`
                     : hint}
                 </p>
+                {isOptional && (
+                  <p className="mt-1 text-[10px] font-semibold text-primary">Opcional · múltiplos anexos</p>
+                )}
               </div>
             </button>
           );
-        })}
-      </div>
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

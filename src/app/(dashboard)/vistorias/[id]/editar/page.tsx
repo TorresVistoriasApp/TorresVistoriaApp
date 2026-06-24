@@ -6,6 +6,7 @@ import { useUpdateInspection } from "@/hooks/use-inspections";
 import { useAuth } from "@/hooks/use-auth";
 import { isSuperAdmin } from "@/lib/rbac";
 import { formatVistoriaFormDefaults } from "@/lib/vistoria-form-defaults";
+import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import type { VistoriaInput } from "@/schemas/vistoria";
 
@@ -28,11 +29,12 @@ export function Page() {
 
   const handleSubmit = async (data: VistoriaInput) => {
     await update.mutateAsync(data);
+    if (!id) return;
     if (isWizardFlow) {
-      navigate(`/vistorias/${id}/fotos?fluxo=nova`);
+      navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)));
       return;
     }
-    navigate(`/vistorias/${id}`);
+    navigate(ROUTES.inspection(id));
   };
 
   const form = (
@@ -42,7 +44,7 @@ export function Page() {
       submitLabel={isWizardFlow ? "Salvar e continuar" : "Salvar alterações"}
       showInternalNotes={isSuperAdmin(profile?.role)}
       wizardMode={isWizardFlow}
-      onBack={isWizardFlow ? () => navigate("/vistorias") : undefined}
+      onBack={isWizardFlow ? () => navigate(ROUTES.inspections) : undefined}
     />
   );
 

@@ -9,7 +9,7 @@ export const companySchema = z.object({
 
 export const settingsSchema = z.object({
   primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Cor inválida"),
-  theme_mode: z.enum(["light", "dark", "system"]),
+  theme_mode: z.literal("light"),
   legal_footer: z.string().max(2000).optional().nullable().or(z.literal("")),
   signature_image_url: z.string().url().optional().nullable().or(z.literal("")),
   watermark_enabled: z.boolean(),

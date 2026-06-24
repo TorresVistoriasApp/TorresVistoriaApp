@@ -3,6 +3,7 @@ import { FinancialEntryForm } from "@/components/forms/financial-entry-form";
 import { useCreateFinancialEntry } from "@/hooks/use-financial";
 import { FinancialEntryType } from "@/lib/enums";
 import { MobileBackButton } from "@/components/shared/mobile-back-button";
+import { ROUTES } from "@/lib/constants";
 import type { FinancialEntryInput } from "@/schemas/financial";
 
 export function Page() {
@@ -14,7 +15,7 @@ export function Page() {
   return (
     <RequirePermission permission="financial.manage">
       <div className="space-y-6">
-        <MobileBackButton to="/financeiro" />
+        <MobileBackButton to={ROUTES.financial} />
         <h1 className="text-2xl font-bold">Despesas</h1>
         <FinancialEntryForm defaultType={FinancialEntryType.DESPESA} onSubmit={handleSubmit} />
       </div>

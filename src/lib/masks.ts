@@ -46,6 +46,38 @@ export function maskKm(value: string): string {
   return new Intl.NumberFormat("pt-BR").format(Number(digits));
 }
 
+/** Máscara monetária em Real para valores inteiros, como FIPE. */
+export function maskCurrency(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 12);
+  if (!digits) return "";
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  })
+    .format(Number(digits))
+    .replace(/\u00a0/g, " ");
+}
+
+/** Converte moeda brasileira formatada para número. */
+export function parseCurrency(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  if (trimmed.includes(",")) {
+    const normalized = trimmed
+      .replace(/[^\d,.-]/g, "")
+      .replace(/\./g, "")
+      .replace(",", ".");
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  const digits = trimmed.replace(/\D/g, "");
+  if (!digits) return null;
+  return Number(digits);
+}
+
 /** Normaliza chassi: maiúsculas, sem I/O/Q, máx. 17 caracteres. */
 export function maskChassis(value: string): string {
   return value
@@ -55,7 +87,7 @@ export function maskChassis(value: string): string {
     .slice(0, 17);
 }
 
-export type MaskType = "cpfCnpj" | "phone" | "plate" | "renavam" | "km" | "chassis";
+export type MaskType = "cpfCnpj" | "phone" | "plate" | "renavam" | "km" | "currency" | "chassis";
 
 const maskFns: Record<MaskType, (value: string) => string> = {
   cpfCnpj: maskCpfCnpj,
@@ -63,6 +95,7 @@ const maskFns: Record<MaskType, (value: string) => string> = {
   plate: maskPlate,
   renavam: maskRenavam,
   km: maskKm,
+  currency: maskCurrency,
   chassis: maskChassis,
 };
 
@@ -75,7 +108,7 @@ export function unmaskValue(type: MaskType, value: string): string {
   if (type === "plate" || type === "chassis") {
     return value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
   }
-  if (type === "km") {
+  if (type === "km" || type === "currency") {
     return value.replace(/\D/g, "");
   }
   return value.replace(/\D/g, "");

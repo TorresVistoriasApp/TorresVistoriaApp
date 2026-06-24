@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { exportToExcel } from "@/lib/export-excel";
 import { exportToPdf } from "@/lib/export-pdf";
+import { ROUTES } from "@/lib/constants";
 import type { FinancialEntry } from "@/services/financial-service";
 
 export function Page() {
@@ -103,10 +104,10 @@ export function Page() {
           actions={
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link to="/financeiro/receitas">Receitas</Link>
+                <Link to={ROUTES.financialRevenue}>Receitas</Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link to="/financeiro/despesas">Despesas</Link>
+                <Link to={ROUTES.financialExpenses}>Despesas</Link>
               </Button>
               <ExportButton
                 onExportPdf={exportPdf}

@@ -5,7 +5,6 @@ import { AuthProvider } from "@/app/auth-context";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { ToastViewport } from "@/components/shared/toast-viewport";
 import { LgpdConsentBanner } from "@/components/shared/lgpd-consent-banner";
-import { ThemeProvider } from "@/shared/context/theme-context";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,16 +19,14 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            {children}
-            <ToastViewport />
-            <LgpdConsentBanner />
-            {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-          </AuthProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          {children}
+          <ToastViewport />
+          <LgpdConsentBanner />
+          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        </AuthProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

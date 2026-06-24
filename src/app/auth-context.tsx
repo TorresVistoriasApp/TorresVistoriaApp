@@ -11,6 +11,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { authService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
+import { ROUTES } from "@/lib/constants";
 import type { Profile } from "@/types";
 
 interface AuthContextValue {
@@ -56,27 +57,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session?.user.id]);
 
   useEffect(() => {
+    let isMounted = true;
+
     supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return;
       setProfileLoading(!!data.session?.user.id);
       setSession(data.session);
       setAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setProfileLoading(!!nextSession?.user.id);
-      setSession(nextSession);
+      setSession((currentSession) => {
+        const currentUserId = currentSession?.user.id;
+        const nextUserId = nextSession?.user.id;
+
+        if (currentUserId !== nextUserId) {
+          setProfile(null);
+          setProfileLoading(!!nextUserId);
+        } else {
+          setProfileLoading(false);
+        }
+
+        return nextSession;
+      });
       setAuthLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
     if (session?.user.id) {
+      let isActive = true;
       setProfileLoading(true);
       void fetchProfile(session.user.id)
-        .then(setProfile)
-        .finally(() => setProfileLoading(false));
+        .then((nextProfile) => {
+          if (isActive) setProfile(nextProfile);
+        })
+        .finally(() => {
+          if (isActive) setProfileLoading(false);
+        });
+
+      return () => {
+        isActive = false;
+      };
     } else {
       setProfile(null);
       setProfileLoading(false);
@@ -99,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetPassword = useCallback(async (email: string) => {
-    await authService.resetPassword(email, `${window.location.origin}/redefinir-senha`);
+    await authService.resetPassword(email, `${window.location.origin}${ROUTES.resetPassword}`);
   }, []);
 
   const value = useMemo(
