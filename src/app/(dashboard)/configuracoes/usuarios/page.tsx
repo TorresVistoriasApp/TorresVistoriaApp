@@ -19,6 +19,7 @@ import {
 } from "@/hooks/use-users";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { formatUserFacingError, USER_MESSAGES } from "@/lib/user-facing-errors";
 import type { TeamProfile } from "@/services/user-service";
 
 type RoleFilter = "all" | (typeof UserRole)[keyof typeof UserRole];
@@ -83,16 +84,20 @@ export function Page() {
 
   const handleCreate = async (data: Parameters<typeof createUser.mutateAsync>[0]) => {
     await createUser.mutateAsync(data);
-    toast({ title: "Usuário criado com sucesso", type: "success" });
+    toast({ title: USER_MESSAGES.createSuccess, type: "success" });
     setPage(1);
   };
 
   const handleUpdate = async (userId: string, data: Parameters<typeof updateUser.mutateAsync>[0]["input"]) => {
     try {
       await updateUser.mutateAsync({ userId, input: data });
-      toast("Usuário atualizado");
+      toast({ title: USER_MESSAGES.updateSuccess, type: "success" });
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Erro ao atualizar usuário");
+      toast({
+        title: USER_MESSAGES.updateFailed,
+        description: formatUserFacingError(err instanceof Error ? err.message : ""),
+        type: "error",
+      });
       throw err;
     }
   };
@@ -101,9 +106,16 @@ export function Page() {
     setTogglingUserId(user.id);
     try {
       await setUserActive.mutateAsync({ userId: user.id, isActive: !user.is_active });
-      toast(user.is_active ? "Login desativado" : "Login reativado");
+      toast({
+        title: user.is_active ? USER_MESSAGES.deactivateSuccess : USER_MESSAGES.reactivateSuccess,
+        type: "success",
+      });
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Erro ao alterar status do usuário");
+      toast({
+        title: USER_MESSAGES.statusFailed,
+        description: formatUserFacingError(err instanceof Error ? err.message : ""),
+        type: "error",
+      });
     } finally {
       setTogglingUserId(null);
     }

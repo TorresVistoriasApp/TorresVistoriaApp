@@ -1,5 +1,6 @@
 import { db } from "@/lib/db-client";
 import { AppError, getErrorMessage } from "@/lib/errors";
+import { formatUserFacingError, USER_MESSAGES } from "@/lib/user-facing-errors";
 import { sanitizeEmail } from "@/lib/sanitize";
 import type { Profile } from "@/types";
 import type { ChangePasswordInput, CreateUserInput, UpdateUserInput } from "@/schemas/auth";
@@ -13,7 +14,7 @@ async function parseFunctionInvokeError(
   error: unknown,
   data: Record<string, unknown> | null,
 ): Promise<string> {
-  if (data?.error) return String(data.error);
+  if (data?.error) return formatUserFacingError(String(data.error));
 
   const fnError = error as { context?: Response; message?: string; name?: string };
   if (fnError.context) {
@@ -23,25 +24,14 @@ async function parseFunctionInvokeError(
         message?: string;
         code?: string;
       };
-      if (payload.code === "NOT_FOUND" || payload.message?.includes("not found")) {
-        return "A função invite-user ainda não foi publicada no Supabase. No terminal, execute: npx supabase login && npx supabase functions deploy invite-user --project-ref ljzttzfjtskblxekmquu";
-      }
-      if (payload.error) return payload.error;
-      if (payload.message) return payload.message;
+      if (payload.error) return formatUserFacingError(payload.error);
+      if (payload.message) return formatUserFacingError(payload.message);
     } catch {
       // ignore JSON parse errors
     }
   }
 
-  const message = getErrorMessage(error);
-  if (/not found|404/i.test(message)) {
-    return "A função invite-user ainda não foi publicada no Supabase. No terminal, execute: npx supabase login && npx supabase functions deploy invite-user --project-ref ljzttzfjtskblxekmquu";
-  }
-  if (/edge function|non-2xx|failed to fetch/i.test(message)) {
-    return "Não foi possível contactar a função invite-user no Supabase. Verifique se a Edge Function foi publicada.";
-  }
-
-  return message;
+  return formatUserFacingError(getErrorMessage(error));
 }
 
 async function invokeAdminUsers(body: AdminUsersAction): Promise<Record<string, unknown>> {
@@ -53,7 +43,7 @@ async function invokeAdminUsers(body: AdminUsersAction): Promise<Record<string, 
   }
 
   if (!payload) {
-    throw new AppError("Resposta vazia da Edge Function invite-user");
+    throw new AppError(USER_MESSAGES.emptyFunctionResponse);
   }
 
   return payload;
@@ -63,29 +53,29 @@ export const authService = {
   async signIn(email: string, password: string): Promise<void> {
     const safeEmail = sanitizeEmail(email);
     const { data, error } = await db.auth.signInWithPassword({ email: safeEmail, password });
-    if (error) throw new AppError(getErrorMessage(error));
+    if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
 
     const profile = await authService.getProfile(data.user.id);
     if (profile && !profile.is_active) {
       await db.auth.signOut();
-      throw new AppError("Conta desativada. Entre em contato com o administrador.");
+      throw new AppError(USER_MESSAGES.accountDisabled);
     }
   },
 
   async signOut(): Promise<void> {
     const { error } = await db.auth.signOut();
-    if (error) throw new AppError(getErrorMessage(error));
+    if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },
 
   async resetPassword(email: string, redirectTo: string): Promise<void> {
     const safeEmail = sanitizeEmail(email);
     const { error } = await db.auth.resetPasswordForEmail(safeEmail, { redirectTo });
-    if (error) throw new AppError(getErrorMessage(error));
+    if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },
 
   async updatePassword(password: string): Promise<void> {
     const { error } = await db.auth.updateUser({ password });
-    if (error) throw new AppError(getErrorMessage(error));
+    if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },
 
   async completePasswordChange(input: ChangePasswordInput): Promise<void> {
@@ -93,8 +83,8 @@ export const authService = {
       data: { user },
       error: userError,
     } = await db.auth.getUser();
-    if (userError) throw new AppError(getErrorMessage(userError));
-    if (!user) throw new AppError("Não autenticado");
+    if (userError) throw new AppError(formatUserFacingError(getErrorMessage(userError)));
+    if (!user) throw new AppError(USER_MESSAGES.notAuthenticated);
 
     await authService.updatePassword(input.password);
 
@@ -103,12 +93,12 @@ export const authService = {
       .update({ must_change_password: false })
       .eq("id", user.id);
 
-    if (error) throw new AppError(getErrorMessage(error));
+    if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },
 
   async getSession() {
     const { data, error } = await db.auth.getSession();
-    if (error) throw new AppError(getErrorMessage(error));
+    if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
     return data.session;
   },
 
@@ -120,7 +110,7 @@ export const authService = {
       .is("deleted_at", null)
       .maybeSingle();
 
-    if (error) throw new AppError(getErrorMessage(error));
+    if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
     return data as Profile | null;
   },
 
