@@ -121,7 +121,7 @@ export function Page() {
         {isLoading ? (
           <LoadingSpinner />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <KpiCard label="Receitas" value={formatCurrency(summary?.revenue ?? 0)} />
             <KpiCard label="Despesas" value={formatCurrency(summary?.expenses ?? 0)} />
             <KpiCard label="Lucro líquido" value={formatCurrency(summary?.netProfit ?? 0)} />

@@ -15,7 +15,7 @@ import {
   formatPlate,
 } from "@/lib/formatters";
 import { UserRole } from "@/lib/enums";
-import { Camera, ClipboardList, Edit, FileText } from "lucide-react";
+import { Camera, ClipboardList, Edit, FileText, ArrowLeft } from "lucide-react";
 
 export function Page() {
   const { id } = useParams<{ id: string }>();
@@ -45,22 +45,42 @@ export function Page() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="touch-target md:hidden"
-            onClick={() => navigate("/vistorias")}
-          >
-            ←
-          </Button>
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold">#{inspection.inspection_number}</h1>
-              <VistoriaStatusBadge status={inspection.status} />
+      <div className="page-header-strip">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-0.5 shrink-0 touch-target"
+              onClick={() => navigate("/vistorias")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-bold sm:text-2xl">#{inspection.inspection_number}</h1>
+                <VistoriaStatusBadge status={inspection.status} />
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {formatDate(inspection.inspection_date)}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">{formatDate(inspection.inspection_date)}</p>
+          </div>
+
+          <div className="flex w-full shrink-0 flex-wrap justify-end gap-2 lg:w-auto">
+            <Button asChild variant="outline" size="sm" className="touch-target">
+              <Link to={`/vistorias/${id}/editar`}>
+                <Edit className="h-4 w-4" />
+                Editar
+              </Link>
+            </Button>
+            <Button asChild size="sm" className="touch-target">
+              <Link to={`/vistorias/${id}/laudo`}>
+                <FileText className="h-4 w-4" />
+                Gerar laudo
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -216,21 +236,6 @@ export function Page() {
           </Card>
         )}
       </RoleGuard>
-
-      <div className="hidden flex-wrap gap-2 md:flex">
-        <Button asChild variant="outline" size="sm">
-          <Link to={`/vistorias/${id}/editar`}>
-            <Edit className="h-4 w-4" />
-            Editar
-          </Link>
-        </Button>
-        <Button asChild size="sm">
-          <Link to={`/vistorias/${id}/laudo`}>
-            <FileText className="h-4 w-4" />
-            Gerar laudo
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 }

@@ -65,27 +65,24 @@ export function Page() {
       <LoginShowcase />
 
       <div className="relative flex flex-1 flex-col">
-        <div className="relative h-44 overflow-hidden lg:hidden">
+        <div className="relative h-32 overflow-hidden sm:h-36 lg:hidden">
           <img
             src={PUBLIC_IMAGES.auth.loginBanner}
             alt=""
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover object-[center_35%]"
             aria-hidden
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 to-canvas" />
-          <div className="absolute bottom-4 left-4 rounded-2xl bg-white px-4 py-3 shadow-elevated">
-            <BrandLogo size="sm" />
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950/15 to-canvas" />
         </div>
 
-        <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8 lg:py-12">
-          <div className="w-full max-w-[420px]">
-            <div className="mb-8 hidden lg:block">
-              <BrandLogo size="md" showTagline />
+        <div className="flex flex-1 items-center justify-center px-4 py-6 sm:px-8 lg:py-10">
+          <div className="w-full max-w-[440px]">
+            <div className="mb-8 flex flex-col items-center gap-2 text-center sm:mb-10 lg:mb-12">
+              <BrandLogo size="xl" showTagline align="center" />
             </div>
 
             <Card className="border-border/60 shadow-elevated">
-              <CardHeader className="space-y-1 pb-2">
+              <CardHeader className="space-y-1 pb-2 text-center sm:text-left">
                 <CardTitle className="text-xl">Bem-vindo de volta</CardTitle>
                 <CardDescription>Acesse sua conta para continuar</CardDescription>
               </CardHeader>

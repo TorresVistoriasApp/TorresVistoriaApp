@@ -33,42 +33,44 @@ export function KpiCard({
   const iconTheme = ICON_THEMES[themeIndex % ICON_THEMES.length];
 
   return (
-    <div className="surface-interactive group relative overflow-hidden p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-3">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-            {heading}
-          </p>
-          {isLoading ? (
-            <div className="h-9 w-32 animate-pulse rounded-lg bg-muted" />
-          ) : (
-            <p className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">{value}</p>
+    <div className="surface-interactive relative flex h-full min-h-[120px] items-center justify-center overflow-hidden p-5">
+      {Icon && (
+        <div
+          className={cn(
+            "pointer-events-none absolute right-3.5 top-3.5 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br",
+            iconTheme,
           )}
-          {trend && (
-            <div
-              className={cn(
-                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
-                trendUp ? "bg-emerald-500/10 text-emerald-700" : "bg-red-500/10 text-red-600",
-              )}
-            >
-              {trendUp ? (
-                <TrendingUp className="mr-1 h-3.5 w-3.5" />
-              ) : (
-                <TrendingDown className="mr-1 h-3.5 w-3.5" />
-              )}
-              {trend}
-            </div>
-          )}
+          aria-hidden
+        >
+          <Icon className="h-4 w-4" strokeWidth={2} />
         </div>
-        {Icon && (
-          <div
-            className={cn(
-              "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br",
-              iconTheme,
+      )}
+
+      <div className="flex w-full min-h-[92px] flex-col items-center justify-center gap-1.5 text-center">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          {heading}
+        </p>
+        {isLoading ? (
+          <div className="h-9 w-32 animate-pulse rounded-lg bg-muted" />
+        ) : (
+          <>
+            <p className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">{value}</p>
+            {trend && (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
+                  trendUp ? "bg-emerald-500/10 text-emerald-700" : "bg-red-500/10 text-red-600",
+                )}
+              >
+                {trendUp ? (
+                  <TrendingUp className="h-3.5 w-3.5" />
+                ) : (
+                  <TrendingDown className="h-3.5 w-3.5" />
+                )}
+                {trend}
+              </span>
             )}
-          >
-            <Icon className="h-5 w-5" strokeWidth={2} />
-          </div>
+          </>
         )}
       </div>
     </div>
