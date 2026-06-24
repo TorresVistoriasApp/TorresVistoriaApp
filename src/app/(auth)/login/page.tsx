@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate } from "react-router-dom";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { loginSchema, type LoginInput } from "@/schemas/auth";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { ROUTES, DEMO_USERS, IS_DEMO_MODE } from "@/lib/constants";
 export function Page() {
   const { signIn, session, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -60,12 +62,35 @@ export function Page() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
-              <Input id="password" type="password" autoComplete="current-password" {...register("password")} />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="touch-target pr-10"
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  aria-label="Alternar visibilidade"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Entrando..." : "Entrar"}
+            <Button type="submit" className="w-full touch-target" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Entrar
+                </>
+              )}
             </Button>
             {IS_DEMO_MODE && (
               <div className="space-y-2 border-t border-border pt-4">

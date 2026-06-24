@@ -84,3 +84,5 @@ export function useValidateReport() {
     mutationFn: (verificationCode: string) => inspectionService.validateReport(verificationCode),
   });
 }
+
+export { useInspection } from "@/hooks/use-inspection-detail";

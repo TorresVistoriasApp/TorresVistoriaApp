@@ -16,7 +16,9 @@ export function Page() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Vistorias</h1>
+        <h1 className="text-2xl font-bold" data-testid="vistorias-heading">
+          Vistorias
+        </h1>
           <p className="text-sm text-muted-foreground">Histórico e gestão de laudos</p>
         </div>
         <Button asChild>

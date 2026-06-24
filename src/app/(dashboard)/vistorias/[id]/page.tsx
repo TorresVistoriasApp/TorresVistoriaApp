@@ -1,15 +1,28 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useInspection } from "@/hooks/use-inspection";
+import { useInspectionPhotos } from "@/hooks/use-photos";
+import { useInspectionChecklist } from "@/hooks/use-checklist";
 import { VistoriaStatusBadge } from "@/components/vistoria/vistoria-status-badge";
+import { RoleGuard } from "@/components/shared/role-guard";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate } from "@/lib/formatters";
+import {
+  formatDate,
+  formatDocument,
+  formatKM,
+  formatPhone,
+  formatPlate,
+} from "@/lib/formatters";
+import { UserRole } from "@/lib/enums";
 import { Camera, ClipboardList, Edit, FileText } from "lucide-react";
 
 export function Page() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: inspection, isLoading, error } = useInspection(id);
+  const { data: photos = [] } = useInspectionPhotos(id);
+  const { data: checklist = [] } = useInspectionChecklist(id);
 
   if (isLoading) {
     return (
@@ -20,67 +33,203 @@ export function Page() {
   }
 
   if (error || !inspection) {
-    return <p className="text-destructive">Vistoria não encontrada.</p>;
+    return (
+      <div className="space-y-4 text-center py-12">
+        <p className="text-muted-foreground">Vistoria não encontrada</p>
+        <Button onClick={() => navigate("/vistorias")}>Voltar</Button>
+      </div>
+    );
   }
 
+  const conformeCount = checklist.filter((i) => i.status === "CONFORME").length;
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">
-              Vistoria #{inspection.inspection_number}
-            </h1>
-            <VistoriaStatusBadge status={inspection.status} />
+    <div className="space-y-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="touch-target md:hidden"
+            onClick={() => navigate("/vistorias")}
+          >
+            ←
+          </Button>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-bold">#{inspection.inspection_number}</h1>
+              <VistoriaStatusBadge status={inspection.status} />
+            </div>
+            <p className="text-sm text-muted-foreground">{formatDate(inspection.inspection_date)}</p>
           </div>
-          <p className="text-muted-foreground">{inspection.plate} — {inspection.brand} {inspection.model}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/vistorias/${id}/editar`}><Edit className="h-4 w-4" />Editar</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/vistorias/${id}/checklist`}><ClipboardList className="h-4 w-4" />Checklist</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/vistorias/${id}/fotos`}><Camera className="h-4 w-4" />Fotos</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link to={`/vistorias/${id}/laudo`}><FileText className="h-4 w-4" />Laudo</Link>
-          </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-4 gap-2">
+        <Button
+          variant="outline"
+          className="flex h-auto touch-target flex-col py-3"
+          onClick={() => navigate(`/vistorias/${id}/editar`)}
+        >
+          <Edit className="mb-1 h-5 w-5" />
+          <span className="text-xs">Editar</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="flex h-auto touch-target flex-col py-3"
+          onClick={() => navigate(`/vistorias/${id}/fotos`)}
+        >
+          <Camera className="mb-1 h-5 w-5" />
+          <span className="text-xs">Fotos</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="flex h-auto touch-target flex-col py-3"
+          onClick={() => navigate(`/vistorias/${id}/checklist`)}
+        >
+          <ClipboardList className="mb-1 h-5 w-5" />
+          <span className="text-xs">Checklist</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="flex h-auto touch-target flex-col py-3"
+          onClick={() => navigate(`/vistorias/${id}/laudo`)}
+        >
+          <FileText className="mb-1 h-5 w-5" />
+          <span className="text-xs">Laudo</span>
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Cliente</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1 text-sm">
+          <p className="font-medium">{inspection.client_name}</p>
+          <p className="text-muted-foreground">{formatDocument(inspection.client_document)}</p>
+          {inspection.client_phone && (
+            <p className="text-muted-foreground">{formatPhone(inspection.client_phone)}</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Veículo</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-bold">{formatPlate(inspection.plate)}</span>
+            <span className="rounded-full border px-2 py-0.5 text-xs">
+              {inspection.situation.replace(/_/g, " ")}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-xs text-muted-foreground">Marca / Modelo</p>
+              <p className="font-medium">
+                {inspection.brand} {inspection.model}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Ano</p>
+              <p className="font-medium">
+                {inspection.manufacture_year}/{inspection.model_year}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Cor</p>
+              <p className="font-medium">{inspection.color}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">KM</p>
+              <p className="font-medium">{formatKM(inspection.mileage)}</p>
+            </div>
+          </div>
+          <p className="font-mono text-xs text-muted-foreground">{inspection.chassis}</p>
+        </CardContent>
+      </Card>
+
+      {inspection.opinion && (
         <Card>
-          <CardHeader><CardTitle>Cliente</CardTitle></CardHeader>
-          <CardContent className="space-y-1 text-sm">
-            <p>{inspection.client_name}</p>
-            <p>{inspection.client_document}</p>
-            <p>{inspection.client_phone ?? "—"}</p>
-            <p>{inspection.client_email ?? "—"}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Veículo</CardTitle></CardHeader>
-          <CardContent className="space-y-1 text-sm">
-            <p>Chassi: {inspection.chassis}</p>
-            <p>Cor: {inspection.color} · {inspection.fuel}</p>
-            <p>Ano: {inspection.manufacture_year}/{inspection.model_year}</p>
-            <p>KM: {inspection.mileage ?? "—"}</p>
-            <p>Situação: {inspection.situation.replace(/_/g, " ")}</p>
-          </CardContent>
-        </Card>
-        <Card className="md:col-span-2">
-          <CardHeader><CardTitle>Identificação</CardTitle></CardHeader>
-          <CardContent className="text-sm">
-            <p>{formatDate(inspection.inspection_date)} às {inspection.inspection_time.slice(0, 5)}</p>
-            <p>{inspection.location}</p>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Parecer</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm font-medium">{inspection.opinion.replace(/_/g, " ")}</p>
             {inspection.technical_notes && (
-              <p className="mt-3 text-muted-foreground">{inspection.technical_notes}</p>
+              <p className="mt-2 text-sm text-muted-foreground">{inspection.technical_notes}</p>
             )}
           </CardContent>
         </Card>
+      )}
+
+      {photos.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Fotos ({photos.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-2">
+              {photos.slice(0, 6).map((photo) => (
+                <div key={photo.id} className="aspect-square overflow-hidden rounded-lg bg-muted">
+                  {photo.public_url && (
+                    <img
+                      src={photo.public_url}
+                      alt={photo.category}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+            <Button asChild variant="ghost" className="mt-2 px-0">
+              <Link to={`/vistorias/${id}/fotos`}>Ver todas</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {checklist.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Checklist</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            {conformeCount}/{checklist.length} itens conformes
+          </CardContent>
+        </Card>
+      )}
+
+      <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
+        {inspection.internal_notes && (
+          <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-amber-800 dark:text-amber-200">
+                Comentários internos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">{inspection.internal_notes}</p>
+            </CardContent>
+          </Card>
+        )}
+      </RoleGuard>
+
+      <div className="hidden flex-wrap gap-2 md:flex">
+        <Button asChild variant="outline" size="sm">
+          <Link to={`/vistorias/${id}/editar`}>
+            <Edit className="h-4 w-4" />
+            Editar
+          </Link>
+        </Button>
+        <Button asChild size="sm">
+          <Link to={`/vistorias/${id}/laudo`}>
+            <FileText className="h-4 w-4" />
+            Gerar laudo
+          </Link>
+        </Button>
       </div>
     </div>
   );

@@ -26,12 +26,26 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
 
   const hasActive =
     Boolean(filters.plate) ||
+    Boolean(filters.search) ||
     Boolean(filters.status) ||
     Boolean(filters.dateFrom) ||
     Boolean(filters.dateTo);
 
   return (
     <div className="grid gap-4 rounded-lg border border-border bg-background p-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="sm:col-span-2">
+        <Label htmlFor="filter-search" className="mb-2 block text-xs">
+          Busca
+        </Label>
+        <SearchInput
+          id="filter-search"
+          value={filters.search ?? ""}
+          onChange={(search) => update({ search: search || undefined })}
+          placeholder="Placa, cliente, marca..."
+          aria-label="Buscar vistorias"
+        />
+      </div>
+
       <div className="sm:col-span-2">
         <Label htmlFor="filter-plate" className="mb-2 block text-xs">
           Placa

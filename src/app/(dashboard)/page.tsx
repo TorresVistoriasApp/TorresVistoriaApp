@@ -1,41 +1,37 @@
 import { Link } from "react-router-dom";
-import { Plus } from "lucide-react";
-import { useDashboardMetrics, useRecentInspections } from "@/hooks/use-dashboard";
+import { ClipboardList, DollarSign, Plus, TrendingUp, Users } from "lucide-react";
+import {
+  useDashboardMetrics,
+  useMonthlyInspections,
+  useInspectionsByBrand,
+} from "@/hooks/use-dashboard";
 import { KpiCard } from "@/components/charts/kpi-card";
+import { RevenueChart } from "@/components/charts/revenue-chart";
+import { InspectionsPieChart } from "@/components/charts/inspections-pie-chart";
+import { MonthlyOverview } from "@/components/dashboard/monthly-overview";
+import { RecentInspections } from "@/components/dashboard/recent-inspections";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/shared/loading-spinner";
+import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { ROUTES } from "@/lib/constants";
-import { formatCurrency, formatDate } from "@/lib/formatters";
-import { VistoriaStatusBadge } from "@/components/vistoria/vistoria-status-badge";
 
 export function Page() {
-  const { data: metrics, isLoading: loadingMetrics } = useDashboardMetrics();
-  const { data: recent = [], isLoading: loadingRecent } = useRecentInspections();
+  const { data: stats, isLoading: statsLoading } = useDashboardMetrics();
+  const { data: monthly = [] } = useMonthlyInspections();
+  const { data: brands = [] } = useInspectionsByBrand();
 
-  if (loadingMetrics) {
-    return (
-      <div className="flex justify-center py-12">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  const kpi = [
-    { label: "Total de vistorias", value: String(metrics?.totalInspections ?? 0) },
-    { label: "Faturamento", value: formatCurrency(metrics?.totalRevenue ?? 0) },
-    { label: "Lucro líquido", value: formatCurrency(metrics?.netProfit ?? 0) },
-    { label: "Ticket médio", value: formatCurrency(metrics?.averageTicket ?? 0) },
-  ];
+  const marginPct =
+    stats?.totalRevenue && stats.totalRevenue > 0
+      ? ((stats.netProfit / stats.totalRevenue) * 100).toFixed(1) + "%"
+      : undefined;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Indicadores em tempo real</p>
         </div>
-        <Button asChild>
+        <Button asChild className="touch-target">
           <Link to={ROUTES.inspectionNew}>
             <Plus className="h-4 w-4" />
             Nova vistoria
@@ -43,41 +39,44 @@ export function Page() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {kpi.map((m) => (
-          <KpiCard key={m.label} label={m.label} value={m.value} />
-        ))}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <KpiCard
+          title="Total vistorias"
+          value={formatNumber(stats?.totalInspections ?? 0)}
+          icon={ClipboardList}
+          isLoading={statsLoading}
+        />
+        <KpiCard
+          title="Faturamento"
+          value={formatCurrency(stats?.totalRevenue ?? 0)}
+          icon={DollarSign}
+          isLoading={statsLoading}
+        />
+        <KpiCard
+          title="Lucro líquido"
+          value={formatCurrency(stats?.netProfit ?? 0)}
+          icon={TrendingUp}
+          isLoading={statsLoading}
+          trend={marginPct}
+          trendUp={(stats?.netProfit ?? 0) >= 0}
+        />
+        <KpiCard
+          title="Ticket médio"
+          value={formatCurrency(stats?.averageTicket ?? 0)}
+          icon={Users}
+          isLoading={statsLoading}
+        />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Vistorias recentes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loadingRecent ? (
-            <LoadingSpinner />
-          ) : recent.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma vistoria registrada.</p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {recent.map((item) => (
-                <li key={item.id} className="flex items-center justify-between py-3">
-                  <Link to={`/vistorias/${item.id}`} className="hover:underline">
-                    <span className="font-medium">#{item.inspection_number} {item.plate}</span>
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      {item.brand} {item.model}
-                    </span>
-                  </Link>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">{formatDate(item.inspection_date)}</span>
-                    <VistoriaStatusBadge status={item.status} />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <MonthlyOverview data={monthly} />
+        <div className="space-y-6">
+          <RevenueChart data={monthly} />
+          <InspectionsPieChart data={brands} />
+        </div>
+      </div>
+
+      <RecentInspections />
     </div>
   );
 }

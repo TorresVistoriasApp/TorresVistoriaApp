@@ -78,3 +78,6 @@ export function useInspectionsByBrand() {
     enabled: !!profile?.company_id,
   });
 }
+
+/** Alias compatível com a spec do Passo 5 */
+export const useDashboardStats = useDashboardMetrics;
