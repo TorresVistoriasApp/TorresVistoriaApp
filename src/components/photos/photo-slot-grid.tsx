@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
   Car,
+  FileText as FileTextIcon,
   Gauge,
   Layers,
   LayoutDashboard,
@@ -17,33 +18,55 @@ import { cn } from "@/lib/utils";
 import { CheckCircle2, Camera, ImagePlus } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  FRENTE_45: Car,
-  TRASEIRA_45: Car,
+  FRENTE_45_DIREITA: Car,
+  FRENTE_45_ESQUERDA: Car,
+  TRASEIRA_45_DIREITA: Car,
+  TRASEIRA_45_ESQUERDA: Car,
   LATERAL_DIREITA: Car,
   LATERAL_ESQUERDA: Car,
+  PLACA_DIANTEIRA: Tag,
+  PLACA_TRASEIRA: Tag,
   MOTOR: Wrench,
+  MOTOR_NUMERO: Wrench,
   CHASSI: Layers,
   PAINEL: LayoutDashboard,
   HODOMETRO: Gauge,
-  ESTRUTURA: Layers,
+  ESTRUTURA_DIANTEIRA: Layers,
+  ESTRUTURA_TRASEIRA: Layers,
+  CAIXA_AR: Layers,
+  ASSOALHO_PORTA_MALAS: Layers,
   VIDROS: Scan,
   ETIQUETAS: Tag,
+  INTERIOR: LayoutDashboard,
+  CINTOS_AIRBAGS: AlertTriangle,
+  DOCUMENTOS: FileTextIcon,
   DANOS: AlertTriangle,
   EXTRAS: Plus,
 };
 
 const CATEGORY_HINTS: Record<string, string> = {
-  FRENTE_45: "Ângulo frontal 45°",
-  TRASEIRA_45: "Ângulo traseiro 45°",
+  FRENTE_45_DIREITA: "Ângulo frontal direito",
+  FRENTE_45_ESQUERDA: "Ângulo frontal esquerdo",
+  TRASEIRA_45_DIREITA: "Ângulo traseiro direito",
+  TRASEIRA_45_ESQUERDA: "Ângulo traseiro esquerdo",
   LATERAL_DIREITA: "Lateral passageiro",
   LATERAL_ESQUERDA: "Lateral motorista",
+  PLACA_DIANTEIRA: "Placa dianteira legível",
+  PLACA_TRASEIRA: "Placa traseira e lacre",
   MOTOR: "Compartimento do motor",
+  MOTOR_NUMERO: "Numeração do motor",
   CHASSI: "Numeração do chassi",
   PAINEL: "Painel e instrumentos",
   HODOMETRO: "Quilometragem visível",
-  ESTRUTURA: "Longarinas e colunas",
+  ESTRUTURA_DIANTEIRA: "Longarinas e painel dianteiro",
+  ESTRUTURA_TRASEIRA: "Longarinas e painel traseiro",
+  CAIXA_AR: "Soleiras e caixas de ar",
+  ASSOALHO_PORTA_MALAS: "Assoalho, estepe e porta-malas",
   VIDROS: "Vidros e etiquetas",
   ETIQUETAS: "Etiquetas de identificação",
+  INTERIOR: "Bancos, acabamento e comandos",
+  CINTOS_AIRBAGS: "Cintos, airbags e segurança",
+  DOCUMENTOS: "CRLV/CRV/ATPV-e",
   DANOS: "Avarias encontradas",
   EXTRAS: "Fotos complementares",
 };
@@ -61,8 +84,11 @@ export function PhotoSlotGrid({
   uploadingCategory,
   onUpload,
 }: PhotoSlotGridProps) {
-  const photosByCategory = new Map(photos.map((p) => [p.category, p]));
-  const filled = photos.length;
+  const photosByCategory = photos.reduce<Record<string, InspectionPhoto[]>>((acc, photo) => {
+    (acc[photo.category] ??= []).push(photo);
+    return acc;
+  }, {});
+  const filled = PHOTO_CATEGORIES.filter((category) => photosByCategory[category]?.length).length;
   const total = PHOTO_CATEGORIES.length;
   const progress = Math.round((filled / total) * 100);
 
@@ -72,9 +98,9 @@ export function PhotoSlotGrid({
     input.type = "file";
     input.accept = "image/*";
     input.capture = "environment";
+    input.multiple = true;
     input.onchange = () => {
-      const file = input.files?.[0];
-      if (file) onUpload(file, category);
+      Array.from(input.files ?? []).forEach((file) => onUpload(file, category));
     };
     input.click();
   };
@@ -86,14 +112,16 @@ export function PhotoSlotGrid({
           <div>
             <p className="text-sm font-bold">Checklist fotográfico</p>
             <p className="text-xs text-muted-foreground">
-              Toque em cada molde para adicionar ou substituir a foto
+              Toque em cada seção para adicionar uma ou mais fotos de evidência
             </p>
           </div>
           <div className="text-right">
             <p className="text-lg font-bold text-primary">
               {filled}/{total}
             </p>
-            <p className="text-xs text-muted-foreground">{progress}% concluído</p>
+            <p className="text-xs text-muted-foreground">
+              {photos.length} foto{photos.length === 1 ? "" : "s"} · {progress}% seções
+            </p>
           </div>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -106,7 +134,8 @@ export function PhotoSlotGrid({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {PHOTO_CATEGORIES.map((category) => {
-          const photo = photosByCategory.get(category);
+          const categoryPhotos = photosByCategory[category] ?? [];
+          const photo = categoryPhotos[categoryPhotos.length - 1];
           const Icon = CATEGORY_ICONS[category] ?? Camera;
           const label = PHOTO_CATEGORY_LABELS[category] ?? category;
           const hint = CATEGORY_HINTS[category] ?? "";
@@ -137,7 +166,11 @@ export function PhotoSlotGrid({
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-success text-white shadow-md">
-                      <CheckCircle2 className="h-4 w-4" />
+                      {categoryPhotos.length > 1 ? (
+                        <span className="text-xs font-bold">{categoryPhotos.length}</span>
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4" />
+                      )}
                     </div>
                   </>
                 ) : (
@@ -147,7 +180,7 @@ export function PhotoSlotGrid({
                     </div>
                     <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-primary/70">
                       <ImagePlus className="h-3 w-3" />
-                      Adicionar
+                      Adicionar evidência
                     </div>
                   </div>
                 )}
@@ -161,7 +194,11 @@ export function PhotoSlotGrid({
 
               <div className="border-t border-border/60 px-3 py-2.5">
                 <p className="text-xs font-bold leading-tight">{label}</p>
-                <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">{hint}</p>
+                <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">
+                  {categoryPhotos.length > 0
+                    ? `${categoryPhotos.length} foto${categoryPhotos.length === 1 ? "" : "s"} · ${hint}`
+                    : hint}
+                </p>
               </div>
             </button>
           );

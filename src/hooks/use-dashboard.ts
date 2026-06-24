@@ -1,10 +1,46 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 import { dashboardService } from "@/services/report-service";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { invalidateDashboardQueries } from "@/lib/cache-invalidation";
+
+const MAX_TIMEOUT_DELAY = 2_147_483_647;
+
+function getCurrentYear() {
+  return new Date().getFullYear();
+}
+
+function getNextYearStartDelay() {
+  const now = new Date();
+  const nextYear = new Date(now.getFullYear() + 1, 0, 1);
+  return nextYear.getTime() - now.getTime();
+}
+
+function useCurrentYear() {
+  const [year, setYear] = useState(getCurrentYear);
+
+  useEffect(() => {
+    let timer: number;
+    const scheduleNextCheck = () => {
+      const delay = Math.min(getNextYearStartDelay(), MAX_TIMEOUT_DELAY);
+      timer = window.setTimeout(() => {
+        const nextYear = getCurrentYear();
+        setYear(nextYear);
+
+        if (nextYear === year) {
+          scheduleNextCheck();
+        }
+      }, delay);
+    };
+
+    scheduleNextCheck();
+    return () => window.clearTimeout(timer);
+  }, [year]);
+
+  return year;
+}
 
 function useDashboardRealtime() {
   const qc = useQueryClient();
@@ -63,9 +99,12 @@ export function useRecentInspections() {
 
 export function useMonthlyInspections(year?: number) {
   const { profile } = useAuth();
+  const currentYear = useCurrentYear();
+  const selectedYear = year ?? currentYear;
+
   return useQuery({
-    queryKey: queryKeys.dashboard.monthly(year),
-    queryFn: () => dashboardService.getMonthlyInspections(profile!.company_id, year),
+    queryKey: queryKeys.dashboard.monthly(selectedYear),
+    queryFn: () => dashboardService.getMonthlyInspections(profile!.company_id, selectedYear),
     enabled: !!profile?.company_id,
   });
 }

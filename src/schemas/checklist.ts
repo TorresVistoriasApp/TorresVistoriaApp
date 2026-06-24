@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ChecklistStatus } from "@/lib/enums";
 
 const checklistStatusEnum = z.enum([
+  ChecklistStatus.PENDENTE,
   ChecklistStatus.CONFORME,
   ChecklistStatus.NAO_CONFORME,
   ChecklistStatus.NA,
@@ -30,4 +31,4 @@ export type ChecklistItemInput = z.infer<typeof checklistItemSchema>;
 export type ChecklistCategoryInput = z.infer<typeof checklistCategorySchema>;
 export type ChecklistBatchInput = z.infer<typeof checklistBatchSchema>;
 
-export { CHECKLIST_CATEGORIES } from "@/lib/constants";
+export { CHECKLIST_CATEGORIES } from "@/lib/checklist-catalog";

@@ -41,9 +41,15 @@ export const queries = {
     base() {
       return supabase.from("inspections").select(`
         id, inspection_number, inspection_date, inspection_time, location,
+        inspection_purpose, requester_name, requester_document,
+        buyer_name, buyer_document, seller_name, seller_document,
+        judicial_process, judicial_court, judicial_district,
         client_name, client_document, client_phone, client_email,
         plate, chassis, renavam, brand, model, version, color,
+        motor_number, vehicle_uf, registration_city_uf, vehicle_category, vehicle_species,
+        passenger_capacity, power_cv, engine_displacement,
         fuel, manufacture_year, model_year, mileage,
+        market_fipe_value, market_average_value, insurance_acceptance_percent, vehicle_condition,
         situation, opinion, status, technical_notes, internal_notes,
         company_id, inspector_id, created_at, updated_at,
         inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url)

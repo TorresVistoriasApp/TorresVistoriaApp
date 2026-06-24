@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart3,
@@ -24,15 +25,50 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { ROUTES } from "@/lib/constants";
 
+const MONTHLY_CHART_WINDOW_SIZE = 6;
+
+function getDefaultMonthlyWindowStart() {
+  return new Date().getMonth() >= MONTHLY_CHART_WINDOW_SIZE ? MONTHLY_CHART_WINDOW_SIZE : 0;
+}
+
 export function Page() {
   const { data: stats, isLoading: statsLoading } = useDashboardMetrics();
   const { data: monthly = [] } = useMonthlyInspections();
   const { data: brands = [] } = useInspectionsByBrand();
+  const [inspectionMonthStart, setInspectionMonthStart] = useState(getDefaultMonthlyWindowStart);
+  const [revenueMonthStart, setRevenueMonthStart] = useState(getDefaultMonthlyWindowStart);
 
   const marginPct =
     stats?.totalRevenue && stats.totalRevenue > 0
       ? ((stats.netProfit / stats.totalRevenue) * 100).toFixed(1) + "%"
       : undefined;
+  const maxVisibleMonthStart = Math.max(monthly.length - MONTHLY_CHART_WINDOW_SIZE, 0);
+  const currentInspectionMonthStart = Math.min(inspectionMonthStart, maxVisibleMonthStart);
+  const currentRevenueMonthStart = Math.min(revenueMonthStart, maxVisibleMonthStart);
+  const canPreviousInspectionWindow = currentInspectionMonthStart > 0;
+  const canNextInspectionWindow = currentInspectionMonthStart < maxVisibleMonthStart;
+  const canPreviousRevenueWindow = currentRevenueMonthStart > 0;
+  const canNextRevenueWindow = currentRevenueMonthStart < maxVisibleMonthStart;
+
+  function showPreviousInspectionWindow() {
+    setInspectionMonthStart((current) => Math.max(current - MONTHLY_CHART_WINDOW_SIZE, 0));
+  }
+
+  function showNextInspectionWindow() {
+    setInspectionMonthStart((current) =>
+      Math.min(current + MONTHLY_CHART_WINDOW_SIZE, maxVisibleMonthStart),
+    );
+  }
+
+  function showPreviousRevenueWindow() {
+    setRevenueMonthStart((current) => Math.max(current - MONTHLY_CHART_WINDOW_SIZE, 0));
+  }
+
+  function showNextRevenueWindow() {
+    setRevenueMonthStart((current) =>
+      Math.min(current + MONTHLY_CHART_WINDOW_SIZE, maxVisibleMonthStart),
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -83,21 +119,37 @@ export function Page() {
 
       <div className="grid gap-4 xl:grid-cols-12 xl:gap-5">
         <ChartWrapper
-          className="xl:col-span-7"
+          className="xl:col-span-6"
           title="Visão mensal"
           description="Evolução de vistorias realizadas"
           icon={BarChart3}
         >
-          <MonthlyOverview data={monthly} />
+          <MonthlyOverview
+            data={monthly}
+            visibleStart={currentInspectionMonthStart}
+            visibleSize={MONTHLY_CHART_WINDOW_SIZE}
+            canPrevious={canPreviousInspectionWindow}
+            canNext={canNextInspectionWindow}
+            onPrevious={showPreviousInspectionWindow}
+            onNext={showNextInspectionWindow}
+          />
         </ChartWrapper>
 
         <ChartWrapper
-          className="xl:col-span-5"
+          className="xl:col-span-6"
           title="Receita"
           description="Faturamento mensal consolidado"
           icon={TrendingUp}
         >
-          <RevenueChart data={monthly} />
+          <RevenueChart
+            data={monthly}
+            visibleStart={currentRevenueMonthStart}
+            visibleSize={MONTHLY_CHART_WINDOW_SIZE}
+            canPrevious={canPreviousRevenueWindow}
+            canNext={canNextRevenueWindow}
+            onPrevious={showPreviousRevenueWindow}
+            onNext={showNextRevenueWindow}
+          />
         </ChartWrapper>
 
         <ChartWrapper

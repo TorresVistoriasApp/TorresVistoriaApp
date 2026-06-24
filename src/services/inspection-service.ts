@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { CHECKLIST_CATEGORIES } from "@/lib/constants";
+import { buildChecklistSeedRows } from "@/lib/checklist-catalog";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
 import { AppError, getErrorMessage, throwIfEdgeError, throwIfError } from "@/lib/errors";
@@ -14,6 +14,16 @@ export type Inspection = {
   inspection_date: string;
   inspection_time: string;
   location: string;
+  inspection_purpose: string | null;
+  requester_name: string | null;
+  requester_document: string | null;
+  buyer_name: string | null;
+  buyer_document: string | null;
+  seller_name: string | null;
+  seller_document: string | null;
+  judicial_process: string | null;
+  judicial_court: string | null;
+  judicial_district: string | null;
   client_name: string;
   client_document: string;
   client_phone: string | null;
@@ -21,6 +31,14 @@ export type Inspection = {
   plate: string;
   chassis: string;
   renavam: string | null;
+  motor_number: string | null;
+  vehicle_uf: string | null;
+  registration_city_uf: string | null;
+  vehicle_category: string | null;
+  vehicle_species: string | null;
+  passenger_capacity: number | null;
+  power_cv: number | null;
+  engine_displacement: number | null;
   brand: string;
   model: string;
   version: string | null;
@@ -33,6 +51,10 @@ export type Inspection = {
   opinion: string | null;
   technical_notes: string | null;
   internal_notes: string | null;
+  market_fipe_value: number | null;
+  market_average_value: number | null;
+  insurance_acceptance_percent: number | null;
+  vehicle_condition: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -63,15 +85,7 @@ export type InspectionSearchResult = {
 };
 
 function buildChecklistSeed(companyId: string, inspectionId: string) {
-  return Object.entries(CHECKLIST_CATEGORIES).flatMap(([category, items]) =>
-    items.map((item_name) => ({
-      company_id: companyId,
-      inspection_id: inspectionId,
-      category,
-      item_name,
-      status: "NA" as const,
-    })),
-  );
+  return buildChecklistSeedRows(companyId, inspectionId);
 }
 
 export const inspectionService = {

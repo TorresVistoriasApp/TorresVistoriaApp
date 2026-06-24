@@ -14,6 +14,16 @@ export const InspectionSituation = {
 } as const;
 export type InspectionSituation = (typeof InspectionSituation)[keyof typeof InspectionSituation];
 
+export const InspectionPurpose = {
+  CAUTELAR: "CAUTELAR",
+  VENDA: "VENDA",
+  DETRAN: "DETRAN",
+  JUDICIAL: "JUDICIAL",
+  SEGURADORA: "SEGURADORA",
+  LEILAO: "LEILAO",
+} as const;
+export type InspectionPurpose = (typeof InspectionPurpose)[keyof typeof InspectionPurpose];
+
 export const InspectionOpinion = {
   APROVADO: "APROVADO",
   APROVADO_COM_OBSERVACOES: "APROVADO_COM_OBSERVACOES",
@@ -29,6 +39,7 @@ export const InspectionStatus = {
 export type InspectionStatus = (typeof InspectionStatus)[keyof typeof InspectionStatus];
 
 export const ChecklistStatus = {
+  PENDENTE: "PENDENTE",
   CONFORME: "CONFORME",
   NAO_CONFORME: "NAO_CONFORME",
   NA: "NA",

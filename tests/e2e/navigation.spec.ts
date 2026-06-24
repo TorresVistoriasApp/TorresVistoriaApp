@@ -24,6 +24,6 @@ test.describe("Navegação autenticada", () => {
     await page.getByRole("link", { name: /Relatórios/i }).first().click();
     await expect(page).toHaveURL("/relatorios");
     await expect(page.getByRole("heading", { name: "Relatórios" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Exportar CSV" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Exportar" })).toBeEnabled();
   });
 });

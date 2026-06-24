@@ -13,7 +13,14 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { inspectionId, storagePath = "pending/client-side.pdf" } = await req.json();
+    const {
+      inspectionId,
+      storagePath = "pending/client-side.pdf",
+      verificationCode: providedVerificationCode,
+      integrityHash: providedIntegrityHash,
+      qrCodeData = null,
+      publicUrl = null,
+    } = await req.json();
     if (!inspectionId) throw new Error("inspectionId é obrigatório");
 
     const supabase = createServiceClient();
@@ -37,8 +44,8 @@ Deno.serve(async (req) => {
       .limit(1);
 
     const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
-    const code = verificationCode();
-    const hash = randomHash();
+    const code = providedVerificationCode || verificationCode();
+    const hash = providedIntegrityHash || randomHash();
 
     const { data: report, error: reportError } = await supabase
       .from("inspection_reports")
@@ -49,6 +56,8 @@ Deno.serve(async (req) => {
         storage_path: storagePath,
         verification_code: code,
         integrity_hash: hash,
+        qr_code_data: qrCodeData,
+        public_url: publicUrl,
         generated_by: inspection.inspector_id,
       })
       .select()

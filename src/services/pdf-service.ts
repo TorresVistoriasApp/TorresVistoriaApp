@@ -2,10 +2,14 @@ import { supabase } from "@/lib/supabase";
 import { AppError, getErrorMessage, throwIfEdgeError } from "@/lib/errors";
 import type { Inspection } from "@/services/inspection-service";
 import type { ChecklistItem } from "@/services/checklist-service";
-import { formatDate, formatDateTime } from "@/lib/formatters";
+import type { InspectionPhoto } from "@/services/photo-service";
+import { buildLaudoDocDefinition } from "@/lib/laudo/laudo-doc-definition";
+import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoSettings } from "@/lib/laudo/laudo-model";
 
-async function sha256(text: string): Promise<string> {
-  const buffer = new TextEncoder().encode(text);
+const REPORTS_BUCKET = "reports";
+
+async function sha256Bytes(data: Blob | string): Promise<string> {
+  const buffer = typeof data === "string" ? new TextEncoder().encode(data) : await data.arrayBuffer();
   const hash = await crypto.subtle.digest("SHA-256", buffer);
   return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -14,6 +18,56 @@ async function sha256(text: string): Promise<string> {
 
 function generateVerificationCode(): string {
   return `TV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+}
+
+async function imageUrlToJpegDataUrl(url: string): Promise<string | undefined> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return undefined;
+    const blob = await response.blob();
+    const bitmap = await createImageBitmap(blob);
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return undefined;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, 0, 0);
+    return canvas.toDataURL("image/jpeg", 0.82);
+  } catch {
+    return undefined;
+  }
+}
+
+async function loadPhotoDataUrls(photos: InspectionPhoto[]) {
+  return Promise.all(
+    photos.map(async (photo) => ({
+      ...photo,
+      dataUrl: photo.public_url ? await imageUrlToJpegDataUrl(photo.public_url) : undefined,
+    })),
+  );
+}
+
+async function getPdfMake() {
+  const pdfMake = await import("pdfmake/build/pdfmake");
+  const pdfFonts = await import("pdfmake/build/vfs_fonts");
+  const pdfDoc = pdfMake.default ?? pdfMake;
+  const fonts = (pdfFonts as { default?: { pdfMake?: { vfs: unknown } } }).default?.pdfMake?.vfs;
+  if (fonts) {
+    (pdfDoc as { vfs?: unknown }).vfs = fonts;
+  }
+  return pdfDoc as {
+    createPdf: (def: unknown) => {
+      download: (n: string) => void;
+      getBlob: (cb: (blob: Blob) => void) => void;
+    };
+  };
+}
+
+function reportFileName(inspection: Inspection): string {
+  const safePlate = inspection.plate.replace(/[^A-Z0-9]/gi, "").toUpperCase();
+  return `laudo-${inspection.inspection_number}-${safePlate}.pdf`;
 }
 
 export const pdfService = {
@@ -59,87 +113,120 @@ export const pdfService = {
   async generateLaudoPayload(
     inspection: Inspection,
     checklist: ChecklistItem[],
+    photos: InspectionPhoto[] = [],
+    options: {
+      company?: LaudoCompany | null;
+      settings?: LaudoSettings | null;
+      inspector?: LaudoInspector | null;
+      verificationCode?: string;
+      integrityHash?: string;
+      validationUrl?: string;
+    } = {},
   ): Promise<{
     verificationCode: string;
     integrityHash: string;
     docDefinition: Record<string, unknown>;
+    payload: LaudoPayload;
   }> {
-    const verificationCode = generateVerificationCode();
-    const content = JSON.stringify({ inspection, checklist, verificationCode });
-    const integrityHash = await sha256(content);
-
-    const checklistBody = checklist.map((item) => [
-      item.category,
-      item.item_name,
-      item.status,
-      item.notes ?? "—",
-    ]);
-
-    const docDefinition = {
-      pageSize: "A4",
-      pageMargins: [40, 60, 40, 60],
-      content: [
-        { text: "TORRES VISTORIA", style: "header", alignment: "center" },
-        { text: `Laudo Nº ${inspection.inspection_number}`, alignment: "center", margin: [0, 8, 0, 16] },
-        { text: "Dados do Veículo", style: "subheader" },
-        {
-          table: {
-            widths: ["*", "*"],
-            body: [
-              ["Placa", inspection.plate],
-              ["Marca/Modelo", `${inspection.brand} ${inspection.model}`],
-              ["Chassi", inspection.chassis],
-              ["Cor", inspection.color],
-              ["Situação", inspection.situation],
-              ["Parecer", inspection.opinion ?? "Pendente"],
-            ],
-          },
-          layout: "lightHorizontalLines",
-          margin: [0, 0, 0, 16],
-        },
-        { text: "Checklist", style: "subheader" },
-        {
-          table: {
-            headerRows: 1,
-            widths: ["auto", "*", "auto", "*"],
-            body: [["Categoria", "Item", "Status", "Obs."], ...checklistBody],
-          },
-          layout: "lightHorizontalLines",
-          margin: [0, 0, 0, 16],
-        },
-        { text: "Observações Técnicas", style: "subheader" },
-        { text: inspection.technical_notes ?? "Nenhuma observação.", margin: [0, 0, 0, 16] },
-        {
-          text: `Vistoria realizada em ${formatDate(inspection.inspection_date)} às ${inspection.inspection_time.slice(0, 5)} — Local: ${inspection.location}`,
-          margin: [0, 0, 0, 24],
-        },
-        { text: `Código de verificação: ${verificationCode}`, style: "footer" },
-        { text: `Hash SHA-256: ${integrityHash.slice(0, 32)}...`, style: "footer" },
-        { text: `Gerado em ${formatDateTime(new Date())}`, style: "footer" },
-      ],
-      styles: {
-        header: { fontSize: 18, bold: true, color: "#1e40af" },
-        subheader: { fontSize: 12, bold: true, margin: [0, 8, 0, 4] },
-        footer: { fontSize: 8, color: "#64748b" },
-      },
-      defaultStyle: { fontSize: 10 },
+    const verificationCode = options.verificationCode ?? generateVerificationCode();
+    const baseHash =
+      options.integrityHash ??
+      (await sha256Bytes(JSON.stringify({ inspection, checklist, photos, verificationCode })));
+    const payload: LaudoPayload = {
+      inspection,
+      checklist,
+      photos: await loadPhotoDataUrls(photos),
+      company: options.company,
+      settings: options.settings,
+      inspector: options.inspector,
+      verificationCode,
+      integrityHash: baseHash,
+      validationUrl: options.validationUrl,
+      generatedAt: new Date(),
     };
 
-    return { verificationCode, integrityHash, docDefinition };
+    return {
+      verificationCode,
+      integrityHash: baseHash,
+      docDefinition: buildLaudoDocDefinition(payload),
+      payload,
+    };
   },
 
   async downloadLaudo(docDefinition: Record<string, unknown>, fileName: string): Promise<void> {
     try {
-      const pdfMake = await import("pdfmake/build/pdfmake");
-      const pdfFonts = await import("pdfmake/build/vfs_fonts");
-      const pdfDoc = pdfMake.default ?? pdfMake;
-      const fonts = (pdfFonts as { default?: { pdfMake?: { vfs: unknown } } }).default?.pdfMake?.vfs;
-      if (fonts) {
-        (pdfDoc as { vfs?: unknown }).vfs = fonts;
-      }
-      (pdfDoc as { createPdf: (def: unknown) => { download: (n: string) => void } })
-        .createPdf(docDefinition)
-        .download(fileName);
+      const pdfDoc = await getPdfMake();
+      pdfDoc.createPdf(docDefinition).download(fileName);
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
+  },
+
+  async createPdfBlob(docDefinition: Record<string, unknown>): Promise<Blob> {
+    try {
+      const pdfDoc = await getPdfMake();
+      return await new Promise<Blob>((resolve) => {
+        pdfDoc.createPdf(docDefinition).getBlob(resolve);
+      });
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
+  },
+
+  async registerProfessionalLaudo(params: {
+    inspection: Inspection;
+    checklist: ChecklistItem[];
+    photos: InspectionPhoto[];
+    company?: LaudoCompany | null;
+    settings?: LaudoSettings | null;
+    inspector?: LaudoInspector | null;
+    validationBaseUrl?: string;
+  }): Promise<{ verificationCode: string; integrityHash: string; storagePath: string }> {
+    try {
+      const verificationCode = generateVerificationCode();
+      const validationUrl = `${params.validationBaseUrl ?? window.location.origin}/validar/${verificationCode}`;
+      const firstPass = await this.generateLaudoPayload(params.inspection, params.checklist, params.photos, {
+        company: params.company,
+        settings: params.settings,
+        inspector: params.inspector,
+        verificationCode,
+        validationUrl,
+      });
+      const firstBlob = await this.createPdfBlob(firstPass.docDefinition);
+      const integrityHash = await sha256Bytes(firstBlob);
+      const finalPass = await this.generateLaudoPayload(params.inspection, params.checklist, params.photos, {
+        company: params.company,
+        settings: params.settings,
+        inspector: params.inspector,
+        verificationCode,
+        integrityHash,
+        validationUrl,
+      });
+      const finalBlob = await this.createPdfBlob(finalPass.docDefinition);
+      const storagePath = `${params.inspection.company_id}/${params.inspection.id}/${Date.now()}-${reportFileName(params.inspection)}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(REPORTS_BUCKET)
+        .upload(storagePath, finalBlob, { contentType: "application/pdf", upsert: false });
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrl } = supabase.storage.from(REPORTS_BUCKET).getPublicUrl(storagePath);
+
+      const { error: reportError } = await supabase.functions.invoke("create-report", {
+        body: {
+          inspectionId: params.inspection.id,
+          storagePath,
+          verificationCode,
+          integrityHash,
+          qrCodeData: validationUrl,
+          publicUrl: publicUrl.publicUrl,
+        },
+      });
+      if (reportError) throw reportError;
+
+      await this.downloadLaudo(finalPass.docDefinition, reportFileName(params.inspection));
+
+      return { verificationCode, integrityHash, storagePath };
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

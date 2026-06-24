@@ -1,3 +1,5 @@
+import { isFieldNA } from "@/lib/field-na";
+
 export function formatDate(date: string | Date | null | undefined): string {
   if (!date) return "-";
   return new Intl.DateTimeFormat("pt-BR", {
@@ -33,6 +35,7 @@ export function formatNumber(value: number | null | undefined): string {
 
 export function formatPhone(phone: string | null | undefined): string {
   if (!phone) return "-";
+  if (isFieldNA(phone)) return "Não informado";
   const cleaned = phone.replace(/\D/g, "");
   if (cleaned.length === 11) {
     return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
@@ -64,6 +67,7 @@ export function formatCNPJ(cnpj: string | null | undefined): string {
 /** Formata CPF ou CNPJ conforme o tamanho do documento. */
 export function formatDocument(doc: string | null | undefined): string {
   if (!doc) return "-";
+  if (isFieldNA(doc)) return "Não informado";
   const digits = doc.replace(/\D/g, "");
   if (digits.length === 11) return formatCPF(digits);
   if (digits.length === 14) return formatCNPJ(digits);

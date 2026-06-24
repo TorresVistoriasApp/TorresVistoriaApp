@@ -3,23 +3,28 @@ import { useForm } from "react-hook-form";
 import { vistoriaSchema, type VistoriaInput } from "@/schemas/vistoria";
 import {
   InspectionOpinion,
+  InspectionPurpose,
   InspectionSituation,
   InspectionStatus,
 } from "@/lib/enums";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClienteForm } from "@/components/forms/cliente-form";
 import { VeiculoForm } from "@/components/forms/veiculo-form";
+import { FormField } from "@/components/forms/form-field";
+import { cn } from "@/lib/utils";
 
 const opinionOptions = Object.values(InspectionOpinion);
+const purposeOptions = Object.values(InspectionPurpose);
 
 interface VistoriaFormProps {
   defaultValues?: Partial<VistoriaInput>;
   onSubmit: (data: VistoriaInput) => Promise<void>;
   submitLabel?: string;
   showInternalNotes?: boolean;
+  wizardMode?: boolean;
+  onBack?: () => void;
 }
 
 export function VistoriaForm({
@@ -27,9 +32,12 @@ export function VistoriaForm({
   onSubmit,
   submitLabel = "Salvar",
   showInternalNotes = false,
+  wizardMode = false,
+  onBack,
 }: VistoriaFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<VistoriaInput>({
@@ -37,89 +45,169 @@ export function VistoriaForm({
     defaultValues: {
       inspection_date: new Date().toISOString().slice(0, 10),
       inspection_time: new Date().toTimeString().slice(0, 5),
+      inspection_purpose: InspectionPurpose.CAUTELAR,
       situation: InspectionSituation.PARTICULAR,
       status: InspectionStatus.DRAFT,
+      client_phone: "",
+      client_email: "",
+      renavam: "",
+      version: "",
       ...defaultValues,
     },
   });
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+  const formContent = (
+    <>
       <Card>
-        <CardHeader><CardTitle>Identificação</CardTitle></CardHeader>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Identificação</CardTitle>
+        </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field label="Data" error={errors.inspection_date?.message}>
+          <FormField label="Data" error={errors.inspection_date?.message}>
             <Input type="date" {...register("inspection_date")} />
-          </Field>
-          <Field label="Hora" error={errors.inspection_time?.message}>
+          </FormField>
+          <FormField label="Hora" error={errors.inspection_time?.message}>
             <Input type="time" {...register("inspection_time")} />
-          </Field>
-          <Field label="Local" error={errors.location?.message} className="sm:col-span-2">
+          </FormField>
+          <FormField
+            label="Local"
+            error={errors.location?.message}
+            className="sm:col-span-2"
+            hint="Endereço ou ponto de referência da vistoria"
+          >
             <Input {...register("location")} placeholder="Endereço da vistoria" />
-          </Field>
+          </FormField>
+          <FormField label="Finalidade" error={errors.inspection_purpose?.message}>
+            <select
+              {...register("inspection_purpose")}
+              className={cn(
+                "flex h-11 w-full rounded-xl border border-border bg-card px-4 text-sm shadow-soft",
+                "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+              )}
+            >
+              {purposeOptions.map((purpose) => (
+                <option key={purpose} value={purpose}>
+                  {purpose.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label="Solicitante" error={errors.requester_name?.message}>
+            <Input {...register("requester_name")} placeholder="Nome de quem solicitou a vistoria" />
+          </FormField>
         </CardContent>
       </Card>
 
-      <ClienteForm register={register} errors={errors} />
-
-      <VeiculoForm register={register} errors={errors} />
+      <ClienteForm control={control} register={register} errors={errors} />
+      <VeiculoForm control={control} register={register} errors={errors} />
 
       <Card>
-        <CardHeader><CardTitle>Parecer</CardTitle></CardHeader>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Venda, justiça e mercado</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Comprador" error={errors.buyer_name?.message}>
+            <Input {...register("buyer_name")} placeholder="Nome ou razão social" />
+          </FormField>
+          <FormField label="CPF/CNPJ comprador" error={errors.buyer_document?.message}>
+            <Input {...register("buyer_document")} placeholder="Documento do comprador" />
+          </FormField>
+          <FormField label="Vendedor" error={errors.seller_name?.message}>
+            <Input {...register("seller_name")} placeholder="Nome ou razão social" />
+          </FormField>
+          <FormField label="CPF/CNPJ vendedor" error={errors.seller_document?.message}>
+            <Input {...register("seller_document")} placeholder="Documento do vendedor" />
+          </FormField>
+          <FormField label="Processo judicial" error={errors.judicial_process?.message}>
+            <Input {...register("judicial_process")} placeholder="Número do processo, se houver" />
+          </FormField>
+          <FormField label="Vara / órgão" error={errors.judicial_court?.message}>
+            <Input {...register("judicial_court")} placeholder="Vara, comarca ou órgão solicitante" />
+          </FormField>
+          <FormField label="Valor FIPE" error={errors.market_fipe_value?.message}>
+            <Input type="number" step="0.01" {...register("market_fipe_value")} placeholder="0,00" />
+          </FormField>
+          <FormField label="Aceitação seguro (%)" error={errors.insurance_acceptance_percent?.message}>
+            <Input type="number" min={0} max={100} {...register("insurance_acceptance_percent")} />
+          </FormField>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Parecer</CardTitle>
+        </CardHeader>
         <CardContent className="grid gap-4">
-          <Field label="Parecer técnico" error={errors.opinion?.message}>
+          <FormField label="Parecer técnico" error={errors.opinion?.message}>
             <select
               {...register("opinion")}
-              className="flex h-11 w-full rounded-md border border-border bg-background px-3 text-sm"
+              className={cn(
+                "flex h-11 w-full rounded-xl border border-border bg-card px-4 text-sm shadow-soft",
+                "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+              )}
             >
               <option value="">Selecione...</option>
               {opinionOptions.map((o) => (
-                <option key={o} value={o}>{o.replace(/_/g, " ")}</option>
+                <option key={o} value={o}>
+                  {o.replace(/_/g, " ")}
+                </option>
               ))}
             </select>
-          </Field>
-          <Field label="Observações técnicas" error={errors.technical_notes?.message}>
+          </FormField>
+          <FormField label="Observações técnicas" error={errors.technical_notes?.message}>
             <textarea
               {...register("technical_notes")}
               rows={4}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+              placeholder="Descreva achados relevantes, ressalvas ou recomendações..."
+              className={cn(
+                "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm shadow-soft",
+                "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+              )}
             />
-          </Field>
+          </FormField>
           {showInternalNotes && (
-            <Field label="Comentários internos (admin)" error={errors.internal_notes?.message}>
+            <FormField label="Comentários internos (admin)" error={errors.internal_notes?.message}>
               <textarea
                 {...register("internal_notes")}
                 rows={3}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                className={cn(
+                  "w-full rounded-xl border border-border bg-card px-4 py-3 text-sm shadow-soft",
+                  "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+                )}
               />
-            </Field>
+            </FormField>
           )}
         </CardContent>
       </Card>
+    </>
+  );
 
-      <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
+  if (wizardMode) {
+    return (
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {formContent}
+        <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
+          {onBack ? (
+            <Button type="button" variant="outline" className="touch-target" onClick={onBack}>
+              Voltar
+            </Button>
+          ) : (
+            <div />
+          )}
+          <Button type="submit" className="touch-target sm:min-w-[200px]" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando..." : submitLabel}
+          </Button>
+        </div>
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {formContent}
+      <Button type="submit" className="w-full touch-target sm:w-auto" disabled={isSubmitting}>
         {isSubmitting ? "Salvando..." : submitLabel}
       </Button>
     </form>
-  );
-}
-
-function Field({
-  label,
-  error,
-  children,
-  className,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <Label className="mb-1.5 block">{label}</Label>
-      {children}
-      {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
-    </div>
   );
 }

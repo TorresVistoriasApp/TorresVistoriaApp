@@ -30,16 +30,31 @@ export const ROUTES = {
   settings: "/configuracoes",
 } as const;
 
-export const CHECKLIST_CATEGORIES = {
-  ESTRUTURA: ["Longarinas", "Painéis", "Torres", "Colunas", "Teto", "Caixa de ar", "Assoalho"],
-  PINTURA: ["Original", "Repintura", "Repintura com massa", "Avariado"],
-  VIDROS: ["Original", "Substituído"],
-  IDENTIFICACAO: ["Chassi", "Motor", "Etiquetas", "Plaquetas"],
-  MECANICA: ["Suspensão", "Direção", "Freios"],
-} as const;
+export { CHECKLIST_CATEGORIES } from "@/lib/checklist-catalog";
 
 export const PHOTO_CATEGORIES = [
-  "FRENTE_45", "TRASEIRA_45", "LATERAL_DIREITA", "LATERAL_ESQUERDA",
-  "MOTOR", "CHASSI", "PAINEL", "HODOMETRO", "ESTRUTURA", "VIDROS",
-  "ETIQUETAS", "DANOS", "EXTRAS",
+  "FRENTE_45_DIREITA",
+  "FRENTE_45_ESQUERDA",
+  "TRASEIRA_45_DIREITA",
+  "TRASEIRA_45_ESQUERDA",
+  "LATERAL_DIREITA",
+  "LATERAL_ESQUERDA",
+  "PLACA_DIANTEIRA",
+  "PLACA_TRASEIRA",
+  "MOTOR",
+  "MOTOR_NUMERO",
+  "CHASSI",
+  "PAINEL",
+  "HODOMETRO",
+  "ESTRUTURA_DIANTEIRA",
+  "ESTRUTURA_TRASEIRA",
+  "CAIXA_AR",
+  "ASSOALHO_PORTA_MALAS",
+  "VIDROS",
+  "ETIQUETAS",
+  "INTERIOR",
+  "CINTOS_AIRBAGS",
+  "DOCUMENTOS",
+  "DANOS",
+  "EXTRAS",
 ] as const;

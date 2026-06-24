@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RequirePermission } from "@/app/require-role";
 import { PageHeader } from "@/components/shared/page-header";
+import { ExportButton } from "@/components/shared/export-button";
 import { FinancialEntryForm } from "@/components/forms/financial-entry-form";
 import {
   useFinancialEntries,
@@ -26,7 +27,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { exportToExcel } from "@/lib/export-excel";
-import { exportToCsv } from "@/lib/export-csv";
+import { exportToPdf } from "@/lib/export-pdf";
 import type { FinancialEntry } from "@/services/financial-service";
 
 export function Page() {
@@ -46,36 +47,50 @@ export function Page() {
     }
   };
 
-  const exportRows = entries.map((e) => ({
+  const exportPdfRows = entries.map((e) => ({
+    tipo: e.entry_type,
+    descricao: e.description,
+    valor: formatCurrency(Number(e.amount)),
+    data: formatDate(e.entry_date),
+  }));
+
+  const exportSpreadsheetRows = entries.map((e) => ({
     tipo: e.entry_type,
     descricao: e.description,
     valor: Number(e.amount),
     data: e.entry_date,
   }));
 
-  const exportCsv = () => {
-    exportToCsv(
-      exportRows,
+  const exportPdf = async () => {
+    await exportToPdf(
+      exportPdfRows,
       [
         { header: "Tipo", key: "tipo" },
         { header: "Descrição", key: "descricao" },
         { header: "Valor", key: "valor" },
         { header: "Data", key: "data" },
       ],
-      "financeiro.csv",
+      "financeiro.pdf",
+      "Relatório financeiro",
+      "Receitas, despesas e fluxo de caixa",
     );
   };
 
   const exportExcel = async () => {
     await exportToExcel(
-      exportRows,
+      exportSpreadsheetRows,
       [
         { header: "Tipo", key: "tipo", width: 12 },
         { header: "Descrição", key: "descricao", width: 32 },
-        { header: "Valor", key: "valor", width: 14 },
+        { header: "Valor", key: "valor", width: 14, numFmt: '"R$" #,##0.00' },
         { header: "Data", key: "data", width: 14 },
       ],
       "financeiro.xlsx",
+      {
+        title: "Relatório financeiro",
+        subtitle: "Receitas, despesas e fluxo de caixa",
+        sheetName: "Financeiro",
+      },
     );
   };
 
@@ -86,19 +101,18 @@ export function Page() {
           title="Financeiro"
           description="Receitas, despesas e fluxo de caixa"
           actions={
-            <>
-              <Button asChild variant="outline" size="sm" className="touch-target">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button asChild variant="outline" size="sm">
                 <Link to="/financeiro/receitas">Receitas</Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="touch-target">
+              <Button asChild variant="outline" size="sm">
                 <Link to="/financeiro/despesas">Despesas</Link>
               </Button>
-              <Button variant="outline" size="sm" className="touch-target" onClick={exportCsv} disabled={entries.length === 0}>
-                Exportar CSV
-              </Button>
-              <Button variant="outline" size="sm" className="touch-target" onClick={() => void exportExcel()} disabled={entries.length === 0}>
-                Exportar Excel
-              </Button>
+              <ExportButton
+                onExportPdf={exportPdf}
+                onExportExcel={exportExcel}
+                disabled={entries.length === 0}
+              />
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="accent" className="touch-target">
@@ -114,7 +128,7 @@ export function Page() {
                   <FinancialEntryForm onSubmit={handleSubmit} />
                 </DialogContent>
               </Dialog>
-            </>
+            </div>
           }
         />
 
