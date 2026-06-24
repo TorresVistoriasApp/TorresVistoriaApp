@@ -22,7 +22,7 @@ async function requireSuperAdmin(req: Request) {
   } = await userClient.auth.getUser();
 
   if (authError || !user) {
-    return { error: "Não autenticado", status: 401 as const };
+    return { error: "Sessão não autenticada. Efetue login novamente.", status: 401 as const };
   }
 
   const supabase = createServiceClient();
@@ -35,10 +35,34 @@ async function requireSuperAdmin(req: Request) {
 
   if (profileError) throw profileError;
   if (profile?.role !== "SUPER_ADMIN") {
-    return { error: "Acesso negado", status: 403 as const };
+    return { error: "Você não possui permissão para executar esta operação.", status: 403 as const };
   }
 
   return { supabase, adminProfile: profile, adminId: user.id };
+}
+
+function formatAuthError(message: string): string {
+  const normalized = message.trim();
+  if (/already been registered|already registered|user already exists/i.test(normalized)) {
+    return "Já existe um usuário cadastrado com este endereço de e-mail.";
+  }
+  if (/invalid email|unable to validate email/i.test(normalized)) {
+    return "O endereço de e-mail informado é inválido.";
+  }
+  if (/password/i.test(normalized) && /(weak|least|short|invalid)/i.test(normalized)) {
+    return "A senha informada não atende aos requisitos mínimos de segurança.";
+  }
+  if (/duplicate key|unique constraint/i.test(normalized)) {
+    return "Já existe um registro com estes dados. Verifique as informações informadas.";
+  }
+  return normalized;
+}
+
+function errorResponse(message: string, status = 400) {
+  return new Response(JSON.stringify({ error: formatAuthError(message) }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status,
+  });
 }
 
 Deno.serve(async (req) => {
@@ -60,10 +84,10 @@ Deno.serve(async (req) => {
     if (action === "create" || body.password) {
       const { email, fullName, role, password } = body;
       if (!email || !fullName || !role || !password) {
-        throw new Error("email, fullName, role e password são obrigatórios");
+        throw new Error("Informe nome, e-mail, função e senha inicial.");
       }
       if (!ALLOWED_ROLES.includes(role as AllowedRole)) {
-        throw new Error("Função inválida");
+        throw new Error("A função informada é inválida.");
       }
 
       const passwordError = validatePassword(password);
@@ -86,7 +110,7 @@ Deno.serve(async (req) => {
       });
 
       if (createError) throw createError;
-      if (!created.user) throw new Error("Falha ao criar usuário");
+      if (!created.user) throw new Error("Não foi possível concluir o cadastro do usuário.");
 
       const { error: profileError } = await supabase
         .from("profiles")
@@ -110,10 +134,10 @@ Deno.serve(async (req) => {
     if (action === "update") {
       const { userId, email, fullName, role } = body;
       if (!userId || !email || !fullName || !role) {
-        throw new Error("userId, email, fullName e role são obrigatórios");
+        throw new Error("Informe usuário, nome, e-mail e função.");
       }
       if (!ALLOWED_ROLES.includes(role as AllowedRole)) {
-        throw new Error("Função inválida");
+        throw new Error("A função informada é inválida.");
       }
 
       const { data: target, error: targetError } = await supabase
@@ -125,7 +149,7 @@ Deno.serve(async (req) => {
 
       if (targetError) throw targetError;
       if (target.company_id !== adminProfile.company_id) {
-        throw new Error("Usuário não pertence à sua empresa");
+        throw new Error("O usuário selecionado não pertence à sua empresa.");
       }
 
       const normalizedEmail = String(email).trim().toLowerCase();
@@ -161,10 +185,10 @@ Deno.serve(async (req) => {
     if (action === "set-active") {
       const { userId, isActive } = body;
       if (!userId || typeof isActive !== "boolean") {
-        throw new Error("userId e isActive são obrigatórios");
+        throw new Error("Informe o usuário e o status de acesso desejado.");
       }
       if (userId === adminId && !isActive) {
-        throw new Error("Você não pode desativar sua própria conta");
+        throw new Error("Não é permitido desativar a própria conta de acesso.");
       }
 
       const { data: target, error: targetError } = await supabase
@@ -176,7 +200,7 @@ Deno.serve(async (req) => {
 
       if (targetError) throw targetError;
       if (target.company_id !== adminProfile.company_id) {
-        throw new Error("Usuário não pertence à sua empresa");
+        throw new Error("O usuário selecionado não pertence à sua empresa.");
       }
 
       const { error: profileUpdateError } = await supabase
@@ -200,7 +224,7 @@ Deno.serve(async (req) => {
 
     const { email, fullName, role } = body;
     if (!email || !fullName || !role) {
-      throw new Error("email, fullName e role são obrigatórios");
+      throw new Error("Informe nome, e-mail e função.");
     }
 
     const origin = req.headers.get("origin") ?? Deno.env.get("SITE_URL") ?? "";
@@ -213,7 +237,7 @@ Deno.serve(async (req) => {
     );
 
     if (inviteError) throw inviteError;
-    if (!invited.user) throw new Error("Falha ao convidar usuário");
+    if (!invited.user) throw new Error("Não foi possível concluir o envio do convite.");
 
     const { error: updateError } = await supabase.auth.admin.updateUserById(invited.user.id, {
       app_metadata: {
@@ -228,15 +252,12 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         userId: invited.user.id,
-        message: "Convite enviado por e-mail",
+        message: "Convite enviado por e-mail com sucesso.",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro desconhecido";
-    return new Response(JSON.stringify({ error: message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    return errorResponse(message);
   }
 });

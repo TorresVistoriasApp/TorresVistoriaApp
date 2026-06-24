@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordStrengthInput } from "@/components/shared/password-strength-input";
+import { formatUserFacingError, USER_MESSAGES } from "@/lib/user-facing-errors";
 
 interface CreateUserDialogProps {
   open: boolean;
@@ -75,7 +76,9 @@ export function CreateUserDialog({ open, onOpenChange, onSubmit }: CreateUserDia
               await onSubmit(data);
               onOpenChange(false);
             } catch (err) {
-              setSubmitError(err instanceof Error ? err.message : "Erro ao criar usuário");
+              setSubmitError(
+                formatUserFacingError(err instanceof Error ? err.message : USER_MESSAGES.createFailed),
+              );
             } finally {
               setSubmitting(false);
             }
