@@ -24,7 +24,7 @@ export function MobileNav({ className }: MobileNavProps) {
             end={to === ROUTES.dashboard}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition-colors",
+                "touch-target flex min-h-[44px] flex-col items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors",
                 isActive ? "text-primary" : "text-muted-foreground",
               )
             }

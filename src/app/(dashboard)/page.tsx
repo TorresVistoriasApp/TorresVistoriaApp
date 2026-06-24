@@ -5,7 +5,8 @@ import {
   useMonthlyInspections,
   useInspectionsByBrand,
 } from "@/hooks/use-dashboard";
-import { KpiCard } from "@/components/charts/kpi-card";
+import { StatsGrid } from "@/components/dashboard/stats-grid";
+import { ChartWrapper } from "@/components/charts/chart-wrapper";
 import { RevenueChart } from "@/components/charts/revenue-chart";
 import { InspectionsPieChart } from "@/components/charts/inspections-pie-chart";
 import { MonthlyOverview } from "@/components/dashboard/monthly-overview";
@@ -39,40 +40,48 @@ export function Page() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard
-          title="Total vistorias"
-          value={formatNumber(stats?.totalInspections ?? 0)}
-          icon={ClipboardList}
-          isLoading={statsLoading}
-        />
-        <KpiCard
-          title="Faturamento"
-          value={formatCurrency(stats?.totalRevenue ?? 0)}
-          icon={DollarSign}
-          isLoading={statsLoading}
-        />
-        <KpiCard
-          title="Lucro líquido"
-          value={formatCurrency(stats?.netProfit ?? 0)}
-          icon={TrendingUp}
-          isLoading={statsLoading}
-          trend={marginPct}
-          trendUp={(stats?.netProfit ?? 0) >= 0}
-        />
-        <KpiCard
-          title="Ticket médio"
-          value={formatCurrency(stats?.averageTicket ?? 0)}
-          icon={Users}
-          isLoading={statsLoading}
-        />
-      </div>
+      <StatsGrid
+        items={[
+          {
+            title: "Total vistorias",
+            value: formatNumber(stats?.totalInspections ?? 0),
+            icon: ClipboardList,
+            isLoading: statsLoading,
+          },
+          {
+            title: "Faturamento",
+            value: formatCurrency(stats?.totalRevenue ?? 0),
+            icon: DollarSign,
+            isLoading: statsLoading,
+          },
+          {
+            title: "Lucro líquido",
+            value: formatCurrency(stats?.netProfit ?? 0),
+            icon: TrendingUp,
+            isLoading: statsLoading,
+            trend: marginPct,
+            trendUp: (stats?.netProfit ?? 0) >= 0,
+          },
+          {
+            title: "Ticket médio",
+            value: formatCurrency(stats?.averageTicket ?? 0),
+            icon: Users,
+            isLoading: statsLoading,
+          },
+        ]}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <MonthlyOverview data={monthly} />
+        <ChartWrapper title="Visão mensal">
+          <MonthlyOverview data={monthly} />
+        </ChartWrapper>
         <div className="space-y-6">
-          <RevenueChart data={monthly} />
-          <InspectionsPieChart data={brands} />
+          <ChartWrapper title="Receita">
+            <RevenueChart data={monthly} />
+          </ChartWrapper>
+          <ChartWrapper title="Vistorias por marca">
+            <InspectionsPieChart data={brands} />
+          </ChartWrapper>
         </div>
       </div>
 

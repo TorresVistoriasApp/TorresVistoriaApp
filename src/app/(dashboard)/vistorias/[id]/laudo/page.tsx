@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PdfDownloadButton } from "@/components/pdf/pdf-download-button";
+import { PdfPreview } from "@/components/pdf/pdf-preview";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { useInspection, useInspectionChecklist } from "@/hooks/use-inspection";
 import { useGenerateReport } from "@/hooks/use-inspections";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate, formatPlate } from "@/lib/formatters";
 import { ArrowLeft, CheckCircle, FileText } from "lucide-react";
 
 export function Page() {
@@ -64,38 +63,7 @@ export function Page() {
         </div>
       )}
 
-      <Card className="border-2">
-        <CardHeader>
-          <CardTitle>Laudo #{inspection.inspection_number}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs text-muted-foreground">Data</p>
-              <p className="font-medium">{formatDate(inspection.inspection_date)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Placa</p>
-              <p className="font-medium">{formatPlate(inspection.plate)}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-xs text-muted-foreground">Veículo</p>
-              <p className="font-medium">
-                {inspection.brand} {inspection.model}
-              </p>
-            </div>
-          </div>
-          {inspection.opinion && (
-            <div className="rounded-lg border bg-muted/30 p-3 text-center">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Parecer</p>
-              <p className="mt-1 text-lg font-bold">{inspection.opinion.replace(/_/g, " ")}</p>
-            </div>
-          )}
-          <p className="text-muted-foreground">
-            {checklist.length} itens de checklist · {inspection.technical_notes ? "Com observações" : "Sem observações"}
-          </p>
-        </CardContent>
-      </Card>
+      <PdfPreview inspection={inspection} checklist={checklist} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Button

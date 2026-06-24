@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { MobileDrawer } from "@/components/layout/mobile-drawer";
+import { Footer } from "@/components/layout/footer";
 
 export function AppShell({ children }: { children?: ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
 
       <MobileDrawer />
       <MobileNav />
+      <Footer />
     </div>
   );
 }

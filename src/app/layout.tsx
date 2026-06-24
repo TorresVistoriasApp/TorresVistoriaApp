@@ -1,6 +1,10 @@
-import type { ReactNode } from "react";
+import { Outlet } from "react-router-dom";
 import { AppProviders } from "@/app/providers";
 
-export function RootLayout({ children }: { children: ReactNode }) {
-  return <AppProviders>{children}</AppProviders>;
+export function RootLayout() {
+  return (
+    <AppProviders>
+      <Outlet />
+    </AppProviders>
+  );
 }

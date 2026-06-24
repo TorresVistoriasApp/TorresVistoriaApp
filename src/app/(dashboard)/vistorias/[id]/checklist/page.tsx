@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChecklistForm } from "@/components/forms/checklist-form";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
@@ -13,12 +12,6 @@ export function Page() {
   const { data: items = [], isLoading } = useInspectionChecklist(id);
   const updateItem = useUpdateChecklistItem(id!);
 
-  const progress = useMemo(() => {
-    const total = items.length;
-    const conforme = items.filter((i) => i.status === ChecklistStatus.CONFORME).length;
-    return { total, conforme, pct: total > 0 ? (conforme / total) * 100 : 0 };
-  }, [items]);
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -32,17 +25,8 @@ export function Page() {
         </Button>
         <div>
           <h1 className="text-xl font-bold">Checklist</h1>
-          <p className="text-xs text-muted-foreground">
-            {progress.conforme}/{progress.total} conforme · Passo 3 de 3
-          </p>
+          <p className="text-xs text-muted-foreground">Passo 3 de 3 · Toque no status e adicione observações</p>
         </div>
-      </div>
-
-      <div className="h-2 overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full bg-green-500 transition-all"
-          style={{ width: `${progress.pct}%` }}
-        />
       </div>
 
       {isLoading ? (
