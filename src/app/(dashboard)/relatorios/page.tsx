@@ -3,18 +3,19 @@ import { PageHeader } from "@/components/shared/page-header";
 import { RequirePermission } from "@/app/require-role";
 import { useInspections } from "@/hooks/use-inspections";
 import { VistoriaFilters } from "@/components/vistoria/vistoria-filters";
-import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { DataTable } from "@/components/shared/data-table";
 import { ExportButton } from "@/components/shared/export-button";
+import { ReportsSummary } from "@/components/reports/reports-summary";
+import { ReportsResults } from "@/components/reports/reports-results";
 import { formatDate } from "@/lib/formatters";
 import { exportToExcel } from "@/lib/export-excel";
 import { exportToPdf } from "@/lib/export-pdf";
 import type { InspectionFilters } from "@/services/inspection-service";
-import type { Inspection } from "@/services/inspection-service";
 
 export function Page() {
   const [filters, setFilters] = useState<InspectionFilters>({});
   const { data = [], isLoading } = useInspections(filters);
+
+  const resultCountLabel = `${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`;
 
   const exportSpreadsheetRows = useMemo(
     () =>
@@ -58,7 +59,7 @@ export function Page() {
       ],
       "relatorio-vistorias.pdf",
       "Relatório de vistorias",
-      `${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`,
+      resultCountLabel,
     );
   };
 
@@ -77,7 +78,7 @@ export function Page() {
       "relatorio-vistorias.xlsx",
       {
         title: "Relatório de vistorias",
-        subtitle: `${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`,
+        subtitle: resultCountLabel,
         sheetName: "Vistorias",
       },
     );
@@ -85,38 +86,26 @@ export function Page() {
 
   return (
     <RequirePermission permission="reports.export">
-      <div className="space-y-8">
+      <div className="space-y-6">
         <PageHeader
           title="Relatórios"
-          description={`${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`}
+          badge="Análise e exportação"
+          description="Consulte vistorias com filtros avançados e exporte os resultados em PDF ou Excel."
           actions={
             <ExportButton
               size="default"
               onExportPdf={exportPdf}
               onExportExcel={exportExcel}
-              disabled={data.length === 0}
+              disabled={data.length === 0 || isLoading}
             />
           }
         />
 
+        <ReportsSummary inspections={data} isLoading={isLoading} />
+
         <VistoriaFilters filters={filters} onChange={setFilters} />
 
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : (
-          <DataTable<Inspection>
-            columns={[
-              { key: "inspection_number", header: "#", render: (i) => i.inspection_number },
-              { key: "plate", header: "Placa", render: (i) => i.plate },
-              { key: "client_name", header: "Cliente", render: (i) => i.client_name },
-              { key: "inspection_date", header: "Data", render: (i) => formatDate(i.inspection_date) },
-              { key: "status", header: "Status", render: (i) => i.status },
-            ]}
-            rows={data}
-            rowKey={(i) => i.id}
-            emptyMessage="Nenhuma vistoria encontrada com os filtros aplicados."
-          />
-        )}
+        <ReportsResults inspections={data} isLoading={isLoading} />
       </div>
     </RequirePermission>
   );

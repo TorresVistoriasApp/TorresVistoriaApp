@@ -1,5 +1,6 @@
 import { KpiCard } from "@/components/charts/kpi-card";
 import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type StatItem = {
   title: string;
@@ -10,9 +11,19 @@ export type StatItem = {
   trendUp?: boolean;
 };
 
-export function StatsGrid({ items }: { items: StatItem[] }) {
+type StatsGridProps = {
+  items: StatItem[];
+  className?: string;
+};
+
+export function StatsGrid({ items, className }: StatsGridProps) {
   return (
-    <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 lg:gap-4">
+    <div
+      className={cn(
+        "grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4",
+        className,
+      )}
+    >
       {items.map((item, index) => (
         <KpiCard key={item.title} {...item} themeIndex={index} />
       ))}

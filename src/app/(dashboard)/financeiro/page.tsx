@@ -136,11 +136,11 @@ export function Page() {
         {isLoading ? (
           <LoadingSpinner />
         ) : (
-          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiCard label="Receitas" value={formatCurrency(summary?.revenue ?? 0)} />
-            <KpiCard label="Despesas" value={formatCurrency(summary?.expenses ?? 0)} />
-            <KpiCard label="Lucro líquido" value={formatCurrency(summary?.netProfit ?? 0)} />
-            <KpiCard label="Margem" value={`${(summary?.margin ?? 0).toFixed(1)}%`} />
+          <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+            <KpiCard label="Receitas" value={formatCurrency(summary?.revenue ?? 0)} themeIndex={0} />
+            <KpiCard label="Despesas" value={formatCurrency(summary?.expenses ?? 0)} themeIndex={1} />
+            <KpiCard label="Lucro líquido" value={formatCurrency(summary?.netProfit ?? 0)} themeIndex={2} />
+            <KpiCard label="Margem" value={`${(summary?.margin ?? 0).toFixed(1)}%`} themeIndex={3} />
           </div>
         )}
 
