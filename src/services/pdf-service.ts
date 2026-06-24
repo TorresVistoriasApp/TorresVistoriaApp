@@ -143,7 +143,7 @@ export const pdfService = {
       verificationCode,
       integrityHash: baseHash,
       validationUrl: options.validationUrl,
-      logoDataUrl: await imageUrlToJpegDataUrl(options.company?.logo_url || PUBLIC_IMAGES.brand.trim),
+      logoDataUrl: await imageUrlToJpegDataUrl(PUBLIC_IMAGES.brand.trim),
       generatedAt: new Date(),
     };
 

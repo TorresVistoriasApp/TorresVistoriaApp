@@ -1,6 +1,7 @@
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
 import { PAINT_PHOTO_CATEGORIES } from "@/lib/constants";
 import { getChecklistCategoryLabel, getChecklistStatusLabel } from "@/lib/checklist-catalog";
+import { PAINT_PARTS } from "@/lib/paint-catalog";
 import { formatDate, formatDocument, formatKM, formatPhone, formatPlate } from "@/lib/formatters";
 import {
   getLaudoLegalFooter,
@@ -14,6 +15,7 @@ import {
 type PdfNode = Record<string, unknown>;
 
 const EMPTY_VALUE = "Não informado";
+const NAVY = "#020f2f";
 
 function value(v: string | number | null | undefined): string {
   if (v === null || v === undefined || v === "") return EMPTY_VALUE;
@@ -29,24 +31,54 @@ function extra(inspection: LaudoPayload["inspection"], key: string): string | nu
 function sectionTitle(text: string, color: string): PdfNode {
   return {
     text,
-    color,
+    color: "#ffffff",
+    fillColor: color,
     bold: true,
-    fontSize: 12,
-    margin: [0, 16, 0, 6],
+    fontSize: 10,
+    alignment: "center",
+    margin: [0, 10, 0, 6],
   };
 }
 
-function infoTable(rows: [string, string][]): PdfNode {
+function premiumHeader(text: string): PdfNode {
+  return {
+    text,
+    color: "#ffffff",
+    fillColor: NAVY,
+    bold: true,
+    fontSize: 10,
+    alignment: "center",
+    margin: [0, 0, 0, 0],
+  };
+}
+
+function fieldNode(label: string, content: string): PdfNode {
+  return {
+    stack: [
+      { text: label, fontSize: 7, color: "#64748b" },
+      { text: content || EMPTY_VALUE, fontSize: 9, bold: true, margin: [0, 1, 0, 0] },
+    ],
+    margin: [0, 0, 0, 7],
+  };
+}
+
+function infoGrid(rows: [string, string][], columnsCount = 3): PdfNode {
+  const body: PdfNode[][] = [];
+  for (let index = 0; index < rows.length; index += columnsCount) {
+    const slice = rows.slice(index, index + columnsCount);
+    body.push([
+      ...slice.map(([label, content]) => fieldNode(label, content)),
+      ...Array.from({ length: columnsCount - slice.length }, () => ({ text: "" })),
+    ]);
+  }
+
   return {
     table: {
-      widths: ["32%", "68%"],
-      body: rows.map(([label, content]) => [
-        { text: label, style: "tableLabel" },
-        { text: content || EMPTY_VALUE, style: "tableValue" },
-      ]),
+      widths: Array.from({ length: columnsCount }, () => "*"),
+      body,
     },
-    layout: "lightHorizontalLines",
-    margin: [0, 0, 0, 8],
+    layout: "noBorders",
+    margin: [0, 2, 0, 8],
   };
 }
 
@@ -63,10 +95,10 @@ function statCard(label: string, valueText: string, color: string): PdfNode {
 
 function checklistStatusNode(status: string): PdfNode {
   const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
-    CONFORME: { label: "Conforme", color: "#16a34a", icon: "✓" },
-    NAO_CONFORME: { label: "Não conforme", color: "#dc2626", icon: "✕" },
-    NA: { label: "Não se aplica", color: "#64748b", icon: "–" },
-    PENDENTE: { label: "Pendente", color: "#f59e0b", icon: "!" },
+    CONFORME: { label: "OK Conforme", color: "#16a34a", icon: "" },
+    NAO_CONFORME: { label: "Não conforme", color: "#dc2626", icon: "!" },
+    NA: { label: "Não se aplica", color: "#64748b", icon: "" },
+    PENDENTE: { label: "Pendente", color: "#f59e0b", icon: "" },
   };
   const config = statusConfig[status] ?? {
     label: getChecklistStatusLabel(status),
@@ -75,7 +107,7 @@ function checklistStatusNode(status: string): PdfNode {
   };
 
   return {
-    text: `${config.icon} ${config.label}`,
+    text: `${config.icon ? `${config.icon} ` : ""}${config.label}`,
     fontSize: 8,
     bold: true,
     color: config.color,
@@ -124,7 +156,7 @@ function checklistBarChart(payload: LaudoPayload): PdfNode {
   };
 }
 
-function buildChecklistSection(payload: LaudoPayload, color: string): PdfNode[] {
+function buildChecklistSection(payload: LaudoPayload): PdfNode[] {
   const grouped = payload.checklist.reduce<Record<string, typeof payload.checklist>>((acc, item) => {
     (acc[item.category] ??= []).push(item);
     return acc;
@@ -143,11 +175,11 @@ function buildChecklistSection(payload: LaudoPayload, color: string): PdfNode[] 
     ]);
 
     return [
-      sectionTitle(getChecklistCategoryLabel(category), color),
+      premiumHeader(getChecklistCategoryLabel(category).toUpperCase()),
       {
         table: {
           headerRows: 1,
-          widths: ["38%", "18%", "44%"],
+          widths: ["40%", "20%", "40%"],
           body: [
             [
               { text: "Item avaliado", style: "tableHeader" },
@@ -157,18 +189,24 @@ function buildChecklistSection(payload: LaudoPayload, color: string): PdfNode[] 
             ...rows,
           ],
         },
-        layout: "lightHorizontalLines",
+        layout: {
+          hLineColor: () => "#cbd5e1",
+          vLineColor: () => "#e2e8f0",
+          hLineWidth: (i: number) => (i === 0 || i === 1 ? 0.8 : 0.4),
+          vLineWidth: () => 0.2,
+          paddingLeft: () => 5,
+          paddingRight: () => 5,
+          paddingTop: () => 4,
+          paddingBottom: () => 4,
+        },
+        margin: [0, 0, 0, 8],
       },
     ];
   });
 }
 
-function photoNode(photo: LaudoPhoto): PdfNode {
-  const label = photo.label ?? PHOTO_CATEGORY_LABELS[photo.category] ?? photo.category.replace(/_/g, " ");
-  const geo =
-    photo.latitude != null && photo.longitude != null
-      ? `Geo: ${photo.latitude.toFixed(5)}, ${photo.longitude.toFixed(5)}`
-      : "Geo: não registrada";
+function photoNode(photo: LaudoPhoto, labelOverride?: string): PdfNode {
+  const label = labelOverride ?? photo.label ?? PHOTO_CATEGORY_LABELS[photo.category] ?? photo.category.replace(/_/g, " ");
 
   if (!photo.dataUrl) {
     return {
@@ -182,15 +220,49 @@ function photoNode(photo: LaudoPhoto): PdfNode {
 
   return {
     stack: [
-      { image: photo.dataUrl, width: 240, height: 150, fit: [240, 150], alignment: "center" },
-      { text: label, bold: true, fontSize: 8, margin: [0, 4, 0, 0] },
-      { text: `${formatDate(photo.created_at)} · ${geo}`, fontSize: 7, color: "#64748b" },
+      { image: photo.dataUrl, width: 242, height: 136, fit: [242, 136], alignment: "center" },
+      { text: label, bold: true, fontSize: 8, color: "#075985", alignment: "center", margin: [0, 4, 0, 0] },
     ],
     margin: [0, 0, 0, 12],
   };
 }
 
-function buildPhotoSection(photos: LaudoPhoto[], color: string): PdfNode[] {
+function buildPaintSection(payload: LaudoPayload): PdfNode[] {
+  const photosByCategory = payload.photos.reduce<Record<string, LaudoPhoto[]>>((acc, photo) => {
+    (acc[photo.category] ??= []).push(photo);
+    return acc;
+  }, {});
+  const paintingPhotos = PAINT_PARTS.flatMap((part) =>
+    (photosByCategory[part.photoCategory] ?? []).map((photo) => ({
+      photo,
+      label: `${part.number} · ${part.label}`,
+    })),
+  );
+
+  if (paintingPhotos.length === 0) return [];
+
+  return [
+    premiumHeader("PINTURA"),
+    ...photoPairs(
+      paintingPhotos.map((item) => item.photo),
+      paintingPhotos.map((item) => item.label),
+    ),
+  ];
+}
+
+function photoPairs(photos: LaudoPhoto[], labels?: string[]) {
+  const pairs: PdfNode[][] = [];
+  for (let index = 0; index < photos.length; index += 2) {
+    pairs.push([
+      photoNode(photos[index], labels?.[index]),
+      photos[index + 1] ? photoNode(photos[index + 1], labels?.[index + 1]) : {},
+    ]);
+  }
+  return pairs.map((columns) => ({ columns, columnGap: 12, margin: [0, 0, 0, 4] }));
+}
+
+function buildPhotoSection(payload: LaudoPayload, color: string): PdfNode[] {
+  const photos = payload.photos;
   if (photos.length === 0) {
     return [
       sectionTitle("Registro fotográfico", color),
@@ -209,37 +281,16 @@ function buildPhotoSection(photos: LaudoPhoto[], color: string): PdfNode[] {
       !paintCategories.has(photo.category),
   );
 
-  function photoPairs(items: LaudoPhoto[]) {
-    const pairs: PdfNode[][] = [];
-    for (let index = 0; index < items.length; index += 2) {
-      pairs.push([photoNode(items[index]), items[index + 1] ? photoNode(items[index + 1]) : {}]);
-    }
-    return pairs.map((columns) => ({ columns, columnGap: 12, margin: [0, 0, 0, 4] }));
-  }
+  const nodes: PdfNode[] = [premiumHeader("REGISTRO FOTOGRÁFICO"), ...photoPairs(standard)];
 
-  const nodes: PdfNode[] = [sectionTitle("Registro fotográfico completo", color), ...photoPairs(standard)];
-
-  if (painting.length) {
-    if (standard.length) nodes.push({ text: "", pageBreak: "before" });
-    nodes.push(
-      sectionTitle("Pintura", color),
-      {
-        text: "Registro por pontos de pintura conforme numeração do veículo.",
-        fontSize: 8,
-        color: "#64748b",
-        margin: [0, 0, 0, 8],
-      },
-      ...photoPairs(painting),
-    );
-  }
+  if (painting.length) nodes.push(...buildPaintSection(payload));
 
   if (documentation.length) {
-    nodes.push({ text: "", pageBreak: "before" }, sectionTitle("Documentação do veículo", color), ...photoPairs(documentation));
+    nodes.push(premiumHeader("DOCUMENTAÇÃO DO VEÍCULO"), ...photoPairs(documentation));
   }
 
   if (extras.length) {
-    if (!documentation.length) nodes.push({ text: "", pageBreak: "before" });
-    nodes.push(sectionTitle("Fotos extras", color), ...photoPairs(extras));
+    nodes.push(premiumHeader("FOTOS EXTRAS"), ...photoPairs(extras));
   }
 
   return nodes;
@@ -253,6 +304,10 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
   const inspector = payload.inspector;
   const opinion = getOpinionLabel(inspection.opinion);
   const validationUrl = payload.validationUrl ?? "";
+  const paintCategories = new Set<string>(PAINT_PHOTO_CATEGORIES);
+  const featuredPhotos = payload.photos
+    .filter((photo) => !paintCategories.has(photo.category) && photo.category !== "DOCUMENTOS" && photo.category !== "EXTRAS")
+    .slice(0, 2);
 
   const content: PdfNode[] = [
     {
@@ -295,9 +350,8 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       margin: [0, 0, 0, 10],
     },
     checklistBarChart(payload),
-    { text: "", pageBreak: "before" },
-    sectionTitle("Dados da vistoria", color),
-    infoTable([
+    premiumHeader("DADOS DA VISTORIA"),
+    infoGrid([
       ["Empresa", value(company?.name)],
       ["CPF/CNPJ", formatDocument(company?.document)],
       ["Telefone", formatPhone(company?.phone)],
@@ -307,34 +361,79 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       ["Finalidade", value(extra(inspection, "inspection_purpose"))],
       ["Solicitante/Cliente", inspection.client_name],
     ]),
-    sectionTitle("Dados completos do veículo", color),
-    infoTable([
-      ["Placa", formatPlate(inspection.plate)],
-      ["UF do veículo", value(extra(inspection, "vehicle_uf"))],
-      ["Chassi", inspection.chassis],
-      ["Renavam", value(inspection.renavam)],
-      ["Motor", value(extra(inspection, "motor_number"))],
-      ["Marca / Modelo", `${inspection.brand} / ${inspection.model}`],
-      ["Versão", value(inspection.version)],
-      ["Ano fab./mod.", `${inspection.manufacture_year} / ${inspection.model_year}`],
-      ["Cor", inspection.color],
-      ["Combustível", inspection.fuel],
-      ["Quilometragem", formatKM(inspection.mileage)],
-      ["Município/UF", value(extra(inspection, "registration_city_uf"))],
-      ["Categoria / espécie", [extra(inspection, "vehicle_category"), extra(inspection, "vehicle_species")].filter(Boolean).join(" / ") || EMPTY_VALUE],
-    ]),
-    sectionTitle("Parecer técnico e observações", color),
+    premiumHeader("DADOS DO VEÍCULO"),
+    {
+      columns: [
+        {
+          table: {
+            widths: ["*"],
+            body: [
+              [
+                {
+                  stack: [
+                    {
+                      text: inspection.brand || "Marca",
+                      alignment: "center",
+                      bold: true,
+                      color: "#0f172a",
+                      fontSize: 14,
+                      margin: [0, 16, 0, 2],
+                    },
+                    { text: "Marca do veículo", alignment: "center", fontSize: 7, color: "#64748b" },
+                  ],
+                  fillColor: "#f8fafc",
+                },
+              ],
+            ],
+          },
+          layout: {
+            hLineColor: () => "#0f172a",
+            vLineColor: () => "#0f172a",
+            hLineWidth: () => 0.8,
+            vLineWidth: () => 0.8,
+            paddingLeft: () => 6,
+            paddingRight: () => 6,
+            paddingTop: () => 6,
+            paddingBottom: () => 6,
+          },
+          width: 95,
+          margin: [0, 4, 10, 8],
+        },
+        {
+          stack: [
+            infoGrid([
+              ["Placa", formatPlate(inspection.plate)],
+              ["UF do veículo", value(extra(inspection, "vehicle_uf"))],
+              ["Chassi", inspection.chassis],
+              ["Renavam", value(inspection.renavam)],
+              ["Motor", value(extra(inspection, "motor_number"))],
+              ["Marca / Modelo", `${inspection.brand} / ${inspection.model}`],
+              ["Versão", value(inspection.version)],
+              ["Ano fab./mod.", `${inspection.manufacture_year} / ${inspection.model_year}`],
+              ["Cor", inspection.color],
+              ["Combustível", inspection.fuel],
+              ["Quilometragem", formatKM(inspection.mileage)],
+              ["Município/UF", value(extra(inspection, "registration_city_uf"))],
+              ["Categoria / espécie", [extra(inspection, "vehicle_category"), extra(inspection, "vehicle_species")].filter(Boolean).join(" / ") || EMPTY_VALUE],
+            ]),
+          ],
+        },
+      ],
+      margin: [0, 3, 0, 2],
+    },
+    ...(featuredPhotos.length ? photoPairs(featuredPhotos) : []),
+    premiumHeader("CHECKLIST TÉCNICO"),
+    ...buildChecklistSection(payload),
+    ...buildPhotoSection(payload, color),
+    premiumHeader("PARECER TÉCNICO"),
     {
       text: inspection.technical_notes || "Sem observações técnicas complementares.",
       fontSize: 10,
-      margin: [0, 0, 0, 8],
+      bold: true,
+      margin: [0, 6, 0, 8],
     },
-    { text: "", pageBreak: "before" },
-    ...buildChecklistSection(payload, color),
-    { text: "", pageBreak: "before" },
-    ...buildPhotoSection(payload.photos, color),
-    sectionTitle("Informativo jurídico", color),
-    { text: getLaudoLegalFooter(payload.settings), fontSize: 8, alignment: "justify", margin: [0, 0, 0, 12] },
+    premiumHeader("INFORMATIVO JURÍDICO"),
+    { text: getLaudoLegalFooter(payload.settings), fontSize: 8, alignment: "justify", margin: [0, 6, 0, 12] },
     {
       columns: [
         {

@@ -118,6 +118,12 @@ export const PHOTO_CATEGORIES = [
   "EXTRAS",
 ] as const;
 
+export const OPTIONAL_PHOTO_CATEGORIES = ["DOCUMENTOS", "EXTRAS"] as const;
+
+export const MANDATORY_PHOTO_CATEGORIES = PHOTO_CATEGORIES.filter(
+  (category) => !(OPTIONAL_PHOTO_CATEGORIES as readonly string[]).includes(category),
+);
+
 export const PAINT_PHOTO_CATEGORIES = [
   "PINTURA_CAPO",
   "PINTURA_TETO",
