@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { AppError, getErrorMessage } from "@/lib/errors";
 import { authService } from "@/services/auth-service";
 import type { Profile } from "@/types";
@@ -17,14 +17,14 @@ export const lgpdService = {
       const profile = await authService.getProfile(userId);
       if (!profile) throw new AppError("Perfil não encontrado");
 
-      const { count: inspectionsCount, error: inspError } = await supabase
+      const { count: inspectionsCount, error: inspError } = await db
         .from("inspections")
         .select("id", { count: "exact", head: true })
         .eq("inspector_id", userId)
         .is("deleted_at", null);
       if (inspError) throw inspError;
 
-      const { count: auditLogsCount, error: auditError } = await supabase
+      const { count: auditLogsCount, error: auditError } = await db
         .from("audit_logs")
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId);
@@ -49,7 +49,7 @@ export const lgpdService = {
 
   async requestAccountDeletion(userId: string): Promise<void> {
     try {
-      const { error } = await supabase.rpc("anonymize_user_account", {
+      const { error } = await db.rpc("anonymize_user_account", {
         p_user_id: userId,
       });
       if (error) throw error;

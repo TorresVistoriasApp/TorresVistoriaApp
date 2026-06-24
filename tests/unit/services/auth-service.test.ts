@@ -9,8 +9,8 @@ const { mockAuth, mockFrom } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase", () => ({
-  supabase: {
+vi.mock("@/lib/db-client", () => ({
+  db: {
     auth: mockAuth,
     from: mockFrom,
   },
@@ -23,7 +23,7 @@ describe("authService", () => {
     vi.clearAllMocks();
   });
 
-  it("signIn propaga erro do Supabase", async () => {
+  it("signIn propaga erro do backend", async () => {
     mockAuth.signInWithPassword.mockResolvedValue({
       error: new Error("Credenciais inválidas"),
     });

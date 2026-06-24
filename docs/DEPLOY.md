@@ -1,42 +1,42 @@
 # Deploy em Produção — Torres Vistoria
 
-## Vercel (frontend)
+## Frontend
+
+Build estático (Vite). Hospede o conteúdo de `dist/` em qualquer CDN ou plataforma de SPA.
 
 ```bash
-npx vercel login
-npx vercel --prod
+npm run build
 ```
 
 ### Variáveis obrigatórias
 
-| Variável | Exemplo |
-|----------|---------|
-| `VITE_SUPABASE_URL` | `https://ljzttzfjtskblxekmquu.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | chave anon |
-| `VITE_APP_NAME` | `Torres Vistoria` |
-| `VITE_APP_URL` | `https://torres-vistoria-app.vercel.app` |
-| `VITE_DEMO_MODE` | `false` |
+| Variável | Descrição |
+|----------|-----------|
+| `VITE_API_URL` | URL do backend |
+| `VITE_API_ANON_KEY` | Chave pública do cliente |
+| `VITE_APP_NAME` | Nome exibido no app |
+| `VITE_APP_URL` | URL pública do frontend |
+| `VITE_DEMO_MODE` | `false` em produção |
 
-### Configuração (`vercel.json`)
+### Headers de segurança
 
-- Framework Vite, output `dist`
-- SPA rewrite para `index.html`
-- Security headers (CSP, HSTS, etc.)
-- Cache longo para `/assets/*`
+O arquivo `vercel.json` na raiz define CSP, HSTS e cache. Para outras plataformas, replique os mesmos headers (ver seção `headers` do arquivo).
 
-## Supabase
+## Backend
 
 ### Auth → URL Configuration
 
-- **Site URL:** URL da Vercel
-- **Redirect URLs:** `https://seu-app.vercel.app/**`, `/redefinir-senha`
+- **Site URL:** URL pública do frontend
+- **Redirect URLs:** URL do app + `/redefinir-senha`
 
 ### Migrations
 
 ```bash
+supabase link --project-ref <DB_PROJECT_ID>
 supabase db push
-# ou aplicar via Dashboard SQL
 ```
+
+Defina `DB_PROJECT_ID` em `.env.local` para scripts locais (`npm run db:types`).
 
 ### Edge Functions
 
@@ -47,15 +47,20 @@ supabase functions deploy compress-image
 supabase functions deploy invite-user
 ```
 
-Definir secrets: `SUPABASE_SERVICE_ROLE_KEY`, `SITE_URL`
+Secrets do servidor (nunca expor no frontend):
+
+| Secret | Uso |
+|--------|-----|
+| `SUPABASE_SERVICE_ROLE_KEY` | Operações privilegiadas nas functions |
+| `SITE_URL` | Origem principal para CORS |
+| `ALLOWED_ORIGINS` | Origens extras separadas por vírgula |
 
 ## Performance
 
 - Rotas lazy-loaded (`router.tsx`)
-- Chunks: pdfmake, exceljs, charts, supabase, query
+- Chunks: pdfmake, exceljs, charts, api, query
 - PWA com service worker (cache estático)
 - Fotos comprimidas WebP no cliente (max 1920px)
-- `dns-prefetch` Supabase no `index.html`
 
 ## Pós-deploy
 
@@ -63,7 +68,3 @@ Definir secrets: `SUPABASE_SERVICE_ROLE_KEY`, `SITE_URL`
 2. Fluxo vistoria → laudo → `/validar/:codigo`
 3. Export LGPD e headers (securityheaders.com)
 4. Playwright contra URL de produção (opcional)
-
-## URL atual
-
-Produção: https://torres-vistoria-app.vercel.app

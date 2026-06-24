@@ -2,7 +2,6 @@ export const APP_NAME = "Torres Vistoria";
 export const APP_VERSION = "0.1.0";
 export const DEFAULT_PRIMARY_COLOR = "#ea580c";
 export const DEFAULT_COMPANY_ID = "00000000-0000-4000-8000-000000000001";
-export const SUPABASE_PROJECT_ID = "ljzttzfjtskblxekmquu";
 
 export const ROUTE_SLUGS = {
   login: "login",

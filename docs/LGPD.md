@@ -25,7 +25,7 @@
 
 - Titulares: usuários do sistema e clientes das vistorias (nome, documento, contato)
 - Operador: empresa contratante (`companies`)
-- Suboperador: Supabase (hosting EUA — ver DPA Supabase)
+- Suboperador: provedor de infraestrutura em nuvem (ver DPA do contrato)
 
 ## Contato DPO
 

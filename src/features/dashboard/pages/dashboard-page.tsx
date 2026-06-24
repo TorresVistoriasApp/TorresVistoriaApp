@@ -52,7 +52,7 @@ export function DashboardPage() {
         <CardContent>
           <p className="text-sm text-muted-foreground">
             Gráficos de evolução mensal, marcas e vistoriadores serão exibidos aqui
-            assim que houver dados no Supabase.
+            assim que houver dados no sistema.
           </p>
         </CardContent>
       </Card>

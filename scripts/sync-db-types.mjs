@@ -11,9 +11,8 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const raw = readFileSync(join(root, "scripts/database-types.raw"), "utf8");
 const header = `/**
- * Tipos gerados a partir do schema Supabase (projeto TorresVistorias).
- * Projeto: ljzttzfjtskblxekmquu
- * Regenerar: supabase gen types typescript → scripts/database-types.raw → node scripts/sync-db-types.mjs
+ * Tipos gerados a partir do schema do backend.
+ * Regenerar: npm run db:types
  */
 
 `;

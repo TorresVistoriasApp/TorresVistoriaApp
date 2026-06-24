@@ -9,7 +9,7 @@ Guia de padrões de código, arquitetura e fluxo de trabalho para contribuidores
 - shadcn/ui + Radix UI
 - React Query v5 + Zustand
 - React Hook Form + Zod
-- Supabase (Auth, DB, Storage)
+- PostgreSQL + Auth + Storage (backend)
 - Recharts + pdfmake + ExcelJS
 
 ## Estilo de código
@@ -28,6 +28,7 @@ Guia de padrões de código, arquitetura e fluxo de trabalho para contribuidores
 - **Auth:** React Context (`auth-context`) + `auth-service` — não duplicar em Zustand persist
 - **Server state:** React Query (hooks + services)
 - **Client UI state:** Zustand (`ui-store`, `inspection-store` para drafts)
+- **Backend client:** `src/lib/db-client.ts` (export `db`)
 - Forms: React Hook Form + Zod
 - Mobile-first responsive design
 - Loading states e error boundaries
@@ -39,6 +40,7 @@ Guia de padrões de código, arquitetura e fluxo de trabalho para contribuidores
 - Validação Zod em TODOS os inputs
 - Nunca commitar secrets — usar `.env.local`
 - Role/company em `app_metadata` (nunca `user_metadata` em RLS)
+- Variáveis `VITE_*` são públicas no bundle — apenas chaves anon/public
 
 ## Nomenclatura
 
@@ -50,10 +52,10 @@ Guia de padrões de código, arquitetura e fluxo de trabalho para contribuidores
 | Schemas | camelCase | `vistoriaSchema` |
 | Arquivos | kebab-case | `vistoria-form.tsx` |
 
-## Supabase
+## Banco de dados
 
 - Migrations em `supabase/migrations/`
-- Tipos TypeScript: `npm run db:types`
+- Tipos TypeScript: `npm run db:types` (requer `DB_PROJECT_ID`)
 - Migrations locais: `npm run db:migrate`
 - Validar políticas RLS após alterações de schema
 

@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { authService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
 import { ROUTES } from "@/lib/constants";
@@ -59,14 +59,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(({ data }) => {
+    db.auth.getSession().then(({ data }) => {
       if (!isMounted) return;
       setProfileLoading(!!data.session?.user.id);
       setSession(data.session);
       setAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: { subscription } } = db.auth.onAuthStateChange((_event, nextSession) => {
       setSession((currentSession) => {
         const currentUserId = currentSession?.user.id;
         const nextUserId = nextSession?.user.id;

@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
 import {
@@ -54,12 +54,12 @@ export const photoService = {
         fileName,
       );
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from(STORAGE_BUCKET)
         .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
+      const { data: urlData } = db.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
 
       return throwIfError(
         await mutations.photos.create({
@@ -82,7 +82,7 @@ export const photoService = {
 
   async remove(id: string, storagePath: string): Promise<void> {
     try {
-      await supabase.storage.from(STORAGE_BUCKET).remove([storagePath]);
+      await db.storage.from(STORAGE_BUCKET).remove([storagePath]);
       const { error } = await mutations.photos.softDelete(id);
       if (error) throw error;
     } catch (error) {

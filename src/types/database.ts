@@ -1,5 +1,5 @@
 /**
- * Tipos gerados ? Supabase TorresVistorias (ljzttzfjtskblxekmquu)
+ * Tipos gerados a partir do schema do backend.
  * Regenerar: npm run db:types
  */
 

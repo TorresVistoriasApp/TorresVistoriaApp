@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { buildChecklistSeedRows } from "@/lib/checklist-catalog";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
@@ -118,7 +118,7 @@ export const inspectionService = {
     params: Omit<InspectionFilters, "plate"> = {},
   ): Promise<{ data: InspectionSearchResult[]; count: number }> {
     try {
-      const { data, error } = await supabase.rpc("search_inspections", {
+      const { data, error } = await db.rpc("search_inspections", {
         p_company_id: companyId,
         p_query: params.search ?? undefined,
         p_status: params.status ?? undefined,
@@ -154,7 +154,7 @@ export const inspectionService = {
       );
 
       const checklistRows = buildChecklistSeed(meta.companyId, inspection.id);
-      const { error: checklistError } = await supabase
+      const { error: checklistError } = await db
         .from("inspection_checklists")
         .insert(checklistRows);
       if (checklistError) throw checklistError;
@@ -187,7 +187,7 @@ export const inspectionService = {
 
   async generateReport(inspectionId: string, storagePath?: string) {
     try {
-      const { data, error } = await supabase.functions.invoke("create-report", {
+      const { data, error } = await db.functions.invoke("create-report", {
         body: { inspectionId, storagePath },
       });
       return throwIfEdgeError(error, data as Record<string, unknown> | null);
@@ -198,7 +198,7 @@ export const inspectionService = {
 
   async validateReport(verificationCode: string) {
     try {
-      const { data, error } = await supabase.rpc("validate_report", {
+      const { data, error } = await db.rpc("validate_report", {
         p_verification_code: verificationCode,
       });
       if (error) throw error;

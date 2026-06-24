@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import type { UserRole } from "@/lib/enums";
 import { getErrorMessage } from "@/lib/errors";
 
@@ -12,7 +12,7 @@ export interface AuthContext {
 
 export async function getAuthContext(): Promise<AuthContext> {
   try {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user }, error } = await db.auth.getUser();
     if (error) throw error;
 
     if (!user) {
@@ -25,7 +25,7 @@ export async function getAuthContext(): Promise<AuthContext> {
       };
     }
 
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await db
       .from("profiles")
       .select("company_id, role")
       .eq("id", user.id)

@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { db } from "./db-client";
 
 export const queryKeys = {
   inspections: {
@@ -39,7 +39,7 @@ export const queryKeys = {
 export const queries = {
   inspections: {
     base() {
-      return supabase.from("inspections").select(`
+      return db.from("inspections").select(`
         id, inspection_number, inspection_date, inspection_time, location,
         inspection_purpose, requester_name, requester_document,
         buyer_name, buyer_document, seller_name, seller_document,
@@ -57,7 +57,7 @@ export const queries = {
     },
 
     withRelations() {
-      return supabase.from("inspections").select(`
+      return db.from("inspections").select(`
         *,
         inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url),
         inspection_checklists(*),
@@ -77,7 +77,7 @@ export const queries = {
 
   checklist: {
     byInspection(inspectionId: string) {
-      return supabase
+      return db
         .from("inspection_checklists")
         .select("*")
         .eq("inspection_id", inspectionId)
@@ -88,7 +88,7 @@ export const queries = {
 
   photos: {
     byInspection(inspectionId: string) {
-      return supabase
+      return db
         .from("inspection_photos")
         .select("*")
         .eq("inspection_id", inspectionId)
@@ -99,7 +99,7 @@ export const queries = {
 
   financial: {
     byCompany(companyId: string) {
-      return supabase
+      return db
         .from("financial_entries")
         .select("*")
         .eq("company_id", companyId)
@@ -108,7 +108,7 @@ export const queries = {
     },
 
     async summary(companyId: string, startDate: string, endDate: string) {
-      return supabase.rpc("get_financial_summary", {
+      return db.rpc("get_financial_summary", {
         p_company_id: companyId,
         p_start_date: startDate,
         p_end_date: endDate,
@@ -118,24 +118,24 @@ export const queries = {
 
   dashboard: {
     async stats(companyId: string) {
-      return supabase.rpc("get_dashboard_stats", { p_company_id: companyId });
+      return db.rpc("get_dashboard_stats", { p_company_id: companyId });
     },
 
     async monthly(companyId: string, year?: number) {
-      return supabase.rpc("get_monthly_inspections", {
+      return db.rpc("get_monthly_inspections", {
         p_company_id: companyId,
         p_year: year ?? new Date().getFullYear(),
       });
     },
 
     async byBrand(companyId: string) {
-      return supabase.rpc("get_inspections_by_brand", { p_company_id: companyId });
+      return db.rpc("get_inspections_by_brand", { p_company_id: companyId });
     },
   },
 
   profiles: {
     team(companyId: string) {
-      return supabase
+      return db
         .from("profiles")
         .select("id, company_id, full_name, role, avatar_url, created_at")
         .eq("company_id", companyId)
@@ -144,7 +144,7 @@ export const queries = {
     },
 
     byId(id: string) {
-      return supabase
+      return db
         .from("profiles")
         .select("*")
         .eq("id", id)
@@ -155,11 +155,11 @@ export const queries = {
 
   companies: {
     byId(id: string) {
-      return supabase.from("companies").select("*").eq("id", id).is("deleted_at", null).single();
+      return db.from("companies").select("*").eq("id", id).is("deleted_at", null).single();
     },
 
     settings(companyId: string) {
-      return supabase
+      return db
         .from("settings")
         .select("*")
         .eq("company_id", companyId)

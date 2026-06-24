@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { AppError, getErrorMessage, throwIfEdgeError } from "@/lib/errors";
 import type { Inspection } from "@/services/inspection-service";
 import type { ChecklistItem } from "@/services/checklist-service";
@@ -75,7 +75,7 @@ function reportFileName(inspection: Inspection): string {
 export const pdfService = {
   async fetchInspectionPayload(inspectionId: string) {
     try {
-      const { data, error } = await supabase.functions.invoke("generate-pdf", {
+      const { data, error } = await db.functions.invoke("generate-pdf", {
         body: { inspectionId },
       });
       return throwIfEdgeError(error, data as Record<string, unknown> | null);
@@ -86,7 +86,7 @@ export const pdfService = {
 
   async getReportPdfUrl(inspectionId: string) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("inspection_reports")
         .select("storage_path, verification_code, integrity_hash, created_at")
         .eq("inspection_id", inspectionId)
@@ -103,7 +103,7 @@ export const pdfService = {
 
   async downloadPdf(storagePath: string): Promise<Blob> {
     try {
-      const { data, error } = await supabase.storage.from("reports").download(storagePath);
+      const { data, error } = await db.storage.from("reports").download(storagePath);
       if (error) throw error;
       if (!data) throw new AppError("Arquivo PDF não encontrado");
       return data;
@@ -210,14 +210,14 @@ export const pdfService = {
       const finalBlob = await this.createPdfBlob(finalPass.docDefinition);
       const storagePath = `${params.inspection.company_id}/${params.inspection.id}/${Date.now()}-${reportFileName(params.inspection)}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from(REPORTS_BUCKET)
         .upload(storagePath, finalBlob, { contentType: "application/pdf", upsert: false });
       if (uploadError) throw uploadError;
 
-      const { data: publicUrl } = supabase.storage.from(REPORTS_BUCKET).getPublicUrl(storagePath);
+      const { data: publicUrl } = db.storage.from(REPORTS_BUCKET).getPublicUrl(storagePath);
 
-      const { error: reportError } = await supabase.functions.invoke("create-report", {
+      const { error: reportError } = await db.functions.invoke("create-report", {
         body: {
           inspectionId: params.inspection.id,
           storagePath,

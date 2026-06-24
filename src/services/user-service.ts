@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
@@ -66,13 +66,13 @@ export const userService = {
     try {
       const compressed = await compressToWebP(file);
       const path = `avatars/${userId}/${Date.now()}.webp`;
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from("avatars")
         .upload(path, compressed, { contentType: "image/webp", upsert: true });
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-      const { error } = await supabase
+      const { data: urlData } = db.storage.from("avatars").getPublicUrl(path);
+      const { error } = await db
         .from("profiles")
         .update({ avatar_url: urlData.publicUrl })
         .eq("id", userId);

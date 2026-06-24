@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { queries } from "@/lib/queries";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 import { compressToWebP } from "@/lib/compress-image";
@@ -34,7 +34,7 @@ export const companyService = {
 
   async updateCompany(companyId: string, input: CompanyInput): Promise<Company> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("companies")
         .update({
           name: input.name,
@@ -74,7 +74,7 @@ export const companyService = {
 
       const existing = await companyService.getSettings(companyId);
       if (existing) {
-        const { data, error } = await supabase
+        const { data, error } = await db
           .from("settings")
           .update(payload)
           .eq("company_id", companyId)
@@ -84,7 +84,7 @@ export const companyService = {
         return data as CompanySettings;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("settings")
         .insert({ company_id: companyId, ...payload })
         .select("*")
@@ -104,25 +104,25 @@ export const companyService = {
     try {
       const compressed = await compressToWebP(file);
       const path = `${companyId}/${kind}.webp`;
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from("company-assets")
         .upload(path, compressed, { upsert: true, contentType: "image/webp" });
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage.from("company-assets").getPublicUrl(path);
+      const { data } = db.storage.from("company-assets").getPublicUrl(path);
       const publicUrl = data.publicUrl;
 
       if (kind === "logo") {
-        await supabase.from("companies").update({ logo_url: publicUrl }).eq("id", companyId);
+        await db.from("companies").update({ logo_url: publicUrl }).eq("id", companyId);
       } else {
         const settings = await companyService.getSettings(companyId);
         if (settings) {
-          await supabase
+          await db
             .from("settings")
             .update({ signature_image_url: publicUrl })
             .eq("company_id", companyId);
         } else {
-          await supabase.from("settings").insert({
+          await db.from("settings").insert({
             company_id: companyId,
             signature_image_url: publicUrl,
           });

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 import { dashboardService } from "@/services/report-service";
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { useAuth } from "@/hooks/use-auth";
 import { invalidateDashboardQueries } from "@/lib/cache-invalidation";
 
@@ -49,7 +49,7 @@ function useDashboardRealtime() {
   useEffect(() => {
     if (!profile?.company_id) return;
 
-    const channel = supabase
+    const channel = db
       .channel(`dashboard:${profile.company_id}`)
       .on(
         "postgres_changes",
@@ -74,7 +74,7 @@ function useDashboardRealtime() {
       .subscribe();
 
     return () => {
-      void supabase.removeChannel(channel);
+      void db.removeChannel(channel);
     };
   }, [profile?.company_id, qc]);
 }

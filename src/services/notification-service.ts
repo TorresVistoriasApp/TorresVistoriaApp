@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 
 export type AppNotification = {
   id: string;
@@ -13,7 +13,7 @@ export type AppNotification = {
 
 export const notificationService = {
   async list(): Promise<AppNotification[]> {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("notifications")
       .select("*")
       .is("deleted_at", null)
@@ -24,7 +24,7 @@ export const notificationService = {
   },
 
   async markAsRead(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await db
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
       .eq("id", id);
@@ -32,7 +32,7 @@ export const notificationService = {
   },
 
   async markAllAsRead(): Promise<void> {
-    const { error } = await supabase
+    const { error } = await db
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
       .is("read_at", null);

@@ -1,4 +1,5 @@
-project_id = "ljzttzfjtskblxekmquu"
+# Vincule com: supabase link --project-ref <seu-project-id>
+project_id = ""
 
 [api]
 enabled = true

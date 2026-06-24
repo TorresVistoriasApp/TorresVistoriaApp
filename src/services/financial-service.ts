@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
@@ -116,7 +116,7 @@ export const financialService = {
     margin: number;
   }> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("financial_entries")
         .select("entry_type, amount")
         .is("deleted_at", null);

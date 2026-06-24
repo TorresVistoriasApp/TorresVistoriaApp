@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { db } from "./db-client";
 import type { VistoriaInput } from "@/schemas/vistoria";
 import type { FinancialEntryInput } from "@/schemas/financial";
 
@@ -21,7 +21,7 @@ export const mutationKeys = {
 export const mutations = {
   inspections: {
     create(data: VistoriaInput, userId: string, companyId: string) {
-      return supabase
+      return db
         .from("inspections")
         .insert({
           ...data,
@@ -36,7 +36,7 @@ export const mutations = {
     },
 
     update(id: string, data: Partial<VistoriaInput>) {
-      return supabase
+      return db
         .from("inspections")
         .update({
           ...data,
@@ -48,7 +48,7 @@ export const mutations = {
     },
 
     softDelete(id: string) {
-      return supabase.from("inspections").delete().eq("id", id);
+      return db.from("inspections").delete().eq("id", id);
     },
   },
 
@@ -57,7 +57,7 @@ export const mutations = {
       id: string,
       patch: { status?: string; notes?: string | null },
     ) {
-      return supabase
+      return db
         .from("inspection_checklists")
         .update(patch)
         .eq("id", id)
@@ -68,7 +68,7 @@ export const mutations = {
 
   financial: {
     create(data: FinancialEntryInput, userId: string, companyId: string) {
-      return supabase
+      return db
         .from("financial_entries")
         .insert({
           ...data,
@@ -80,11 +80,11 @@ export const mutations = {
     },
 
     update(id: string, data: Partial<FinancialEntryInput>) {
-      return supabase.from("financial_entries").update(data).eq("id", id).select("*").single();
+      return db.from("financial_entries").update(data).eq("id", id).select("*").single();
     },
 
     softDelete(id: string) {
-      return supabase
+      return db
         .from("financial_entries")
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", id);
@@ -103,11 +103,11 @@ export const mutations = {
       latitude?: number | null;
       longitude?: number | null;
     }) {
-      return supabase.from("inspection_photos").insert(row).select("*").single();
+      return db.from("inspection_photos").insert(row).select("*").single();
     },
 
     softDelete(id: string) {
-      return supabase
+      return db
         .from("inspection_photos")
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", id);
@@ -116,7 +116,7 @@ export const mutations = {
 
   profiles: {
     update(id: string, data: { full_name?: string; role?: string; avatar_url?: string | null }) {
-      return supabase.from("profiles").update(data).eq("id", id).select("*").single();
+      return db.from("profiles").update(data).eq("id", id).select("*").single();
     },
   },
 };

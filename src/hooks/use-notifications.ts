@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 import { notificationService } from "@/services/notification-service";
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { useAuth } from "@/hooks/use-auth";
 
 export function useNotifications() {
@@ -18,7 +18,7 @@ export function useNotifications() {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
+    const channel = db
       .channel(`notifications:${user.id}`)
       .on(
         "postgres_changes",
@@ -35,7 +35,7 @@ export function useNotifications() {
       .subscribe();
 
     return () => {
-      void supabase.removeChannel(channel);
+      void db.removeChannel(channel);
     };
   }, [user, qc]);
 

@@ -2,7 +2,7 @@ import { queries } from "@/lib/queries";
 import { AppError, getErrorMessage } from "@/lib/errors";
 import type { DashboardMetrics } from "@/types";
 import type { RecentInspection } from "@/types/api";
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 
 type MonthlyInspectionRow = {
   month: string;
@@ -50,7 +50,7 @@ export const dashboardService = {
 
   async getRecentInspections(limit = 5): Promise<RecentInspection[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from("inspections")
         .select("id, inspection_number, plate, brand, model, status, inspection_date, client_name")
         .is("deleted_at", null)

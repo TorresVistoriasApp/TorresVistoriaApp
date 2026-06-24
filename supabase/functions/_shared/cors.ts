@@ -1,11 +1,16 @@
 const DEFAULT_ORIGIN = Deno.env.get("SITE_URL") ?? Deno.env.get("VITE_APP_URL") ?? "";
 
+const EXTRA_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 export function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") ?? "";
   const allowed =
     !DEFAULT_ORIGIN ||
     origin === DEFAULT_ORIGIN ||
-    origin.endsWith(".vercel.app");
+    EXTRA_ORIGINS.includes(origin);
 
   return {
     "Access-Control-Allow-Origin": allowed && origin ? origin : DEFAULT_ORIGIN || "*",

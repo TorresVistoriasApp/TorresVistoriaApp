@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/lib/db-client";
 import { buildChecklistSeedRows } from "@/lib/checklist-catalog";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
@@ -36,7 +36,7 @@ export const checklistService = {
       );
 
       if (missing.length > 0) {
-        const { error } = await supabase.from("inspection_checklists").insert(missing);
+        const { error } = await db.from("inspection_checklists").insert(missing);
         if (error) throw error;
       }
 
@@ -57,7 +57,7 @@ export const checklistService = {
         inspection_id: inspectionId,
         company_id: companyId,
       }));
-      const { error } = await supabase
+      const { error } = await db
         .from("inspection_checklists")
         .upsert(rows, { onConflict: "inspection_id,category,item_name" });
       if (error) throw error;

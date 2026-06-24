@@ -7,7 +7,7 @@ Sistema SaaS de vistoria cautelar veicular — Fase 1 MVP.
 ```bash
 npm install
 cp .env.example .env.local
-# Preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
+# Preencha VITE_API_URL e VITE_API_ANON_KEY
 npm run dev
 ```
 
@@ -19,36 +19,29 @@ npm run dev
 | `npm run build` | Build de produção |
 | `npm run test` | Testes unitários (Vitest) |
 | `npm run test:e2e` | Testes E2E (Playwright) |
-| `npm run db:types` | Gera tipos do Supabase |
+| `npm run db:types` | Gera tipos TypeScript do schema |
 | `npm run scaffold` | Regenera arquivos scaffold |
 
 ## Estrutura
 
-`src/app/` (rotas) · `src/components/` · `src/services/` · `src/hooks/` · `supabase/`
+`src/app/` (rotas) · `src/components/` · `src/services/` · `src/hooks/` · `supabase/` (migrations e functions)
 
 ## Stack
 
-React 19 · Vite 6 · Tailwind 4 · Supabase · React Query · Zod · Zustand
+React 19 · Vite 6 · Tailwind 4 · PostgreSQL · React Query · Zod · Zustand
 
-## Deploy (Vercel)
+## Variáveis de ambiente
 
-1. Login: `npx vercel login`
-2. Deploy produção: `npx vercel --prod`
-3. Variáveis de ambiente no painel Vercel (ou CLI):
+Copie `.env.example` para `.env.local`. Nunca commite secrets.
 
-| Variável | Valor |
-|----------|-------|
-| `VITE_SUPABASE_URL` | `https://ljzttzfjtskblxekmquu.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | chave anon do Supabase |
-| `VITE_APP_NAME` | `Torres Vistoria` |
-| `VITE_APP_URL` | URL do deploy Vercel |
-| `VITE_DEMO_MODE` | `false` (produção) |
+| Variável | Uso |
+|----------|-----|
+| `VITE_API_URL` | URL do backend |
+| `VITE_API_ANON_KEY` | Chave pública do cliente |
+| `VITE_APP_URL` | URL pública do app (redirects de auth) |
+| `VITE_DEMO_MODE` | `false` em produção |
 
-4. Supabase → Authentication → URL Configuration:
-   - **Site URL:** URL da Vercel
-   - **Redirect URLs:** `https://seu-app.vercel.app/**` e `/redefinir-senha`
-
-Integração Git: conecte o repo `TorresVistoriaApp` em [vercel.com/new](https://vercel.com/new).
+Deploy e configuração de infraestrutura: [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Documentação
 
@@ -57,12 +50,12 @@ Integração Git: conecte o repo `TorresVistoriaApp` em [vercel.com/new](https:/
 | [docs/CONVENCOES.md](docs/CONVENCOES.md) | Padrões de código, arquitetura e nomenclatura |
 | [docs/SEGURANCA.md](docs/SEGURANCA.md) | RLS, headers, rate limit, checklist |
 | [docs/LGPD.md](docs/LGPD.md) | Consentimento, exportação, exclusão |
-| [docs/DEPLOY.md](docs/DEPLOY.md) | Vercel, Supabase, Edge Functions |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Deploy, migrations e edge functions |
 
 ## Checklist Passo 6
 
 - [x] Segurança: sanitização, rate limit, CSP, env validation
 - [x] LGPD: banner, política, export/delete, RPC anonimização
 - [x] Performance: lazy routes, code splitting, compressão fotos
-- [x] Produção: vercel.json, docs deploy
+- [x] Produção: headers HTTP, docs deploy
 - [x] Validação pública de laudo: `/validar/:codigo`

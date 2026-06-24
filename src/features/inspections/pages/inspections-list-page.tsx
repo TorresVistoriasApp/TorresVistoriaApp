@@ -26,7 +26,7 @@ export function InspectionsListPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Conecte o Supabase e crie a primeira vistoria cautelar.
+            Configure o backend e crie a primeira vistoria cautelar.
           </p>
         </CardContent>
       </Card>

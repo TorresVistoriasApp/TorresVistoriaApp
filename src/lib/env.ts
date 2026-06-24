@@ -1,4 +1,4 @@
-const REQUIRED_IN_PROD = ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"] as const;
+const REQUIRED_IN_PROD = ["VITE_API_URL", "VITE_API_ANON_KEY"] as const;
 
 export function validateEnv(): void {
   if (!import.meta.env.PROD) return;
@@ -19,4 +19,15 @@ export function getAppUrl(): string {
 
 export function isProduction(): boolean {
   return import.meta.env.PROD;
+}
+
+export function getApiOrigin(): string | undefined {
+  const url = import.meta.env.VITE_API_URL;
+  if (!url) return undefined;
+
+  try {
+    return new URL(url).origin;
+  } catch {
+    return undefined;
+  }
 }

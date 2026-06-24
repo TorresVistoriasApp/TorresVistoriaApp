@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/shared/lib/supabase";
+import { db } from "@/lib/db-client";
 import type { Profile } from "@/shared/types/domain";
 import { ROUTES } from "@/lib/constants";
 
@@ -26,7 +26,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("profiles")
     .select("*")
     .eq("id", userId)
@@ -56,14 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session?.user.id]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    db.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = db.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       setLoading(false);
     });
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session?.user.id]);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await db.auth.signInWithPassword({
       email,
       password,
     });
@@ -88,13 +88,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await db.auth.signOut();
     if (error) throw error;
     setProfile(null);
   }, []);
 
   const resetPassword = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await db.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}${ROUTES.resetPassword}`,
     });
     if (error) throw error;

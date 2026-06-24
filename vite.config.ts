@@ -60,7 +60,7 @@ export default defineConfig({
           if (id.includes("node_modules/pdfmake")) return "pdfmake";
           if (id.includes("node_modules/exceljs")) return "exceljs";
           if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) return "charts";
-          if (id.includes("node_modules/@supabase")) return "supabase";
+          if (id.includes("node_modules/@supabase")) return "api";
           if (id.includes("node_modules/@tanstack/react-query")) return "query";
           if (id.includes("node_modules/browser-image-compression")) return "compress-image";
         },
