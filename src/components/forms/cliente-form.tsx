@@ -20,22 +20,24 @@ export function ClienteForm({
   const fields = (
     <div className={formGridClass}>
       <FormField
-        label="Nome completo ou razão social"
+        label="Nome ou razão social"
         error={errors.client_name?.message}
         className={formGridFullWidthClass}
-        hint="Como consta no documento do cliente"
       >
-        <Input {...register("client_name")} placeholder="Ex.: João da Silva" autoComplete="name" />
+        <Input
+          {...register("client_name")}
+          placeholder="Nome completo ou empresa"
+          autoComplete="name"
+        />
       </FormField>
 
       <MaskedField
         control={control}
         name="client_document"
-        label="CPF ou CNPJ"
+        label="CPF/CNPJ"
         mask="cpfCnpj"
         error={errors.client_document?.message}
         placeholder="000.000.000-00"
-        hint="Documento principal do cliente"
       />
 
       <OptionalMaskedField
@@ -45,7 +47,7 @@ export function ClienteForm({
         mask="phone"
         error={errors.client_phone?.message}
         placeholder="(00) 00000-0000"
-        naLabel="Cliente sem telefone"
+        naLabel="Não informado"
       />
 
       <OptionalMaskedField
@@ -53,8 +55,8 @@ export function ClienteForm({
         name="client_email"
         label="E-mail"
         error={errors.client_email?.message}
-        placeholder="cliente@email.com"
-        naLabel="Cliente sem e-mail"
+        placeholder="email@exemplo.com"
+        naLabel="Não informado"
         className={formGridFullWidthClass}
       />
     </div>
@@ -65,7 +67,10 @@ export function ClienteForm({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Cliente</CardTitle>
+        <CardTitle className="text-base">Contratante</CardTitle>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Pessoa ou empresa que contrata a vistoria. Os dados abaixo constam no laudo.
+        </p>
       </CardHeader>
       <CardContent>{fields}</CardContent>
     </Card>

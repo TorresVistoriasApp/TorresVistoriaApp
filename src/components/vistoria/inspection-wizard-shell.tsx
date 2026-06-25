@@ -77,7 +77,7 @@ export function InspectionWizardShell({
   };
 
   const stepLabels: Record<WizardStep, string> = {
-    1: "Dados do veículo e cliente",
+    1: "Dados do contratante e do veículo",
     2: "Fotos da vistoria",
     3: "Checklist técnico",
     4: "Revisão e laudo profissional",
@@ -101,7 +101,7 @@ export function InspectionWizardShell({
             </Button>
             <div className="min-w-0">
               <h1 className="text-lg font-bold tracking-tight sm:text-xl md:text-2xl">{title}</h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">
+              <p className="mt-0.5 hidden text-sm text-muted-foreground sm:block">
                 Passo {currentStep} de 4 — {stepLabels[currentStep]}
               </p>
             </div>
@@ -133,7 +133,6 @@ export function InspectionWizardShell({
           currentStep={currentStep}
           inspectionId={inspectionId}
           onStepClick={handleStepClick}
-          compactOnMobile={currentStep === 1}
         />
       </div>
 
