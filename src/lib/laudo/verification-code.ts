@@ -10,17 +10,15 @@ function laudoYear(issuedAt: Date | string): number {
 /** Número público do laudo exibido no PDF e na página de validação (ex.: TV-2026-000148). */
 export function formatLaudoNumber(
   inspectionNumber: number,
-  issuedAt: Date | string = new Date(),
+  referenceDate: Date | string = new Date(),
 ): string {
-  return `TV-${laudoYear(issuedAt)}-${String(inspectionNumber).padStart(6, "0")}`;
+  return `TV-${laudoYear(referenceDate)}-${String(inspectionNumber).padStart(6, "0")}`;
 }
 
-/** Código único de verificação usado na URL do QR Code. */
+/** Código de verificação fixo por vistoria — reemissões mantêm o mesmo valor. */
 export function buildVerificationCode(
   inspectionNumber: number,
-  issuedAt: Date | string = new Date(),
-  version = 1,
+  referenceDate: Date | string = new Date(),
 ): string {
-  const base = formatLaudoNumber(inspectionNumber, issuedAt);
-  return version > 1 ? `${base}-V${version}` : base;
+  return formatLaudoNumber(inspectionNumber, referenceDate);
 }

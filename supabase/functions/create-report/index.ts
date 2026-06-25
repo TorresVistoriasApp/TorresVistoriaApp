@@ -1,14 +1,13 @@
 import { corsHeaders } from "../_shared/cors.ts";
 import { createServiceClient } from "../_shared/supabase-client.ts";
 
-function formatLaudoNumber(inspectionNumber: number, issuedAt: string): string {
-  const year = new Date(issuedAt).getFullYear();
-  return `TV-${year}-${String(inspectionNumber).padStart(6, "0")}`;
+function laudoYear(referenceDate: string): number {
+  const match = referenceDate.match(/^(\d{4})/);
+  return match ? Number(match[1]) : new Date(referenceDate).getFullYear();
 }
 
-function buildVerificationCode(inspectionNumber: number, issuedAt: string, version: number): string {
-  const base = formatLaudoNumber(inspectionNumber, issuedAt);
-  return version > 1 ? `${base}-V${version}` : base;
+function buildVerificationCode(inspectionNumber: number, referenceDate: string): string {
+  return `TV-${laudoYear(referenceDate)}-${String(inspectionNumber).padStart(6, "0")}`;
 }
 
 function randomHash(): string {
@@ -33,7 +32,7 @@ Deno.serve(async (req) => {
 
     const { data: inspection, error: inspectionError } = await supabase
       .from("inspections")
-      .select("id, company_id, inspector_id, status, inspection_number")
+      .select("id, company_id, inspector_id, status, inspection_number, inspection_date")
       .eq("id", inspectionId)
       .is("deleted_at", null)
       .single();
@@ -43,17 +42,26 @@ Deno.serve(async (req) => {
 
     const { data: existingReports } = await supabase
       .from("inspection_reports")
-      .select("version")
+      .select("id, version")
       .eq("inspection_id", inspectionId)
       .is("deleted_at", null)
-      .order("version", { ascending: false })
-      .limit(1);
+      .order("version", { ascending: false });
 
     const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
-    const issuedAt = new Date().toISOString();
     const code = providedVerificationCode ||
-      buildVerificationCode(inspection.inspection_number, issuedAt, nextVersion);
+      buildVerificationCode(inspection.inspection_number, inspection.inspection_date);
     const hash = providedIntegrityHash || randomHash();
+    const supersededAt = new Date().toISOString();
+
+    if (existingReports && existingReports.length > 0) {
+      const { error: supersedeError } = await supabase
+        .from("inspection_reports")
+        .update({ deleted_at: supersededAt })
+        .eq("inspection_id", inspectionId)
+        .is("deleted_at", null);
+
+      if (supersedeError) throw supersedeError;
+    }
 
     const { data: report, error: reportError } = await supabase
       .from("inspection_reports")
@@ -83,6 +91,7 @@ Deno.serve(async (req) => {
         success: true,
         report,
         verificationCode: code,
+        supersededPrevious: (existingReports?.length ?? 0) > 0,
         message: "Laudo registrado com sucesso",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

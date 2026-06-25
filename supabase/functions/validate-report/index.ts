@@ -93,11 +93,13 @@ Deno.serve(async (req) => {
     }
 
     const issuedAt = report.created_at;
-    const laudoNumber = formatLaudoNumber(inspection.inspection_number, issuedAt);
+    const laudoNumber = formatLaudoNumber(inspection.inspection_number, inspection.inspection_date);
     const status = hashStatus === "OK"
-      ? "Documento íntegro"
+      ? report.version > 1
+        ? "Documento íntegro (emissão atual)"
+        : "Documento íntegro"
       : hashStatus === "FALHA"
-      ? "Documento adulterado"
+      ? "Documento adulterado ou substituído"
       : "Arquivo indisponível para verificação";
 
     return new Response(
@@ -106,6 +108,7 @@ Deno.serve(async (req) => {
         integrityVerified,
         hashStatus,
         status,
+        version: report.version,
         companyName: company?.name ?? "Torres Vistoria",
         laudoNumber,
         verificationCode: report.verification_code,

@@ -19,8 +19,8 @@ async function sha256Bytes(data: Blob | string): Promise<string> {
     .join("");
 }
 
-function generateVerificationCode(inspection: Inspection, version = 1): string {
-  return buildVerificationCode(inspection.inspection_number, new Date(), version);
+function generateVerificationCode(inspection: Inspection): string {
+  return buildVerificationCode(inspection.inspection_number, inspection.inspection_date);
 }
 
 async function imageUrlToJpegDataUrl(
@@ -221,9 +221,7 @@ export const pdfService = {
     validationBaseUrl?: string;
   }): Promise<{ verificationCode: string; integrityHash: string; storagePath: string }> {
     try {
-      const existingReport = await this.getReportPdfUrl(params.inspection.id);
-      const nextVersion = (existingReport?.version ?? 0) + 1;
-      const verificationCode = generateVerificationCode(params.inspection, nextVersion);
+      const verificationCode = generateVerificationCode(params.inspection);
       const validationUrl = `${params.validationBaseUrl ?? window.location.origin}/validar/${encodeURIComponent(verificationCode)}`;
       const firstPass = await this.generateLaudoPayload(params.inspection, params.checklist, params.photos, {
         company: params.company,
