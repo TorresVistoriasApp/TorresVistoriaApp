@@ -12,7 +12,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
 
   return (
-    <div className="min-h-dvh bg-canvas">
+    <div className="min-h-dvh overflow-x-clip bg-canvas">
       <aside
         className={cn(
           "sidebar-panel fixed inset-y-0 left-0 z-30 hidden flex-col overflow-visible transition-[width] duration-300 ease-in-out md:flex",
@@ -31,12 +31,12 @@ export function AppShell({ children }: { children?: ReactNode }) {
 
       <div
         className={cn(
-          "flex min-h-dvh flex-col transition-[padding] duration-300 ease-in-out",
+          "flex min-h-dvh w-full min-w-0 flex-col overflow-x-clip transition-[padding] duration-300 ease-in-out",
           sidebarCollapsed ? "md:pl-[76px]" : "md:pl-[280px]",
         )}
       >
         <Header />
-        <main className="w-full flex-1 px-4 py-6 pb-28 md:pb-10 lg:px-6 lg:py-8 xl:px-8">
+        <main className="w-full min-w-0 max-w-full flex-1 overflow-x-clip px-4 py-6 pb-28 md:pb-10 lg:px-6 lg:py-8 xl:px-8">
           {children ?? <Outlet />}
         </main>
         <Footer />

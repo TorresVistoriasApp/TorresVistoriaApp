@@ -134,7 +134,7 @@ export function Page() {
 
       <div className="rounded-xl border border-border bg-muted/20 p-4 text-xs text-muted-foreground">
         <Download className="mr-1 inline h-3.5 w-3.5" />
-        O laudo usa os dados de Configurações: razão social, CNPJ, endereço da empresa e nome do
+        O laudo usa os dados de Configurações: razão social, CPF/CNPJ, endereço da empresa e nome do
         vistoriador responsável pela vistoria.
       </div>
 

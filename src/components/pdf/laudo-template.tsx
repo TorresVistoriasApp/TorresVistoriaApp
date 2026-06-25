@@ -3,7 +3,7 @@ import type { ChecklistItem } from "@/services/checklist-service";
 import type { InspectionPhoto } from "@/services/photo-service";
 import type { LaudoCompany, LaudoInspector, LaudoSettings } from "@/lib/laudo/laudo-model";
 import { getOpinionLabel, summarizeLaudoChecklist } from "@/lib/laudo/laudo-model";
-import { formatDate, formatDocument, formatKM, formatPlate } from "@/lib/formatters";
+import { formatDate, formatDocument, formatKM, formatPlate, getDocumentTypeLabel } from "@/lib/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
@@ -40,7 +40,9 @@ export function LaudoTemplate({
               {company?.name ?? "Empresa vistoriadora"} · {formatDate(inspection.inspection_date)}
             </p>
             {company?.document && (
-              <p className="text-xs text-muted-foreground">CNPJ: {formatDocument(company.document)}</p>
+              <p className="text-xs text-muted-foreground">
+                {getDocumentTypeLabel(company.document)}: {formatDocument(company.document)}
+              </p>
             )}
           </div>
           <span

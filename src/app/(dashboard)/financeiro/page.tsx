@@ -115,20 +115,20 @@ export function Page() {
 
   return (
     <RequirePermission permission="financial.manage">
-      <div className="space-y-8">
+      <div className="min-w-0 space-y-8">
         <PageHeader
           title="Financeiro"
           description="Receitas, despesas e fluxo de caixa"
           actions={
-            <div className="flex w-full flex-col gap-2 max-[429px]:flex-col min-[430px]:max-sm:grid min-[430px]:max-sm:grid-cols-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-              <div className="max-[429px]:w-full max-[429px]:[&_button]:w-full min-[430px]:max-sm:[&_button]:w-full sm:[&_button]:w-auto">
-                <ExportButton
-                  onExportPdf={exportPdf}
-                  onExportExcel={exportExcel}
-                  disabled={entries.length === 0}
-                />
-              </div>
-              <div className="max-[429px]:w-full max-[429px]:[&_button]:w-full min-[430px]:max-sm:[&_button]:w-full sm:[&_button]:w-auto">
+            <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+              <ExportButton
+                className="w-full min-w-0 sm:w-auto"
+                buttonClassName="touch-target w-full justify-center sm:w-auto sm:justify-start"
+                onExportPdf={exportPdf}
+                onExportExcel={exportExcel}
+                disabled={entries.length === 0}
+              />
+              <div className="w-full min-w-0 sm:w-auto">
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="accent" className="touch-target w-full sm:w-auto">

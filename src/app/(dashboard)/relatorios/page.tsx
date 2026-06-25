@@ -86,7 +86,7 @@ export function Page() {
 
   return (
     <RequirePermission permission="reports.export">
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         <PageHeader
           title="Relatórios"
           badge="Análise e exportação"

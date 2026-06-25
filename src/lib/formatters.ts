@@ -74,6 +74,15 @@ export function formatDocument(doc: string | null | undefined): string {
   return doc;
 }
 
+/** Retorna o rótulo do documento conforme CPF, CNPJ ou genérico. */
+export function getDocumentTypeLabel(doc: string | null | undefined): "CPF" | "CNPJ" | "CPF/CNPJ" {
+  if (!doc) return "CPF/CNPJ";
+  const digits = doc.replace(/\D/g, "");
+  if (digits.length === 11) return "CPF";
+  if (digits.length === 14) return "CNPJ";
+  return "CPF/CNPJ";
+}
+
 export function formatPlate(plate: string | null | undefined): string {
   if (!plate) return "-";
   const cleaned = plate.replace(/[^A-Z0-9]/gi, "").toUpperCase();

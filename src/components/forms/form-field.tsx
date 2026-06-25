@@ -6,17 +6,30 @@ interface FormFieldProps {
   error?: string;
   hint?: string;
   className?: string;
+  labelClassName?: string;
   children: React.ReactNode;
 }
 
-export function FormField({ label, error, hint, className, children }: FormFieldProps) {
+export function FormField({
+  label,
+  error,
+  hint,
+  className,
+  labelClassName,
+  children,
+}: FormFieldProps) {
   return (
     <div className={cn("space-y-1.5", className)}>
-      <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <Label
+        className={cn(
+          "text-xs font-semibold uppercase tracking-wide text-muted-foreground",
+          labelClassName,
+        )}
+      >
         {label}
       </Label>
       {children}
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && !error && <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );

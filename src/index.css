@@ -40,12 +40,16 @@
   }
 
   html {
-    @apply antialiased scroll-smooth;
+    @apply antialiased scroll-smooth overflow-x-clip;
   }
 
   body {
-    @apply bg-canvas text-foreground font-sans min-h-dvh;
+    @apply bg-canvas text-foreground font-sans min-h-dvh overflow-x-clip;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  #root {
+    @apply min-h-dvh w-full max-w-full overflow-x-clip;
   }
 
   h1,
@@ -56,10 +60,8 @@
   }
 
   button,
-  a,
   [role="button"] {
     min-height: 44px;
-    min-width: 44px;
   }
 
   ::selection {
@@ -93,12 +95,12 @@
   }
 
   .surface {
-    @apply rounded-2xl border border-border/60 bg-card text-card-foreground;
+    @apply min-w-0 max-w-full rounded-2xl border border-border/60 bg-card text-card-foreground;
     box-shadow: var(--shadow-card);
   }
 
   .surface-elevated {
-    @apply rounded-2xl border border-border/60 bg-card text-card-foreground;
+    @apply min-w-0 max-w-full rounded-2xl border border-border/60 bg-card text-card-foreground;
     box-shadow: var(--shadow-elevated);
   }
 
@@ -143,7 +145,7 @@
   }
 
   .page-header-strip {
-    @apply rounded-2xl border border-border/60 bg-card px-5 py-5 sm:px-6;
+    @apply overflow-hidden rounded-2xl border border-border/60 bg-card px-5 py-5 sm:px-6;
     box-shadow: var(--shadow-soft);
   }
 
@@ -190,5 +192,12 @@
   .kpi-card-value {
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-drawer-overlay,
+    .mobile-drawer-panel {
+      transition-duration: 1ms !important;
+    }
   }
 }

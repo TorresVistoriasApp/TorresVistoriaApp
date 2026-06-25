@@ -14,7 +14,7 @@ export function Page() {
   const { data = [], isLoading } = useInspections(filters);
 
   return (
-    <div className="space-y-8">
+    <div className="min-w-0 space-y-8">
       <PageHeader
         title="Vistorias"
         description="Histórico e gestão de laudos cautelares"

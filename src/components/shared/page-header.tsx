@@ -20,8 +20,8 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={cn("page-header-strip", className)}>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-2">
           {badge && (
             <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
               {badge}
@@ -35,7 +35,7 @@ export function PageHeader({
           )}
         </div>
         {actions && (
-          <div className="flex w-full shrink-0 flex-wrap items-stretch gap-2 sm:w-auto sm:items-center">
+          <div className="flex w-full min-w-0 max-w-full shrink-0 flex-wrap items-stretch gap-2 sm:w-auto sm:items-center">
             {actions}
           </div>
         )}

@@ -48,7 +48,7 @@ export const companyService = {
         .from("companies")
         .update({
           name: input.name,
-          document: input.document ?? null,
+          document: input.document || null,
           address_cep: input.address_cep || null,
           address_street: input.address_street || null,
           address_number: input.address_number || null,

@@ -1,7 +1,20 @@
 import { z } from "zod";
 
+const cpfCnpjDigitsRegex = /^(\d{11}|\d{14})$/;
+
 const optionalText = (max: number) =>
   z.string().max(max).optional().nullable().or(z.literal(""));
+
+const optionalCpfCnpj = z
+  .string()
+  .max(18)
+  .optional()
+  .nullable()
+  .or(z.literal(""))
+  .transform((value) => (value ?? "").replace(/\D/g, ""))
+  .refine((digits) => !digits || cpfCnpjDigitsRegex.test(digits), {
+    message: "Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido",
+  });
 
 export const companyAddressSchema = z.object({
   address_cep: optionalText(9),
@@ -15,8 +28,8 @@ export const companyAddressSchema = z.object({
 
 export const companySchema = z
   .object({
-    name: z.string().min(2, "Razão social obrigatória").max(200),
-    document: optionalText(18),
+    name: z.string().min(2, "Nome ou razão social obrigatório").max(200),
+    document: optionalCpfCnpj,
   })
   .merge(companyAddressSchema);
 

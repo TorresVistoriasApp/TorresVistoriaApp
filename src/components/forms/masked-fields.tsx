@@ -87,6 +87,8 @@ interface MaskedFieldProps<T extends FieldValues> {
   className?: string;
   hint?: string;
   inputClassName?: string;
+  disabled?: boolean;
+  labelClassName?: string;
 }
 
 export function MaskedField<T extends FieldValues>({
@@ -99,13 +101,21 @@ export function MaskedField<T extends FieldValues>({
   className,
   hint,
   inputClassName,
+  disabled,
+  labelClassName,
 }: MaskedFieldProps<T>) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field }) => (
-        <FormField label={label} error={error} hint={hint} className={className}>
+        <FormField
+          label={label}
+          error={error}
+          hint={hint}
+          className={className}
+          labelClassName={labelClassName}
+        >
           <MaskedInput
             mask={mask}
             value={field.value ?? ""}
@@ -113,6 +123,7 @@ export function MaskedField<T extends FieldValues>({
             onBlur={field.onBlur}
             placeholder={placeholder}
             className={inputClassName}
+            disabled={disabled}
           />
         </FormField>
       )}

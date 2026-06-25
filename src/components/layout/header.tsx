@@ -19,9 +19,9 @@ export function Header() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-20 border-b border-border/50 bg-card max-md:transform-gpu md:sticky md:bg-card/80 md:backdrop-blur-xl">
-        <div className="flex h-14 items-center justify-between gap-4 px-4 lg:px-8">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
+      <header className="fixed inset-x-0 top-0 z-20 max-w-full overflow-x-clip border-b border-border/50 bg-card max-md:transform-gpu md:sticky md:bg-card/80 md:backdrop-blur-xl">
+        <div className="flex h-14 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -31,7 +31,7 @@ export function Header() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <Car className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+            <Car className="h-5 w-5 shrink-0 text-primary max-[360px]:hidden" aria-hidden />
             <p className="truncate text-sm font-semibold text-foreground">
               Boas vindas, {displayName}!
             </p>

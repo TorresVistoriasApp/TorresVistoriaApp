@@ -180,7 +180,7 @@ export function FinancialEntryForm({
       </div>
 
       {variant === "dialog" ? (
-        <DialogFooter className="sticky bottom-0 -mx-1 gap-3 border-t border-border/60 bg-card px-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-4 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:pb-0">
+        <DialogFooter className="sticky bottom-0 gap-3 border-t border-border/60 bg-card px-0 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-4 sm:static sm:border-0 sm:bg-transparent sm:pb-0">
           <Button
             type="button"
             variant="outline"
