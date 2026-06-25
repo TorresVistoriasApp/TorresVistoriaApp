@@ -2,9 +2,6 @@ import type { LucideIcon } from "lucide-react";
 import { CheckCircle2, ImagePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const photoSlotScrollWidthClass =
-  "w-[calc(50%-0.375rem)] shrink-0 sm:w-[calc(33.333%-0.67rem)] sm:min-w-[9.5rem] lg:w-[calc(25%-0.75rem)]";
-
 interface PhotoSlotFrameProps {
   label: string;
   hint: string;
@@ -59,13 +56,15 @@ export function PhotoSlotFrame({
                 {indexBadge}
               </div>
             ) : (
-              <div className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-success text-white shadow-md">
-                {countBadge != null && countBadge > 1 ? (
-                  <span className="text-xs font-bold">{countBadge}</span>
-                ) : (
-                  <CheckCircle2 className="size-4" />
-                )}
-              </div>
+              !isUploading && (
+                <div className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-success text-white shadow-md">
+                  {countBadge != null && countBadge > 1 ? (
+                    <span className="text-xs font-bold">{countBadge}</span>
+                  ) : (
+                    <CheckCircle2 className="size-4" />
+                  )}
+                </div>
+              )
             )}
           </>
         ) : (
@@ -81,8 +80,8 @@ export function PhotoSlotFrame({
         )}
 
         {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-            <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
+            <div className="size-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         )}
       </div>

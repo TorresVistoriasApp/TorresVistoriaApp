@@ -51,15 +51,21 @@ export function Page() {
       ) : (
         <ChecklistForm
           items={items}
-          disabled={updateItem.isPending}
           onUpdate={(itemId, status, notes) => {
-            void updateItem.mutateAsync({
-              id: itemId,
-              patch: {
-                status: status as typeof ChecklistStatus.CONFORME,
-                notes: notes ?? null,
+            updateItem.mutate(
+              {
+                id: itemId,
+                patch: {
+                  status: status as typeof ChecklistStatus.CONFORME,
+                  notes: notes ?? null,
+                },
               },
-            });
+              {
+                onError: (err) => {
+                  toast(err instanceof Error ? err.message : "Erro ao salvar item");
+                },
+              },
+            );
           }}
         />
       )}

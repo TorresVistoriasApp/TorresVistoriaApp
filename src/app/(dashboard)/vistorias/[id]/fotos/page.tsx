@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ClipboardList } from "lucide-react";
 import { PhotoSlotGrid } from "@/components/photos/photo-slot-grid";
@@ -13,6 +13,26 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 
+type GeoCoords = { latitude: number; longitude: number };
+
+function prefetchGeoCoords(onReady: (coords: GeoCoords | null) => void) {
+  if (!("geolocation" in navigator)) {
+    onReady(null);
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      onReady({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      });
+    },
+    () => onReady(null),
+    { enableHighAccuracy: false, timeout: 2500, maximumAge: 300_000 },
+  );
+}
+
 export function Page() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -21,38 +41,40 @@ export function Page() {
   const { data: photos = [], isLoading } = useInspectionPhotos(id);
   const upload = useUploadPhoto(id!);
   const { toast } = useToast();
-  const [uploadingCategory, setUploadingCategory] = useState<string | null>(null);
+  const geoRef = useRef<GeoCoords | null>(null);
 
-  const handleUpload = async (file: File, category: string) => {
-    setUploadingCategory(category);
-    try {
-      let latitude: number | null = null;
-      let longitude: number | null = null;
-      if ("geolocation" in navigator) {
-        try {
-          const pos = await new Promise<GeolocationPosition>((res, rej) =>
-            navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 }),
-          );
-          latitude = pos.coords.latitude;
-          longitude = pos.coords.longitude;
-        } catch {
-          /* opcional */
-        }
-      }
-      await upload.mutateAsync({ file, category, latitude, longitude });
-      toast(
-        category === "EXTRAS"
-          ? "Foto extra adicionada"
-          : category === "DOCUMENTOS"
-            ? "Documento adicionado"
-            : "Foto enviada",
+  useEffect(() => {
+    prefetchGeoCoords((coords) => {
+      geoRef.current = coords;
+    });
+  }, []);
+
+  const handleUpload = useCallback(
+    (file: File, category: string) => {
+      const coords = geoRef.current;
+
+      upload.mutate(
+        {
+          file,
+          category,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
+        },
+        {
+          onError: (err) => {
+            toast(err instanceof Error ? err.message : "Erro no upload");
+          },
+        },
       );
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Erro no upload");
-    } finally {
-      setUploadingCategory(null);
-    }
-  };
+
+      if (!geoRef.current) {
+        prefetchGeoCoords((nextCoords) => {
+          geoRef.current = nextCoords;
+        });
+      }
+    },
+    [toast, upload],
+  );
 
   const goToChecklist = () => {
     if (!id) return;
@@ -65,12 +87,7 @@ export function Page() {
       {isLoading ? (
         <LoadingSpinner label="Carregando fotos..." />
       ) : (
-        <PhotoSlotGrid
-          photos={photos}
-          uploading={upload.isPending}
-          uploadingCategory={uploadingCategory}
-          onUpload={handleUpload}
-        />
+        <PhotoSlotGrid photos={photos} onUpload={handleUpload} />
       )}
 
       {isWizardFlow ? (

@@ -1,14 +1,13 @@
 import type { LucideIcon } from "lucide-react";
 import type { InspectionPhoto } from "@/services/photo-service";
-import { PhotoSlotFrame, photoSlotScrollWidthClass } from "@/components/photos/photo-slot-frame";
+import { PhotoSlotFrame } from "@/components/photos/photo-slot-frame";
+import { isPendingPhoto } from "@/hooks/use-photos";
 
 interface MultiPhotoGalleryProps {
   label: string;
   hint: string;
   icon: LucideIcon;
   photos: InspectionPhoto[];
-  uploading?: boolean;
-  disabled?: boolean;
   onAdd: () => void;
 }
 
@@ -17,46 +16,38 @@ export function MultiPhotoGallery({
   hint,
   icon,
   photos,
-  uploading,
-  disabled,
   onAdd,
 }: MultiPhotoGalleryProps) {
   const sortedPhotos = [...photos].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
+  const confirmedCount = sortedPhotos.filter((photo) => !isPendingPhoto(photo)).length;
 
   return (
     <div className="space-y-3">
-      {sortedPhotos.length > 0 && (
+      {confirmedCount > 0 ? (
         <p className="text-xs leading-relaxed text-muted-foreground">
-          {sortedPhotos.length} foto{sortedPhotos.length === 1 ? "" : "s"} adicionada
-          {sortedPhotos.length === 1 ? "" : "s"}. Toque em{" "}
-          <span className="font-medium text-foreground">Adicionar</span> para incluir mais.
+          {confirmedCount} foto{confirmedCount === 1 ? "" : "s"} adicionada
+          {confirmedCount === 1 ? "" : "s"}. Role para conferir cada uma antes de continuar.
         </p>
+      ) : (
+        <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
       )}
 
-      <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <PhotoSlotFrame
-          label={label}
-          hint={hint}
-          icon={icon}
-          isUploading={uploading}
-          disabled={disabled}
-          onClick={onAdd}
-          className={photoSlotScrollWidthClass}
-        />
-
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
         {sortedPhotos.map((photo, index) => (
           <PhotoSlotFrame
             key={photo.id}
             label={`${label} ${index + 1}`}
-            hint={hint}
+            hint="Confira se a imagem corresponde ao veículo vistoriado"
             icon={icon}
             imageUrl={photo.public_url}
             indexBadge={index + 1}
-            className={photoSlotScrollWidthClass}
+            isUploading={isPendingPhoto(photo)}
           />
         ))}
+
+        <PhotoSlotFrame label={label} hint={hint} icon={icon} onClick={onAdd} />
       </div>
     </div>
   );

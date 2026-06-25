@@ -16,6 +16,7 @@ import { FormSectionCard } from "@/components/forms/form-section-card";
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
 import { PhotoSlotFrame } from "@/components/photos/photo-slot-frame";
 import { MultiPhotoGallery } from "@/components/photos/multi-photo-gallery";
+import { isPendingPhoto } from "@/hooks/use-photos";
 import { OPTIONAL_PHOTO_CATEGORIES, PAINT_PHOTO_CATEGORIES, PHOTO_CATEGORIES } from "@/lib/constants";
 import type { InspectionPhoto } from "@/services/photo-service";
 import { cn } from "@/lib/utils";
@@ -129,7 +130,7 @@ const PHOTO_SECTIONS = [
     id: "fotos-documentos",
     index: 3,
     title: "Documentação do veículo",
-    description: "CRLV, CRV, ATPV-e ou outros documentos do veículo.",
+    description: "CRLV, CRV, ATPV-e ou outros documentos. Cada arquivo aparece abaixo para conferência.",
     categories: [DOCUMENT_CATEGORY],
     optional: true,
     collapsible: true,
@@ -139,7 +140,7 @@ const PHOTO_SECTIONS = [
     id: "fotos-extras",
     index: 4,
     title: "Fotos extras",
-    description: "Complementos visuais. Cada envio aparece ao lado e entra no laudo PDF.",
+    description: "Complementos visuais. Cada nova foto aparece abaixo para conferência e entra no laudo PDF.",
     categories: [EXTRA_CATEGORY],
     optional: true,
     collapsible: true,
@@ -162,8 +163,6 @@ const PHOTO_SECTION_LIST: PhotoSectionConfig[] = PHOTO_SECTIONS.map((section) =>
 
 interface PhotoSlotGridProps {
   photos: InspectionPhoto[];
-  uploading?: boolean;
-  uploadingCategory?: string | null;
   onUpload: (file: File, category: string) => void;
 }
 
@@ -171,14 +170,21 @@ function countFilledCategories(
   categories: readonly string[],
   photosByCategory: Record<string, InspectionPhoto[]>,
 ): number {
-  return categories.filter((category) => photosByCategory[category]?.length).length;
+  return categories.filter((category) =>
+    photosByCategory[category]?.some((photo) => !isPendingPhoto(photo)),
+  ).length;
 }
 
 function countPhotosInCategories(
   categories: readonly string[],
   photosByCategory: Record<string, InspectionPhoto[]>,
 ): number {
-  return categories.reduce((total, category) => total + (photosByCategory[category]?.length ?? 0), 0);
+  return categories.reduce(
+    (total, category) =>
+      total +
+      (photosByCategory[category]?.filter((photo) => !isPendingPhoto(photo)).length ?? 0),
+    0,
+  );
 }
 
 function buildSectionStatus(
@@ -200,8 +206,6 @@ interface PhotoSlotCardProps {
   label: string;
   hint: string;
   icon: LucideIcon;
-  isUploading: boolean;
-  disabled?: boolean;
   onClick: () => void;
 }
 
@@ -210,11 +214,10 @@ function PhotoSlotCard({
   label,
   hint,
   icon,
-  isUploading,
-  disabled,
   onClick,
 }: PhotoSlotCardProps) {
   const photo = categoryPhotos[categoryPhotos.length - 1];
+  const isPending = photo ? isPendingPhoto(photo) : false;
 
   return (
     <PhotoSlotFrame
@@ -222,20 +225,14 @@ function PhotoSlotCard({
       hint={hint}
       icon={icon}
       imageUrl={photo?.public_url}
-      countBadge={categoryPhotos.length}
-      isUploading={isUploading}
-      disabled={disabled}
+      countBadge={categoryPhotos.filter((item) => !isPendingPhoto(item)).length || undefined}
+      isUploading={isPending}
       onClick={onClick}
     />
   );
 }
 
-export function PhotoSlotGrid({
-  photos,
-  uploading,
-  uploadingCategory,
-  onUpload,
-}: PhotoSlotGridProps) {
+export function PhotoSlotGrid({ photos, onUpload }: PhotoSlotGridProps) {
   const photosByCategory = photos.reduce<Record<string, InspectionPhoto[]>>((acc, photo) => {
     (acc[photo.category] ??= []).push(photo);
     return acc;
@@ -247,9 +244,9 @@ export function PhotoSlotGrid({
   const filledRequired = countFilledCategories(requiredCategories, photosByCategory);
   const totalRequired = requiredCategories.length;
   const progress = Math.round((filledRequired / totalRequired) * 100);
+  const confirmedPhotoCount = photos.filter((photo) => !isPendingPhoto(photo)).length;
 
   const handleSlotClick = (category: string) => {
-    if (uploading) return;
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
@@ -274,7 +271,7 @@ export function PhotoSlotGrid({
           <div className="text-right">
             <p className="text-lg font-bold text-primary">{progress}%</p>
             <p className="text-xs text-muted-foreground">
-              {photos.length} foto{photos.length === 1 ? "" : "s"} no total
+              {confirmedPhotoCount} foto{confirmedPhotoCount === 1 ? "" : "s"} no total
             </p>
           </div>
         </div>
@@ -310,7 +307,6 @@ export function PhotoSlotGrid({
               const Icon = CATEGORY_ICONS[category] ?? Camera;
               const label = PHOTO_CATEGORY_LABELS[category] ?? category;
               const hint = CATEGORY_HINTS[category] ?? "";
-              const isUploading = Boolean(uploading && uploadingCategory === category);
 
               if (MULTI_PHOTO_CATEGORIES.has(category)) {
                 return (
@@ -320,8 +316,6 @@ export function PhotoSlotGrid({
                     hint={hint}
                     icon={Icon}
                     photos={categoryPhotos}
-                    uploading={isUploading}
-                    disabled={Boolean(uploading)}
                     onAdd={() => handleSlotClick(category)}
                   />
                 );
@@ -334,8 +328,6 @@ export function PhotoSlotGrid({
                   label={label}
                   hint={hint}
                   icon={Icon}
-                  isUploading={Boolean(isUploading)}
-                  disabled={Boolean(uploading)}
                   onClick={() => handleSlotClick(category)}
                 />
               );

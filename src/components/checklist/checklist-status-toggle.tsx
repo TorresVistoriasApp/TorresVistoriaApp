@@ -76,7 +76,7 @@ export function ChecklistStatusToggle({
             aria-label={config.label}
             aria-pressed={isActive}
             className={cn(
-              "flex items-center justify-center rounded-lg font-semibold transition-all disabled:opacity-50",
+              "flex items-center justify-center rounded-lg font-semibold transition-colors duration-150 disabled:opacity-50",
               fullWidth ? "min-h-[52px] flex-1 px-1 py-2" : "min-h-[44px] gap-1.5 px-2 py-2.5 text-xs",
               stackedMobile ? "flex-col gap-1" : "flex-row gap-1.5 text-xs",
               isActive ? config.active : config.idle,

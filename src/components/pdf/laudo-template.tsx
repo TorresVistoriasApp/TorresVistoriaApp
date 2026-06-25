@@ -4,7 +4,6 @@ import type { InspectionPhoto } from "@/services/photo-service";
 import type { LaudoCompany, LaudoInspector, LaudoSettings } from "@/lib/laudo/laudo-model";
 import { getOpinionLabel, summarizeLaudoChecklist } from "@/lib/laudo/laudo-model";
 import { formatDate, formatDocument, formatKM, formatPlate, getDocumentTypeLabel } from "@/lib/formatters";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
 
@@ -27,47 +26,56 @@ export function LaudoTemplate({
   const firstPhoto = photos.find((photo) => photo.public_url)?.public_url;
   const brandLogoPath = getBrandLogoPath(inspection.brand);
 
+  const opinionTone = opinion.includes("REPROVADO")
+    ? "bg-destructive text-destructive-foreground"
+    : opinion.includes("APONTAMENTO")
+      ? "bg-orange-100 text-orange-800"
+      : "bg-emerald-100 text-emerald-800";
+
   return (
-    <Card className="overflow-hidden border-2">
-      <CardHeader className="border-b bg-gradient-to-r from-primary/10 to-transparent">
+    <article className="overflow-hidden rounded-xl border-2 border-border bg-card shadow-sm">
+      <header className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-4 py-4 sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">
               Torres Vistorias
             </p>
-            <CardTitle className="mt-1">Laudo #{inspection.inspection_number}</CardTitle>
+            <h2 className="mt-1 text-lg font-bold tracking-tight sm:text-xl">
+              Laudo #{inspection.inspection_number}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {company?.name ?? "Empresa vistoriadora"} · {formatDate(inspection.inspection_date)}
+              {company?.name ?? "Empresa vistoriadora"}, {formatDate(inspection.inspection_date)}
             </p>
             {company?.document && (
-              <p className="text-xs text-muted-foreground">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {getDocumentTypeLabel(company.document)}: {formatDocument(company.document)}
               </p>
             )}
           </div>
           <span
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-bold uppercase",
-              opinion.includes("REPROVADO")
-                ? "bg-destructive text-destructive-foreground"
-                : opinion.includes("APONTAMENTO")
-                  ? "bg-orange-100 text-orange-800"
-                  : "bg-emerald-100 text-emerald-800",
+              "inline-flex w-fit shrink-0 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide",
+              opinionTone,
             )}
           >
             {opinion}
           </span>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
+      </header>
+
+      <div className="space-y-4 p-4 text-sm sm:p-5">
         {firstPhoto && (
-          <div className="-mx-6 border-b">
-            <img src={firstPhoto} alt="Foto principal da vistoria" className="h-52 w-full object-cover" />
+          <div className="-mx-4 overflow-hidden border-y border-border sm:-mx-5">
+            <img
+              src={firstPhoto}
+              alt="Foto principal da vistoria"
+              className="h-44 w-full object-cover sm:h-52"
+            />
           </div>
         )}
 
-        <div className="flex gap-4">
-          <div className="flex w-24 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-foreground/80 bg-muted/30 p-3">
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex w-full shrink-0 flex-col items-center justify-center rounded-xl border-2 border-foreground/15 bg-muted/30 p-3 sm:w-24">
             {brandLogoPath ? (
               <img
                 src={brandLogoPath}
@@ -82,71 +90,75 @@ export function LaudoTemplate({
             </p>
           </div>
 
-          <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3">
-          <div>
-            <p className="text-xs text-muted-foreground">Placa</p>
-            <p className="font-mono text-lg font-bold">{formatPlate(inspection.plate)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Checklist</p>
-            <p className="font-bold">
-              {stats.evaluated}/{stats.total}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Não conforme</p>
-            <p className="font-bold text-destructive">{stats.naoConforme}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Fotos</p>
-            <p className="font-bold">{photos.length}</p>
-          </div>
-          <div className="col-span-2 sm:col-span-4">
-            <p className="text-xs text-muted-foreground">Veículo</p>
-            <p className="font-medium">
-              {inspection.brand} {inspection.model} · {inspection.color} · {inspection.manufacture_year}/
-              {inspection.model_year} · {formatKM(inspection.mileage)}
-            </p>
-          </div>
-          <div className="col-span-2 sm:col-span-3">
-            <p className="text-xs text-muted-foreground">Cliente</p>
-            <p className="font-medium">{inspection.client_name}</p>
-          </div>
-          </div>
+          <dl className="grid flex-1 grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+            <div>
+              <dt className="text-xs text-muted-foreground">Placa</dt>
+              <dd className="font-mono text-lg font-bold">{formatPlate(inspection.plate)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Checklist</dt>
+              <dd className="font-bold">
+                {stats.evaluated}/{stats.total}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Não conforme</dt>
+              <dd className="font-bold text-destructive">{stats.naoConforme}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Fotos</dt>
+              <dd className="font-bold">{photos.length}</dd>
+            </div>
+            <div className="col-span-2 sm:col-span-3">
+              <dt className="text-xs text-muted-foreground">Veículo</dt>
+              <dd className="font-medium leading-snug">
+                {inspection.brand} {inspection.model}, {inspection.color},{" "}
+                {inspection.manufacture_year}/{inspection.model_year}, {formatKM(inspection.mileage)}
+              </dd>
+            </div>
+            <div className="col-span-2 sm:col-span-3">
+              <dt className="text-xs text-muted-foreground">Cliente</dt>
+              <dd className="font-medium">{inspection.client_name}</dd>
+            </div>
+          </dl>
         </div>
 
-        <div className="rounded-lg border bg-muted/30 p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Dados da vistoria</p>
-          <div className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
-            <p>
-              <span className="text-muted-foreground">Vistoriador:</span>{" "}
-              <span className="font-medium">{inspector?.full_name ?? "Não informado"}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Local:</span>{" "}
-              <span className="font-medium">{inspection.location}</span>
-            </p>
+        <section className="rounded-xl border bg-muted/30 p-3 sm:p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Dados da vistoria
+          </h3>
+          <dl className="mt-2 grid gap-2 sm:grid-cols-2">
+            <div>
+              <dt className="text-muted-foreground">Vistoriador</dt>
+              <dd className="font-medium">{inspector?.full_name ?? "Não informado"}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Local</dt>
+              <dd className="font-medium">{inspection.location}</dd>
+            </div>
             {company?.address && (
-              <p className="sm:col-span-2">
-                <span className="text-muted-foreground">Endereço da empresa:</span>{" "}
-                <span className="font-medium">{company.address}</span>
-              </p>
+              <div className="sm:col-span-2">
+                <dt className="text-muted-foreground">Endereço da empresa</dt>
+                <dd className="font-medium">{company.address}</dd>
+              </div>
             )}
-          </div>
-        </div>
+          </dl>
+        </section>
 
-        <div className="rounded-lg border bg-muted/30 p-3">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Parecer técnico</p>
-          <p className="mt-1 text-sm leading-relaxed">
+        <section className="rounded-xl border bg-muted/30 p-3 sm:p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Parecer técnico
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed">
             {inspection.technical_notes || "Sem observações técnicas complementares."}
           </p>
-        </div>
+        </section>
 
-        <p className="text-xs text-muted-foreground">
-          Vistoriador: {inspector?.full_name ?? "não informado"} · Laudo com fotos, checklist técnico,
-          resumo gráfico, QR de validação e rodapé jurídico no PDF final.
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Vistoriador: {inspector?.full_name ?? "não informado"}. O PDF final inclui fotos, checklist
+          técnico, resumo gráfico, QR de validação e rodapé jurídico.
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 }
