@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 import type { VistoriaInput } from "@/schemas/vistoria";
 
+const WIZARD_FORM_ID = "nova-vistoria-form";
+
 export function Page() {
   const navigate = useNavigate();
   const create = useCreateInspection();
@@ -22,8 +24,15 @@ export function Page() {
   };
 
   return (
-    <InspectionWizardShell currentStep={1}>
+    <InspectionWizardShell
+      currentStep={1}
+      formId={WIZARD_FORM_ID}
+      submitLabel="Salvar e continuar"
+      isSubmitting={create.isPending}
+      onCancel={() => navigate(ROUTES.inspections)}
+    >
       <VistoriaForm
+        formId={WIZARD_FORM_ID}
         wizardMode
         onBack={() => navigate(ROUTES.inspections)}
         onSubmit={handleSubmit}

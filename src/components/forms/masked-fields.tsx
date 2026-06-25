@@ -40,8 +40,8 @@ export function OptionalMaskedField<T extends FieldValues>({
         };
 
         return (
-          <FormField label={label} error={error} className={className}>
-            <div className="space-y-2">
+          <FormField label={label} error={error} className={className} optional>
+            <div className="space-y-2.5">
               {mask ? (
                 <MaskedInput
                   mask={mask}
@@ -60,14 +60,14 @@ export function OptionalMaskedField<T extends FieldValues>({
                   className={cn(inputClassName, isNA && "opacity-50")}
                 />
               )}
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+              <label className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/40">
                 <input
                   type="checkbox"
                   checked={isNA}
                   onChange={toggleNA}
-                  className="size-4 rounded border-border accent-primary"
+                  className="size-4 shrink-0 rounded border-border accent-primary"
                 />
-                {naLabel}
+                <span>{naLabel}</span>
               </label>
             </div>
           </FormField>

@@ -14,6 +14,11 @@ interface InspectionWizardShellProps {
   title?: string;
   children: React.ReactNode;
   className?: string;
+  formId?: string;
+  submitLabel?: string;
+  isSubmitting?: boolean;
+  onCancel?: () => void;
+  cancelLabel?: string;
 }
 
 function getStepPath(step: WizardStep, inspectionId: string): string {
@@ -35,6 +40,11 @@ export function InspectionWizardShell({
   title = "Nova vistoria",
   children,
   className,
+  formId,
+  submitLabel = "Salvar e continuar",
+  isSubmitting = false,
+  onCancel,
+  cancelLabel = "Voltar",
 }: InspectionWizardShellProps) {
   const navigate = useNavigate();
 
@@ -44,6 +54,10 @@ export function InspectionWizardShell({
   };
 
   const handleBack = () => {
+    if (onCancel) {
+      onCancel();
+      return;
+    }
     if (currentStep === 1) {
       navigate(ROUTES.inspections);
       return;
@@ -69,31 +83,57 @@ export function InspectionWizardShell({
     4: "Revisão e laudo profissional",
   };
 
+  const showHeaderActions = currentStep === 1 && formId;
+
   return (
-    <div className={cn("space-y-6", className)}>
-      <div className="flex items-start gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="mt-0.5 shrink-0 touch-target"
-          onClick={handleBack}
-          aria-label="Voltar"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">{title}</h1>
-          <p className="text-sm text-muted-foreground">
-            Passo {currentStep} de 4 — {stepLabels[currentStep]}
-          </p>
+    <div className={cn("min-w-0 w-full space-y-4 lg:space-y-5", className)}>
+      <div className="page-header-strip lg:sticky lg:top-14 lg:z-10 lg:backdrop-blur-md lg:bg-card/95">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mt-0.5 shrink-0 touch-target"
+              onClick={handleBack}
+              aria-label={cancelLabel}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold tracking-tight sm:text-xl md:text-2xl">{title}</h1>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Passo {currentStep} de 4 — {stepLabels[currentStep]}
+              </p>
+            </div>
+          </div>
+
+          {showHeaderActions && (
+            <div className="hidden shrink-0 gap-2 sm:flex">
+              <Button type="button" variant="outline" className="touch-target" onClick={handleBack}>
+                {cancelLabel}
+              </Button>
+              <Button
+                type="submit"
+                form={formId}
+                className="touch-target min-w-[180px]"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Salvando..." : submitLabel}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
+      <div className="rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5 lg:p-4">
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:text-xs lg:sr-only">
+          Fluxo em 4 etapas
+        </p>
         <InspectionWizardStepper
           currentStep={currentStep}
           inspectionId={inspectionId}
           onStepClick={handleStepClick}
+          compactOnMobile={currentStep === 1}
         />
       </div>
 
@@ -120,7 +160,7 @@ export function WizardNavButtons({
   showBack?: boolean;
 }) {
   return (
-    <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
       {showBack && onBack ? (
         <Button type="button" variant="outline" className="touch-target" onClick={onBack}>
           {backLabel}
