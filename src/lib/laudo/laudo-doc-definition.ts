@@ -2,7 +2,7 @@ import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
 import { PAINT_PHOTO_CATEGORIES } from "@/lib/constants";
 import { getChecklistCategoryLabel, getChecklistStatusLabel } from "@/lib/checklist-catalog";
 import { PAINT_PARTS } from "@/lib/paint-catalog";
-import { formatDate, formatDocument, formatPhone } from "@/lib/formatters";
+import { formatDate, formatDocument, formatPhone, formatPlate } from "@/lib/formatters";
 import {
   buildInspectionInfoRows,
   buildSaleMarketInfoRows,
@@ -10,6 +10,12 @@ import {
   hasLaudoValue,
   hasSaleMarketSectionData,
 } from "@/lib/laudo/laudo-field-utils";
+import {
+  HEADER_OPINION_HEIGHT,
+  HEADER_QR_SIZE,
+  buildPlateAndValidationGroup,
+  headerValidationWidth,
+} from "@/lib/laudo/mercosul-plate-pdf";
 import {
   getLaudoLegalFooter,
   getOpinionLabel,
@@ -27,6 +33,10 @@ const SLATE = "#64748b";
 const BORDER = "#e2e8f0";
 const SURFACE = "#f8fafc";
 const PAGE_CONTENT_WIDTH = 523;
+const HEADER_BRAND_LOGO_WIDTH = 160;
+const HEADER_BRAND_LOGO_HEIGHT = 63;
+const HEADER_BRAND_COLUMN_WIDTH = 168;
+const HEADER_ROW_TOP = 2;
 
 function value(v: string | number | null | undefined): string {
   if (v === null || v === undefined || v === "") return EMPTY_VALUE;
@@ -176,14 +186,16 @@ function buildStatsDashboard(
       ],
     },
     layout: {
-      hLineColor: () => BORDER,
-      vLineColor: () => BORDER,
-      hLineWidth: () => 0.5,
-      vLineWidth: () => 0.5,
-      paddingLeft: () => 10,
-      paddingRight: () => 10,
-      paddingTop: () => 10,
-      paddingBottom: () => 10,
+      hLineColor: () => "#d1d5db",
+      vLineColor: () => "#d1d5db",
+      hLineWidth: (rowIndex: number, node: { table: { body: unknown[] } }) =>
+        rowIndex === 0 || rowIndex === node.table.body.length ? 0.6 : 0.25,
+      vLineWidth: (columnIndex: number, node: { table: { widths: unknown[] } }) =>
+        columnIndex === 0 || columnIndex === node.table.widths.length ? 0.6 : 0.25,
+      paddingLeft: () => 8,
+      paddingRight: () => 8,
+      paddingTop: () => 8,
+      paddingBottom: () => 8,
     },
     margin: [0, 0, 0, 10],
   };
@@ -202,6 +214,102 @@ function horizontalRule(margin: [number, number, number, number] = [0, 0, 0, 10]
   };
 }
 
+function buildOpinionBadge(opinion: string, accent: string, columnWidth: number): PdfNode {
+  const isLongLabel = opinion.length > 14;
+
+  return {
+    table: {
+      widths: [columnWidth],
+      heights: [HEADER_OPINION_HEIGHT],
+      body: [[{
+        text: opinion,
+        bold: true,
+        color: "#ffffff",
+        fillColor: accent,
+        alignment: "center",
+        verticalAlignment: "middle",
+        fontSize: isLongLabel ? 7 : 9.5,
+        characterSpacing: 0.5,
+        margin: [6, 0, 6, 0],
+      }]],
+    },
+    layout: "noBorders",
+  };
+}
+
+function buildValidationColumn(
+  opinion: string,
+  accent: string,
+  validationUrl: string,
+  verificationCode: string,
+  columnWidth: number,
+): PdfNode {
+  const qrSize = Math.min(columnWidth, HEADER_QR_SIZE);
+
+  return {
+    stack: [
+      buildOpinionBadge(opinion, accent, columnWidth),
+      { qr: validationUrl || verificationCode, fit: qrSize, alignment: "right", margin: [0, 4, 0, 0] },
+      {
+        text: verificationCode,
+        style: "small",
+        alignment: "right",
+        margin: [0, 2, 0, 0],
+        characterSpacing: 0.3,
+      },
+    ],
+    width: columnWidth,
+  };
+}
+
+function buildBrandIdentityColumn(
+  payload: LaudoPayload,
+  inspection: LaudoPayload["inspection"],
+  company: LaudoPayload["company"],
+  primaryColor: string,
+): PdfNode {
+  return {
+    stack: [
+      payload.logoDataUrl
+        ? {
+            image: payload.logoDataUrl,
+            width: HEADER_BRAND_LOGO_WIDTH,
+            height: HEADER_BRAND_LOGO_HEIGHT,
+            margin: [0, 0, 0, 0],
+          }
+        : {
+            text: "TORRES VISTORIAS",
+            style: "brand",
+            color: primaryColor,
+            margin: [0, 0, 0, 0],
+          },
+      {
+        text: "Laudo cautelar veicular",
+        style: "docType",
+        margin: [0, 10, 0, 0],
+        lineHeight: 1.2,
+      },
+      {
+        text: `Nº ${inspection.inspection_number}`,
+        fontSize: 14,
+        bold: true,
+        color: NAVY,
+        margin: [0, 5, 0, 0],
+        lineHeight: 1.15,
+      },
+      ...(company?.name
+        ? [{
+            text: company.name,
+            style: "small",
+            margin: [0, 4, 0, 0] as [number, number, number, number],
+            lineHeight: 1.15,
+          }]
+        : []),
+    ],
+    width: HEADER_BRAND_COLUMN_WIDTH,
+  };
+}
+
 function buildCoverHeader(
   payload: LaudoPayload,
   inspection: LaudoPayload["inspection"],
@@ -211,57 +319,27 @@ function buildCoverHeader(
   validationUrl: string,
 ): PdfNode[] {
   const accent = opinionAccent(opinion);
+  const validationWidth = headerValidationWidth(formatPlate(inspection.plate));
 
   return [
     {
       canvas: [{ type: "rect", x: 0, y: 0, w: PAGE_CONTENT_WIDTH, h: 3, color: NAVY }],
-      margin: [0, 0, 0, 10],
+      margin: [0, 0, 0, 4],
     },
     {
       columns: [
-        {
-          stack: [
-            payload.logoDataUrl
-              ? { image: payload.logoDataUrl, width: 132, height: 52, margin: [0, 0, 0, 6] }
-              : { text: "TORRES VISTORIAS", style: "brand", color: primaryColor, margin: [0, 0, 0, 6] },
-            { text: "Laudo cautelar veicular", style: "docType" },
-            {
-              text: `Nº ${inspection.inspection_number}`,
-              fontSize: 14,
-              bold: true,
-              color: NAVY,
-              margin: [0, 4, 0, 0],
-            },
-            ...(company?.name
-              ? [{ text: company.name, style: "small", margin: [0, 2, 0, 0] as [number, number, number, number] }]
-              : []),
-          ],
-          width: "*",
-        },
-        {
-          stack: [
-            {
-              table: {
-                widths: ["*"],
-                body: [[{ text: opinion, bold: true, color: "#ffffff", fillColor: accent, alignment: "center", fontSize: 9, margin: [8, 5, 8, 5] }]],
-              },
-              layout: "noBorders",
-              margin: [0, 0, 0, 8],
-            },
-            { qr: validationUrl || payload.verificationCode, fit: 68, alignment: "right" },
-            {
-              text: payload.verificationCode,
-              style: "small",
-              alignment: "right",
-              margin: [0, 4, 0, 0],
-              characterSpacing: 0.3,
-            },
-          ],
-          width: 118,
-        },
+        buildBrandIdentityColumn(payload, inspection, company, primaryColor),
+        { text: "", width: "*" },
+        buildPlateAndValidationGroup(
+          inspection.plate,
+          inspection,
+          buildValidationColumn(opinion, accent, validationUrl, payload.verificationCode, validationWidth),
+          HEADER_ROW_TOP,
+        ),
       ],
+      columnGap: 8,
     },
-    horizontalRule([0, 8, 0, 8]),
+    horizontalRule([0, 4, 0, 6]),
   ];
 }
 
@@ -288,7 +366,7 @@ function checklistStatusNode(status: string): PdfNode {
 function checklistBarChart(payload: LaudoPayload): PdfNode {
   const stats = summarizeLaudoChecklist(payload.checklist);
   const total = Math.max(stats.total, 1);
-  const width = PAGE_CONTENT_WIDTH - 24;
+  const width = PAGE_CONTENT_WIDTH;
   const segments = [
     { label: "Conforme", value: stats.conforme, color: "#16a34a" },
     { label: "Não conforme", value: stats.naoConforme, color: "#dc2626" },
@@ -296,13 +374,16 @@ function checklistBarChart(payload: LaudoPayload): PdfNode {
     { label: "Pendente", value: stats.pendente, color: "#f59e0b" },
   ];
 
+  const activeSegments = segments.filter((segment) => segment.value > 0);
   let x = 0;
-  const rects = segments.flatMap((segment) => {
-    if (segment.value <= 0) return [];
-    const rectWidth = Math.max(Math.round((segment.value / total) * width), 1);
+  const rects = activeSegments.map((segment, index) => {
+    const isLast = index === activeSegments.length - 1;
+    const rectWidth = isLast
+      ? width - x
+      : Math.max(Math.round((segment.value / total) * width), 1);
     const node = { type: "rect", x, y: 0, w: rectWidth, h: 10, color: segment.color };
     x += rectWidth;
-    return [node];
+    return node;
   });
 
   if (rects.length === 0) {
@@ -312,7 +393,7 @@ function checklistBarChart(payload: LaudoPayload): PdfNode {
   return {
     stack: [
       { text: "Resumo do checklist", fontSize: 7, color: SLATE, bold: true, characterSpacing: 0.4, margin: [0, 0, 0, 6] },
-      { canvas: rects },
+      { canvas: rects, margin: [0, 0, 0, 0] },
       {
         table: {
           widths: ["*", "*", "*", "*"],
