@@ -9,9 +9,9 @@ export function SidebarProfile({
   className?: string;
   collapsed?: boolean;
 }) {
-  const { profile } = useAuth();
-  const name = profile?.full_name ?? "Usuário";
-  const role = profile?.role?.replace(/_/g, " ") ?? "Vistoriador";
+  const { profile, loading } = useAuth();
+  const name = profile?.full_name ?? (loading ? "Carregando…" : "Usuário");
+  const role = profile?.role?.replace(/_/g, " ") ?? (loading ? "…" : "Sem perfil");
 
   if (collapsed) {
     return (
