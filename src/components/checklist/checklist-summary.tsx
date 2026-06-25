@@ -9,6 +9,7 @@ type ChecklistSummaryProps = {
   naoConforme: number;
   pending: number;
   na: number;
+  variant?: "full" | "compact";
 };
 
 export function ChecklistSummary({
@@ -18,9 +19,46 @@ export function ChecklistSummary({
   naoConforme,
   pending,
   na,
+  variant = "full",
 }: ChecklistSummaryProps) {
   const evaluatedPct = total > 0 ? Math.round((evaluated / total) * 100) : 0;
   const conformePct = evaluated > 0 ? Math.round((conforme / evaluated) * 100) : 0;
+
+  if (variant === "compact") {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold tabular-nums">
+            {evaluated}/{total} avaliados
+          </p>
+          <div className="flex shrink-0 items-center gap-2 text-[11px] font-semibold">
+            <span className="inline-flex items-center gap-1 text-emerald-700">
+              <CheckCircle2 className="size-3" />
+              {conforme}
+            </span>
+            {naoConforme > 0 && (
+              <span className="inline-flex items-center gap-1 text-destructive">
+                <AlertTriangle className="size-3" />
+                {naoConforme}
+              </span>
+            )}
+            {pending > 0 && (
+              <span className="inline-flex items-center gap-1 text-amber-700">
+                <Clock className="size-3" />
+                {pending}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full bg-primary transition-all duration-300"
+            style={{ width: `${evaluatedPct}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">

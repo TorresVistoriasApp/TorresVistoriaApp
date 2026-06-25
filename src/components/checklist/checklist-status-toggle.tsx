@@ -11,24 +11,24 @@ const EVALUATION_STATUSES = [
 const STATUS_CONFIG = {
   [ChecklistStatus.CONFORME]: {
     label: "Conforme",
-    short: "C",
+    mobileLabel: "Conforme",
     icon: Check,
     active: "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30",
-    idle: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+    idle: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:bg-emerald-200",
   },
   [ChecklistStatus.NAO_CONFORME]: {
     label: "Não conforme",
-    short: "NC",
+    mobileLabel: "Não conf.",
     icon: X,
     active: "bg-destructive text-white shadow-sm ring-2 ring-destructive/30",
-    idle: "bg-red-50 text-destructive hover:bg-red-100",
+    idle: "bg-red-50 text-destructive hover:bg-red-100 active:bg-red-200",
   },
   [ChecklistStatus.NA]: {
     label: "Não se aplica",
-    short: "N/A",
+    mobileLabel: "N/A",
     icon: Minus,
     active: "bg-muted-foreground text-white shadow-sm ring-2 ring-muted-foreground/30",
-    idle: "bg-muted text-muted-foreground hover:bg-muted/80",
+    idle: "bg-muted text-muted-foreground hover:bg-muted/80 active:bg-muted",
   },
 } as const;
 
@@ -37,6 +37,8 @@ type ChecklistStatusToggleProps = {
   disabled?: boolean;
   onChange: (status: string) => void;
   compact?: boolean;
+  fullWidth?: boolean;
+  className?: string;
 };
 
 export function ChecklistStatusToggle({
@@ -44,10 +46,18 @@ export function ChecklistStatusToggle({
   disabled,
   onChange,
   compact = false,
+  fullWidth = false,
+  className,
 }: ChecklistStatusToggleProps) {
+  const stackedMobile = (compact || fullWidth) && fullWidth;
+
   return (
     <div
-      className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5"
+      className={cn(
+        "inline-flex rounded-xl border border-border bg-muted/40 p-1",
+        fullWidth && "flex w-full",
+        className,
+      )}
       role="group"
       aria-label="Status do item"
     >
@@ -63,15 +73,31 @@ export function ChecklistStatusToggle({
             disabled={disabled}
             onClick={() => onChange(status)}
             title={config.label}
+            aria-label={config.label}
+            aria-pressed={isActive}
             className={cn(
-              "flex items-center gap-1 rounded-md px-2.5 py-2 text-xs font-semibold transition-all sm:px-3",
-              "touch-target disabled:opacity-50",
+              "flex items-center justify-center rounded-lg font-semibold transition-all disabled:opacity-50",
+              fullWidth ? "min-h-[52px] flex-1 px-1 py-2" : "min-h-[44px] gap-1.5 px-2 py-2.5 text-xs",
+              stackedMobile ? "flex-col gap-1" : "flex-row gap-1.5 text-xs",
               isActive ? config.active : config.idle,
             )}
           >
-            <Icon className="size-3.5 shrink-0" />
-            <span className={cn(compact && "hidden sm:inline")}>{config.label}</span>
-            <span className={cn(!compact && "hidden", "sm:hidden")}>{config.short}</span>
+            <Icon className="size-4 shrink-0" />
+            {stackedMobile ? (
+              <>
+                <span className="text-center text-[10px] font-bold leading-tight sm:hidden">
+                  {config.mobileLabel}
+                </span>
+                <span className="hidden text-xs sm:inline">{config.label}</span>
+              </>
+            ) : compact ? (
+              <>
+                <span className="sm:hidden">{config.mobileLabel}</span>
+                <span className="hidden sm:inline">{config.label}</span>
+              </>
+            ) : (
+              <span>{config.label}</span>
+            )}
           </button>
         );
       })}

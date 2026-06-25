@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Building2, Camera, MapPin, UserRound } from "lucide-react";
@@ -7,7 +7,6 @@ import { PageHeader } from "@/components/shared/page-header";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { useCompany, useUpdateCompany } from "@/hooks/use-company";
 import { useUpdateUserProfile, useUploadUserAvatar } from "@/hooks/use-users";
@@ -15,52 +14,18 @@ import { useToast } from "@/hooks/use-toast";
 import { userProfileSchema, type UserProfileInput } from "@/schemas/user";
 import { companySchema, type CompanyInput } from "@/schemas/settings";
 import { UserRole } from "@/lib/enums";
-import { cn } from "@/lib/utils";
 import { MaskedField } from "@/components/forms/masked-fields";
 import { FormField } from "@/components/forms/form-field";
 import { companyToAddressInput } from "@/lib/cep";
 import { maskCpfCnpj } from "@/lib/masks";
 import { CompanyAddressFields } from "@/features/settings/components/company-address-fields";
 import { InspectionTypesSection } from "@/features/settings/components/inspection-types-section";
-
-const settingsFieldLabelClass =
-  "text-sm font-medium normal-case tracking-normal text-foreground";
-
-function SettingsSection({
-  icon: Icon,
-  title,
-  description,
-  children,
-  className,
-}: {
-  icon: typeof UserRound;
-  title: string;
-  description: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section
-      className={cn(
-        "overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft",
-        className,
-      )}
-    >
-      <div className="border-b border-border/50 bg-muted/20 px-5 py-4 sm:px-6">
-        <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
-            <Icon className="h-5 w-5" aria-hidden />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-            <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
-          </div>
-        </div>
-      </div>
-      <div className="px-5 py-5 sm:px-6 sm:py-6">{children}</div>
-    </section>
-  );
-}
+import {
+  SETTINGS_FIELD_LABEL_CLASS,
+  SettingsFormActions,
+  SettingsNotice,
+  SettingsSection,
+} from "@/features/settings/components/settings-section";
 
 function ProfileSection({
   profileId,
@@ -107,8 +72,8 @@ function ProfileSection({
   return (
     <SettingsSection
       icon={UserRound}
-      title="Perfil"
-      description="Sua identificação dentro do sistema Torres Vistorias"
+      title="Perfil do usuário"
+      description="Dados pessoais vinculados à sua conta de acesso no sistema."
     >
       <form
         className="space-y-6"
@@ -117,19 +82,19 @@ function ProfileSection({
           try {
             await updateProfile.mutateAsync({ profileId, input: data });
             await refreshProfile();
-            toast("Perfil atualizado");
+            toast("Perfil atualizado com sucesso");
           } catch (err) {
             toast(err instanceof Error ? err.message : "Erro ao salvar");
           }
         })}
       >
-        <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start sm:gap-6">
+        <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
           <div className="relative shrink-0">
             <UserAvatar
               name={fullName}
               avatarUrl={displayAvatar}
               size="xl"
-              className="h-24 w-24 text-2xl sm:h-20 sm:w-20 sm:text-xl"
+              className="h-24 w-24 text-2xl ring-2 ring-border/60 sm:h-20 sm:w-20 sm:text-xl"
             />
             <button
               type="button"
@@ -152,24 +117,26 @@ function ProfileSection({
               }}
             />
           </div>
-          <div className="w-full flex-1 space-y-2 text-center sm:text-left">
-            <Label htmlFor="profile-name">Nome</Label>
-            <Input
-              id="profile-name"
-              className="touch-target"
-              placeholder="Seu nome completo"
-              autoComplete="name"
-              {...form.register("full_name")}
-            />
-            {form.formState.errors.full_name && (
-              <p className="text-sm text-destructive">{form.formState.errors.full_name.message}</p>
-            )}
-            <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
-              A foto é exibida apenas no seu perfil dentro do painel.
-            </p>
+
+          <div className="w-full min-w-0 flex-1">
+            <FormField
+              label="Nome completo"
+              labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+              hint="Utilizado para identificação interna no painel administrativo."
+              error={form.formState.errors.full_name?.message}
+            >
+              <Input
+                id="profile-name"
+                className="touch-target"
+                placeholder="Ex.: João Silva"
+                autoComplete="name"
+                {...form.register("full_name")}
+              />
+            </FormField>
           </div>
         </div>
-        <div className="border-t border-border/50 pt-5 sm:flex sm:justify-end">
+
+        <SettingsFormActions hint="Alterações do seu perfil pessoal de acesso.">
           <Button
             type="submit"
             className="touch-target w-full sm:w-auto"
@@ -177,7 +144,7 @@ function ProfileSection({
           >
             {updateProfile.isPending ? "Salvando..." : "Salvar perfil"}
           </Button>
-        </div>
+        </SettingsFormActions>
       </form>
     </SettingsSection>
   );
@@ -205,14 +172,14 @@ function CompanySection({ canEdit }: { canEdit: boolean }) {
     if (!canEdit) return;
     try {
       await updateCompany.mutateAsync(data);
-      toast("Dados cadastrais atualizados");
+      toast("Dados cadastrais atualizados com sucesso");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Erro ao salvar");
     }
   });
 
   return (
-    <form className="grid gap-6" onSubmit={onSubmit}>
+    <form className="grid min-w-0 gap-6" onSubmit={onSubmit}>
       <SettingsSection
         icon={Building2}
         title="Seus dados"
@@ -222,8 +189,8 @@ function CompanySection({ canEdit }: { canEdit: boolean }) {
           <div className="grid min-w-0 gap-5">
             <FormField
               label="Nome ou razão social"
-              labelClassName={settingsFieldLabelClass}
-              hint="Informe o nome completo ou a razão social conforme o documento de identificação."
+              labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+              hint="Informe conforme o documento de identificação ou registro empresarial."
               error={form.formState.errors.name?.message}
               className="min-w-0"
             >
@@ -243,7 +210,7 @@ function CompanySection({ canEdit }: { canEdit: boolean }) {
               mask="cpfCnpj"
               placeholder="Digite o CPF ou CNPJ"
               hint="Campo opcional. Será impresso no laudo em PDF quando informado."
-              labelClassName={settingsFieldLabelClass}
+              labelClassName={SETTINGS_FIELD_LABEL_CLASS}
               inputClassName="touch-target"
               className="min-w-0"
               error={form.formState.errors.document?.message}
@@ -251,9 +218,9 @@ function CompanySection({ canEdit }: { canEdit: boolean }) {
             />
           </div>
           {!canEdit && (
-            <p className="rounded-xl border border-border/60 bg-muted/30 px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground">
-              Somente administradores podem editar estes dados cadastrais.
-            </p>
+            <SettingsNotice>
+              Somente administradores podem editar os dados cadastrais da operação.
+            </SettingsNotice>
           )}
         </div>
       </SettingsSection>
@@ -261,7 +228,7 @@ function CompanySection({ canEdit }: { canEdit: boolean }) {
       <SettingsSection
         icon={MapPin}
         title="Endereço"
-        description="Localização completa da sede da empresa"
+        description="Localização cadastral utilizada nos laudos e demais comunicações oficiais."
       >
         <CompanyAddressFields
           control={form.control}
@@ -270,15 +237,19 @@ function CompanySection({ canEdit }: { canEdit: boolean }) {
           canEdit={canEdit}
           onCepError={(message) => toast(message)}
         />
-      </SettingsSection>
 
-      {canEdit && (
-        <div className="flex justify-end">
-          <Button type="submit" className="touch-target w-full sm:w-auto" disabled={updateCompany.isPending}>
-            {updateCompany.isPending ? "Salvando..." : "Salvar dados cadastrais"}
-          </Button>
-        </div>
-      )}
+        {canEdit && (
+          <SettingsFormActions hint="Salva em conjunto a identificação cadastral e o endereço informados acima.">
+            <Button
+              type="submit"
+              className="touch-target w-full sm:w-auto"
+              disabled={updateCompany.isPending}
+            >
+              {updateCompany.isPending ? "Salvando..." : "Salvar dados cadastrais"}
+            </Button>
+          </SettingsFormActions>
+        )}
+      </SettingsSection>
     </form>
   );
 }
@@ -288,21 +259,22 @@ export function Page() {
   const isAdmin = profile?.role === UserRole.SUPER_ADMIN;
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="min-w-0 space-y-8 pb-8">
       <PageHeader
         title="Configurações"
-        description="Gerencie seu perfil e os dados da empresa em um só lugar"
+        description="Gerencie perfil, identificação cadastral, endereço e parâmetros operacionais da conta."
       />
 
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)] lg:gap-8">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-2 xl:items-start xl:gap-8">
         <ProfileSection
           profileId={profile?.id}
           fullName={profile?.full_name}
           avatarUrl={profile?.avatar_url}
         />
         <CompanySection canEdit={isAdmin} />
-        <InspectionTypesSection canEdit={isAdmin} />
       </div>
+
+      <InspectionTypesSection canEdit={isAdmin} />
     </div>
   );
 }

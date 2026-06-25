@@ -4,9 +4,13 @@ import type { Control, UseFormRegister, UseFormSetValue } from "react-hook-form"
 import { Controller, useWatch } from "react-hook-form";
 import { MaskedInput } from "@/components/ui/masked-input";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-field";
 import { fetchAddressByCep, normalizeCep } from "@/lib/cep";
 import type { CompanyInput } from "@/schemas/settings";
+import {
+  SETTINGS_FIELD_LABEL_CLASS,
+  SettingsSubheading,
+} from "@/features/settings/components/settings-section";
 
 type CompanyAddressFieldsProps = {
   control: Control<CompanyInput>;
@@ -63,14 +67,18 @@ export function CompanyAddressFields({
   );
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Endereço de referência da empresa no painel. Informe o CEP para preencher rua, bairro e
-        cidade automaticamente.
+    <div className="space-y-6">
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        Informe o endereço completo da sede ou ponto de atendimento. O CEP preenche automaticamente
+        logradouro, bairro e município.
       </p>
 
-      <div className="space-y-2 sm:max-w-xs">
-        <Label htmlFor="company-cep">CEP</Label>
+      <FormField
+        label="CEP"
+        labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+        hint="Após informar os oito dígitos, os demais campos serão sugeridos automaticamente."
+        className="min-w-0 sm:max-w-xs"
+      >
         <div className="relative">
           <Controller
             name="address_cep"
@@ -79,6 +87,7 @@ export function CompanyAddressFields({
               <MaskedInput
                 id="company-cep"
                 mask="cep"
+                className="touch-target"
                 placeholder="00000-000"
                 disabled={!canEdit || cepLoading}
                 value={field.value ?? ""}
@@ -102,79 +111,81 @@ export function CompanyAddressFields({
             />
           )}
         </div>
-        <p className="text-xs text-muted-foreground">
-          Com o CEP completo, rua, bairro e cidade são preenchidos automaticamente. Confira o
-          número e o complemento.
-        </p>
-      </div>
+      </FormField>
 
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_120px]">
-        <div className="space-y-2">
-          <Label htmlFor="company-street">Rua</Label>
+      <div className="grid min-w-0 gap-5 sm:grid-cols-[minmax(0,1fr)_120px]">
+        <FormField label="Logradouro" labelClassName={SETTINGS_FIELD_LABEL_CLASS} className="min-w-0">
           <Input
             id="company-street"
-            placeholder="Logradouro"
+            className="touch-target"
+            placeholder="Rua, avenida ou travessa"
             disabled={!canEdit}
             {...register("address_street")}
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="company-number">Número</Label>
+        </FormField>
+        <FormField label="Número" labelClassName={SETTINGS_FIELD_LABEL_CLASS} className="min-w-0">
           <Input
             id="company-number"
+            className="touch-target"
             placeholder="Nº"
             disabled={!canEdit}
             {...register("address_number")}
           />
-        </div>
+        </FormField>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="company-complement">Complemento</Label>
+      <FormField
+        label="Complemento"
+        labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+        hint="Opcional. Sala, bloco, andar ou ponto de referência."
+        className="min-w-0"
+      >
         <Input
           id="company-complement"
-          placeholder="Sala, bloco, referência"
+          className="touch-target"
+          placeholder="Ex.: Sala 12, Bloco B"
           disabled={!canEdit}
           {...register("address_complement")}
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Bairro · cidade · estado
-        </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_72px]">
-          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-            <Label htmlFor="company-neighborhood">Bairro</Label>
+      <div className="space-y-4">
+        <SettingsSubheading>Localidade</SettingsSubheading>
+        <div className="grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_88px]">
+          <FormField
+            label="Bairro"
+            labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+            className="min-w-0 sm:col-span-2 lg:col-span-1"
+          >
             <Input
               id="company-neighborhood"
+              className="touch-target"
               placeholder="Bairro"
               disabled={!canEdit}
               {...register("address_neighborhood")}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="company-city">Cidade</Label>
+          </FormField>
+          <FormField label="Cidade" labelClassName={SETTINGS_FIELD_LABEL_CLASS} className="min-w-0">
             <Input
               id="company-city"
-              placeholder="Cidade"
+              className="touch-target"
+              placeholder="Município"
               disabled={!canEdit}
               {...register("address_city")}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="company-state">UF</Label>
+          </FormField>
+          <FormField label="UF" labelClassName={SETTINGS_FIELD_LABEL_CLASS} className="min-w-0">
             <Input
               id="company-state"
+              className="touch-target uppercase"
               placeholder="UF"
               maxLength={2}
               disabled={!canEdit}
-              className="uppercase"
               {...register("address_state", {
                 setValueAs: (value: string) => value.toUpperCase(),
               })}
             />
-          </div>
+          </FormField>
         </div>
       </div>
     </div>
