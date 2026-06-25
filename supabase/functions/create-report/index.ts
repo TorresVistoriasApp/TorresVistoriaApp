@@ -1,12 +1,18 @@
 import { corsHeaders } from "../_shared/cors.ts";
 import { createServiceClient } from "../_shared/supabase-client.ts";
 
-function randomHash(): string {
-  return crypto.randomUUID().replace(/-/g, "");
+function formatLaudoNumber(inspectionNumber: number, issuedAt: string): string {
+  const year = new Date(issuedAt).getFullYear();
+  return `TV-${year}-${String(inspectionNumber).padStart(6, "0")}`;
 }
 
-function verificationCode(): string {
-  return `TV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+function buildVerificationCode(inspectionNumber: number, issuedAt: string, version: number): string {
+  const base = formatLaudoNumber(inspectionNumber, issuedAt);
+  return version > 1 ? `${base}-V${version}` : base;
+}
+
+function randomHash(): string {
+  return crypto.randomUUID().replace(/-/g, "");
 }
 
 Deno.serve(async (req) => {
@@ -27,7 +33,7 @@ Deno.serve(async (req) => {
 
     const { data: inspection, error: inspectionError } = await supabase
       .from("inspections")
-      .select("id, company_id, inspector_id, status")
+      .select("id, company_id, inspector_id, status, inspection_number")
       .eq("id", inspectionId)
       .is("deleted_at", null)
       .single();
@@ -44,7 +50,9 @@ Deno.serve(async (req) => {
       .limit(1);
 
     const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
-    const code = providedVerificationCode || verificationCode();
+    const issuedAt = new Date().toISOString();
+    const code = providedVerificationCode ||
+      buildVerificationCode(inspection.inspection_number, issuedAt, nextVersion);
     const hash = providedIntegrityHash || randomHash();
 
     const { data: report, error: reportError } = await supabase

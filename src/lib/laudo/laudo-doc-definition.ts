@@ -290,7 +290,7 @@ function buildBrandIdentityColumn(
         lineHeight: 1.2,
       },
       {
-        text: `Nº ${inspection.inspection_number}`,
+        text: `Nº ${payload.verificationCode}`,
         fontSize: 14,
         bold: true,
         color: NAVY,

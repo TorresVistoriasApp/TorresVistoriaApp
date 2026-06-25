@@ -7,6 +7,7 @@ import { buildLaudoDocDefinition } from "@/lib/laudo/laudo-doc-definition";
 import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoSettings } from "@/lib/laudo/laudo-model";
 import { PUBLIC_IMAGES } from "@/lib/public-images";
 import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
+import { buildVerificationCode } from "@/lib/laudo/verification-code";
 
 const REPORTS_BUCKET = "reports";
 
@@ -18,8 +19,8 @@ async function sha256Bytes(data: Blob | string): Promise<string> {
     .join("");
 }
 
-function generateVerificationCode(): string {
-  return `TV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+function generateVerificationCode(inspection: Inspection, version = 1): string {
+  return buildVerificationCode(inspection.inspection_number, new Date(), version);
 }
 
 async function imageUrlToJpegDataUrl(
@@ -106,7 +107,7 @@ export const pdfService = {
     try {
       const { data, error } = await db
         .from("inspection_reports")
-        .select("storage_path, verification_code, integrity_hash, created_at")
+        .select("storage_path, verification_code, integrity_hash, created_at, version")
         .eq("inspection_id", inspectionId)
         .is("deleted_at", null)
         .order("version", { ascending: false })
@@ -148,7 +149,8 @@ export const pdfService = {
     docDefinition: Record<string, unknown>;
     payload: LaudoPayload;
   }> {
-    const verificationCode = options.verificationCode ?? generateVerificationCode();
+    const verificationCode =
+      options.verificationCode ?? generateVerificationCode(inspection);
     const baseHash =
       options.integrityHash ??
       (await sha256Bytes(JSON.stringify({ inspection, checklist, photos, verificationCode })));
@@ -219,8 +221,10 @@ export const pdfService = {
     validationBaseUrl?: string;
   }): Promise<{ verificationCode: string; integrityHash: string; storagePath: string }> {
     try {
-      const verificationCode = generateVerificationCode();
-      const validationUrl = `${params.validationBaseUrl ?? window.location.origin}/validar/${verificationCode}`;
+      const existingReport = await this.getReportPdfUrl(params.inspection.id);
+      const nextVersion = (existingReport?.version ?? 0) + 1;
+      const verificationCode = generateVerificationCode(params.inspection, nextVersion);
+      const validationUrl = `${params.validationBaseUrl ?? window.location.origin}/validar/${encodeURIComponent(verificationCode)}`;
       const firstPass = await this.generateLaudoPayload(params.inspection, params.checklist, params.photos, {
         company: params.company,
         settings: params.settings,

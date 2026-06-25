@@ -230,11 +230,10 @@ export const inspectionService = {
 
   async validateReport(verificationCode: string) {
     try {
-      const { data, error } = await db.rpc("validate_report", {
-        p_verification_code: verificationCode,
+      const { data, error } = await db.functions.invoke("validate-report", {
+        body: { verificationCode },
       });
-      if (error) throw error;
-      return data;
+      return throwIfEdgeError(error, data as Record<string, unknown> | null);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
