@@ -117,7 +117,6 @@ export function buildVehicleInfoRows(inspection: Inspection): [string, string][]
 export function buildInspectionInfoRows(
   inspection: Inspection,
   company: LaudoPayload["company"],
-  inspector: LaudoPayload["inspector"],
   formatDateFn: (date: string) => string,
   formatPhoneFn: (phone: string | null | undefined) => string,
   formatDocumentFn: (doc: string | null | undefined) => string,
@@ -132,7 +131,6 @@ export function buildInspectionInfoRows(
       `${formatDateFn(inspection.inspection_date)} às ${inspection.inspection_time.slice(0, 5)}`,
     ],
     ["Local da vistoria", inspection.location],
-    ["Vistoriador", inspector?.full_name?.trim() || null],
     ["Finalidade", inspectionText(inspection, "inspection_purpose")],
     ["Contratante", inspection.client_name],
     ["Indicado por", inspectionText(inspection, "requester_name")],

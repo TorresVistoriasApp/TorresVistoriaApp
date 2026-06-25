@@ -31,11 +31,7 @@ export function inspectorToLaudoInspector(
 ): LaudoInspector | null {
   if (!inspector?.full_name) return null;
 
-  const roleLabel = inspector.role?.replace(/_/g, " ") ?? null;
-
   return {
     full_name: inspector.full_name,
-    role: inspector.role,
-    credential: roleLabel,
   };
 }

@@ -37,8 +37,6 @@ describe("inspectorToLaudoInspector", () => {
       inspectorToLaudoInspector({ full_name: "Brendow Lucas", role: "VISTORIADOR" }),
     ).toEqual({
       full_name: "Brendow Lucas",
-      role: "VISTORIADOR",
-      credential: "VISTORIADOR",
     });
   });
 });
