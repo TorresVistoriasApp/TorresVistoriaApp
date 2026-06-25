@@ -22,20 +22,28 @@ function generateVerificationCode(): string {
   return `TV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
-async function imageUrlToJpegDataUrl(url: string): Promise<string | undefined> {
+async function imageUrlToJpegDataUrl(
+  url: string,
+  maxWidth = 1200,
+  maxHeight = 1200,
+): Promise<string | undefined> {
   try {
     const response = await fetch(url);
     if (!response.ok) return undefined;
     const blob = await response.blob();
     const bitmap = await createImageBitmap(blob);
+    const scale = Math.min(maxWidth / bitmap.width, maxHeight / bitmap.height, 1);
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
     const canvas = document.createElement("canvas");
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) return undefined;
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(bitmap, 0, 0);
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close?.();
     return canvas.toDataURL("image/jpeg", 0.82);
   } catch {
     return undefined;
@@ -46,7 +54,7 @@ async function loadPhotoDataUrls(photos: InspectionPhoto[]) {
   return Promise.all(
     photos.map(async (photo) => ({
       ...photo,
-      dataUrl: photo.public_url ? await imageUrlToJpegDataUrl(photo.public_url) : undefined,
+      dataUrl: photo.public_url ? await imageUrlToJpegDataUrl(photo.public_url, 960, 720) : undefined,
     })),
   );
 }
@@ -70,6 +78,16 @@ async function getPdfMake() {
 function reportFileName(inspection: Inspection): string {
   const safePlate = inspection.plate.replace(/[^A-Z0-9]/gi, "").toUpperCase();
   return `laudo-${inspection.inspection_number}-${safePlate}.pdf`;
+}
+
+/** pdfmake mutates image nodes in-place; clone before a second render pass. */
+function cloneDocDefinition(docDefinition: Record<string, unknown>): Record<string, unknown> {
+  const footer = docDefinition.footer;
+  const cloned = JSON.parse(JSON.stringify(docDefinition)) as Record<string, unknown>;
+  if (typeof footer === "function") {
+    cloned.footer = footer;
+  }
+  return cloned;
 }
 
 export const pdfService = {
@@ -145,8 +163,8 @@ export const pdfService = {
       verificationCode,
       integrityHash: baseHash,
       validationUrl: options.validationUrl,
-      logoDataUrl: await imageUrlToJpegDataUrl(PUBLIC_IMAGES.brand.trim),
-      brandLogoDataUrl: brandLogoPath ? await imageUrlToJpegDataUrl(brandLogoPath) : undefined,
+      logoDataUrl: await imageUrlToJpegDataUrl(PUBLIC_IMAGES.brand.trim, 320, 128),
+      brandLogoDataUrl: brandLogoPath ? await imageUrlToJpegDataUrl(brandLogoPath, 240, 120) : undefined,
       generatedAt: new Date(),
     };
 
@@ -161,9 +179,22 @@ export const pdfService = {
   async downloadLaudo(docDefinition: Record<string, unknown>, fileName: string): Promise<void> {
     try {
       const pdfDoc = await getPdfMake();
-      pdfDoc.createPdf(docDefinition).download(fileName);
+      pdfDoc.createPdf(cloneDocDefinition(docDefinition)).download(fileName);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
+    }
+  },
+
+  async downloadPdfBlob(blob: Blob, fileName: string): Promise<void> {
+    const url = URL.createObjectURL(blob);
+    try {
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = fileName;
+      anchor.rel = "noopener";
+      anchor.click();
+    } finally {
+      URL.revokeObjectURL(url);
     }
   },
 
@@ -171,7 +202,7 @@ export const pdfService = {
     try {
       const pdfDoc = await getPdfMake();
       return await new Promise<Blob>((resolve) => {
-        pdfDoc.createPdf(docDefinition).getBlob(resolve);
+        pdfDoc.createPdf(cloneDocDefinition(docDefinition)).getBlob(resolve);
       });
     } catch (error) {
       throw new AppError(getErrorMessage(error));
@@ -229,7 +260,7 @@ export const pdfService = {
       });
       if (reportError) throw reportError;
 
-      await this.downloadLaudo(finalPass.docDefinition, reportFileName(params.inspection));
+      await this.downloadPdfBlob(finalBlob, reportFileName(params.inspection));
 
       return { verificationCode, integrityHash, storagePath };
     } catch (error) {

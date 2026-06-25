@@ -61,7 +61,7 @@ function premiumHeader(text: string): PdfNode {
       body: [[{ text, color: "#ffffff", fillColor: NAVY, bold: true, fontSize: 9, alignment: "center", characterSpacing: 0.6, margin: [0, 6, 0, 6] }]],
     },
     layout: "noBorders",
-    margin: [0, 10, 0, 0],
+    margin: [0, 8, 0, 0],
   };
 }
 
@@ -100,35 +100,48 @@ function infoGrid(rows: [string, string][], columnsCount = 3): PdfNode | null {
 function buildBrandLogoCell(brand: string, brandLogoDataUrl?: string): PdfNode {
   const caption = { text: "Marca do veículo", alignment: "center", fontSize: 7, color: "#64748b" };
 
-  if (brandLogoDataUrl) {
-    return {
-      stack: [
-        {
-          image: brandLogoDataUrl,
-          width: 72,
-          fit: [72, 36],
-          alignment: "center",
-          margin: [0, 10, 0, 4],
-        },
-        caption,
-      ],
-      fillColor: "#f8fafc",
-    };
-  }
+  const innerStack = brandLogoDataUrl
+    ? {
+        stack: [
+          {
+            image: brandLogoDataUrl,
+            width: 72,
+            height: 36,
+            alignment: "center",
+            margin: [0, 10, 0, 4],
+          },
+          caption,
+        ],
+      }
+    : {
+        stack: [
+          {
+            text: brand || "Marca",
+            alignment: "center",
+            bold: true,
+            color: "#0f172a",
+            fontSize: 14,
+            margin: [0, 16, 0, 2],
+          },
+          caption,
+        ],
+      };
 
   return {
-    stack: [
-      {
-        text: brand || "Marca",
-        alignment: "center",
-        bold: true,
-        color: "#0f172a",
-        fontSize: 14,
-        margin: [0, 16, 0, 2],
-      },
-      caption,
-    ],
-    fillColor: "#f8fafc",
+    table: {
+      widths: ["*"],
+      body: [[{ ...innerStack, fillColor: "#f8fafc", margin: [6, 6, 6, 6] }]],
+    },
+    layout: {
+      hLineColor: () => "#0f172a",
+      vLineColor: () => "#0f172a",
+      hLineWidth: () => 0.8,
+      vLineWidth: () => 0.8,
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0,
+    },
   };
 }
 
@@ -209,7 +222,7 @@ function buildCoverHeader(
         {
           stack: [
             payload.logoDataUrl
-              ? { image: payload.logoDataUrl, width: 132, fit: [132, 52], margin: [0, 0, 0, 6] }
+              ? { image: payload.logoDataUrl, width: 132, height: 52, margin: [0, 0, 0, 6] }
               : { text: "TORRES VISTORIAS", style: "brand", color: primaryColor, margin: [0, 0, 0, 6] },
             { text: "Laudo cautelar veicular", style: "docType" },
             {
@@ -247,27 +260,25 @@ function buildCoverHeader(
           width: 118,
         },
       ],
-      margin: [0, 0, 0, 0],
     },
-    horizontalRule([0, 10, 0, 12]),
+    horizontalRule([0, 8, 0, 8]),
   ];
 }
 
 function checklistStatusNode(status: string): PdfNode {
-  const statusConfig: Record<string, { label: string; color: string; icon: string }> = {
-    CONFORME: { label: "OK Conforme", color: "#16a34a", icon: "" },
-    NAO_CONFORME: { label: "Não conforme", color: "#dc2626", icon: "!" },
-    NA: { label: "Não se aplica", color: "#64748b", icon: "" },
-    PENDENTE: { label: "Pendente", color: "#f59e0b", icon: "" },
+  const statusConfig: Record<string, { label: string; color: string }> = {
+    CONFORME: { label: "Conforme", color: "#16a34a" },
+    NAO_CONFORME: { label: "Não conforme", color: "#dc2626" },
+    NA: { label: "Não se aplica", color: "#64748b" },
+    PENDENTE: { label: "Pendente", color: "#f59e0b" },
   };
   const config = statusConfig[status] ?? {
     label: getChecklistStatusLabel(status),
     color: "#64748b",
-    icon: "•",
   };
 
   return {
-    text: `${config.icon ? `${config.icon} ` : ""}${config.label}`,
+    text: config.label,
     fontSize: 8,
     bold: true,
     color: config.color,
@@ -299,40 +310,25 @@ function checklistBarChart(payload: LaudoPayload): PdfNode {
   }
 
   return {
-    table: {
-      widths: ["*"],
-      body: [
-        [
-          {
-            stack: [
-              { text: "Resumo do checklist", fontSize: 7, color: SLATE, bold: true, characterSpacing: 0.4, margin: [0, 0, 0, 6] },
-              { canvas: rects, margin: [0, 0, 0, 0] },
-              {
-                columns: segments.map((segment) => ({
-                  text: `${segment.label}: ${segment.value}`,
-                  fontSize: 7.5,
-                  color: segment.color,
-                  bold: true,
-                  margin: [0, 6, 0, 0],
-                })),
-              },
-            ],
-            fillColor: SURFACE,
-            margin: [12, 10, 12, 10],
-          },
-        ],
-      ],
-    },
-    layout: {
-      hLineColor: () => BORDER,
-      vLineColor: () => BORDER,
-      hLineWidth: () => 0.5,
-      vLineWidth: () => 0.5,
-      paddingLeft: () => 0,
-      paddingRight: () => 0,
-      paddingTop: () => 0,
-      paddingBottom: () => 0,
-    },
+    stack: [
+      { text: "Resumo do checklist", fontSize: 7, color: SLATE, bold: true, characterSpacing: 0.4, margin: [0, 0, 0, 6] },
+      { canvas: rects },
+      {
+        table: {
+          widths: ["*", "*", "*", "*"],
+          body: [
+            segments.map((segment) => ({
+              text: `${segment.label}: ${segment.value}`,
+              fontSize: 7.5,
+              color: segment.color,
+              bold: true,
+              margin: [0, 6, 0, 0],
+            })),
+          ],
+        },
+        layout: "noBorders",
+      },
+    ],
     margin: [0, 0, 0, 10],
   };
 }
@@ -542,33 +538,16 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     ),
     premiumHeader("DADOS DO VEÍCULO"),
     {
-      columns: [
-        {
-          table: {
-            widths: ["*"],
-            body: [
-              [buildBrandLogoCell(inspection.brand, payload.brandLogoDataUrl)],
-            ],
-          },
-          layout: {
-            hLineColor: () => "#0f172a",
-            vLineColor: () => "#0f172a",
-            hLineWidth: () => 0.8,
-            vLineWidth: () => 0.8,
-            paddingLeft: () => 6,
-            paddingRight: () => 6,
-            paddingTop: () => 6,
-            paddingBottom: () => 6,
-          },
-          width: 95,
-          margin: [0, 4, 10, 8],
-        },
-        {
-          stack: [
+      table: {
+        widths: [95, "*"],
+        body: [
+          [
+            buildBrandLogoCell(inspection.brand, payload.brandLogoDataUrl),
             infoGrid(buildVehicleInfoRows(inspection)) ?? { text: "" },
           ],
-        },
-      ],
+        ],
+      },
+      layout: "noBorders",
       margin: [0, 3, 0, 2],
     },
     ...(featuredPhotos.length ? photoPairs(featuredPhotos) : []),
