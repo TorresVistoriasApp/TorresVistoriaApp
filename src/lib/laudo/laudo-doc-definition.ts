@@ -23,6 +23,10 @@ type PdfNode = Record<string, unknown>;
 
 const EMPTY_VALUE = "Não informado";
 const NAVY = "#020f2f";
+const SLATE = "#64748b";
+const BORDER = "#e2e8f0";
+const SURFACE = "#f8fafc";
+const PAGE_CONTENT_WIDTH = 523;
 
 function value(v: string | number | null | undefined): string {
   if (v === null || v === undefined || v === "") return EMPTY_VALUE;
@@ -52,13 +56,12 @@ function sectionTitle(text: string, color: string): PdfNode {
 
 function premiumHeader(text: string): PdfNode {
   return {
-    text,
-    color: "#ffffff",
-    fillColor: NAVY,
-    bold: true,
-    fontSize: 10,
-    alignment: "center",
-    margin: [0, 0, 0, 0],
+    table: {
+      widths: ["*"],
+      body: [[{ text, color: "#ffffff", fillColor: NAVY, bold: true, fontSize: 9, alignment: "center", characterSpacing: 0.6, margin: [0, 6, 0, 6] }]],
+    },
+    layout: "noBorders",
+    margin: [0, 10, 0, 0],
   };
 }
 
@@ -129,15 +132,125 @@ function buildBrandLogoCell(brand: string, brandLogoDataUrl?: string): PdfNode {
   };
 }
 
-function statCard(label: string, valueText: string, color: string): PdfNode {
+function statCardCell(label: string, valueText: string, accent: string): PdfNode {
   return {
     stack: [
-      { text: label.toUpperCase(), fontSize: 7, color: "#64748b", bold: true },
-      { text: valueText, fontSize: 16, bold: true, color, margin: [0, 3, 0, 0] },
+      { text: label.toUpperCase(), fontSize: 7, color: SLATE, bold: true, characterSpacing: 0.4 },
+      { text: valueText, fontSize: 15, bold: true, color: accent, margin: [0, 4, 0, 0] },
     ],
-    fillColor: "#f8fafc",
-    margin: [0, 0, 0, 0],
+    fillColor: SURFACE,
   };
+}
+
+function buildStatsDashboard(
+  stats: ReturnType<typeof summarizeLaudoChecklist>,
+  photoCount: number,
+  primaryColor: string,
+): PdfNode {
+  const riskColor =
+    stats.riskLevel === "ALTO" ? "#dc2626" : stats.riskLevel === "MEDIO" ? "#f97316" : "#16a34a";
+
+  return {
+    table: {
+      widths: ["*", "*", "*", "*"],
+      body: [
+        [
+          statCardCell("Checklist", `${stats.evaluated}/${stats.total}`, primaryColor),
+          statCardCell("Não conforme", String(stats.naoConforme), "#dc2626"),
+          statCardCell("Fotos", String(photoCount), "#2563eb"),
+          statCardCell("Risco", stats.riskLevel, riskColor),
+        ],
+      ],
+    },
+    layout: {
+      hLineColor: () => BORDER,
+      vLineColor: () => BORDER,
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
+      paddingLeft: () => 10,
+      paddingRight: () => 10,
+      paddingTop: () => 10,
+      paddingBottom: () => 10,
+    },
+    margin: [0, 0, 0, 10],
+  };
+}
+
+function opinionAccent(opinion: string): string {
+  if (opinion.includes("REPROVADO")) return "#dc2626";
+  if (opinion.includes("APONTAMENTO")) return "#f97316";
+  return "#16a34a";
+}
+
+function horizontalRule(margin: [number, number, number, number] = [0, 0, 0, 10]): PdfNode {
+  return {
+    canvas: [{ type: "line", x1: 0, y1: 0, x2: PAGE_CONTENT_WIDTH, y2: 0, lineWidth: 0.5, lineColor: BORDER }],
+    margin,
+  };
+}
+
+function buildCoverHeader(
+  payload: LaudoPayload,
+  inspection: LaudoPayload["inspection"],
+  company: LaudoPayload["company"],
+  primaryColor: string,
+  opinion: string,
+  validationUrl: string,
+): PdfNode[] {
+  const accent = opinionAccent(opinion);
+
+  return [
+    {
+      canvas: [{ type: "rect", x: 0, y: 0, w: PAGE_CONTENT_WIDTH, h: 3, color: NAVY }],
+      margin: [0, 0, 0, 10],
+    },
+    {
+      columns: [
+        {
+          stack: [
+            payload.logoDataUrl
+              ? { image: payload.logoDataUrl, width: 132, fit: [132, 52], margin: [0, 0, 0, 6] }
+              : { text: "TORRES VISTORIAS", style: "brand", color: primaryColor, margin: [0, 0, 0, 6] },
+            { text: "Laudo cautelar veicular", style: "docType" },
+            {
+              text: `Nº ${inspection.inspection_number}`,
+              fontSize: 14,
+              bold: true,
+              color: NAVY,
+              margin: [0, 4, 0, 0],
+            },
+            ...(company?.name
+              ? [{ text: company.name, style: "small", margin: [0, 2, 0, 0] as [number, number, number, number] }]
+              : []),
+          ],
+          width: "*",
+        },
+        {
+          stack: [
+            {
+              table: {
+                widths: ["*"],
+                body: [[{ text: opinion, bold: true, color: "#ffffff", fillColor: accent, alignment: "center", fontSize: 9, margin: [8, 5, 8, 5] }]],
+              },
+              layout: "noBorders",
+              margin: [0, 0, 0, 8],
+            },
+            { qr: validationUrl || payload.verificationCode, fit: 68, alignment: "right" },
+            {
+              text: payload.verificationCode,
+              style: "small",
+              alignment: "right",
+              margin: [0, 4, 0, 0],
+              characterSpacing: 0.3,
+            },
+          ],
+          width: 118,
+        },
+      ],
+      margin: [0, 0, 0, 0],
+    },
+    horizontalRule([0, 10, 0, 12]),
+  ];
 }
 
 function checklistStatusNode(status: string): PdfNode {
@@ -164,42 +277,63 @@ function checklistStatusNode(status: string): PdfNode {
 function checklistBarChart(payload: LaudoPayload): PdfNode {
   const stats = summarizeLaudoChecklist(payload.checklist);
   const total = Math.max(stats.total, 1);
-  const width = 420;
+  const width = PAGE_CONTENT_WIDTH - 24;
   const segments = [
     { label: "Conforme", value: stats.conforme, color: "#16a34a" },
     { label: "Não conforme", value: stats.naoConforme, color: "#dc2626" },
-    { label: "N/A", value: stats.naoAplicavel, color: "#64748b" },
+    { label: "N/A", value: stats.naoAplicavel, color: SLATE },
     { label: "Pendente", value: stats.pendente, color: "#f59e0b" },
   ];
 
   let x = 0;
-  const rects = segments.map((segment) => {
-    const rectWidth = Math.round((segment.value / total) * width);
-    const node = {
-      type: "rect",
-      x,
-      y: 0,
-      w: rectWidth,
-      h: 12,
-      color: segment.color,
-    };
+  const rects = segments.flatMap((segment) => {
+    if (segment.value <= 0) return [];
+    const rectWidth = Math.max(Math.round((segment.value / total) * width), 1);
+    const node = { type: "rect", x, y: 0, w: rectWidth, h: 10, color: segment.color };
     x += rectWidth;
-    return node;
+    return [node];
   });
 
+  if (rects.length === 0) {
+    rects.push({ type: "rect", x: 0, y: 0, w: width, h: 10, color: BORDER });
+  }
+
   return {
-    stack: [
-      { canvas: rects },
-      {
-        columns: segments.map((segment) => ({
-          text: `${segment.label}: ${segment.value}`,
-          fontSize: 8,
-          color: segment.color,
-          margin: [0, 5, 0, 0],
-        })),
-      },
-    ],
-    margin: [0, 4, 0, 8],
+    table: {
+      widths: ["*"],
+      body: [
+        [
+          {
+            stack: [
+              { text: "Resumo do checklist", fontSize: 7, color: SLATE, bold: true, characterSpacing: 0.4, margin: [0, 0, 0, 6] },
+              { canvas: rects, margin: [0, 0, 0, 0] },
+              {
+                columns: segments.map((segment) => ({
+                  text: `${segment.label}: ${segment.value}`,
+                  fontSize: 7.5,
+                  color: segment.color,
+                  bold: true,
+                  margin: [0, 6, 0, 0],
+                })),
+              },
+            ],
+            fillColor: SURFACE,
+            margin: [12, 10, 12, 10],
+          },
+        ],
+      ],
+    },
+    layout: {
+      hLineColor: () => BORDER,
+      vLineColor: () => BORDER,
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
+      paddingLeft: () => 0,
+      paddingRight: () => 0,
+      paddingTop: () => 0,
+      paddingBottom: () => 0,
+    },
+    margin: [0, 0, 0, 10],
   };
 }
 
@@ -392,45 +526,8 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     .slice(0, 2);
 
   const content: PdfNode[] = [
-    {
-      columns: [
-        {
-          stack: [
-            payload.logoDataUrl
-              ? { image: payload.logoDataUrl, width: 145, fit: [145, 58], margin: [0, 0, 0, 10] }
-              : { text: "TORRES VISTORIAS", style: "brand", color, margin: [0, 0, 0, 10] },
-            { text: "Laudo cautelar veicular", style: "muted" },
-            { text: `Nº ${inspection.inspection_number}`, fontSize: 12, bold: true, margin: [0, 8, 0, 0] },
-          ],
-        },
-        {
-          stack: [
-            { qr: validationUrl || payload.verificationCode, fit: 72, alignment: "right" },
-            { text: payload.verificationCode, style: "small", alignment: "right", margin: [0, 4, 0, 0] },
-          ],
-          width: 90,
-        },
-      ],
-    },
-    {
-      text: opinion,
-      alignment: "center",
-      color: "#ffffff",
-      fillColor: opinion.includes("REPROVADO") ? "#dc2626" : opinion.includes("APONTAMENTO") ? "#f97316" : "#16a34a",
-      bold: true,
-      fontSize: 15,
-      margin: [0, 16, 0, 10],
-    },
-    {
-      columns: [
-        statCard("Checklist", `${stats.evaluated}/${stats.total}`, color),
-        statCard("Não Conforme", String(stats.naoConforme), "#dc2626"),
-        statCard("Fotos", String(payload.photos.length), "#2563eb"),
-        statCard("Risco", stats.riskLevel, stats.riskLevel === "ALTO" ? "#dc2626" : stats.riskLevel === "MEDIO" ? "#f97316" : "#16a34a"),
-      ],
-      columnGap: 8,
-      margin: [0, 0, 0, 10],
-    },
+    ...buildCoverHeader(payload, inspection, company, color, opinion, validationUrl),
+    buildStatsDashboard(stats, payload.photos.length, color),
     checklistBarChart(payload),
     ...inspectionDataSection(
       "DADOS DA VISTORIA",
@@ -508,20 +605,33 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     pageMargins: [36, 44, 36, 44],
     content,
     footer: (currentPage: number, pageCount: number) => ({
-      columns: [
+      stack: [
         {
-          text: `${company?.name?.trim() || "Torres Vistorias"}, Laudo cautelar veicular`,
-          style: "small",
-          margin: [36, 0, 0, 0],
+          canvas: [{ type: "line", x1: 36, y1: 0, x2: 559, y2: 0, lineWidth: 0.5, lineColor: BORDER }],
         },
-        { text: `Página ${currentPage} de ${pageCount}`, style: "small", alignment: "right", margin: [0, 0, 36, 0] },
+        {
+          columns: [
+            {
+              text: `${company?.name?.trim() || "Torres Vistorias"} · Laudo cautelar veicular · ${payload.verificationCode}`,
+              style: "small",
+              margin: [36, 6, 0, 0],
+            },
+            {
+              text: `Página ${currentPage} de ${pageCount}`,
+              style: "small",
+              alignment: "right",
+              margin: [0, 6, 36, 0],
+            },
+          ],
+        },
       ],
     }),
     styles: {
-      brand: { fontSize: 20, bold: true },
-      muted: { fontSize: 9, color: "#64748b" },
-      small: { fontSize: 7, color: "#64748b" },
-      tableHeader: { fontSize: 8, bold: true, fillColor: "#f1f5f9" },
+      brand: { fontSize: 18, bold: true },
+      docType: { fontSize: 9, color: SLATE, characterSpacing: 0.2 },
+      muted: { fontSize: 9, color: SLATE },
+      small: { fontSize: 7, color: SLATE },
+      tableHeader: { fontSize: 8, bold: true, fillColor: SURFACE, color: NAVY },
       tableLabel: { fontSize: 8, color: "#475569", bold: true },
       tableValue: { fontSize: 9 },
     },

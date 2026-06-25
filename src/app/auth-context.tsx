@@ -27,12 +27,25 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-async function fetchProfile(userId: string): Promise<Profile | null> {
+type ProfileFetchResult =
+  | { status: "ok"; profile: Profile | null }
+  | { status: "error" };
+
+async function fetchProfile(userId: string): Promise<ProfileFetchResult> {
   try {
-    return await authService.getProfile(userId);
+    return { status: "ok", profile: await authService.getProfile(userId) };
   } catch (error) {
     console.error("Erro ao carregar perfil:", error instanceof Error ? error.message : error);
-    return null;
+    return { status: "error" };
+  }
+}
+
+function applyProfileResult(
+  result: ProfileFetchResult,
+  apply: (profile: Profile | null) => void,
+) {
+  if (result.status === "ok") {
+    apply(result.profile);
   }
 }
 
@@ -41,7 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
-  const loading = authLoading || profileLoading;
+  const loading =
+    authLoading || profileLoading || (!!session?.user.id && profile === null);
 
   const refreshProfile = useCallback(async () => {
     if (!session?.user.id) {
@@ -50,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setProfileLoading(true);
     try {
-      setProfile(await fetchProfile(session.user.id));
+      applyProfileResult(await fetchProfile(session.user.id), setProfile);
     } finally {
       setProfileLoading(false);
     }
@@ -74,8 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (currentUserId !== nextUserId) {
           setProfile(null);
           setProfileLoading(!!nextUserId);
-        } else {
-          setProfileLoading(false);
         }
 
         return nextSession;
@@ -94,8 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       let isActive = true;
       setProfileLoading(true);
       void fetchProfile(session.user.id)
-        .then((nextProfile) => {
-          if (isActive) setProfile(nextProfile);
+        .then((result) => {
+          if (isActive) applyProfileResult(result, setProfile);
         })
         .finally(() => {
           if (isActive) setProfileLoading(false);
