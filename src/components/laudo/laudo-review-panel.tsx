@@ -131,8 +131,8 @@ export function LaudoReviewPanel({
           <div className="flex items-start gap-2 rounded-xl border border-sky-100 bg-sky-50/70 px-3 py-3 text-xs leading-relaxed text-sky-900">
             <Info className="mt-0.5 size-4 shrink-0 text-sky-600" aria-hidden />
             <p>
-              O PDF usa os dados de Configurações: razão social, CPF/CNPJ, endereço da empresa e
-              vistoriador responsável. Inclui fotos, checklist, parecer e validação pública.
+              O PDF usa os dados de Configurações: razão social, CPF/CNPJ e endereço da empresa.
+              Inclui fotos, checklist, parecer e validação pública.
             </p>
           </div>
 

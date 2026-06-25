@@ -594,7 +594,6 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
   const stats = summarizeLaudoChecklist(payload.checklist);
   const inspection = payload.inspection;
   const company = payload.company;
-  const inspector = payload.inspector;
   const opinion = getOpinionLabel(inspection.opinion);
   const validationUrl = payload.validationUrl ?? "";
   const paintCategories = new Set<string>(PAINT_PHOTO_CATEGORIES);
@@ -611,7 +610,6 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       buildInspectionInfoRows(
         inspection,
         company,
-        inspector,
         formatDate,
         formatPhone,
         formatDocument,
@@ -643,9 +641,11 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       columns: [
         {
           stack: [
-            { text: "Assinatura do vistoriador", style: "muted" },
-            { text: value(inspector?.full_name), bold: true, margin: [0, 18, 0, 0] },
-            { text: value(inspector?.credential ?? inspector?.role), style: "small" },
+            { text: "Empresa responsável", style: "muted" },
+            { text: value(company?.name?.trim() || "Torres Vistorias"), bold: true, margin: [0, 18, 0, 0] },
+            ...(company?.document
+              ? [{ text: formatDocument(company.document), style: "small" as const }]
+              : []),
           ],
         },
         {

@@ -12,7 +12,6 @@ export function LaudoTemplate({
   checklist,
   photos = [],
   company,
-  inspector,
 }: {
   inspection: Inspection;
   checklist: ChecklistItem[];
@@ -129,8 +128,8 @@ export function LaudoTemplate({
           </h3>
           <dl className="mt-2 grid gap-2 sm:grid-cols-2">
             <div>
-              <dt className="text-muted-foreground">Vistoriador</dt>
-              <dd className="font-medium">{inspector?.full_name ?? "Não informado"}</dd>
+              <dt className="text-muted-foreground">Empresa</dt>
+              <dd className="font-medium">{company?.name ?? "Não informado"}</dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Local</dt>
@@ -155,8 +154,8 @@ export function LaudoTemplate({
         </section>
 
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Vistoriador: {inspector?.full_name ?? "não informado"}. O PDF final inclui fotos, checklist
-          técnico, resumo gráfico, QR de validação e rodapé jurídico.
+          Empresa: {company?.name ?? "não informada"}. O PDF final inclui fotos, checklist técnico,
+          resumo gráfico, QR de validação e rodapé jurídico.
         </p>
       </div>
     </article>
