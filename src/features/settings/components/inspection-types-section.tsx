@@ -13,18 +13,24 @@ import { inspectionTypeSchema, type InspectionTypeInput } from "@/schemas/inspec
 import type { InspectionType } from "@/services/inspection-type-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FormField } from "@/components/forms/form-field";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { formatCurrency } from "@/lib/formatters";
 import { maskCurrency, parseCurrency } from "@/lib/masks";
 import { cn } from "@/lib/utils";
+import {
+  SETTINGS_FIELD_LABEL_CLASS,
+  SettingsNotice,
+  SettingsSection,
+} from "@/features/settings/components/settings-section";
 
 function TypeFormDialog({
   open,
@@ -58,31 +64,41 @@ function TypeFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[calc(100%-1rem)] max-w-md">
         <DialogHeader>
           <DialogTitle>{initial ? "Editar tipo de vistoria" : "Novo tipo de vistoria"}</DialogTitle>
           <DialogDescription>
-            Defina o nome e o valor de referência para contabilização interna.
+            Defina a nomenclatura e o valor de referência para contabilização interna e relatórios.
           </DialogDescription>
         </DialogHeader>
         <form
-          className="space-y-4"
+          className="space-y-5"
           onSubmit={form.handleSubmit(async (data) => {
             await onSubmit(data);
             onOpenChange(false);
           })}
         >
-          <div className="space-y-2">
-            <Label htmlFor="type-name">Nome</Label>
-            <Input id="type-name" placeholder="Ex.: Vistoria Cautelar" {...form.register("name")} />
-            {form.formState.errors.name && (
-              <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="type-amount">Valor (R$)</Label>
+          <FormField
+            label="Nome do tipo"
+            labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+            error={form.formState.errors.name?.message}
+          >
+            <Input
+              id="type-name"
+              className="touch-target"
+              placeholder="Ex.: Vistoria cautelar"
+              {...form.register("name")}
+            />
+          </FormField>
+          <FormField
+            label="Valor de referência (R$)"
+            labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+            hint="Valor utilizado para cálculos internos e indicadores financeiros."
+            error={form.formState.errors.amount?.message}
+          >
             <Input
               id="type-amount"
+              className="touch-target"
               inputMode="decimal"
               placeholder="R$ 0,00"
               defaultValue={initial ? maskCurrency(String(initial.amount)) : ""}
@@ -92,18 +108,15 @@ function TypeFormDialog({
                 event.target.value = maskCurrency(String(parsed));
               }}
             />
-            {form.formState.errors.amount && (
-              <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
-            )}
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          </FormField>
+          <DialogFooter className="gap-2 pt-2 sm:justify-end">
+            <Button type="button" variant="outline" className="touch-target w-full sm:w-auto" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {initial ? "Salvar alterações" : "Cadastrar"}
+            <Button type="submit" className="touch-target w-full sm:w-auto" disabled={isPending}>
+              {isPending ? "Salvando..." : initial ? "Salvar alterações" : "Cadastrar tipo"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
@@ -130,87 +143,87 @@ export function InspectionTypesSection({ canEdit }: { canEdit: boolean }) {
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft">
-      <div className="border-b border-border/50 bg-muted/20 px-5 py-4 sm:px-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
-              <ClipboardList className="h-5 w-5" aria-hidden />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight">Tipos de vistoria</h2>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                Cadastre os tipos e valores usados na contabilização interna e nos relatórios.
-              </p>
-            </div>
-          </div>
-          {canEdit && (
-            <Button type="button" className="touch-target shrink-0" onClick={openCreate}>
-              <Plus className="h-4 w-4" />
-              Novo tipo
-            </Button>
-          )}
+    <SettingsSection
+      icon={ClipboardList}
+      title="Tipos de vistoria"
+      description="Parâmetros operacionais utilizados na contabilização interna, relatórios e indicadores."
+      action={
+        canEdit ? (
+          <Button type="button" className="touch-target w-full sm:w-auto" onClick={openCreate}>
+            <Plus className="h-4 w-4" />
+            Novo tipo
+          </Button>
+        ) : undefined
+      }
+    >
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : types.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border/70 bg-muted/15 px-4 py-8 text-center">
+          <p className="text-sm font-medium text-foreground">Nenhum tipo cadastrado</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {canEdit
+              ? "Cadastre o primeiro tipo para padronizar valores e nomenclaturas."
+              : "Aguarde o administrador configurar os tipos de vistoria."}
+          </p>
         </div>
-      </div>
-
-      <div className="px-5 py-5 sm:px-6">
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : types.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nenhum tipo cadastrado. Adicione o primeiro tipo de vistoria.
-          </p>
-        ) : (
-          <ul className="divide-y divide-border/60 rounded-xl border border-border/60">
-            {types.map((type) => (
-              <li
-                key={type.id}
-                className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="font-semibold text-foreground">{type.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Valor de referência: {formatCurrency(type.amount)}
-                  </p>
+      ) : (
+        <ul className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/60 bg-card">
+          {types.map((type) => (
+            <li
+              key={type.id}
+              className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+            >
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground">{type.name}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Valor de referência:{" "}
+                  <span className="font-medium text-foreground">{formatCurrency(type.amount)}</span>
+                </p>
+              </div>
+              {canEdit && (
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="touch-target w-full sm:w-auto"
+                    onClick={() => openEdit(type)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    Editar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={cn("touch-target w-full text-destructive hover:text-destructive sm:w-auto")}
+                    disabled={deleteType.isPending}
+                    onClick={async () => {
+                      if (!window.confirm(`Excluir o tipo "${type.name}"?`)) return;
+                      try {
+                        await deleteType.mutateAsync(type.id);
+                        toast("Tipo de vistoria excluído");
+                      } catch (err) {
+                        toast(err instanceof Error ? err.message : "Erro ao excluir");
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Excluir
+                  </Button>
                 </div>
-                {canEdit && (
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => openEdit(type)}>
-                      <Pencil className="h-3.5 w-3.5" />
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className={cn("text-destructive hover:text-destructive")}
-                      disabled={deleteType.isPending}
-                      onClick={async () => {
-                        if (!window.confirm(`Excluir "${type.name}"?`)) return;
-                        try {
-                          await deleteType.mutateAsync(type.id);
-                          toast("Tipo de vistoria excluído");
-                        } catch (err) {
-                          toast(err instanceof Error ? err.message : "Erro ao excluir");
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Excluir
-                    </Button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
 
-        {!canEdit && (
-          <p className="mt-4 text-xs text-muted-foreground">
-            Apenas administradores podem gerenciar tipos e valores de vistoria.
-          </p>
-        )}
-      </div>
+      {!canEdit && (
+        <SettingsNotice className="mt-5">
+          Somente administradores podem gerenciar tipos e valores de vistoria.
+        </SettingsNotice>
+      )}
 
       {canEdit && (
         <TypeFormDialog
@@ -234,6 +247,6 @@ export function InspectionTypesSection({ canEdit }: { canEdit: boolean }) {
           }}
         />
       )}
-    </section>
+    </SettingsSection>
   );
 }

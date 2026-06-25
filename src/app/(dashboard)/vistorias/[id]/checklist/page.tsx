@@ -39,7 +39,7 @@ export function Page() {
   };
 
   const checklistContent = (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {isLoading ? (
         <LoadingSpinner label="Carregando checklist..." />
       ) : items.length === 0 ? (
@@ -64,17 +64,21 @@ export function Page() {
         />
       )}
 
-      {isWizardFlow ? (
-        <WizardNavButtons
-          onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)))}
-          onNext={goToLaudo}
-          nextLabel="Revisar e gerar laudo"
-        />
-      ) : (
-        <Button className="h-12 w-full touch-target" onClick={goToLaudo}>
-          <FileText className="mr-2 h-5 w-5" />
-          Revisar e gerar laudo
-        </Button>
+      {!isLoading && items.length > 0 && (
+        <div className="border-t border-border pt-4 md:pt-2">
+          {isWizardFlow ? (
+            <WizardNavButtons
+              onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)))}
+              onNext={goToLaudo}
+              nextLabel="Revisar e gerar laudo"
+            />
+          ) : (
+            <Button className="h-12 w-full touch-target" size="lg" onClick={goToLaudo}>
+              <FileText className="mr-2 h-5 w-5" />
+              Revisar e gerar laudo
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -88,20 +92,21 @@ export function Page() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
+    <div className="space-y-3 md:space-y-4">
+      <div className="flex items-center gap-2 md:gap-3">
         <Button
           variant="ghost"
           size="icon"
-          className="touch-target"
+          className="touch-target shrink-0"
           onClick={() => id && navigate(ROUTES.inspection(id))}
+          aria-label="Voltar para vistoria"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div>
-          <h1 className="text-xl font-bold">Checklist</h1>
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold md:text-xl">Checklist</h1>
           <p className="text-xs text-muted-foreground">
-            Toque no status e adicione observações
+            Toque no status · observações só em NC
           </p>
         </div>
       </div>
