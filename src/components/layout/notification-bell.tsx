@@ -44,7 +44,7 @@ export function NotificationBell() {
             aria-label="Fechar notificações"
             onClick={() => setOpen(false)}
           />
-          <div className="surface-elevated absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden">
+          <div className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-border/60 bg-card text-card-foreground shadow-elevated">
             <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
               <p className="font-display text-sm font-normal tracking-tight">Notificações</p>
               {unread > 0 && (
@@ -78,7 +78,7 @@ export function NotificationBell() {
                       )}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <p className="font-medium">{n.title}</p>
                           <p className="text-muted-foreground">{n.body}</p>
                           <p className="mt-1 text-xs text-muted-foreground">
