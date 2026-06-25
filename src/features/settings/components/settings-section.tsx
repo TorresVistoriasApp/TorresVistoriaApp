@@ -12,6 +12,7 @@ export function SettingsSection({
   children,
   className,
   action,
+  fillHeight = false,
 }: {
   icon: LucideIcon;
   title: string;
@@ -19,34 +20,45 @@ export function SettingsSection({
   children: ReactNode;
   className?: string;
   action?: ReactNode;
+  fillHeight?: boolean;
 }) {
   return (
     <section
       className={cn(
         "min-w-0 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft",
+        fillHeight ? "flex h-full flex-col" : "h-fit",
         className,
       )}
     >
-      <div className="border-b border-border/50 bg-muted/15 px-4 py-4 sm:px-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="shrink-0 border-b border-border/50 bg-muted/15 px-4 py-3.5 sm:px-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <div
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10 sm:h-11 sm:w-11"
               aria-hidden
             >
               <Icon className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
+              <h2 className="text-base font-semibold tracking-tight text-foreground">
                 {title}
               </h2>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
+              <p className="mt-0.5 line-clamp-2 text-sm leading-snug text-muted-foreground">
+                {description}
+              </p>
             </div>
           </div>
           {action ? <div className="w-full shrink-0 sm:w-auto">{action}</div> : null}
         </div>
       </div>
-      <div className="px-4 py-5 sm:px-6 sm:py-6">{children}</div>
+      <div
+        className={cn(
+          "px-4 py-4 sm:px-5 sm:py-5",
+          fillHeight && "flex min-h-0 flex-1 flex-col",
+        )}
+      >
+        {children}
+      </div>
     </section>
   );
 }
@@ -80,7 +92,7 @@ export function SettingsFormActions({
   hint?: string;
 }) {
   return (
-    <div className={cn("mt-8 border-t border-border/50 pt-6", className)}>
+    <div className={cn("mt-6 border-t border-border/50 pt-5", className)}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {hint ? (
           <p className="text-xs leading-relaxed text-muted-foreground sm:max-w-sm sm:text-sm">

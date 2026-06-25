@@ -67,8 +67,8 @@ export function CompanyAddressFields({
   );
 
   return (
-    <div className="space-y-6">
-      <p className="text-sm leading-relaxed text-muted-foreground">
+    <div className="space-y-4">
+      <p className="text-sm leading-snug text-muted-foreground">
         Informe o endereço completo da sede ou ponto de atendimento. O CEP preenche automaticamente
         logradouro, bairro e município.
       </p>
@@ -113,7 +113,7 @@ export function CompanyAddressFields({
         </div>
       </FormField>
 
-      <div className="grid min-w-0 gap-5 sm:grid-cols-[minmax(0,1fr)_120px]">
+      <div className="grid min-w-0 gap-4 sm:grid-cols-[minmax(0,1fr)_120px]">
         <FormField label="Logradouro" labelClassName={SETTINGS_FIELD_LABEL_CLASS} className="min-w-0">
           <Input
             id="company-street"
@@ -149,9 +149,9 @@ export function CompanyAddressFields({
         />
       </FormField>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <SettingsSubheading>Localidade</SettingsSubheading>
-        <div className="grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_88px]">
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_88px]">
           <FormField
             label="Bairro"
             labelClassName={SETTINGS_FIELD_LABEL_CLASS}
