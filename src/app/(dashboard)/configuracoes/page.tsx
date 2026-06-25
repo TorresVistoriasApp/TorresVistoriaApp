@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Building2, Camera, MapPin, UserRound } from "lucide-react";
+import { useForm, type UseFormReturn } from "react-hook-form";
+import { Building2, Camera, MapPin, Save, UserRound } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/shared/page-header";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -22,35 +22,30 @@ import { CompanyAddressFields } from "@/features/settings/components/company-add
 import { InspectionTypesSection } from "@/features/settings/components/inspection-types-section";
 import {
   SETTINGS_FIELD_LABEL_CLASS,
-  SettingsFormActions,
   SettingsNotice,
   SettingsSection,
 } from "@/features/settings/components/settings-section";
 
 function ProfileSection({
+  form,
   profileId,
   fullName,
   avatarUrl,
+  className,
+  fillHeight = false,
 }: {
+  form: UseFormReturn<UserProfileInput>;
   profileId?: string;
   fullName?: string | null;
   avatarUrl?: string | null;
+  className?: string;
+  fillHeight?: boolean;
 }) {
   const { refreshProfile } = useAuth();
-  const updateProfile = useUpdateUserProfile();
   const uploadAvatar = useUploadUserAvatar();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  const form = useForm<UserProfileInput>({
-    resolver: zodResolver(userProfileSchema),
-    values: {
-      full_name: fullName ?? "",
-      phone: "",
-      avatar_url: avatarUrl ?? "",
-    },
-  });
 
   const displayAvatar = previewUrl ?? avatarUrl;
 
@@ -74,21 +69,11 @@ function ProfileSection({
       icon={UserRound}
       title="Perfil do usuário"
       description="Dados pessoais vinculados à sua conta de acesso no sistema."
+      className={className}
+      fillHeight={fillHeight}
     >
-      <form
-        className="space-y-6"
-        onSubmit={form.handleSubmit(async (data) => {
-          if (!profileId) return;
-          try {
-            await updateProfile.mutateAsync({ profileId, input: data });
-            await refreshProfile();
-            toast("Perfil atualizado com sucesso");
-          } catch (err) {
-            toast(err instanceof Error ? err.message : "Erro ao salvar");
-          }
-        })}
-      >
-        <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+      <div className="space-y-5">
+        <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
           <div className="relative shrink-0">
             <UserAvatar
               name={fullName}
@@ -135,58 +120,49 @@ function ProfileSection({
             </FormField>
           </div>
         </div>
-
-        <SettingsFormActions hint="Alterações do seu perfil pessoal de acesso.">
-          <Button
-            type="submit"
-            className="touch-target w-full sm:w-auto"
-            disabled={updateProfile.isPending}
-          >
-            {updateProfile.isPending ? "Salvando..." : "Salvar perfil"}
-          </Button>
-        </SettingsFormActions>
-      </form>
+      </div>
     </SettingsSection>
   );
 }
 
-function CompanySection({ canEdit }: { canEdit: boolean }) {
-  const { data: company, isLoading } = useCompany();
-  const updateCompany = useUpdateCompany();
-  const { toast } = useToast();
-
-  const form = useForm<CompanyInput>({
-    resolver: zodResolver(companySchema),
-    values: company
-      ? {
-          name: company.name,
-          document: company.document ? maskCpfCnpj(company.document) : "",
-          ...companyToAddressInput(company),
-        }
-      : undefined,
-  });
-
-  if (isLoading) return <LoadingSpinner />;
-
-  const onSubmit = form.handleSubmit(async (data) => {
-    if (!canEdit) return;
-    try {
-      await updateCompany.mutateAsync(data);
-      toast("Dados cadastrais atualizados com sucesso");
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Erro ao salvar");
-    }
-  });
+function CompanySection({
+  form,
+  canEdit,
+  isLoading,
+  dataSectionClassName,
+  addressSectionClassName,
+  loadingClassName,
+  fillHeight = false,
+  onCepError,
+}: {
+  form: UseFormReturn<CompanyInput>;
+  canEdit: boolean;
+  isLoading: boolean;
+  dataSectionClassName?: string;
+  addressSectionClassName?: string;
+  loadingClassName?: string;
+  fillHeight?: boolean;
+  onCepError: (message: string) => void;
+}) {
+  if (isLoading) {
+    return (
+      <div className={loadingClassName}>
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
-    <form className="grid min-w-0 gap-6" onSubmit={onSubmit}>
+    <>
       <SettingsSection
         icon={Building2}
         title="Seus dados"
         description="Identificação cadastral exibida nos laudos e documentos emitidos pelo sistema."
+        className={dataSectionClassName}
+        fillHeight={fillHeight}
       >
-        <div className="space-y-5">
-          <div className="grid min-w-0 gap-5">
+        <div className="space-y-4">
+          <div className="grid min-w-0 gap-4">
             <FormField
               label="Nome ou razão social"
               labelClassName={SETTINGS_FIELD_LABEL_CLASS}
@@ -229,52 +205,159 @@ function CompanySection({ canEdit }: { canEdit: boolean }) {
         icon={MapPin}
         title="Endereço"
         description="Localização cadastral utilizada nos laudos e demais comunicações oficiais."
+        className={addressSectionClassName}
+        fillHeight={fillHeight}
       >
         <CompanyAddressFields
           control={form.control}
           register={form.register}
           setValue={form.setValue}
           canEdit={canEdit}
-          onCepError={(message) => toast(message)}
+          onCepError={onCepError}
         />
-
-        {canEdit && (
-          <SettingsFormActions hint="Salva em conjunto a identificação cadastral e o endereço informados acima.">
-            <Button
-              type="submit"
-              className="touch-target w-full sm:w-auto"
-              disabled={updateCompany.isPending}
-            >
-              {updateCompany.isPending ? "Salvando..." : "Salvar dados cadastrais"}
-            </Button>
-          </SettingsFormActions>
-        )}
       </SettingsSection>
-    </form>
+    </>
+  );
+}
+
+function SaveSettingsButton({
+  isSaving,
+  disabled,
+  onClick,
+  className,
+}: {
+  isSaving: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <Button
+      type="button"
+      className={className}
+      disabled={disabled || isSaving}
+      onClick={onClick}
+    >
+      <Save className="h-4 w-4" />
+      {isSaving ? "Salvando..." : "Salvar"}
+    </Button>
   );
 }
 
 export function Page() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const isAdmin = profile?.role === UserRole.SUPER_ADMIN;
+  const { data: company, isLoading: isCompanyLoading } = useCompany();
+  const updateProfile = useUpdateUserProfile();
+  const updateCompany = useUpdateCompany();
+  const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+
+  const profileForm = useForm<UserProfileInput>({
+    resolver: zodResolver(userProfileSchema),
+    values: {
+      full_name: profile?.full_name ?? "",
+      phone: "",
+      avatar_url: profile?.avatar_url ?? "",
+    },
+  });
+
+  const companyForm = useForm<CompanyInput>({
+    resolver: zodResolver(companySchema),
+    values: company
+      ? {
+          name: company.name,
+          document: company.document ? maskCpfCnpj(company.document) : "",
+          ...companyToAddressInput(company),
+        }
+      : undefined,
+  });
+
+  const handleSave = async () => {
+    if (!profile?.id) return;
+
+    const profileValid = await profileForm.trigger();
+    const companyValid = isAdmin ? await companyForm.trigger() : true;
+
+    if (!profileValid || !companyValid) {
+      toast("Verifique os campos destacados antes de salvar.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const tasks: Promise<unknown>[] = [
+        updateProfile.mutateAsync({
+          profileId: profile.id,
+          input: profileForm.getValues(),
+        }),
+      ];
+
+      if (isAdmin) {
+        tasks.push(updateCompany.mutateAsync(companyForm.getValues()));
+      }
+
+      await Promise.all(tasks);
+      await refreshProfile();
+      toast("Configurações salvas com sucesso");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Erro ao salvar");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveDisabled = !profile?.id || (isAdmin && isCompanyLoading);
 
   return (
-    <div className="min-w-0 space-y-8 pb-8">
+    <div className="min-w-0 space-y-6 pb-24 sm:pb-6">
       <PageHeader
         title="Configurações"
         description="Gerencie perfil, identificação cadastral, endereço e parâmetros operacionais da conta."
+        actions={
+          <SaveSettingsButton
+            isSaving={isSaving}
+            disabled={saveDisabled}
+            onClick={() => void handleSave()}
+            className="touch-target hidden w-full sm:inline-flex sm:w-auto"
+          />
+        }
       />
 
-      <div className="grid min-w-0 gap-6 xl:grid-cols-2 xl:items-start xl:gap-8">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] xl:items-stretch xl:gap-5">
         <ProfileSection
+          form={profileForm}
           profileId={profile?.id}
           fullName={profile?.full_name}
           avatarUrl={profile?.avatar_url}
+          className="xl:col-start-1 xl:row-start-1 xl:h-full"
+          fillHeight
         />
-        <CompanySection canEdit={isAdmin} />
+        <CompanySection
+          form={companyForm}
+          canEdit={isAdmin}
+          isLoading={isCompanyLoading}
+          dataSectionClassName="xl:col-start-2 xl:row-start-1 xl:h-full"
+          addressSectionClassName="xl:col-start-2 xl:row-start-2 xl:h-full"
+          loadingClassName="xl:col-start-2 xl:row-span-2"
+          fillHeight
+          onCepError={(message) => toast(message)}
+        />
+        <InspectionTypesSection
+          canEdit={isAdmin}
+          className="xl:col-start-1 xl:row-start-2 xl:h-full"
+          fillHeight
+        />
       </div>
 
-      <InspectionTypesSection canEdit={isAdmin} />
+      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-20 border-t border-border/60 bg-card/95 px-4 py-3 shadow-elevated backdrop-blur-sm sm:hidden">
+        <SaveSettingsButton
+          isSaving={isSaving}
+          disabled={saveDisabled}
+          onClick={() => void handleSave()}
+          className="touch-target w-full"
+        />
+      </div>
     </div>
   );
 }

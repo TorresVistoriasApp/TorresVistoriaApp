@@ -123,7 +123,15 @@ function TypeFormDialog({
   );
 }
 
-export function InspectionTypesSection({ canEdit }: { canEdit: boolean }) {
+export function InspectionTypesSection({
+  canEdit,
+  className,
+  fillHeight = false,
+}: {
+  canEdit: boolean;
+  className?: string;
+  fillHeight?: boolean;
+}) {
   const { data: types = [], isLoading } = useInspectionTypes();
   const createType = useCreateInspectionType();
   const updateType = useUpdateInspectionType();
@@ -147,6 +155,8 @@ export function InspectionTypesSection({ canEdit }: { canEdit: boolean }) {
       icon={ClipboardList}
       title="Tipos de vistoria"
       description="Parâmetros operacionais utilizados na contabilização interna, relatórios e indicadores."
+      className={className}
+      fillHeight={fillHeight}
       action={
         canEdit ? (
           <Button type="button" className="touch-target w-full sm:w-auto" onClick={openCreate}>
@@ -168,26 +178,31 @@ export function InspectionTypesSection({ canEdit }: { canEdit: boolean }) {
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-border/60 overflow-hidden rounded-xl border border-border/60 bg-card">
+        <ul
+          className={cn(
+            "divide-y divide-border/60 overflow-hidden rounded-xl border border-border/60 bg-card",
+            fillHeight && "min-h-0 flex-1 overflow-y-auto",
+          )}
+        >
           {types.map((type) => (
             <li
               key={type.id}
-              className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+              className="flex flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 sm:py-3"
             >
               <div className="min-w-0">
-                <p className="font-semibold text-foreground">{type.name}</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  Valor de referência:{" "}
+                <p className="text-sm font-semibold text-foreground sm:text-base">{type.name}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                  Referência:{" "}
                   <span className="font-medium text-foreground">{formatCurrency(type.amount)}</span>
                 </p>
               </div>
               {canEdit && (
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                <div className="flex shrink-0 gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="touch-target w-full sm:w-auto"
+                    className="h-9 min-h-9 flex-1 px-3 sm:flex-none"
                     onClick={() => openEdit(type)}
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -197,7 +212,9 @@ export function InspectionTypesSection({ canEdit }: { canEdit: boolean }) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className={cn("touch-target w-full text-destructive hover:text-destructive sm:w-auto")}
+                    className={cn(
+                      "h-9 min-h-9 flex-1 px-3 text-destructive hover:text-destructive sm:flex-none",
+                    )}
                     disabled={deleteType.isPending}
                     onClick={async () => {
                       if (!window.confirm(`Excluir o tipo "${type.name}"?`)) return;
