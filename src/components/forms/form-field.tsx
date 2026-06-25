@@ -7,6 +7,7 @@ interface FormFieldProps {
   hint?: string;
   className?: string;
   labelClassName?: string;
+  optional?: boolean;
   children: React.ReactNode;
 }
 
@@ -16,21 +17,42 @@ export function FormField({
   hint,
   className,
   labelClassName,
+  optional,
   children,
 }: FormFieldProps) {
   return (
-    <div className={cn("space-y-1.5", className)}>
-      <Label
+    <div className={cn("space-y-2", className)}>
+      <div className="flex items-baseline justify-between gap-2">
+        <Label
+          className={cn(
+            "text-sm font-medium leading-snug text-foreground",
+            labelClassName,
+          )}
+        >
+          {label}
+        </Label>
+        {optional && (
+          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Opcional
+          </span>
+        )}
+      </div>
+      <div
         className={cn(
-          "text-xs font-semibold uppercase tracking-wide text-muted-foreground",
-          labelClassName,
+          error &&
+            "[&_input]:border-destructive/70 [&_select]:border-destructive/70 [&_textarea]:border-destructive/70",
         )}
       >
-        {label}
-      </Label>
-      {children}
-      {hint && !error && <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+        {children}
+      </div>
+      {hint && !error && (
+        <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
+      )}
+      {error && (
+        <p className="text-xs font-medium text-destructive" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
