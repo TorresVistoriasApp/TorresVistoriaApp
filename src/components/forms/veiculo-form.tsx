@@ -6,12 +6,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField } from "@/components/forms/form-field";
 import { FormFieldGroup } from "@/components/forms/form-field-group";
 import { MaskedField, OptionalMaskedField } from "@/components/forms/masked-fields";
+import { YearSelectField } from "@/components/forms/year-select-field";
 import { CAR_BRANDS } from "@/lib/vehicle-brands";
+import { BRAZILIAN_UFS } from "@/lib/brazilian-ufs";
 import { formGridFullWidthClass, selectInputClass } from "@/lib/form-styles";
 
 const situationOptions = Object.values(InspectionSituation);
 
+const SITUATION_LABELS: Record<InspectionSituation, string> = {
+  [InspectionSituation.PARTICULAR]: "Particular",
+  [InspectionSituation.LOJA]: "Loja / revenda",
+  [InspectionSituation.LEILAO]: "Leilão",
+  [InspectionSituation.RECUPERADO]: "Recuperado",
+  [InspectionSituation.SINISTRADO]: "Sinistrado",
+  [InspectionSituation.ALIENADO]: "Alienado",
+};
+
 const FUEL_OPTIONS = ["Flex", "Gasolina", "Etanol", "Diesel", "GNV", "Elétrico", "Híbrido"];
+
+const CURRENT_YEAR = new Date().getFullYear();
+const MAX_MANUFACTURE_YEAR = CURRENT_YEAR + 1;
+const MAX_MODEL_YEAR = CURRENT_YEAR + 2;
 
 export function VeiculoForm({
   control,
@@ -27,8 +42,8 @@ export function VeiculoForm({
   const fields = (
     <div className="space-y-6 sm:space-y-8 lg:space-y-6">
       <FormFieldGroup
-        title="Registro e numeração"
-        description="Dados oficiais de identificação do veículo"
+        title="Identificação"
+        description="Conforme placa, chassi e documento do veículo"
       >
         <MaskedField
           control={control}
@@ -36,7 +51,7 @@ export function VeiculoForm({
           label="Placa"
           mask="plate"
           error={errors.plate?.message}
-          placeholder="ABC-1D23"
+          placeholder="ABC1D23"
           inputClassName="uppercase font-mono tracking-wider"
         />
 
@@ -57,46 +72,42 @@ export function VeiculoForm({
           mask="renavam"
           error={errors.renavam?.message}
           placeholder="00000000000"
-          naLabel="Veículo sem Renavam"
+          naLabel="Não informado"
         />
 
         <FormField label="Número do motor" error={errors.motor_number?.message} optional>
-          <Input
-            {...register("motor_number")}
-            placeholder="Gravação no bloco do motor"
-            className="uppercase"
-          />
+          <Input {...register("motor_number")} placeholder="Gravação no motor" className="uppercase" />
         </FormField>
       </FormFieldGroup>
 
-      <FormFieldGroup
-        title="Emplacamento"
-        description="Local de registro do veículo"
-        bordered
-      >
-        <FormField label="UF do veículo" error={errors.vehicle_uf?.message}>
-          <Input
-            {...register("vehicle_uf")}
-            placeholder="Ex.: GO"
-            maxLength={2}
-            className="uppercase"
+      <FormFieldGroup title="Emplacamento" description="UF e município de registro" bordered>
+        <FormField label="UF" error={errors.vehicle_uf?.message}>
+          <Controller
+            control={control}
+            name="vehicle_uf"
+            render={({ field }) => (
+              <select
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target.value || null)}
+                className={selectInputClass}
+              >
+                <option value="">Selecione a UF</option>
+                {BRAZILIAN_UFS.map((uf) => (
+                  <option key={uf} value={uf}>
+                    {uf}
+                  </option>
+                ))}
+              </select>
+            )}
           />
         </FormField>
 
-        <FormField
-          label="Município / UF"
-          error={errors.registration_city_uf?.message}
-          hint="Cidade e estado do emplacamento"
-        >
-          <Input {...register("registration_city_uf")} placeholder="Ex.: Goiânia / GO" />
+        <FormField label="Município" error={errors.registration_city_uf?.message}>
+          <Input {...register("registration_city_uf")} placeholder="Cidade de emplacamento" />
         </FormField>
       </FormFieldGroup>
 
-      <FormFieldGroup
-        title="Marca, modelo e acabamento"
-        description="Informações visíveis e de catálogo"
-        bordered
-      >
+      <FormFieldGroup title="Características" description="Marca, modelo e acabamento" bordered>
         <FormField label="Marca" error={errors.brand?.message}>
           <Controller
             control={control}
@@ -122,7 +133,7 @@ export function VeiculoForm({
         </FormField>
 
         <FormField label="Modelo" error={errors.model?.message}>
-          <Input {...register("model")} placeholder="Ex.: Onix, HB20, Corolla" />
+          <Input {...register("model")} placeholder="Ex.: Onix, Corolla" />
         </FormField>
 
         <OptionalMaskedField
@@ -130,12 +141,12 @@ export function VeiculoForm({
           name="version"
           label="Versão"
           error={errors.version?.message}
-          placeholder="Ex.: 1.0 MPI LT"
-          naLabel="Sem versão informada"
+          placeholder="Ex.: 1.0 LT"
+          naLabel="Não informado"
         />
 
         <FormField label="Cor" error={errors.color?.message}>
-          <Input {...register("color")} placeholder="Ex.: Prata, Preto, Branco" />
+          <Input {...register("color")} placeholder="Ex.: Prata" />
         </FormField>
 
         <FormField label="Combustível" error={errors.fuel?.message}>
@@ -144,7 +155,7 @@ export function VeiculoForm({
             name="fuel"
             render={({ field }) => (
               <select value={field.value ?? ""} onChange={field.onChange} className={selectInputClass}>
-                <option value="">Selecione o combustível</option>
+                <option value="">Selecione</option>
                 {FUEL_OPTIONS.map((fuel) => (
                   <option key={fuel} value={fuel}>
                     {fuel}
@@ -154,41 +165,35 @@ export function VeiculoForm({
             )}
           />
         </FormField>
+
+        <YearSelectField
+          control={control}
+          name="manufacture_year"
+          label="Ano de fabricação"
+          error={errors.manufacture_year?.message}
+          maxYear={MAX_MANUFACTURE_YEAR}
+        />
+
+        <YearSelectField
+          control={control}
+          name="model_year"
+          label="Ano modelo"
+          error={errors.model_year?.message}
+          maxYear={MAX_MODEL_YEAR}
+        />
       </FormFieldGroup>
 
       <FormFieldGroup
-        title="Especificações técnicas"
-        description="Detalhes para o laudo e checklist"
+        title="Complementos"
+        description="Informações adicionais para o laudo"
         bordered
       >
         <FormField label="Categoria" error={errors.vehicle_category?.message} optional>
-          <Input {...register("vehicle_category")} placeholder="Ex.: Particular, aluguel" />
+          <Input {...register("vehicle_category")} placeholder="Ex.: Particular" />
         </FormField>
 
         <FormField label="Espécie" error={errors.vehicle_species?.message} optional>
-          <Input {...register("vehicle_species")} placeholder="Ex.: Passageiro, carga" />
-        </FormField>
-
-        <FormField label="Ano de fabricação" error={errors.manufacture_year?.message}>
-          <Input
-            type="number"
-            inputMode="numeric"
-            {...register("manufacture_year")}
-            placeholder={String(new Date().getFullYear())}
-            min={1900}
-            max={new Date().getFullYear() + 1}
-          />
-        </FormField>
-
-        <FormField label="Ano do modelo" error={errors.model_year?.message}>
-          <Input
-            type="number"
-            inputMode="numeric"
-            {...register("model_year")}
-            placeholder={String(new Date().getFullYear())}
-            min={1900}
-            max={new Date().getFullYear() + 2}
-          />
+          <Input {...register("vehicle_species")} placeholder="Ex.: Passageiro" />
         </FormField>
 
         <FormField label="Lugares" error={errors.passenger_capacity?.message} optional>
@@ -207,7 +212,7 @@ export function VeiculoForm({
           control={control}
           name="mileage"
           render={({ field }) => (
-            <FormField label="Quilometragem" error={errors.mileage?.message} hint="Odômetro no momento da vistoria">
+            <FormField label="Quilometragem" error={errors.mileage?.message} optional>
               <Input
                 inputMode="numeric"
                 value={
@@ -219,21 +224,21 @@ export function VeiculoForm({
                   const digits = e.target.value.replace(/\D/g, "").slice(0, 7);
                   field.onChange(digits ? Number(digits) : null);
                 }}
-                placeholder="Ex.: 45.000"
+                placeholder="Km atual"
               />
             </FormField>
           )}
         />
 
         <FormField
-          label="Situação do veículo"
+          label="Situação"
           error={errors.situation?.message}
           className={formGridFullWidthClass}
         >
           <select {...register("situation")} className={selectInputClass}>
             {situationOptions.map((o) => (
               <option key={o} value={o}>
-                {o.replace(/_/g, " ")}
+                {SITUATION_LABELS[o]}
               </option>
             ))}
           </select>
@@ -248,6 +253,9 @@ export function VeiculoForm({
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base">Veículo</CardTitle>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Dados do veículo vistoriado conforme documento e CRLV.
+        </p>
       </CardHeader>
       <CardContent>{fields}</CardContent>
     </Card>

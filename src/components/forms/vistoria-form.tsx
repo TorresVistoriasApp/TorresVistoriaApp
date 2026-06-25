@@ -22,7 +22,6 @@ import { maskCurrency } from "@/lib/masks";
 import {
   formGridClass,
   formGridFullWidthClass,
-  formIntroClass,
   selectInputClass,
   textareaInputClass,
 } from "@/lib/form-styles";
@@ -98,19 +97,19 @@ export function VistoriaForm({
           label="Local da vistoria"
           error={errors.location?.message}
           className={formGridFullWidthClass}
-          hint="Endereço completo, ponto de referência ou nome do pátio"
-        >
-          <Input {...register("location")} placeholder="Ex.: Av. Principal, 100 — Centro" />
+          hint="Endereço, referência ou nome do local"
+          >
+          <Input {...register("location")} placeholder="Rua, número, bairro, cidade" />
         </FormField>
       </FormFieldGroup>
 
       <FormFieldGroup
-        title="Tipo e solicitante"
-        description="Classificação da vistoria e quem pediu o serviço"
+        title="Tipo de vistoria"
+        description="Classificação do serviço"
         bordered
       >
         <FormField
-          label="Tipo de vistoria"
+          label="Tipo"
           error={errors.inspection_type_id?.message}
           className={formGridFullWidthClass}
         >
@@ -139,15 +138,17 @@ export function VistoriaForm({
             </p>
           )}
         </FormField>
-        <FormField
-          label="Solicitante"
-          error={errors.requester_name?.message}
-          optional
-          hint="Pessoa ou empresa que solicitou a vistoria"
-        >
-          <Input {...register("requester_name")} placeholder="Ex.: Maria Souza" />
-        </FormField>
       </FormFieldGroup>
+
+      <FormField
+        label="Indicado por"
+        error={errors.requester_name?.message}
+        optional
+        hint="Preencha apenas se o serviço foi indicado por terceiro (corretor, loja, parceiro)"
+        className={formGridFullWidthClass}
+      >
+        <Input {...register("requester_name")} placeholder="Nome do indicador" />
+      </FormField>
     </div>
   );
 
@@ -258,20 +259,11 @@ export function VistoriaForm({
 
   const wizardContent = (
     <>
-      <div className={cn(formIntroClass, "lg:hidden")}>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Preencha <strong className="font-semibold text-foreground">Identificação</strong>,{" "}
-          <strong className="font-semibold text-foreground">Cliente</strong> e{" "}
-          <strong className="font-semibold text-foreground">Veículo</strong> para avançar para as
-          fotos. Campos opcionais podem ficar em branco.
-        </p>
-      </div>
-
       <FormSectionCard
         id="wizard-identificacao"
         index={1}
         title="Identificação"
-        description="Data, local, tipo e quem solicitou a vistoria"
+        description="Data, local e tipo da vistoria"
       >
         {identificacaoFields}
       </FormSectionCard>
@@ -279,8 +271,8 @@ export function VistoriaForm({
       <FormSectionCard
         id="wizard-cliente"
         index={2}
-        title="Cliente"
-        description="Titular ou responsável pela vistoria"
+        title="Contratante"
+        description="Pessoa ou empresa que contrata a vistoria — dados incluídos no laudo"
       >
         <ClienteForm control={control} register={register} errors={errors} embedded />
       </FormSectionCard>
@@ -289,7 +281,7 @@ export function VistoriaForm({
         id="wizard-veiculo"
         index={3}
         title="Veículo"
-        description="Placa, chassi, marca, modelo e especificações"
+        description="Identificação e características do veículo vistoriado"
       >
         <VeiculoForm control={control} register={register} errors={errors} embedded />
       </FormSectionCard>
