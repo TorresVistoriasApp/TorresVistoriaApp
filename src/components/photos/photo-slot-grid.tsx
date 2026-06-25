@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
   Car,
+  Camera,
   FileText as FileTextIcon,
   Gauge,
   Layers,
@@ -11,11 +12,13 @@ import {
   Tag,
   Wrench,
 } from "lucide-react";
-import { OPTIONAL_PHOTO_CATEGORIES, PAINT_PHOTO_CATEGORIES, PHOTO_CATEGORIES } from "@/lib/constants";
+import { FormSectionCard } from "@/components/forms/form-section-card";
 import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
+import { PhotoSlotFrame } from "@/components/photos/photo-slot-frame";
+import { MultiPhotoGallery } from "@/components/photos/multi-photo-gallery";
+import { OPTIONAL_PHOTO_CATEGORIES, PAINT_PHOTO_CATEGORIES, PHOTO_CATEGORIES } from "@/lib/constants";
 import type { InspectionPhoto } from "@/services/photo-service";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, Camera, ImagePlus } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   FRENTE_45_DIREITA: Car,
@@ -79,7 +82,7 @@ const CATEGORY_HINTS: Record<string, string> = {
   ETIQUETAS: "Etiquetas de identificação",
   INTERIOR: "Bancos, acabamento e comandos",
   CINTOS_AIRBAGS: "Cintos, airbags e segurança",
-  DOCUMENTOS: "Opcional. CRLV, CRV, ATPV-e",
+  DOCUMENTOS: "CRLV, CRV, ATPV-e ou similar",
   DANOS: "Avarias encontradas",
   PINTURA_CAPO: "Evidência do capô",
   PINTURA_TETO: "Evidência do teto",
@@ -94,18 +97,20 @@ const CATEGORY_HINTS: Record<string, string> = {
   PINTURA_PARALAMA_DIANTEIRO_DIREITO: "Evidência do paralama dianteiro direito",
   PINTURA_PARACHOQUE_DIANTEIRO: "Evidência do para-choque dianteiro",
   PINTURA_PARACHOQUE_TRASEIRO: "Evidência do para-choque traseiro",
-  EXTRAS: "Opcional. Quantas fotos forem necessárias",
+  EXTRAS: "Complementos visuais da vistoria",
 };
 
-const OPTIONAL_CATEGORIES = new Set<string>(OPTIONAL_PHOTO_CATEGORIES);
+const MULTI_PHOTO_CATEGORIES = new Set<string>(OPTIONAL_PHOTO_CATEGORIES);
 const DOCUMENT_CATEGORY = "DOCUMENTOS";
 const EXTRA_CATEGORY = "EXTRAS";
 const PAINT_CATEGORIES = new Set<string>(PAINT_PHOTO_CATEGORIES);
 
 const PHOTO_SECTIONS = [
   {
-    title: "Fotos obrigatórias e evidências",
-    description: "Registros principais da vistoria cautelar.",
+    id: "fotos-evidencias",
+    index: 1,
+    title: "Evidências do veículo",
+    description: "Registros principais exigidos na vistoria cautelar.",
     categories: PHOTO_CATEGORIES.filter(
       (category) =>
         category !== DOCUMENT_CATEGORY &&
@@ -114,27 +119,115 @@ const PHOTO_SECTIONS = [
     ),
   },
   {
+    id: "fotos-pintura",
+    index: 2,
     title: "Pintura",
-    description: "Envie uma foto de evidência para cada ponto de pintura.",
+    description: "Envie uma foto de evidência para cada um dos 13 pontos.",
     categories: [...PAINT_PHOTO_CATEGORIES],
   },
   {
+    id: "fotos-documentos",
+    index: 3,
     title: "Documentação do veículo",
-    description: "Opcional. CRLV, CRV, ATPV-e ou outros documentos do veículo.",
+    description: "CRLV, CRV, ATPV-e ou outros documentos do veículo.",
     categories: [DOCUMENT_CATEGORY],
+    optional: true,
+    collapsible: true,
+    defaultOpen: false,
   },
   {
+    id: "fotos-extras",
+    index: 4,
     title: "Fotos extras",
-    description: "Opcional. Adicione quantas fotos complementares forem necessárias.",
+    description: "Complementos visuais. Cada envio aparece ao lado e entra no laudo PDF.",
     categories: [EXTRA_CATEGORY],
+    optional: true,
+    collapsible: true,
+    defaultOpen: false,
   },
 ] as const;
+
+type PhotoSectionConfig = {
+  id: string;
+  index: number;
+  title: string;
+  description: string;
+  categories: readonly string[];
+  optional?: boolean;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+};
+
+const PHOTO_SECTION_LIST: PhotoSectionConfig[] = PHOTO_SECTIONS.map((section) => ({ ...section }));
 
 interface PhotoSlotGridProps {
   photos: InspectionPhoto[];
   uploading?: boolean;
   uploadingCategory?: string | null;
   onUpload: (file: File, category: string) => void;
+}
+
+function countFilledCategories(
+  categories: readonly string[],
+  photosByCategory: Record<string, InspectionPhoto[]>,
+): number {
+  return categories.filter((category) => photosByCategory[category]?.length).length;
+}
+
+function countPhotosInCategories(
+  categories: readonly string[],
+  photosByCategory: Record<string, InspectionPhoto[]>,
+): number {
+  return categories.reduce((total, category) => total + (photosByCategory[category]?.length ?? 0), 0);
+}
+
+function buildSectionStatus(
+  section: PhotoSectionConfig,
+  photosByCategory: Record<string, InspectionPhoto[]>,
+): string {
+  if (section.optional) {
+    const count = countPhotosInCategories(section.categories, photosByCategory);
+    if (count === 0) return "Nenhuma foto";
+    return count === 1 ? "1 foto" : `${count} fotos`;
+  }
+
+  const filled = countFilledCategories(section.categories, photosByCategory);
+  return `${filled}/${section.categories.length}`;
+}
+
+interface PhotoSlotCardProps {
+  categoryPhotos: InspectionPhoto[];
+  label: string;
+  hint: string;
+  icon: LucideIcon;
+  isUploading: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}
+
+function PhotoSlotCard({
+  categoryPhotos,
+  label,
+  hint,
+  icon,
+  isUploading,
+  disabled,
+  onClick,
+}: PhotoSlotCardProps) {
+  const photo = categoryPhotos[categoryPhotos.length - 1];
+
+  return (
+    <PhotoSlotFrame
+      label={label}
+      hint={hint}
+      icon={icon}
+      imageUrl={photo?.public_url}
+      countBadge={categoryPhotos.length}
+      isUploading={isUploading}
+      disabled={disabled}
+      onClick={onClick}
+    />
+  );
 }
 
 export function PhotoSlotGrid({
@@ -147,9 +240,13 @@ export function PhotoSlotGrid({
     (acc[photo.category] ??= []).push(photo);
     return acc;
   }, {});
-  const filled = PHOTO_CATEGORIES.filter((category) => photosByCategory[category]?.length).length;
-  const total = PHOTO_CATEGORIES.length;
-  const progress = Math.round((filled / total) * 100);
+
+  const requiredCategories = PHOTO_CATEGORIES.filter(
+    (category) => !MULTI_PHOTO_CATEGORIES.has(category),
+  );
+  const filledRequired = countFilledCategories(requiredCategories, photosByCategory);
+  const totalRequired = requiredCategories.length;
+  const progress = Math.round((filledRequired / totalRequired) * 100);
 
   const handleSlotClick = (category: string) => {
     if (uploading) return;
@@ -165,25 +262,23 @@ export function PhotoSlotGrid({
   };
 
   return (
-    <div className="space-y-5">
-      <div className="surface p-4 sm:p-5">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-bold">Checklist fotográfico</p>
-            <p className="text-xs text-muted-foreground">
-              Toque em cada seção para adicionar uma ou mais fotos de evidência
+    <div className="w-full space-y-5 sm:space-y-6 lg:space-y-5">
+      <div className="rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm font-semibold text-foreground">Progresso geral</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {filledRequired} de {totalRequired} moldes obrigatórios preenchidos. Documentos e fotos extras são opcionais.
             </p>
           </div>
           <div className="text-right">
-            <p className="text-lg font-bold text-primary">
-              {filled}/{total}
-            </p>
+            <p className="text-lg font-bold text-primary">{progress}%</p>
             <p className="text-xs text-muted-foreground">
-              {photos.length} foto{photos.length === 1 ? "" : "s"}, {progress}% das seções
+              {photos.length} foto{photos.length === 1 ? "" : "s"} no total
             </p>
           </div>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-muted">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full gradient-primary transition-all duration-500"
             style={{ width: `${progress}%` }}
@@ -191,89 +286,62 @@ export function PhotoSlotGrid({
         </div>
       </div>
 
-      {PHOTO_SECTIONS.map((section) => (
-        <section key={section.title} className="space-y-3">
-          <div>
-            <h3 className="text-sm font-bold">{section.title}</h3>
-            <p className="text-xs text-muted-foreground">{section.description}</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {PHOTO_SECTION_LIST.map((section) => (
+        <FormSectionCard
+          key={section.id}
+          id={section.id}
+          index={section.index}
+          title={section.title}
+          description={section.description}
+          statusLabel={buildSectionStatus(section, photosByCategory)}
+          optional={section.optional ?? false}
+          collapsible={section.collapsible ?? false}
+          defaultOpen={section.defaultOpen ?? true}
+        >
+          <div
+            className={cn(
+              section.categories.every((category) => MULTI_PHOTO_CATEGORIES.has(category))
+                ? "min-w-0"
+                : "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4",
+            )}
+          >
             {section.categories.map((category) => {
-          const categoryPhotos = photosByCategory[category] ?? [];
-          const photo = categoryPhotos[categoryPhotos.length - 1];
-          const Icon = CATEGORY_ICONS[category] ?? Camera;
-          const label = PHOTO_CATEGORY_LABELS[category] ?? category;
-          const hint = CATEGORY_HINTS[category] ?? "";
-          const isUploading = uploading && uploadingCategory === category;
-          const isOptional = OPTIONAL_CATEGORIES.has(category);
+              const categoryPhotos = photosByCategory[category] ?? [];
+              const Icon = CATEGORY_ICONS[category] ?? Camera;
+              const label = PHOTO_CATEGORY_LABELS[category] ?? category;
+              const hint = CATEGORY_HINTS[category] ?? "";
+              const isUploading = Boolean(uploading && uploadingCategory === category);
 
-          return (
-            <button
-              key={category}
-              type="button"
-              disabled={uploading}
-              onClick={() => handleSlotClick(category)}
-              className={cn(
-                "group relative flex flex-col overflow-hidden rounded-2xl border-2 text-left transition-all duration-200",
-                photo
-                  ? "border-primary/30 bg-card shadow-soft hover:shadow-elevated"
-                  : "border-dashed border-primary/25 bg-primary/[0.03] hover:border-primary/50 hover:bg-primary/[0.06]",
-                uploading && !isUploading && "opacity-60",
-              )}
-            >
-              <div className="relative aspect-[4/3] w-full overflow-hidden">
-                {photo?.public_url ? (
-                  <>
-                    <img
-                      src={photo.public_url}
-                      alt={label}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                    <div className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-success text-white shadow-md">
-                      {categoryPhotos.length > 1 ? (
-                        <span className="text-xs font-bold">{categoryPhotos.length}</span>
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4" />
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-2 p-3">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary transition-transform group-hover:scale-105">
-                      <Icon className="h-7 w-7" strokeWidth={1.5} />
-                    </div>
-                    <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-primary/70">
-                      <ImagePlus className="h-3 w-3" />
-                      {isOptional ? "Adicionar opcional" : "Adicionar evidência"}
-                    </div>
-                  </div>
-                )}
+              if (MULTI_PHOTO_CATEGORIES.has(category)) {
+                return (
+                  <MultiPhotoGallery
+                    key={category}
+                    label={label}
+                    hint={hint}
+                    icon={Icon}
+                    photos={categoryPhotos}
+                    uploading={isUploading}
+                    disabled={Boolean(uploading)}
+                    onAdd={() => handleSlotClick(category)}
+                  />
+                );
+              }
 
-                {isUploading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t border-border/60 px-3 py-2.5">
-                <p className="text-xs font-bold leading-tight">{label}</p>
-                <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">
-                  {categoryPhotos.length > 0
-                    ? `${categoryPhotos.length} foto${categoryPhotos.length === 1 ? "" : "s"}, ${hint}`
-                    : hint}
-                </p>
-                {isOptional && (
-                  <p className="mt-1 text-[10px] font-semibold text-primary">Opcional. Permite múltiplos anexos.</p>
-                )}
-              </div>
-            </button>
-          );
+              return (
+                <PhotoSlotCard
+                  key={category}
+                  categoryPhotos={categoryPhotos}
+                  label={label}
+                  hint={hint}
+                  icon={Icon}
+                  isUploading={Boolean(isUploading)}
+                  disabled={Boolean(uploading)}
+                  onClick={() => handleSlotClick(category)}
+                />
+              );
             })}
           </div>
-        </section>
+        </FormSectionCard>
       ))}
     </div>
   );

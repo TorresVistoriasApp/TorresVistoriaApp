@@ -13,6 +13,7 @@ interface FormSectionCardProps {
   index: number;
   title: string;
   description?: string;
+  statusLabel?: string;
   children: ReactNode;
   optional?: boolean;
   collapsible?: boolean;
@@ -25,6 +26,7 @@ export function FormSectionCard({
   index,
   title,
   description,
+  statusLabel,
   children,
   optional = false,
   collapsible = false,
@@ -66,13 +68,16 @@ export function FormSectionCard({
                     </p>
                   )}
                 </div>
-                <ChevronDown
-                  className={cn(
-                    "mt-0.5 size-5 shrink-0 text-muted-foreground transition-transform",
-                    open && "rotate-180",
-                  )}
-                  aria-hidden
-                />
+                <div className="flex shrink-0 items-start gap-2">
+                  {statusLabel && <SectionStatus label={statusLabel} />}
+                  <ChevronDown
+                    className={cn(
+                      "mt-0.5 size-5 shrink-0 text-muted-foreground transition-transform",
+                      open && "rotate-180",
+                    )}
+                    aria-hidden
+                  />
+                </div>
               </div>
               {optional && !open && (
                 <p className="mt-2.5 text-xs leading-relaxed text-sky-800/80">
@@ -82,16 +87,19 @@ export function FormSectionCard({
             </div>
           </button>
         ) : (
-          <CardHeader className="flex-row items-start gap-3 space-y-0 border-b-0 pb-0 sm:gap-4 lg:py-4">
-            <SectionBadge index={index} />
-            <div className="min-w-0 flex-1 space-y-1">
-              <p className="text-base font-semibold leading-tight sm:text-lg">{title}</p>
-              {description && (
-                <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                  {description}
-                </p>
-              )}
+          <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 border-b-0 pb-0 sm:gap-4 lg:py-4">
+            <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+              <SectionBadge index={index} />
+              <div className="min-w-0 flex-1 space-y-1">
+                <p className="text-base font-semibold leading-tight sm:text-lg">{title}</p>
+                {description && (
+                  <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                    {description}
+                  </p>
+                )}
+              </div>
             </div>
+            {statusLabel && <SectionStatus label={statusLabel} className="mt-1" />}
           </CardHeader>
         )}
 
@@ -109,6 +117,19 @@ export function FormSectionCard({
         )}
       </Card>
     </div>
+  );
+}
+
+function SectionStatus({ label, className }: { label: string; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary sm:text-xs",
+        className,
+      )}
+    >
+      {label}
+    </span>
   );
 }
 

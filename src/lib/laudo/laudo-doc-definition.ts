@@ -333,11 +333,19 @@ function buildPhotoSection(payload: LaudoPayload, color: string): PdfNode[] {
   if (painting.length) nodes.push(...buildPaintSection(payload));
 
   if (documentation.length) {
-    nodes.push(premiumHeader("DOCUMENTAÇÃO DO VEÍCULO"), ...photoPairs(documentation));
+    const sortedDocs = [...documentation].sort(
+      (a, b) => new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime(),
+    );
+    const docLabels = sortedDocs.map((_, index) => `Documento ${index + 1}`);
+    nodes.push(premiumHeader("DOCUMENTAÇÃO DO VEÍCULO"), ...photoPairs(sortedDocs, docLabels));
   }
 
   if (extras.length) {
-    nodes.push(premiumHeader("FOTOS EXTRAS"), ...photoPairs(extras));
+    const sortedExtras = [...extras].sort(
+      (a, b) => new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime(),
+    );
+    const extraLabels = sortedExtras.map((_, index) => `Foto extra ${index + 1}`);
+    nodes.push(premiumHeader("FOTOS EXTRAS"), ...photoPairs(sortedExtras, extraLabels));
   }
 
   return nodes;
