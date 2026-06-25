@@ -93,6 +93,8 @@ export function Page() {
           description="Consulte vistorias com filtros avançados e exporte os resultados em PDF ou Excel."
           actions={
             <ExportButton
+              className="w-full sm:w-auto"
+              buttonClassName="touch-target w-full justify-center sm:w-auto sm:justify-start"
               size="default"
               onExportPdf={exportPdf}
               onExportExcel={exportExcel}

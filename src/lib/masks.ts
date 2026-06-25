@@ -65,6 +65,26 @@ export function maskCurrency(value: string): string {
     .replace(/\u00a0/g, " ");
 }
 
+/** Máscara monetária em Real com centavos (cada dígito avança os centavos). */
+export function maskCurrencyDecimal(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 12);
+  if (!digits) return "";
+  const amount = Number(digits) / 100;
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  })
+    .format(amount)
+    .replace(/\u00a0/g, " ");
+}
+
+/** Converte moeda mascarada com centavos para número. */
+export function parseCurrencyDecimal(value: string): number | null {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return null;
+  return Number(digits) / 100;
+}
+
 /** Converte moeda brasileira formatada para número. */
 export function parseCurrency(value: string): number | null {
   const trimmed = value.trim();

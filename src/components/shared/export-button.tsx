@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { ChevronDown, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ExportButtonProps {
   onExportPdf: () => void | Promise<void>;
   onExportExcel: () => void | Promise<void>;
   disabled?: boolean;
   size?: "sm" | "default";
+  className?: string;
+  buttonClassName?: string;
 }
 
 export function ExportButton({
@@ -14,6 +17,8 @@ export function ExportButton({
   onExportExcel,
   disabled = false,
   size = "sm",
+  className,
+  buttonClassName,
 }: ExportButtonProps) {
   const [open, setOpen] = useState(false);
 
@@ -29,7 +34,7 @@ export function ExportButton({
 
   return (
     <div
-      className="relative"
+      className={cn("relative", className)}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setOpen(false);
@@ -39,6 +44,7 @@ export function ExportButton({
       <Button
         variant="outline"
         size={size}
+        className={buttonClassName}
         onClick={() => setOpen((current) => !current)}
         disabled={disabled}
         aria-expanded={open}
@@ -51,7 +57,7 @@ export function ExportButton({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-xl border border-border bg-card p-1 shadow-elevated"
+          className="absolute left-0 right-0 z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-card p-1 shadow-elevated sm:left-auto sm:right-0 sm:w-44"
         >
           <button
             type="button"

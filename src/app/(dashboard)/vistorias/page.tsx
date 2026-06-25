@@ -20,12 +20,14 @@ export function Page() {
         description="Histórico e gestão de laudos cautelares"
         testId="vistorias-heading"
         actions={
-          <Button asChild>
-            <Link to={ROUTES.inspectionNew}>
-              <Plus className="h-4 w-4" />
-              Nova
-            </Link>
-          </Button>
+          <div className="w-full sm:w-auto">
+            <Button asChild className="touch-target w-full sm:w-auto" size="lg">
+              <Link to={ROUTES.inspectionNew}>
+                <Plus className="h-4 w-4" />
+                Nova vistoria
+              </Link>
+            </Button>
+          </div>
         }
       />
 
