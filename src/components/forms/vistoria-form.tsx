@@ -29,6 +29,12 @@ import { cn } from "@/lib/utils";
 
 const opinionOptions = Object.values(InspectionOpinion);
 
+const OPINION_LABELS: Record<InspectionOpinion, string> = {
+  [InspectionOpinion.APROVADO]: "Aprovado",
+  [InspectionOpinion.APROVADO_COM_OBSERVACOES]: "Aprovado com observações",
+  [InspectionOpinion.REPROVADO]: "Reprovado",
+};
+
 interface VistoriaFormProps {
   defaultValues?: Partial<VistoriaInput>;
   onSubmit: (data: VistoriaInput) => Promise<void>;
@@ -123,7 +129,7 @@ export function VistoriaForm({
             </option>
             {inspectionTypes.map((type) => (
               <option key={type.id} value={type.id}>
-                {type.name} — {formatCurrency(type.amount)}
+                {type.name}, {formatCurrency(type.amount)}
               </option>
             ))}
           </select>
@@ -134,7 +140,7 @@ export function VistoriaForm({
           )}
           {selectedType && (
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              Referência interna: {formatCurrency(selectedType.amount)} — não aparece no PDF.
+              Referência interna: {formatCurrency(selectedType.amount)}. Não aparece no laudo PDF.
             </p>
           )}
         </FormField>
@@ -144,7 +150,7 @@ export function VistoriaForm({
         label="Indicado por"
         error={errors.requester_name?.message}
         optional
-        hint="Preencha apenas se o serviço foi indicado por terceiro (corretor, loja, parceiro)"
+        hint="Se preenchido, entra no laudo. Deixe em branco se não houver indicador."
         className={formGridFullWidthClass}
       >
         <Input {...register("requester_name")} placeholder="Nome do indicador" />
@@ -219,14 +225,13 @@ export function VistoriaForm({
         label="Parecer técnico"
         error={errors.opinion?.message}
         className={formGridFullWidthClass}
-        optional
-        hint="Pode ser definido ao final do fluxo, após fotos e checklist"
+        hint="Resultado final da vistoria, exibido em destaque no laudo"
       >
         <select {...register("opinion")} className={selectInputClass}>
           <option value="">Selecione o parecer</option>
           {opinionOptions.map((o) => (
             <option key={o} value={o}>
-              {o.replace(/_/g, " ")}
+              {OPINION_LABELS[o]}
             </option>
           ))}
         </select>
@@ -235,12 +240,12 @@ export function VistoriaForm({
         label="Observações técnicas"
         error={errors.technical_notes?.message}
         className={formGridFullWidthClass}
-        optional
+        hint="Descreva achados, ressalvas ou recomendações. Entra no laudo PDF."
       >
         <textarea
           {...register("technical_notes")}
           rows={5}
-          placeholder="Achados relevantes, ressalvas ou recomendações..."
+          placeholder="Ex.: Pintura original na lateral direita, pneus com desgaste irregular..."
           className={textareaInputClass}
         />
       </FormField>
@@ -272,7 +277,7 @@ export function VistoriaForm({
         id="wizard-cliente"
         index={2}
         title="Contratante"
-        description="Pessoa ou empresa que contrata a vistoria — dados incluídos no laudo"
+        description="Pessoa ou empresa que contrata a vistoria. Esses dados entram no laudo."
       >
         <ClienteForm control={control} register={register} errors={errors} embedded />
       </FormSectionCard>
@@ -290,7 +295,7 @@ export function VistoriaForm({
         id="wizard-venda"
         index={4}
         title="Venda, justiça e mercado"
-        description="Comprador, vendedor, processo judicial e valores"
+        description="Comprador, vendedor, processo judicial e referências de valor"
         optional
         collapsible
         defaultOpen={false}
@@ -302,10 +307,7 @@ export function VistoriaForm({
         id="wizard-parecer"
         index={5}
         title="Parecer"
-        description="Conclusão técnica — normalmente preenchido após o checklist"
-        optional
-        collapsible
-        defaultOpen={false}
+        description="Conclusão técnica da vistoria, com resultado e observações no laudo"
       >
         {parecerFields}
       </FormSectionCard>

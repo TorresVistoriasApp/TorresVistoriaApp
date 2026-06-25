@@ -127,7 +127,7 @@ export function FinancialEntryForm({
         <Input
           id="financial-description"
           className="touch-target"
-          placeholder="Ex.: Vistoria cautelar — cliente João Silva"
+          placeholder="Ex.: Vistoria cautelar, cliente João Silva"
           autoComplete="off"
           {...register("description")}
         />

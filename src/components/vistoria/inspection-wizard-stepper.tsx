@@ -271,7 +271,7 @@ function CurrentStepCard({
           <Icon className="size-4 shrink-0 text-primary" aria-hidden />
           <p className="text-sm font-semibold leading-tight text-foreground">
             {label}
-            <span className="font-normal text-muted-foreground"> — {description}</span>
+            <span className="font-normal text-muted-foreground">, {description}</span>
           </p>
         </div>
         <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>

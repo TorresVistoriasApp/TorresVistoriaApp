@@ -112,7 +112,7 @@ export function Page() {
         </Button>
         <PageHeader
           title="Fotos da vistoria"
-          description="Passo 2 de 3 — preencha cada molde com a foto correspondente"
+          description="Passo 2 de 4. Preencha cada molde com a foto correspondente."
         />
       </div>
       {content}

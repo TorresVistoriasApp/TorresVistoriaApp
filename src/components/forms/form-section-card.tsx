@@ -1,6 +1,11 @@
 import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  OptionalLabel,
+  OptionalSectionHint,
+  OPTIONAL_SECTION_COLLAPSED_HINT,
+} from "@/components/forms/optional-label";
 import { cn } from "@/lib/utils";
 
 interface FormSectionCardProps {
@@ -31,25 +36,29 @@ export function FormSectionCard({
 
   return (
     <div id={id} className={cn("scroll-mt-24", className)}>
-      <Card className="overflow-hidden shadow-soft">
+      <Card
+        className={cn(
+          "overflow-hidden shadow-soft",
+          optional && !open && "border-dashed border-sky-200/80 bg-sky-50/20",
+        )}
+      >
         {isCollapsible ? (
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
-            className="flex w-full items-start gap-3 px-4 py-4 text-left transition-colors hover:bg-muted/30 sm:gap-4 sm:px-6 sm:py-5"
+            className={cn(
+              "flex w-full items-start gap-3 px-4 py-4 text-left transition-colors sm:gap-4 sm:px-6 sm:py-5",
+              optional ? "hover:bg-sky-50/50" : "hover:bg-muted/30",
+            )}
             aria-expanded={open}
           >
             <SectionBadge index={index} optional={optional} />
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 space-y-1">
+                <div className="min-w-0 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-base font-semibold leading-tight sm:text-lg">{title}</p>
-                    {optional && (
-                      <span className="rounded-full border border-dashed border-muted-foreground/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        Opcional
-                      </span>
-                    )}
+                    {optional && <OptionalLabel variant="section" />}
                   </div>
                   {description && (
                     <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
@@ -66,7 +75,9 @@ export function FormSectionCard({
                 />
               </div>
               {optional && !open && (
-                <p className="mt-2 text-xs text-muted-foreground">Toque para expandir e preencher</p>
+                <p className="mt-2.5 text-xs leading-relaxed text-sky-800/80">
+                  {OPTIONAL_SECTION_COLLAPSED_HINT}
+                </p>
               )}
             </div>
           </button>
@@ -92,6 +103,7 @@ export function FormSectionCard({
               !isCollapsible && "pt-1",
             )}
           >
+            {optional && <OptionalSectionHint />}
             {children}
           </CardContent>
         )}
@@ -106,7 +118,7 @@ function SectionBadge({ index, optional }: { index: number; optional?: boolean }
       className={cn(
         "flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold sm:size-10",
         optional
-          ? "border border-dashed border-muted-foreground/35 bg-muted/30 text-muted-foreground"
+          ? "border border-sky-200 bg-sky-50 text-sky-700"
           : "bg-primary/10 text-primary ring-4 ring-primary/5",
       )}
     >

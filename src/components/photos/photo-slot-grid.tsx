@@ -79,7 +79,7 @@ const CATEGORY_HINTS: Record<string, string> = {
   ETIQUETAS: "Etiquetas de identificação",
   INTERIOR: "Bancos, acabamento e comandos",
   CINTOS_AIRBAGS: "Cintos, airbags e segurança",
-  DOCUMENTOS: "Opcional · CRLV/CRV/ATPV-e",
+  DOCUMENTOS: "Opcional. CRLV, CRV, ATPV-e",
   DANOS: "Avarias encontradas",
   PINTURA_CAPO: "Evidência do capô",
   PINTURA_TETO: "Evidência do teto",
@@ -94,7 +94,7 @@ const CATEGORY_HINTS: Record<string, string> = {
   PINTURA_PARALAMA_DIANTEIRO_DIREITO: "Evidência do paralama dianteiro direito",
   PINTURA_PARACHOQUE_DIANTEIRO: "Evidência do para-choque dianteiro",
   PINTURA_PARACHOQUE_TRASEIRO: "Evidência do para-choque traseiro",
-  EXTRAS: "Opcional · quantas fotos forem necessárias",
+  EXTRAS: "Opcional. Quantas fotos forem necessárias",
 };
 
 const OPTIONAL_CATEGORIES = new Set<string>(OPTIONAL_PHOTO_CATEGORIES);
@@ -115,17 +115,17 @@ const PHOTO_SECTIONS = [
   },
   {
     title: "Pintura",
-    description: "Obrigatório: uma foto de evidência para cada ponto de pintura.",
+    description: "Envie uma foto de evidência para cada ponto de pintura.",
     categories: [...PAINT_PHOTO_CATEGORIES],
   },
   {
     title: "Documentação do veículo",
-    description: "Opcional: CRLV, CRV, ATPV-e ou outros documentos do veículo.",
+    description: "Opcional. CRLV, CRV, ATPV-e ou outros documentos do veículo.",
     categories: [DOCUMENT_CATEGORY],
   },
   {
     title: "Fotos extras",
-    description: "Opcional: adicione quantas fotos complementares forem necessárias.",
+    description: "Opcional. Adicione quantas fotos complementares forem necessárias.",
     categories: [EXTRA_CATEGORY],
   },
 ] as const;
@@ -179,7 +179,7 @@ export function PhotoSlotGrid({
               {filled}/{total}
             </p>
             <p className="text-xs text-muted-foreground">
-              {photos.length} foto{photos.length === 1 ? "" : "s"} · {progress}% seções
+              {photos.length} foto{photos.length === 1 ? "" : "s"}, {progress}% das seções
             </p>
           </div>
         </div>
@@ -262,11 +262,11 @@ export function PhotoSlotGrid({
                 <p className="text-xs font-bold leading-tight">{label}</p>
                 <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">
                   {categoryPhotos.length > 0
-                    ? `${categoryPhotos.length} foto${categoryPhotos.length === 1 ? "" : "s"} · ${hint}`
+                    ? `${categoryPhotos.length} foto${categoryPhotos.length === 1 ? "" : "s"}, ${hint}`
                     : hint}
                 </p>
                 {isOptional && (
-                  <p className="mt-1 text-[10px] font-semibold text-primary">Opcional · múltiplos anexos</p>
+                  <p className="mt-1 text-[10px] font-semibold text-primary">Opcional. Permite múltiplos anexos.</p>
                 )}
               </div>
             </button>

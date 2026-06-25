@@ -66,7 +66,7 @@ export function buildCompanyAddress(input: CompanyInput): string | null {
   const cep = input.address_cep ? `CEP ${input.address_cep}` : "";
 
   const parts = [streetLine, input.address_complement, locality, cep].filter(Boolean);
-  return parts.length ? parts.join(" — ") : null;
+  return parts.length ? parts.join(", ") : null;
 }
 
 export function companyToAddressInput(company: {

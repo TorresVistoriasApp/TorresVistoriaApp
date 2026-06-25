@@ -85,7 +85,7 @@ export function ChecklistForm({
           Checklist técnico para vistoria cautelar com parâmetros exigidos pelo{" "}
           <strong className="text-foreground">DETRAN</strong>, seguradoras e{" "}
           <strong className="text-foreground">perícia judicial</strong>. Registre observações
-          detalhadas em itens não conformes — são obrigatórias para validade do laudo.
+          detalhadas em itens não conformes, pois são obrigatórias para a validade do laudo.
         </p>
       </details>
       <div className="hidden rounded-xl border border-border bg-muted/20 p-4 text-xs leading-relaxed text-muted-foreground md:block">
@@ -95,7 +95,7 @@ export function ChecklistForm({
             Checklist técnico para vistoria cautelar com parâmetros exigidos pelo{" "}
             <strong className="text-foreground">DETRAN</strong>, seguradoras e{" "}
             <strong className="text-foreground">perícia judicial</strong>. Registre observações
-            detalhadas em itens não conformes — são obrigatórias para validade do laudo.
+            detalhadas em itens não conformes, pois são obrigatórias para a validade do laudo.
           </p>
         </div>
       </div>

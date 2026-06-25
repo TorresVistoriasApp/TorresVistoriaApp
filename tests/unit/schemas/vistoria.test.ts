@@ -20,12 +20,23 @@ const basePayload = {
   model_year: 2021,
   situation: InspectionSituation.PARTICULAR,
   status: InspectionStatus.DRAFT,
+  opinion: "APROVADO",
+  technical_notes: "Veículo em bom estado geral, sem apontamentos relevantes.",
 };
 
 describe("vistoriaSchema", () => {
   it("valida vistoria mínima com máscaras", () => {
     const result = vistoriaSchema.safeParse(basePayload);
     expect(result.success).toBe(true);
+  });
+
+  it("exige parecer e observações técnicas", () => {
+    const missingOpinion = vistoriaSchema.safeParse({
+      ...basePayload,
+      opinion: "",
+      technical_notes: "",
+    });
+    expect(missingOpinion.success).toBe(false);
   });
 
   it("aceita campos marcados como não possui", () => {

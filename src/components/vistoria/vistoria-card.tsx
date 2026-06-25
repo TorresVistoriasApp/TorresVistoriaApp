@@ -17,7 +17,7 @@ export function VistoriaCard({ inspection }: { inspection: Inspection }) {
             to={ROUTES.inspection(inspection.id)}
             className="min-w-0 text-base font-semibold leading-none tracking-tight group-hover:text-primary"
           >
-            #{inspection.inspection_number} — {inspection.plate}
+            #{inspection.inspection_number}, {inspection.plate}
           </Link>
           <div className="flex shrink-0 items-center gap-0.5">
             <VistoriaStatusBadge status={inspection.status} />

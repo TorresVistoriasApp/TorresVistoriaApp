@@ -2,7 +2,14 @@ import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
 import { PAINT_PHOTO_CATEGORIES } from "@/lib/constants";
 import { getChecklistCategoryLabel, getChecklistStatusLabel } from "@/lib/checklist-catalog";
 import { PAINT_PARTS } from "@/lib/paint-catalog";
-import { formatDate, formatDocument, formatKM, formatPhone, formatPlate } from "@/lib/formatters";
+import { formatDate, formatDocument, formatPhone } from "@/lib/formatters";
+import {
+  buildInspectionInfoRows,
+  buildSaleMarketInfoRows,
+  buildVehicleInfoRows,
+  hasLaudoValue,
+  hasSaleMarketSectionData,
+} from "@/lib/laudo/laudo-field-utils";
 import {
   getLaudoLegalFooter,
   getOpinionLabel,
@@ -22,10 +29,13 @@ function value(v: string | number | null | undefined): string {
   return String(v);
 }
 
-function extra(inspection: LaudoPayload["inspection"], key: string): string | null {
-  const data = inspection as unknown as Record<string, unknown>;
-  const result = data[key];
-  return typeof result === "string" && result.trim() ? result : null;
+function inspectionDataSection(
+  title: string,
+  rows: [string, string][],
+): PdfNode[] {
+  const grid = infoGrid(rows);
+  if (!grid) return [];
+  return [premiumHeader(title), grid];
 }
 
 function sectionTitle(text: string, color: string): PdfNode {
@@ -62,7 +72,9 @@ function fieldNode(label: string, content: string): PdfNode {
   };
 }
 
-function infoGrid(rows: [string, string][], columnsCount = 3): PdfNode {
+function infoGrid(rows: [string, string][], columnsCount = 3): PdfNode | null {
+  if (rows.length === 0) return null;
+
   const body: PdfNode[][] = [];
   for (let index = 0; index < rows.length; index += columnsCount) {
     const slice = rows.slice(index, index + columnsCount);
@@ -202,7 +214,7 @@ function buildChecklistSection(payload: LaudoPayload): PdfNode[] {
       { text: item.item_name, fontSize: 8 },
       checklistStatusNode(item.status),
       {
-        text: item.notes || "—",
+        text: item.notes || "Sem observação",
         fontSize: 8,
         color: item.status === "NAO_CONFORME" ? "#991b1b" : "#0f172a",
         bold: item.status === "NAO_CONFORME",
@@ -270,7 +282,7 @@ function buildPaintSection(payload: LaudoPayload): PdfNode[] {
   const paintingPhotos = PAINT_PARTS.flatMap((part) =>
     (photosByCategory[part.photoCategory] ?? []).map((photo) => ({
       photo,
-      label: `${part.number} · ${part.label}`,
+      label: `${part.number}, ${part.label}`,
     })),
   );
 
@@ -331,6 +343,33 @@ function buildPhotoSection(payload: LaudoPayload, color: string): PdfNode[] {
   return nodes;
 }
 
+function buildSaleMarketSection(inspection: LaudoPayload["inspection"]): PdfNode[] {
+  if (!hasSaleMarketSectionData(inspection)) return [];
+
+  const rows = buildSaleMarketInfoRows(inspection);
+  if (rows.length === 0) return [];
+
+  const grid = infoGrid(rows);
+  if (!grid) return [];
+
+  return [premiumHeader("VENDA, JUSTIÇA E MERCADO"), grid];
+}
+
+function buildTechnicalOpinionSection(inspection: LaudoPayload["inspection"]): PdfNode[] {
+  const notes = inspection.technical_notes?.trim();
+  if (!hasLaudoValue(notes)) return [];
+
+  return [
+    premiumHeader("PARECER TÉCNICO"),
+    {
+      text: notes,
+      fontSize: 10,
+      bold: true,
+      margin: [0, 6, 0, 8],
+    },
+  ];
+}
+
 export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, unknown> {
   const color = getPrimaryColor(payload.settings);
   const stats = summarizeLaudoChecklist(payload.checklist);
@@ -385,18 +424,17 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       margin: [0, 0, 0, 10],
     },
     checklistBarChart(payload),
-    premiumHeader("DADOS DA VISTORIA"),
-    infoGrid([
-      ["Empresa", value(company?.name)],
-      ["CPF/CNPJ", formatDocument(company?.document)],
-      ["Telefone", formatPhone(company?.phone)],
-      ["Endereço", value(company?.address)],
-      ["Data e hora", `${formatDate(inspection.inspection_date)} às ${inspection.inspection_time.slice(0, 5)}`],
-      ["Local da vistoria", inspection.location],
-      ["Vistoriador", value(inspector?.full_name)],
-      ["Finalidade", value(extra(inspection, "inspection_purpose"))],
-      ["Solicitante/Cliente", inspection.client_name],
-    ]),
+    ...inspectionDataSection(
+      "DADOS DA VISTORIA",
+      buildInspectionInfoRows(
+        inspection,
+        company,
+        inspector,
+        formatDate,
+        formatPhone,
+        formatDocument,
+      ),
+    ),
     premiumHeader("DADOS DO VEÍCULO"),
     {
       columns: [
@@ -422,37 +460,18 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
         },
         {
           stack: [
-            infoGrid([
-              ["Placa", formatPlate(inspection.plate)],
-              ["UF do veículo", value(extra(inspection, "vehicle_uf"))],
-              ["Chassi", inspection.chassis],
-              ["Renavam", value(inspection.renavam)],
-              ["Motor", value(extra(inspection, "motor_number"))],
-              ["Marca / Modelo", `${inspection.brand} / ${inspection.model}`],
-              ["Versão", value(inspection.version)],
-              ["Ano fab./mod.", `${inspection.manufacture_year} / ${inspection.model_year}`],
-              ["Cor", inspection.color],
-              ["Combustível", inspection.fuel],
-              ["Quilometragem", formatKM(inspection.mileage)],
-              ["Município/UF", value(extra(inspection, "registration_city_uf"))],
-              ["Categoria / espécie", [extra(inspection, "vehicle_category"), extra(inspection, "vehicle_species")].filter(Boolean).join(" / ") || EMPTY_VALUE],
-            ]),
+            infoGrid(buildVehicleInfoRows(inspection)) ?? { text: "" },
           ],
         },
       ],
       margin: [0, 3, 0, 2],
     },
     ...(featuredPhotos.length ? photoPairs(featuredPhotos) : []),
+    ...buildSaleMarketSection(inspection),
     premiumHeader("CHECKLIST TÉCNICO"),
     ...buildChecklistSection(payload),
     ...buildPhotoSection(payload, color),
-    premiumHeader("PARECER TÉCNICO"),
-    {
-      text: inspection.technical_notes || "Sem observações técnicas complementares.",
-      fontSize: 10,
-      bold: true,
-      margin: [0, 6, 0, 8],
-    },
+    ...buildTechnicalOpinionSection(inspection),
     premiumHeader("INFORMATIVO JURÍDICO"),
     { text: getLaudoLegalFooter(payload.settings), fontSize: 8, alignment: "justify", margin: [0, 6, 0, 12] },
     {
@@ -483,7 +502,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     footer: (currentPage: number, pageCount: number) => ({
       columns: [
         {
-          text: `${company?.name?.trim() || "Torres Vistorias"} · Laudo cautelar veicular`,
+          text: `${company?.name?.trim() || "Torres Vistorias"}, Laudo cautelar veicular`,
           style: "small",
           margin: [36, 0, 0, 0],
         },

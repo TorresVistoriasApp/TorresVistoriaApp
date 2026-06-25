@@ -9,7 +9,7 @@ export function Page() {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
           Termos de Uso e LGPD
         </p>
-        <CardTitle>Termos de Uso e Política de Privacidade — {APP_NAME}</CardTitle>
+        <CardTitle>Termos de Uso e Política de Privacidade do {APP_NAME}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 text-sm leading-relaxed text-muted-foreground">
         <p className="rounded-2xl border border-primary/10 bg-primary/5 p-4 text-foreground">

@@ -102,7 +102,7 @@ export function InspectionWizardShell({
             <div className="min-w-0">
               <h1 className="text-lg font-bold tracking-tight sm:text-xl md:text-2xl">{title}</h1>
               <p className="mt-0.5 hidden text-sm text-muted-foreground sm:block">
-                Passo {currentStep} de 4 — {stepLabels[currentStep]}
+                Passo {currentStep} de 4: {stepLabels[currentStep]}
               </p>
             </div>
           </div>

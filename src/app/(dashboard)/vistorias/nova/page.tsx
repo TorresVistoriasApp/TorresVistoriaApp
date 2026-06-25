@@ -16,7 +16,7 @@ export function Page() {
   const handleSubmit = async (data: VistoriaInput) => {
     try {
       const inspection = await create.mutateAsync(data);
-      toast("Dados salvos — agora adicione as fotos");
+      toast("Dados salvos. Agora adicione as fotos.");
       navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspection.id)));
     } catch (err) {
       toast(err instanceof Error ? err.message : "Erro ao criar vistoria");

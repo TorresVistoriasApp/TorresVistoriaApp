@@ -1,4 +1,5 @@
 import { Label } from "@/components/ui/label";
+import { OptionalLabel } from "@/components/forms/optional-label";
 import { cn } from "@/lib/utils";
 
 interface FormFieldProps {
@@ -31,11 +32,7 @@ export function FormField({
         >
           {label}
         </Label>
-        {optional && (
-          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Opcional
-          </span>
-        )}
+        {optional && <OptionalLabel />}
       </div>
       <div
         className={cn(

@@ -25,7 +25,7 @@ export function Page() {
     const { valid, pendingCount, missingNotesCount } = validateChecklistCompletion(items);
     if (!valid) {
       if (pendingCount > 0) {
-        toast(`Avalie todos os itens — ${pendingCount} pendente(s).`);
+        toast(`Avalie todos os itens. Faltam ${pendingCount} pendente(s).`);
         return;
       }
       if (missingNotesCount > 0) {
@@ -106,7 +106,7 @@ export function Page() {
         <div className="min-w-0">
           <h1 className="text-lg font-bold md:text-xl">Checklist</h1>
           <p className="text-xs text-muted-foreground">
-            Toque no status · observações só em NC
+            Toque no status. Observações apenas em itens não conformes.
           </p>
         </div>
       </div>

@@ -22,7 +22,7 @@ export const CHECKLIST_CATALOG: ChecklistCatalogCategory[] = [
   {
     key: "ESTRUTURA",
     label: "Estrutura e Longarinas",
-    description: "Integridade estrutural — critério decisivo em perícias e transferências.",
+    description: "Integridade estrutural, critério decisivo em perícias e transferências.",
     items: [
       { name: "Longarina dianteira", criteria: "Sem deformação, solda irregular ou reparo estrutural.", requiresNoteOnNonConform: true },
       { name: "Longarina traseira", criteria: "Sem deformação, solda irregular ou reparo estrutural.", requiresNoteOnNonConform: true },
@@ -44,7 +44,7 @@ export const CHECKLIST_CATALOG: ChecklistCatalogCategory[] = [
     items: [
       { name: "Pintura original de fábrica", criteria: "Acabamento uniforme, sem indícios de repintura." },
       { name: "Repintura localizada", criteria: "Área repintada identificada e documentada.", requiresNoteOnNonConform: true },
-      { name: "Repintura total", criteria: "Repintura completa identificada — registrar motivo.", requiresNoteOnNonConform: true },
+      { name: "Repintura total", criteria: "Repintura completa identificada. Registre o motivo.", requiresNoteOnNonConform: true },
       { name: "Repintura com massa plástica", criteria: "Ausência de massa excessiva em áreas estruturais.", requiresNoteOnNonConform: true },
       { name: "Corrosão / oxidação", criteria: "Sem corrosão ativa em áreas visíveis e estruturais.", requiresNoteOnNonConform: true },
       { name: "Alinhamento de painéis", criteria: "Folgas e encaixes dentro do padrão de fábrica." },

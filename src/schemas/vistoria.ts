@@ -8,11 +8,14 @@ import {
 } from "@/lib/enums";
 import { parseCurrency } from "@/lib/masks";
 
-const opinionEnum = z.enum([
-  InspectionOpinion.APROVADO,
-  InspectionOpinion.APROVADO_COM_OBSERVACOES,
-  InspectionOpinion.REPROVADO,
-]);
+const opinionEnum = z.enum(
+  [
+    InspectionOpinion.APROVADO,
+    InspectionOpinion.APROVADO_COM_OBSERVACOES,
+    InspectionOpinion.REPROVADO,
+  ],
+  { required_error: "Selecione o parecer técnico" },
+);
 
 const statusEnum = z.enum([
   InspectionStatus.DRAFT,
@@ -56,8 +59,15 @@ export const vistoriaSchema = z
     market_average_value: optionalNumericField(z.coerce.number().min(0)),
     insurance_acceptance_percent: optionalNumericField(z.coerce.number().min(0).max(100)),
     vehicle_condition: z.string().max(80).optional().nullable().or(z.literal("")),
-    opinion: opinionEnum.optional().nullable(),
-    technical_notes: z.string().max(5000).optional().nullable().or(z.literal("")),
+    opinion: z.preprocess(
+      (value) => (value === "" || value === null ? undefined : value),
+      opinionEnum,
+    ),
+    technical_notes: z
+      .string()
+      .trim()
+      .min(10, "Descreva as observações técnicas (mínimo 10 caracteres)")
+      .max(5000),
     internal_notes: z.string().max(5000).optional().nullable().or(z.literal("")),
     status: statusEnum.default(InspectionStatus.DRAFT),
   })
