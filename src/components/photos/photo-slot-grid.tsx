@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { RotateCcw, X } from "lucide-react";
 import { FormSectionCard } from "@/components/forms/form-section-card";
-import { PhotoSlotFrame, PHOTO_SLOT_GRID_CLASS } from "@/components/photos/photo-slot-frame";
+import { PhotoGuideCard, PHOTO_SLOT_GRID_CLASS } from "@/components/photos/photo-guide-card";
 import { MultiPhotoGallery } from "@/components/photos/multi-photo-gallery";
 import {
   PhotoCaptureProgressSummary,
@@ -15,6 +15,7 @@ import {
   photoMatchesCategory,
 } from "@/lib/photos/photo-catalog";
 import { computeCaptureProgress, computeSectionProgress } from "@/lib/photos/photo-progress";
+import type { PhotoGuideCardStatus } from "@/lib/photos/types";
 import type { InspectionPhoto } from "@/services/photo-service";
 
 interface PhotoSlotGridProps {
@@ -51,6 +52,19 @@ function buildSectionStatusLabel(sectionKey: string, photos: InspectionPhoto[]):
   return `${progress.completedPhotos}/${progress.requiredPhotos}`;
 }
 
+function resolveGuide(category: PhotoCategoryDefinition) {
+  return category.technicalGuide ?? category.visualGuide!;
+}
+
+function resolveSlotStatus(
+  categoryPhotos: InspectionPhoto[],
+  confirmed: InspectionPhoto[],
+): PhotoGuideCardStatus {
+  if (categoryPhotos.some((p) => isPendingPhoto(p)) && confirmed.length === 0) return "uploading";
+  if (confirmed.length > 0) return "captured";
+  return "pending";
+}
+
 export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps) {
   const [preview, setPreview] = useState<PhotoPreviewState | null>(null);
 
@@ -69,25 +83,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
     input.click();
   };
 
-  const handleCategoryClick = (category: PhotoCategoryDefinition) => {
-    const categoryPhotos = getPhotosForCategory(photos, category.key);
-    const confirmed = categoryPhotos.filter((p) => !isPendingPhoto(p));
-
-    if (isMultiCategory(category)) {
-      openFilePicker(category.key, true);
-      return;
-    }
-
-    const latest = confirmed[confirmed.length - 1];
-    if (latest?.public_url) {
-      setPreview({ url: latest.public_url, category, photo: latest });
-      return;
-    }
-
-    openFilePicker(category.key);
-  };
-
-  const handleRetake = () => {
+  const handleRetakeFromPreview = () => {
     if (!preview || !onDelete) return;
     onDelete(preview.photo);
     setPreview(null);
@@ -96,41 +92,48 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
 
   const renderCategorySlot = (category: PhotoCategoryDefinition) => {
     const categoryPhotos = getPhotosForCategory(photos, category.key);
-    const latestPhoto = categoryPhotos[categoryPhotos.length - 1];
-    const isUploading = categoryPhotos.some((p) => isPendingPhoto(p));
     const confirmed = categoryPhotos.filter((p) => !isPendingPhoto(p));
+    const latestPhoto = confirmed[confirmed.length - 1];
+    const guide = resolveGuide(category);
 
     if (isMultiCategory(category)) {
       return (
         <MultiPhotoGallery
           key={category.key}
           label={category.name}
-          hint={category.description}
-          icon={category.icon}
-          visualGuide={category.visualGuide}
+          guide={guide}
           photos={categoryPhotos}
           required={category.required}
-          onAdd={() => handleCategoryClick(category)}
-          onPhotoClick={(photo) =>
-            photo.public_url &&
-            setPreview({ url: photo.public_url, category, photo })
+          onCapture={() => openFilePicker(category.key, true)}
+          onViewPhoto={(photo) =>
+            photo.public_url && setPreview({ url: photo.public_url, category, photo })
           }
+          onRetakePhoto={(photo) => {
+            onDelete?.(photo);
+            openFilePicker(category.key, true);
+          }}
         />
       );
     }
 
     return (
-      <PhotoSlotFrame
+      <PhotoGuideCard
         key={category.key}
-        label={category.name}
-        hint={category.description}
-        icon={category.icon}
-        visualGuide={category.visualGuide}
+        categoryName={category.name}
+        guide={guide}
+        status={resolveSlotStatus(categoryPhotos, confirmed)}
+        required={category.required}
         imageUrl={latestPhoto?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
-        isUploading={isUploading}
-        required={category.required}
-        onClick={() => handleCategoryClick(category)}
+        onCapture={() => openFilePicker(category.key)}
+        onView={() =>
+          latestPhoto?.public_url &&
+          setPreview({ url: latestPhoto.public_url, category, photo: latestPhoto })
+        }
+        onRetake={() => {
+          if (latestPhoto && onDelete) onDelete(latestPhoto);
+          openFilePicker(category.key);
+        }}
       />
     );
   };
@@ -156,7 +159,6 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
       {PHOTO_CATALOG.map((section) => {
         const sectionProgress = captureProgress.sections.find((s) => s.sectionKey === section.key)!;
         const isOptionalSection = section.categories.every((c) => !c.required);
-        const isFirstSection = section.sortOrder === 1;
 
         return (
           <FormSectionCard
@@ -179,12 +181,6 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
             <div className={PHOTO_SLOT_GRID_CLASS}>
               {section.categories.map((category) => renderCategorySlot(category))}
             </div>
-
-            {isFirstSection && section.categories.every(isMultiCategory) && (
-              <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
-                Toque em cada card para anexar documentos. A ilustração indica o tipo de registro esperado.
-              </p>
-            )}
           </FormSectionCard>
         );
       })}
@@ -219,10 +215,10 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
                 type="button"
                 variant="outline"
                 className="mt-4 touch-target border-white/30 bg-white/10 text-white hover:bg-white/20"
-                onClick={handleRetake}
+                onClick={handleRetakeFromPreview}
               >
                 <RotateCcw className="mr-2 size-4" />
-                Refazer foto
+                Refazer fotografia
               </Button>
             )}
           </figure>
