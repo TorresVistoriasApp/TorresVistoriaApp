@@ -9,6 +9,7 @@ import {
   STORAGE_BUCKET,
 } from "@/lib/compress-image";
 import { getPhotoCategory, normalizePhotoCategory } from "@/lib/photos/photo-catalog";
+import { insertInspectionPhoto } from "@/lib/photos/photo-insert";
 import type { PhotoCaptureMetadata, PhotoCaptureStatus } from "@/lib/photos/types";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 
@@ -106,42 +107,41 @@ export const photoService = {
       const { data: urlData } = db.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
       const now = new Date().toISOString();
 
-      return throwIfError(
-        await mutations.photos.create({
-          company_id: params.companyId,
-          inspection_id: params.inspectionId,
-          category: categoryMeta.normalizedCategory,
-          section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,
-          subcategory: params.metadata?.subcategory ?? null,
-          display_name: params.metadata?.displayName ?? categoryMeta.displayName,
-          sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
-          is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
-          storage_path: storagePath,
-          public_url: urlData.publicUrl,
-          thumbnail_url: urlData.publicUrl,
-          file_size: webp.size,
-          mime_type: "image/webp",
-          content_hash: imageMeta.contentHash,
-          width: imageMeta.width,
-          height: imageMeta.height,
-          resolution: imageMeta.resolution,
-          latitude: params.latitude ?? null,
-          longitude: params.longitude ?? null,
-          gps_accuracy: params.gpsAccuracy ?? null,
-          captured_at: params.metadata?.capturedAt ?? now,
-          device_model: params.metadata?.deviceModel ?? device.deviceModel,
-          device_os: params.metadata?.deviceOs ?? device.deviceOs,
-          uploaded_by: params.uploadedBy ?? null,
-          status: params.metadata?.status ?? "CAPTURED",
-          damage_location: params.metadata?.damageLocation ?? null,
-          damage_category: params.metadata?.damageCategory ?? null,
-          damage_severity: params.metadata?.damageSeverity ?? null,
-          complementary_name: params.metadata?.complementaryName ?? null,
-          complementary_category: params.metadata?.complementaryCategory ?? null,
-          ai_validation: params.metadata?.aiValidation ?? {},
-        }),
-        "Erro ao registrar foto",
-      ) as InspectionPhoto;
+      const insertResult = await insertInspectionPhoto({
+        company_id: params.companyId,
+        inspection_id: params.inspectionId,
+        category: categoryMeta.normalizedCategory,
+        section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,
+        subcategory: params.metadata?.subcategory ?? null,
+        display_name: params.metadata?.displayName ?? categoryMeta.displayName,
+        sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
+        is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
+        storage_path: storagePath,
+        public_url: urlData.publicUrl,
+        thumbnail_url: urlData.publicUrl,
+        file_size: webp.size,
+        mime_type: "image/webp",
+        content_hash: imageMeta.contentHash,
+        width: imageMeta.width,
+        height: imageMeta.height,
+        resolution: imageMeta.resolution,
+        latitude: params.latitude ?? null,
+        longitude: params.longitude ?? null,
+        gps_accuracy: params.gpsAccuracy ?? null,
+        captured_at: params.metadata?.capturedAt ?? now,
+        device_model: params.metadata?.deviceModel ?? device.deviceModel,
+        device_os: params.metadata?.deviceOs ?? device.deviceOs,
+        uploaded_by: params.uploadedBy ?? null,
+        status: params.metadata?.status ?? "CAPTURED",
+        damage_location: params.metadata?.damageLocation ?? null,
+        damage_category: params.metadata?.damageCategory ?? null,
+        damage_severity: params.metadata?.damageSeverity ?? null,
+        complementary_name: params.metadata?.complementaryName ?? null,
+        complementary_category: params.metadata?.complementaryCategory ?? null,
+        ai_validation: params.metadata?.aiValidation ?? {},
+      });
+
+      return throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

@@ -1,63 +1,54 @@
-import type { PhotoVisualGuide } from "@/lib/photos/types";
-import { VehicleWireframe } from "@/components/photos/vehicle-wireframe";
+import { TechnicalWireframe } from "@/components/photos/technical-wireframe";
+import { CameraAngleIndicator } from "@/components/photos/camera-angle-indicator";
+import { PhotoExamplePlaceholder } from "@/components/photos/photo-example-placeholder";
+import type { PhotoTechnicalGuide } from "@/lib/photos/types";
+import { GUIDE_COLORS } from "@/lib/photos/guide-tokens";
 import { cn } from "@/lib/utils";
 
-interface PhotoVisualGuideProps {
-  guide: PhotoVisualGuide;
+interface PhotoVisualGuidePanelProps {
+  guide: PhotoTechnicalGuide;
   categoryName: string;
   captured?: boolean;
   imageUrl?: string | null;
   className?: string;
 }
 
+/** Painel expandido do guia — usado em modais ou telas dedicadas. */
 export function PhotoVisualGuidePanel({
   guide,
   categoryName,
   captured,
   imageUrl,
   className,
-}: PhotoVisualGuideProps) {
+}: PhotoVisualGuidePanelProps) {
   return (
     <div className={cn("space-y-3", className)}>
-      <div className="relative overflow-hidden rounded-xl border border-border bg-muted/30">
-        <div className="aspect-[5/4] w-full">
-          {captured && imageUrl ? (
-            <img src={imageUrl} alt={categoryName} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center p-4">
-              <div className="h-32 w-full max-w-[220px] sm:h-36">
-                <VehicleWireframe
+      <div
+        className="overflow-hidden rounded-xl border border-slate-200"
+        style={{ backgroundColor: GUIDE_COLORS.surfaceMuted }}
+      >
+        {captured && imageUrl ? (
+          <img src={imageUrl} alt={categoryName} className="aspect-[4/3] w-full object-cover" />
+        ) : (
+          <div className="space-y-3 p-4">
+            <div className="grid grid-cols-[1fr_auto] gap-3">
+              <div className="aspect-[4/3] overflow-hidden rounded border border-slate-200 bg-white p-2">
+                <TechnicalWireframe
                   view={guide.view}
                   highlight={guide.highlight}
-                  arrowAngle={guide.arrowAngle}
+                  highlightLabel={guide.highlightLabel}
                 />
               </div>
+              <CameraAngleIndicator camera={guide.camera} />
             </div>
-          )}
-        </div>
-        {captured && (
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
-            <p className="text-xs font-semibold text-white">Captura concluída</p>
+            <PhotoExamplePlaceholder
+              exampleImageUrl={guide.exampleImageUrl}
+              categoryName={categoryName}
+            />
+            <p className="text-sm leading-relaxed text-slate-600">{guide.instruction}</p>
           </div>
         )}
       </div>
-
-      {!captured && (
-        <p className="text-sm leading-relaxed text-muted-foreground">{guide.instruction}</p>
-      )}
-
-      {guide.exampleImageUrl && !captured && (
-        <div className="rounded-lg border border-dashed border-border p-2">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Exemplo de enquadramento
-          </p>
-          <img
-            src={guide.exampleImageUrl}
-            alt={`Exemplo — ${categoryName}`}
-            className="aspect-video w-full rounded-md object-cover"
-          />
-        </div>
-      )}
     </div>
   );
 }

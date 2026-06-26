@@ -37,14 +37,45 @@ export type WireframeHighlight = {
   rx?: number;
 };
 
-/** Configuração do guia visual inteligente por categoria. */
-export type PhotoVisualGuide = {
+/** Posicionamento e orientação da câmera no guia técnico. */
+export type CameraAngleGuide = {
+  /** Rotação horizontal do aparelho (graus). */
+  rotation: number;
+  /** Inclinação vertical (graus). */
+  tilt: number;
+  /** Distância aproximada recomendada. */
+  distance: string;
+  /** Direção da seta em graus (0 = direita). */
+  direction: number;
+  /** Rótulo curto do alvo (ex.: "Longarina esq."). */
+  targetLabel?: string;
+};
+
+/** Extensões futuras — animação, 3D, AR, IA (não implementadas). */
+export type PhotoGuideFutureConfig = {
+  animationUrl?: string;
+  model3dUrl?: string;
+  arConfig?: Record<string, unknown>;
+  aiValidationRules?: Record<string, unknown>;
+  framingRules?: Record<string, unknown>;
+};
+
+/** Guia técnico completo de captura por categoria. */
+export type PhotoTechnicalGuide = {
   view: WireframeView;
   highlight: WireframeHighlight;
-  arrowAngle?: number;
+  highlightLabel?: string;
+  camera: CameraAngleGuide;
   instruction: string;
-  exampleImageUrl?: string;
+  exampleImageUrl?: string | null;
+  future?: PhotoGuideFutureConfig;
 };
+
+/** @deprecated Use PhotoTechnicalGuide */
+export type PhotoVisualGuide = PhotoTechnicalGuide;
+
+/** Status do card de guia na UI. */
+export type PhotoGuideCardStatus = "pending" | "uploading" | "captured";
 
 /** Categoria configurável — futuramente carregada do banco (SaaS). */
 export type PhotoCategoryDefinition = {
@@ -58,7 +89,9 @@ export type PhotoCategoryDefinition = {
   minCount: number;
   maxCount: number;
   type: PhotoCategoryType;
-  visualGuide?: PhotoVisualGuide;
+  technicalGuide?: PhotoTechnicalGuide;
+  /** @deprecated Use technicalGuide */
+  visualGuide?: PhotoTechnicalGuide;
   /** Segundos estimados para captura — usado no cálculo de tempo restante. */
   estimatedCaptureSeconds?: number;
 };

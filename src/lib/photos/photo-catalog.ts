@@ -14,7 +14,7 @@ import {
   Tag,
   Wrench,
 } from "lucide-react";
-import { resolveVisualGuide } from "@/lib/photos/visual-guides";
+import { resolveTechnicalGuide } from "@/lib/photos/visual-guides";
 import type { PhotoCategoryDefinition, PhotoCategoryType, PhotoSectionDefinition } from "@/lib/photos/types";
 import {
   LEGACY_TO_NEW_CATEGORY,
@@ -50,7 +50,8 @@ function category(
     minCount: input.minCount ?? (type === "SINGLE" ? 1 : 0),
     maxCount: input.maxCount ?? (type === "SINGLE" ? 1 : type === "DAMAGE" ? 50 : type === "COMPLEMENTARY" ? 999 : 10),
     type,
-    visualGuide: resolveVisualGuide(input.key, input.name),
+    technicalGuide: resolveTechnicalGuide(input.key, input.name),
+    visualGuide: resolveTechnicalGuide(input.key, input.name),
     estimatedCaptureSeconds: 25,
   };
 }

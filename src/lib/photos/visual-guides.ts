@@ -1,138 +1,197 @@
-import type { PhotoVisualGuide, WireframeView } from "@/lib/photos/types";
+import type {
+  CameraAngleGuide,
+  PhotoTechnicalGuide,
+  WireframeView,
+} from "@/lib/photos/types";
 
 type GuideInput = {
   view: WireframeView;
   highlight: { x: number; y: number; width: number; height: number; rx?: number };
+  highlightLabel?: string;
   instruction: string;
-  arrowAngle?: number;
+  camera?: Partial<CameraAngleGuide>;
+  exampleImageUrl?: string | null;
 };
 
-/** Factory para guias visuais padronizados. */
-export function createVisualGuide(input: GuideInput): PhotoVisualGuide {
+const DEFAULT_CAMERA: Record<WireframeView, CameraAngleGuide> = {
+  exterior_side: { rotation: 0, tilt: 0, distance: "~3 m", direction: 90, targetLabel: "Lateral" },
+  exterior_front: { rotation: -15, tilt: 5, distance: "~2 m", direction: 0, targetLabel: "Frente" },
+  exterior_rear: { rotation: 15, tilt: 5, distance: "~2 m", direction: 180, targetLabel: "Traseira" },
+  exterior_top: { rotation: 0, tilt: -20, distance: "~1,5 m", direction: -90, targetLabel: "Superior" },
+  engine: { rotation: 0, tilt: 35, distance: "~50 cm", direction: -90, targetLabel: "Compartimento" },
+  trunk: { rotation: 0, tilt: 30, distance: "~60 cm", direction: 0, targetLabel: "Porta-malas" },
+  interior: { rotation: 0, tilt: 10, distance: "~40 cm", direction: 0, targetLabel: "Interior" },
+  wheel: { rotation: -20, tilt: 15, distance: "~80 cm", direction: 45, targetLabel: "Roda" },
+  document: { rotation: 0, tilt: 0, distance: "~30 cm", direction: -90, targetLabel: "Documento" },
+  detail: { rotation: 0, tilt: 20, distance: "~50 cm", direction: 0, targetLabel: "Detalhe" },
+};
+
+/** Factory para guias técnicos padronizados. */
+export function createTechnicalGuide(input: GuideInput): PhotoTechnicalGuide {
+  const defaults = DEFAULT_CAMERA[input.view];
   return {
     view: input.view,
     highlight: input.highlight,
-    arrowAngle: input.arrowAngle,
+    highlightLabel: input.highlightLabel,
     instruction: input.instruction,
+    exampleImageUrl: input.exampleImageUrl ?? null,
+    camera: {
+      rotation: input.camera?.rotation ?? defaults.rotation,
+      tilt: input.camera?.tilt ?? defaults.tilt,
+      distance: input.camera?.distance ?? defaults.distance,
+      direction: input.camera?.direction ?? defaults.direction,
+      targetLabel: input.camera?.targetLabel ?? input.highlightLabel ?? defaults.targetLabel,
+    },
+    future: {},
   };
 }
 
-/** Guias visuais indexados por chave de categoria. */
-export const VISUAL_GUIDES: Record<string, PhotoVisualGuide> = {
-  EXT_FRENTE_45_ESQ: createVisualGuide({
+/** Guias técnicos indexados por chave de categoria. */
+export const TECHNICAL_GUIDES: Record<string, PhotoTechnicalGuide> = {
+  EXT_FRENTE_45_ESQ: createTechnicalGuide({
     view: "exterior_front",
-    highlight: { x: 8, y: 28, width: 38, height: 44 },
-    arrowAngle: -35,
-    instruction: "Posicione-se à frente esquerda do veículo, a ~2 m, inclinando levemente o celular para capturar placa e lateral.",
+    highlight: { x: 6, y: 26, width: 42, height: 46 },
+    highlightLabel: "45° ESQ",
+    instruction:
+      "Posicione-se a aproximadamente 2 m, no ângulo frontal esquerdo, incluindo placa dianteira e lateral esquerda sem cortes.",
+    camera: { rotation: -25, tilt: 5, direction: -25, targetLabel: "Frente esq." },
   }),
-  EXT_FRENTE_45_DIR: createVisualGuide({
+  EXT_FRENTE_45_DIR: createTechnicalGuide({
     view: "exterior_front",
-    highlight: { x: 54, y: 28, width: 38, height: 44 },
-    arrowAngle: 35,
-    instruction: "Posicione-se à frente direita do veículo, mantendo placa dianteira e lateral visíveis no enquadramento.",
+    highlight: { x: 52, y: 26, width: 42, height: 46 },
+    highlightLabel: "45° DIR",
+    instruction:
+      "Posicione-se a aproximadamente 2 m, no ângulo frontal direito, incluindo placa dianteira e lateral direita sem cortes.",
+    camera: { rotation: 25, tilt: 5, direction: 25, targetLabel: "Frente dir." },
   }),
-  EXT_FRENTE_COMPLETA: createVisualGuide({
+  EXT_FRENTE_COMPLETA: createTechnicalGuide({
     view: "exterior_front",
-    highlight: { x: 22, y: 18, width: 56, height: 58 },
-    instruction: "Centralize a frente do veículo no quadro, com para-choque e capô totalmente visíveis.",
+    highlight: { x: 20, y: 16, width: 60, height: 58 },
+    highlightLabel: "FRENTE",
+    instruction: "Centralize a frente completa do veículo, com capô, para-choque e faróis totalmente visíveis.",
   }),
-  EXT_LATERAL_ESQ: createVisualGuide({
+  EXT_LATERAL_ESQ: createTechnicalGuide({
     view: "exterior_side",
-    highlight: { x: 6, y: 22, width: 88, height: 52 },
-    instruction: "Afaste-se lateralmente (~3 m) e capture toda a lateral esquerda, da roda dianteira à traseira.",
+    highlight: { x: 4, y: 20, width: 92, height: 54 },
+    highlightLabel: "LATERAL ESQ",
+    instruction: "Afaste-se cerca de 3 m e capture toda a lateral esquerda, da roda dianteira à traseira, sem inclinar o celular.",
   }),
-  EXT_LATERAL_DIR: createVisualGuide({
+  EXT_LATERAL_DIR: createTechnicalGuide({
     view: "exterior_side",
-    highlight: { x: 6, y: 22, width: 88, height: 52 },
-    instruction: "Capture a lateral direita completa, mantendo o veículo paralelo ao celular.",
+    highlight: { x: 4, y: 20, width: 92, height: 54 },
+    highlightLabel: "LATERAL DIR",
+    instruction: "Afaste-se cerca de 3 m e capture toda a lateral direita, mantendo o veículo paralelo ao enquadramento.",
   }),
-  EXT_TRASEIRA_45_ESQ: createVisualGuide({
-    view: "exterior_rear",
-    highlight: { x: 8, y: 30, width: 38, height: 42 },
-    arrowAngle: -35,
-    instruction: "Posicione-se na traseira esquerda em ângulo de 45°, incluindo placa traseira e lateral.",
+  MOT_LONGARINA_DIANT_ESQ: createTechnicalGuide({
+    view: "engine",
+    highlight: { x: 6, y: 34, width: 30, height: 42 },
+    highlightLabel: "LONGARINA",
+    instruction:
+      "Posicione a câmera a aproximadamente 50 cm da longarina dianteira esquerda, mantendo toda a peça visível incluindo pontos de solda.",
+    camera: { rotation: -10, tilt: 40, distance: "~50 cm", direction: -70, targetLabel: "Longarina esq." },
   }),
-  EXT_TRASEIRA_45_DIR: createVisualGuide({
-    view: "exterior_rear",
-    highlight: { x: 54, y: 30, width: 38, height: 42 },
-    arrowAngle: 35,
-    instruction: "Posicione-se na traseira direita em ângulo de 45°, com placa e lateral visíveis.",
+  MOT_LONGARINA_DIANT_DIR: createTechnicalGuide({
+    view: "engine",
+    highlight: { x: 64, y: 34, width: 30, height: 42 },
+    highlightLabel: "LONGARINA",
+    instruction:
+      "Posicione a câmera a aproximadamente 50 cm da longarina dianteira direita, com iluminação uniforme e foco nítido.",
+    camera: { rotation: 10, tilt: 40, distance: "~50 cm", direction: -110, targetLabel: "Longarina dir." },
   }),
-  EXT_TRASEIRA_COMPLETA: createVisualGuide({
-    view: "exterior_rear",
-    highlight: { x: 20, y: 20, width: 60, height: 56 },
-    instruction: "Centralize a traseira do veículo, incluindo para-choque traseiro e tampa do porta-malas.",
+  MOT_TORRE_AMORT_ESQ: createTechnicalGuide({
+    view: "engine",
+    highlight: { x: 8, y: 28, width: 28, height: 36 },
+    highlightLabel: "TORRE",
+    instruction:
+      "Fotografe a torre do amortecedor esquerda incluindo o paralama interno e evitando cortes na imagem.",
+    camera: { tilt: 35, distance: "~45 cm", targetLabel: "Torre esq." },
   }),
-  EXT_PLACA_DIANTEIRA: createVisualGuide({
-    view: "exterior_front",
-    highlight: { x: 30, y: 58, width: 40, height: 18 },
-    instruction: "Aproxime-se da placa dianteira até que todos os caracteres fiquem nítidos e legíveis.",
+  MOT_PAINEL_CORTA_FOGO: createTechnicalGuide({
+    view: "engine",
+    highlight: { x: 38, y: 38, width: 24, height: 32 },
+    highlightLabel: "CORTA-FOGO",
+    instruction:
+      "Centralize o painel corta-fogo com fixações visíveis. Mantenha distância de ~50 cm e evite reflexos.",
+    camera: { tilt: 30, distance: "~50 cm", targetLabel: "Corta-fogo" },
   }),
-  EXT_PLACA_TRASEIRA: createVisualGuide({
-    view: "exterior_rear",
-    highlight: { x: 30, y: 58, width: 40, height: 18 },
-    instruction: "Fotografe a placa traseira de frente, sem reflexos, com lacre visível quando aplicável.",
+  TRS_CAIXA_ESTEPE: createTechnicalGuide({
+    view: "trunk",
+    highlight: { x: 28, y: 46, width: 44, height: 28 },
+    highlightLabel: "ESTEPE",
+    instruction:
+      "Com o porta-malas aberto, fotografe a caixa de estepe incluindo assoalho e fixações originais.",
+    camera: { tilt: 25, distance: "~60 cm", direction: -90, targetLabel: "Caixa estepe" },
   }),
-  EXT_LACRE_PLACA: createVisualGuide({
+  IDV_NUMERO_CHASSI: createTechnicalGuide({
     view: "detail",
-    highlight: { x: 25, y: 35, width: 50, height: 30 },
-    instruction: "Aproxime o foco no lacre da placa traseira, garantindo nitidez dos detalhes.",
+    highlight: { x: 18, y: 38, width: 64, height: 24 },
+    highlightLabel: "CHASSI",
+    instruction:
+      "Centralize completamente o número do chassi e garanta perfeita legibilidade de todos os caracteres.",
+    camera: { tilt: 15, distance: "~25 cm", direction: -90, targetLabel: "Numeração" },
   }),
-  MOT_LONGARINA_DIANT_ESQ: createVisualGuide({
+  IDV_NUMERO_MOTOR: createTechnicalGuide({
     view: "engine",
-    highlight: { x: 8, y: 35, width: 28, height: 40 },
-    instruction: "Com o capô aberto, fotografe a longarina dianteira esquerda incluindo pontos de solda originais.",
+    highlight: { x: 28, y: 52, width: 44, height: 22 },
+    highlightLabel: "MOTOR",
+    instruction:
+      "Fotografe a gravação do motor sem obstruções, com foco nítido e iluminação direta sobre os caracteres.",
+    camera: { tilt: 35, distance: "~30 cm", targetLabel: "Nº motor" },
   }),
-  MOT_LONGARINA_DIANT_DIR: createVisualGuide({
-    view: "engine",
-    highlight: { x: 64, y: 35, width: 28, height: 40 },
-    instruction: "Fotografe a longarina dianteira direita com boa iluminação natural ou lanterna.",
-  }),
-  IDV_NUMERO_CHASSI: createVisualGuide({
-    view: "detail",
-    highlight: { x: 20, y: 40, width: 60, height: 22 },
-    instruction: "Localize a gravação do chassi e aproxime até que todos os caracteres estejam legíveis.",
-  }),
-  IDV_NUMERO_MOTOR: createVisualGuide({
-    view: "engine",
-    highlight: { x: 30, y: 55, width: 40, height: 20 },
-    instruction: "Fotografe a numeração do motor sem obstruções, com foco nítido nos caracteres.",
-  }),
-  INT_HODOMETRO: createVisualGuide({
+  INT_HODOMETRO: createTechnicalGuide({
     view: "interior",
-    highlight: { x: 28, y: 30, width: 44, height: 28 },
-    instruction: "Ligue a ignição e fotografe o hodômetro com quilometragem claramente visível.",
+    highlight: { x: 26, y: 28, width: 48, height: 30 },
+    highlightLabel: "HODÔMETRO",
+    instruction:
+      "Com a ignição ligada, centralize o hodômetro e garanta que a quilometragem esteja perfeitamente legível.",
+    camera: { tilt: 10, distance: "~40 cm", targetLabel: "Quilometragem" },
   }),
-  ROD_DIANT_ESQ: createVisualGuide({
-    view: "wheel",
-    highlight: { x: 18, y: 18, width: 64, height: 64, rx: 50 },
-    instruction: "Fotografe a roda dianteira esquerda incluindo pneu, aro e estado geral.",
+  EXT_PLACA_DIANTEIRA: createTechnicalGuide({
+    view: "exterior_front",
+    highlight: { x: 28, y: 56, width: 44, height: 18 },
+    highlightLabel: "PLACA",
+    instruction: "Aproxime-se a ~40 cm da placa dianteira. Todos os caracteres devem estar nítidos e sem reflexo.",
+    camera: { distance: "~40 cm", tilt: 0, targetLabel: "Placa diant." },
   }),
-  DOC_CRLV: createVisualGuide({
+  DOC_CRLV: createTechnicalGuide({
     view: "document",
-    highlight: { x: 15, y: 20, width: 70, height: 60 },
-    instruction: "Apoie o documento em superfície plana, evite sombras e mantenha o texto legível.",
+    highlight: { x: 12, y: 16, width: 76, height: 68 },
+    highlightLabel: "CRLV",
+    instruction:
+      "Apoie o documento em superfície plana, evite sombras e mantenha o texto inteiro legível no enquadramento.",
+    camera: { tilt: 0, distance: "~30 cm", direction: -90, targetLabel: "Documento" },
   }),
-  AVARIA: createVisualGuide({
+  AVARIA: createTechnicalGuide({
     view: "detail",
-    highlight: { x: 20, y: 25, width: 60, height: 50 },
-    instruction: "Aproxime a avaria preenchendo o quadro, garantindo contexto suficiente para identificação.",
+    highlight: { x: 18, y: 22, width: 64, height: 56 },
+    highlightLabel: "AVARIA",
+    instruction:
+      "Aproxime a avaria preenchendo o quadro, mantendo contexto suficiente para identificar localização e extensão.",
+    camera: { distance: "~40 cm", tilt: 10, targetLabel: "Dano" },
   }),
 };
 
-export function getVisualGuide(categoryKey: string): PhotoVisualGuide | undefined {
-  return VISUAL_GUIDES[categoryKey];
+export function getTechnicalGuide(categoryKey: string): PhotoTechnicalGuide | undefined {
+  return TECHNICAL_GUIDES[categoryKey];
 }
 
-/** Guia genérico para categorias sem configuração específica. */
-export function getDefaultVisualGuide(categoryName: string): PhotoVisualGuide {
-  return createVisualGuide({
+export function getDefaultTechnicalGuide(categoryName: string): PhotoTechnicalGuide {
+  return createTechnicalGuide({
     view: "detail",
-    highlight: { x: 20, y: 25, width: 60, height: 50 },
-    instruction: `Posicione o celular de forma estável e capture ${categoryName.toLowerCase()} com boa iluminação e foco nítido.`,
+    highlight: { x: 18, y: 22, width: 64, height: 56 },
+    highlightLabel: "ÁREA",
+    instruction: `Posicione a câmera a aproximadamente 50 cm, mantendo ${categoryName.toLowerCase()} totalmente visível e com foco nítido.`,
+    camera: { targetLabel: categoryName.slice(0, 12) },
   });
 }
 
-export function resolveVisualGuide(categoryKey: string, categoryName: string): PhotoVisualGuide {
-  return getVisualGuide(categoryKey) ?? getDefaultVisualGuide(categoryName);
+export function resolveTechnicalGuide(categoryKey: string, categoryName: string): PhotoTechnicalGuide {
+  return getTechnicalGuide(categoryKey) ?? getDefaultTechnicalGuide(categoryName);
 }
+
+/** Retrocompatibilidade */
+export const createVisualGuide = createTechnicalGuide;
+export const VISUAL_GUIDES = TECHNICAL_GUIDES;
+export const getVisualGuide = getTechnicalGuide;
+export const getDefaultVisualGuide = getDefaultTechnicalGuide;
+export const resolveVisualGuide = resolveTechnicalGuide;
