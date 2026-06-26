@@ -264,7 +264,6 @@ function buildValidationColumn(
 
 function buildBrandIdentityColumn(
   payload: LaudoPayload,
-  inspection: LaudoPayload["inspection"],
   company: LaudoPayload["company"],
   primaryColor: string,
 ): PdfNode {
@@ -328,7 +327,7 @@ function buildCoverHeader(
     },
     {
       columns: [
-        buildBrandIdentityColumn(payload, inspection, company, primaryColor),
+        buildBrandIdentityColumn(payload, company, primaryColor),
         { text: "", width: "*" },
         buildPlateAndValidationGroup(
           inspection.plate,
