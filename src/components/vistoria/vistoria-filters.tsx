@@ -74,6 +74,39 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
             />
           </div>
 
+          <div className="sm:col-span-2 xl:col-span-4">
+            <Label className="mb-2 block">Status</Label>
+            <div
+              className="grid grid-cols-2 gap-1.5 rounded-xl border border-border/60 bg-muted/30 p-1.5 sm:flex sm:flex-wrap sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0"
+              role="group"
+              aria-label="Filtrar por status"
+            >
+              {STATUS_OPTIONS.map((opt) => {
+                const isActive = (filters.status ?? "") === opt.value;
+
+                return (
+                  <button
+                    key={opt.value || "all"}
+                    type="button"
+                    onClick={() =>
+                      update({
+                        status: (opt.value || undefined) as InspectionFilters["status"],
+                      })
+                    }
+                    className={cn(
+                      "touch-target rounded-lg px-3 py-2.5 text-xs font-semibold transition-all sm:rounded-full sm:py-1.5",
+                      isActive
+                        ? "gradient-primary text-primary-foreground shadow-glow"
+                        : "bg-card text-muted-foreground hover:bg-muted/60 sm:border sm:border-border sm:hover:border-primary/30 sm:hover:text-foreground",
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="filter-plate" className="mb-2 block">
               Placa
@@ -95,6 +128,7 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
               <Input
                 id="filter-from"
                 type="date"
+                className="touch-target"
                 value={filters.dateFrom ?? ""}
                 onChange={(e) => update({ dateFrom: e.target.value || undefined })}
               />
@@ -106,6 +140,7 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
               <Input
                 id="filter-to"
                 type="date"
+                className="touch-target"
                 value={filters.dateTo ?? ""}
                 onChange={(e) => update({ dateTo: e.target.value || undefined })}
               />
@@ -113,34 +148,9 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
           </div>
         </div>
 
-        <div className="mt-4">
-          <Label className="mb-2 block">Status</Label>
-          <div className="flex flex-wrap gap-2">
-            {STATUS_OPTIONS.map((opt) => (
-              <button
-                key={opt.value || "all"}
-                type="button"
-                onClick={() =>
-                  update({
-                    status: (opt.value || undefined) as InspectionFilters["status"],
-                  })
-                }
-                className={cn(
-                  "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all",
-                  (filters.status ?? "") === opt.value
-                    ? "gradient-primary text-primary-foreground shadow-glow"
-                    : "border border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground",
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {activeCount > 0 && (
-          <div className="mt-4 flex justify-end">
-            <Button type="button" variant="ghost" size="sm" onClick={clear}>
+          <div className="mt-4 flex justify-stretch sm:justify-end">
+            <Button type="button" variant="ghost" size="sm" className="w-full touch-target sm:w-auto" onClick={clear}>
               <X className="h-3.5 w-3.5" />
               Limpar filtros
             </Button>
