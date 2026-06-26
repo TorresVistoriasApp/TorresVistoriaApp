@@ -35,6 +35,7 @@ export const queryKeys = {
   },
   audit: {
     all: ["audit"] as const,
+    list: (filters?: Record<string, unknown>) => ["audit", "list", filters] as const,
   },
   notifications: {
     all: ["notifications"] as const,

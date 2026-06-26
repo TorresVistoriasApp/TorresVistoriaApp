@@ -147,7 +147,7 @@ export const router = createBrowserRouter([
               },
               {
                 path: ROUTES.settingsAudit,
-                element: lazyPage(() => import("@/app/(dashboard)/configuracoes/auditoria/page")),
+                element: lazyPage(() => import("@/features/audit/pages/audit-page")),
               },
             ],
           },
