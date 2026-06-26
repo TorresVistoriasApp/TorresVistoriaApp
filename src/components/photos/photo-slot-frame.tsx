@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Camera, CheckCircle2 } from "lucide-react";
-import { VehicleWireframe } from "@/components/photos/vehicle-wireframe";
+import { TechnicalIllustration } from "@/components/photos/technical-illustration";
 import type { PhotoVisualGuide } from "@/lib/photos/types";
 import { cn } from "@/lib/utils";
 
@@ -94,10 +94,10 @@ export function PhotoSlotFrame({
           <div className="relative h-full w-full bg-gradient-to-b from-slate-50 to-slate-100/80">
             {visualGuide ? (
               <div className="absolute inset-1.5 sm:inset-2.5">
-                <VehicleWireframe
-                  variant="slot"
-                  view={visualGuide.view}
-                  highlight={visualGuide.highlight}
+                <TechnicalIllustration
+                  illustrationId={visualGuide.illustrationId}
+                  highlightPartId={visualGuide.highlightPartId}
+                  label={visualGuide.highlightLabel ?? label}
                 />
               </div>
             ) : (
