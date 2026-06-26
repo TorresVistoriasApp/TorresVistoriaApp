@@ -323,55 +323,121 @@ export type Database = {
       }
       inspection_photos: {
         Row: {
+          ai_validation: Json | null
+          captured_at: string | null
           category: string
           company_id: string
+          complementary_category: string | null
+          complementary_name: string | null
+          content_hash: string | null
           created_at: string
+          damage_category: string | null
+          damage_location: string | null
+          damage_severity: string | null
           deleted_at: string | null
+          device_model: string | null
+          device_os: string | null
+          display_name: string | null
           exif_metadata: Json | null
           file_size: number | null
+          gps_accuracy: number | null
+          height: number | null
           id: string
           inspection_id: string
+          is_required: boolean | null
           latitude: number | null
           longitude: number | null
           mime_type: string
           public_url: string | null
+          resolution: string | null
+          section_key: string | null
+          sort_order: number | null
+          status: string | null
           storage_path: string
+          subcategory: string | null
+          thumbnail_url: string | null
           updated_at: string
+          uploaded_by: string | null
           watermark_applied: boolean
+          width: number | null
         }
         Insert: {
+          ai_validation?: Json | null
+          captured_at?: string | null
           category: string
           company_id: string
+          complementary_category?: string | null
+          complementary_name?: string | null
+          content_hash?: string | null
           created_at?: string
+          damage_category?: string | null
+          damage_location?: string | null
+          damage_severity?: string | null
           deleted_at?: string | null
+          device_model?: string | null
+          device_os?: string | null
+          display_name?: string | null
           exif_metadata?: Json | null
           file_size?: number | null
+          gps_accuracy?: number | null
+          height?: number | null
           id?: string
           inspection_id: string
+          is_required?: boolean | null
           latitude?: number | null
           longitude?: number | null
           mime_type?: string
           public_url?: string | null
+          resolution?: string | null
+          section_key?: string | null
+          sort_order?: number | null
+          status?: string | null
           storage_path: string
+          subcategory?: string | null
+          thumbnail_url?: string | null
           updated_at?: string
+          uploaded_by?: string | null
           watermark_applied?: boolean
+          width?: number | null
         }
         Update: {
+          ai_validation?: Json | null
+          captured_at?: string | null
           category?: string
           company_id?: string
+          complementary_category?: string | null
+          complementary_name?: string | null
+          content_hash?: string | null
           created_at?: string
+          damage_category?: string | null
+          damage_location?: string | null
+          damage_severity?: string | null
           deleted_at?: string | null
+          device_model?: string | null
+          device_os?: string | null
+          display_name?: string | null
           exif_metadata?: Json | null
           file_size?: number | null
+          gps_accuracy?: number | null
+          height?: number | null
           id?: string
           inspection_id?: string
+          is_required?: boolean | null
           latitude?: number | null
           longitude?: number | null
           mime_type?: string
           public_url?: string | null
+          resolution?: string | null
+          section_key?: string | null
+          sort_order?: number | null
+          status?: string | null
           storage_path?: string
+          subcategory?: string | null
+          thumbnail_url?: string | null
           updated_at?: string
+          uploaded_by?: string | null
           watermark_applied?: boolean
+          width?: number | null
         }
         Relationships: [
           {

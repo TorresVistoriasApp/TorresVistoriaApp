@@ -1,17 +1,22 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ClipboardList } from "lucide-react";
-import { PhotoSlotGrid } from "@/components/photos/photo-slot-grid";
+import { computeCaptureProgress, PhotoSlotGrid } from "@/components/photos/photo-slot-grid";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import {
   InspectionWizardShell,
   WizardNavButtons,
 } from "@/components/vistoria/inspection-wizard-shell";
-import { useInspectionPhotos, useUploadPhoto } from "@/hooks/use-photos";
+import {
+  useDeletePhoto,
+  useInspectionPhotos,
+  useUploadPhoto,
+} from "@/hooks/use-photos";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
+import type { InspectionPhoto } from "@/services/photo-service";
 
 type GeoCoords = { latitude: number; longitude: number };
 
@@ -40,8 +45,11 @@ export function Page() {
   const isWizardFlow = searchParams.get("fluxo") === "nova";
   const { data: photos = [], isLoading } = useInspectionPhotos(id);
   const upload = useUploadPhoto(id!);
+  const deletePhoto = useDeletePhoto(id!);
   const { toast } = useToast();
   const geoRef = useRef<GeoCoords | null>(null);
+
+  const captureProgress = useMemo(() => computeCaptureProgress(photos), [photos]);
 
   useEffect(() => {
     prefetchGeoCoords((coords) => {
@@ -76,7 +84,26 @@ export function Page() {
     [toast, upload],
   );
 
+  const handleDelete = useCallback(
+    (photo: InspectionPhoto) => {
+      if (photo.id.startsWith("pending-")) return;
+      deletePhoto.mutate(
+        { id: photo.id, storagePath: photo.storage_path },
+        {
+          onError: (err) => {
+            toast(err instanceof Error ? err.message : "Erro ao remover foto");
+          },
+        },
+      );
+    },
+    [deletePhoto, toast],
+  );
+
   const goToChecklist = () => {
+    if (!captureProgress.canProceed) {
+      toast("Conclua todas as fotografias obrigatórias antes de continuar.");
+      return;
+    }
     if (!id) return;
     const path = ROUTES.inspectionChecklist(id);
     navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
@@ -87,7 +114,7 @@ export function Page() {
       {isLoading ? (
         <LoadingSpinner label="Carregando fotos..." />
       ) : (
-        <PhotoSlotGrid photos={photos} onUpload={handleUpload} />
+        <PhotoSlotGrid photos={photos} onUpload={handleUpload} onDelete={handleDelete} />
       )}
 
       {isWizardFlow ? (
@@ -95,9 +122,15 @@ export function Page() {
           onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionEdit(id)))}
           onNext={goToChecklist}
           nextLabel="Continuar para checklist"
+          nextDisabled={!captureProgress.canProceed}
         />
       ) : (
-        <Button className="w-full touch-target" size="lg" onClick={goToChecklist}>
+        <Button
+          className="w-full touch-target"
+          size="lg"
+          onClick={goToChecklist}
+          disabled={!captureProgress.canProceed}
+        >
           <ClipboardList className="mr-2 h-4 w-4" />
           Continuar para checklist
         </Button>
@@ -125,8 +158,8 @@ export function Page() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <PageHeader
-          title="Fotos da vistoria"
-          description="Passo 2 de 4. Preencha cada molde com a foto correspondente."
+          title="Fotos e evidências"
+          description="Passo 2 de 4. Capture cada fotografia seguindo o guia visual. Todas as obrigatórias devem ser concluídas."
         />
       </div>
       {content}

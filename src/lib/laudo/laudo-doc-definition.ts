@@ -1,8 +1,10 @@
-import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
-import { PAINT_PHOTO_CATEGORIES } from "@/lib/constants";
-import { getChecklistCategoryLabel, getChecklistStatusLabel } from "@/lib/checklist-catalog";
-import { PAINT_PARTS } from "@/lib/paint-catalog";
+import { PHOTO_CATALOG, PAINT_PHOTO_CATEGORY_KEYS } from "@/lib/photos/photo-catalog";
+import {
+  buildPhotoPairs,
+  groupPhotosBySection,
+} from "@/lib/photos/pdf-photo-layout";
 import { formatDate, formatDocument, formatPhone, formatPlate } from "@/lib/formatters";
+import { getChecklistCategoryLabel, getChecklistStatusLabel } from "@/lib/checklist-catalog";
 import {
   buildInspectionInfoRows,
   buildSaleMarketInfoRows,
@@ -22,7 +24,6 @@ import {
   getPrimaryColor,
   summarizeLaudoChecklist,
   type LaudoPayload,
-  type LaudoPhoto,
 } from "@/lib/laudo/laudo-model";
 
 type PdfNode = Record<string, unknown>;
@@ -462,62 +463,6 @@ function buildChecklistSection(payload: LaudoPayload): PdfNode[] {
   });
 }
 
-function photoNode(photo: LaudoPhoto, labelOverride?: string): PdfNode {
-  const label = labelOverride ?? photo.label ?? PHOTO_CATEGORY_LABELS[photo.category] ?? photo.category.replace(/_/g, " ");
-
-  if (!photo.dataUrl) {
-    return {
-      stack: [
-        { text: label, bold: true, fontSize: 9 },
-        { text: "Imagem indisponível para incorporação no PDF.", fontSize: 8, color: "#64748b" },
-      ],
-      margin: [0, 0, 0, 8],
-    };
-  }
-
-  return {
-    stack: [
-      { image: photo.dataUrl, width: 242, height: 136, fit: [242, 136], alignment: "center" },
-      { text: label, bold: true, fontSize: 8, color: "#075985", alignment: "center", margin: [0, 4, 0, 0] },
-    ],
-    margin: [0, 0, 0, 12],
-  };
-}
-
-function buildPaintSection(payload: LaudoPayload): PdfNode[] {
-  const photosByCategory = payload.photos.reduce<Record<string, LaudoPhoto[]>>((acc, photo) => {
-    (acc[photo.category] ??= []).push(photo);
-    return acc;
-  }, {});
-  const paintingPhotos = PAINT_PARTS.flatMap((part) =>
-    (photosByCategory[part.photoCategory] ?? []).map((photo) => ({
-      photo,
-      label: `${part.number}, ${part.label}`,
-    })),
-  );
-
-  if (paintingPhotos.length === 0) return [];
-
-  return [
-    premiumHeader("PINTURA"),
-    ...photoPairs(
-      paintingPhotos.map((item) => item.photo),
-      paintingPhotos.map((item) => item.label),
-    ),
-  ];
-}
-
-function photoPairs(photos: LaudoPhoto[], labels?: string[]) {
-  const pairs: PdfNode[][] = [];
-  for (let index = 0; index < photos.length; index += 2) {
-    pairs.push([
-      photoNode(photos[index], labels?.[index]),
-      photos[index + 1] ? photoNode(photos[index + 1], labels?.[index + 1]) : {},
-    ]);
-  }
-  return pairs.map((columns) => ({ columns, columnGap: 12, margin: [0, 0, 0, 4] }));
-}
-
 function buildPhotoSection(payload: LaudoPayload, color: string): PdfNode[] {
   const photos = payload.photos;
   if (photos.length === 0) {
@@ -527,35 +472,40 @@ function buildPhotoSection(payload: LaudoPayload, color: string): PdfNode[] {
     ];
   }
 
-  const documentation = photos.filter((photo) => photo.category === "DOCUMENTOS");
-  const extras = photos.filter((photo) => photo.category === "EXTRAS");
-  const paintCategories = new Set<string>(PAINT_PHOTO_CATEGORIES);
-  const painting = photos.filter((photo) => paintCategories.has(photo.category));
-  const standard = photos.filter(
-    (photo) =>
-      photo.category !== "DOCUMENTOS" &&
-      photo.category !== "EXTRAS" &&
-      !paintCategories.has(photo.category),
-  );
+  const grouped = groupPhotosBySection(photos);
+  const nodes: PdfNode[] = [premiumHeader("REGISTRO FOTOGRÁFICO")];
 
-  const nodes: PdfNode[] = [premiumHeader("REGISTRO FOTOGRÁFICO"), ...photoPairs(standard)];
+  for (const section of PHOTO_CATALOG) {
+    const sectionPhotos = grouped.get(section.key);
+    if (!sectionPhotos?.length) continue;
 
-  if (painting.length) nodes.push(...buildPaintSection(payload));
-
-  if (documentation.length) {
-    const sortedDocs = [...documentation].sort(
-      (a, b) => new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime(),
+    nodes.push(
+      {
+        text: section.name.toUpperCase(),
+        bold: true,
+        fontSize: 9,
+        color: "#0f172a",
+        margin: [0, 10, 0, 2],
+      },
+      {
+        text: section.description,
+        fontSize: 7,
+        color: "#64748b",
+        margin: [0, 0, 0, 6],
+      },
     );
-    const docLabels = sortedDocs.map((_, index) => `Documento ${index + 1}`);
-    nodes.push(premiumHeader("DOCUMENTAÇÃO DO VEÍCULO"), ...photoPairs(sortedDocs, docLabels));
-  }
 
-  if (extras.length) {
-    const sortedExtras = [...extras].sort(
-      (a, b) => new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime(),
-    );
-    const extraLabels = sortedExtras.map((_, index) => `Foto extra ${index + 1}`);
-    nodes.push(premiumHeader("FOTOS EXTRAS"), ...photoPairs(sortedExtras, extraLabels));
+    const labels = sectionPhotos.map((photo, index) => {
+      if (photo.damage_location) {
+        return `${index + 1}. ${photo.display_name ?? "Avaria"} — ${photo.damage_location} (${photo.damage_severity ?? "—"})`;
+      }
+      if (photo.complementary_name) {
+        return `${index + 1}. ${photo.complementary_name}`;
+      }
+      return undefined;
+    });
+
+    nodes.push(...buildPhotoPairs(sectionPhotos, labels));
   }
 
   return nodes;
@@ -595,9 +545,20 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
   const company = payload.company;
   const opinion = getOpinionLabel(inspection.opinion);
   const validationUrl = payload.validationUrl ?? "";
-  const paintCategories = new Set<string>(PAINT_PHOTO_CATEGORIES);
+  const paintCategorySet = new Set<string>([...PAINT_PHOTO_CATEGORY_KEYS, "PINTURA_CAPO", "PINTURA_TETO"]);
   const featuredPhotos = payload.photos
-    .filter((photo) => !paintCategories.has(photo.category) && photo.category !== "DOCUMENTOS" && photo.category !== "EXTRAS")
+    .filter(
+      (photo) =>
+        photo.section_key === "IDENTIFICACAO_EXTERNA" ||
+        (!paintCategorySet.has(photo.category) &&
+          !photo.category.startsWith("PINT_") &&
+          !photo.category.startsWith("PINTURA_") &&
+          photo.category !== "DOCUMENTOS" &&
+          photo.category !== "EXTRAS" &&
+          photo.category !== "COMPLEMENTAR" &&
+          photo.category !== "AVARIA" &&
+          !photo.category.startsWith("DOC_")),
+    )
     .slice(0, 2);
 
   const content: PdfNode[] = [
@@ -628,7 +589,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
       layout: "noBorders",
       margin: [0, 3, 0, 2],
     },
-    ...(featuredPhotos.length ? photoPairs(featuredPhotos) : []),
+    ...(featuredPhotos.length ? buildPhotoPairs(featuredPhotos) : []),
     ...buildSaleMarketSection(inspection),
     premiumHeader("CHECKLIST TÉCNICO"),
     ...buildChecklistSection(payload),

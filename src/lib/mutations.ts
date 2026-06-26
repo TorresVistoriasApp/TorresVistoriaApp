@@ -102,8 +102,30 @@ export const mutations = {
       mime_type: string;
       latitude?: number | null;
       longitude?: number | null;
+      section_key?: string | null;
+      subcategory?: string | null;
+      display_name?: string | null;
+      sort_order?: number | null;
+      is_required?: boolean | null;
+      thumbnail_url?: string | null;
+      content_hash?: string | null;
+      width?: number | null;
+      height?: number | null;
+      resolution?: string | null;
+      gps_accuracy?: number | null;
+      captured_at?: string | null;
+      device_model?: string | null;
+      device_os?: string | null;
+      uploaded_by?: string | null;
+      status?: string | null;
+      damage_location?: string | null;
+      damage_category?: string | null;
+      damage_severity?: string | null;
+      complementary_name?: string | null;
+      complementary_category?: string | null;
+      ai_validation?: Record<string, unknown> | null;
     }) {
-      return db.from("inspection_photos").insert(row).select("*").single();
+      return db.from("inspection_photos").insert(row as never).select("*").single();
     },
 
     softDelete(id: string) {
