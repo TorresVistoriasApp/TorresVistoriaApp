@@ -142,12 +142,20 @@ export const router = createBrowserRouter([
                 element: lazyPage(() => import("@/app/(dashboard)/configuracoes/perfil/page")),
               },
               {
-                path: ROUTES.settingsUsers,
-                element: lazyPage(() => import("@/app/(dashboard)/configuracoes/usuarios/page")),
+                path: ROUTES.users,
+                element: lazyPage(() => import("@/app/(dashboard)/usuarios/page")),
               },
               {
-                path: ROUTES.settingsAudit,
-                element: lazyPage(() => import("@/features/audit/pages/audit-page")),
+                path: ROUTES.audit,
+                element: lazyPage(() => import("@/app/(dashboard)/auditoria/page")),
+              },
+              {
+                path: ROUTES.legacySettingsUsers,
+                element: <Navigate to={ROUTES.users} replace />,
+              },
+              {
+                path: ROUTES.legacySettingsAudit,
+                element: <Navigate to={ROUTES.audit} replace />,
               },
             ],
           },

@@ -68,8 +68,8 @@ export function getNavSections(isSuperAdmin: boolean): NavSection[] {
     sections.push({
       title: "Gestão",
       items: [
-        { type: "link", to: ROUTES.settingsUsers, label: "Usuários", shortLabel: "Usuários", icon: Users },
-        { type: "link", to: ROUTES.settingsAudit, label: "Auditoria", shortLabel: "Auditoria", icon: ClipboardList },
+        { type: "link", to: ROUTES.users, label: "Usuários", shortLabel: "Usuários", icon: Users },
+        { type: "link", to: ROUTES.audit, label: "Auditoria", shortLabel: "Auditoria", icon: ClipboardList },
       ],
     });
   }
