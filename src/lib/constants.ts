@@ -57,8 +57,10 @@ export const ROUTES = {
   settings: route(ROUTE_SLUGS.settings),
   settingsCompany: settingsRoute(ROUTE_SLUGS.company),
   settingsProfile: settingsRoute(ROUTE_SLUGS.profile),
-  settingsUsers: settingsRoute(ROUTE_SLUGS.users),
-  settingsAudit: settingsRoute(ROUTE_SLUGS.audit),
+  users: route(ROUTE_SLUGS.users),
+  audit: route(ROUTE_SLUGS.audit),
+  legacySettingsUsers: settingsRoute(ROUTE_SLUGS.users),
+  legacySettingsAudit: settingsRoute(ROUTE_SLUGS.audit),
   changePassword: route(ROUTE_SLUGS.changePassword),
 } as const;
 

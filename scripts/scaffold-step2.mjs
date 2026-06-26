@@ -59,7 +59,8 @@ const pages = [
   ["src/app/(dashboard)/configuracoes/page.tsx", stubPage("Configurações")],
   ["src/app/(dashboard)/configuracoes/empresa/page.tsx", stubPage("Empresa")],
   ["src/app/(dashboard)/configuracoes/perfil/page.tsx", stubPage("Perfil")],
-  ["src/app/(dashboard)/configuracoes/usuarios/page.tsx", stubPage("Usuários")],
+  ["src/app/(dashboard)/usuarios/page.tsx", stubPage("Usuários")],
+  ["src/app/(dashboard)/auditoria/page.tsx", stubPage("Auditoria")],
 ];
 
 const components = [
