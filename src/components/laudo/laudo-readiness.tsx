@@ -2,8 +2,7 @@ import type { Inspection } from "@/services/inspection-service";
 import type { ChecklistItem } from "@/services/checklist-service";
 import type { InspectionPhoto } from "@/services/photo-service";
 import { validateChecklistCompletion } from "@/components/forms/checklist-form";
-import { PHOTO_CATEGORY_LABELS } from "@/components/photos/photo-categories";
-import { MANDATORY_PHOTO_CATEGORIES } from "@/lib/constants";
+import { computeCaptureProgress } from "@/lib/photos/photo-progress";
 import { getOpinionLabel, summarizeLaudoChecklist } from "@/lib/laudo/laudo-model";
 import { formatPlate } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
@@ -30,10 +29,7 @@ export function buildLaudoReadiness(
 ): LaudoReadinessItem[] {
   const checklistStatus = validateChecklistCompletion(checklist);
   const stats = summarizeLaudoChecklist(checklist);
-  const photoCategories = new Set(photos.map((photo) => photo.category));
-  const missingPhotos = MANDATORY_PHOTO_CATEGORIES.filter(
-    (category) => !photoCategories.has(category),
-  );
+  const photoProgress = computeCaptureProgress(photos);
   const hasOpinion = Boolean(inspection.opinion?.trim());
   const hasTechnicalNotes = Boolean(inspection.technical_notes?.trim());
 
@@ -52,11 +48,10 @@ export function buildLaudoReadiness(
     {
       id: "photos",
       title: "Fotos obrigatórias",
-      description:
-        missingPhotos.length > 0
-          ? `Faltam ${missingPhotos.length} molde(s), incluindo pintura e evidências.`
-          : `${photos.length} foto(s) registrada(s), moldes obrigatórios completos.`,
-      ok: missingPhotos.length === 0,
+      description: photoProgress.canProceed
+        ? `${photos.length} foto(s) registrada(s). ${photoProgress.totalCompleted}/${photoProgress.totalRequired} obrigatórias concluídas.`
+        : `Faltam ${photoProgress.missingRequiredLabels.length} fotografia(s) obrigatória(s) em ${12 - photoProgress.sections.filter((s) => s.status === "COMPLETED").length} seção(ões).`,
+      ok: photoProgress.canProceed,
     },
     {
       id: "opinion",
@@ -199,8 +194,5 @@ export function LaudoReadinessList({ items, onFix }: LaudoReadinessListProps) {
 }
 
 export function getMissingPhotoLabels(photos: InspectionPhoto[]): string[] {
-  const photoCategories = new Set(photos.map((photo) => photo.category));
-  return MANDATORY_PHOTO_CATEGORIES.filter((category) => !photoCategories.has(category)).map(
-    (category) => PHOTO_CATEGORY_LABELS[category] ?? category,
-  );
+  return computeCaptureProgress(photos).missingRequiredLabels;
 }

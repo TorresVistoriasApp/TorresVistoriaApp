@@ -4,6 +4,7 @@ import { photoService, type InspectionPhoto } from "@/services/photo-service";
 import { pdfService } from "@/services/pdf-service";
 import { useAuth } from "@/hooks/use-auth";
 import { invalidateInspectionQueries } from "@/lib/cache-invalidation";
+import type { PhotoCaptureMetadata } from "@/lib/photos/types";
 
 export function isPendingPhoto(photo: InspectionPhoto): boolean {
   return photo.id.startsWith("pending-");
@@ -27,11 +28,15 @@ export function useUploadPhoto(inspectionId: string) {
       category,
       latitude,
       longitude,
+      gpsAccuracy,
+      metadata,
     }: {
       file: File;
       category: string;
       latitude?: number | null;
       longitude?: number | null;
+      gpsAccuracy?: number | null;
+      metadata?: Partial<PhotoCaptureMetadata>;
     }) => {
       if (!profile?.company_id) throw new Error("Empresa não identificada");
       return photoService.upload(file, {
@@ -40,6 +45,9 @@ export function useUploadPhoto(inspectionId: string) {
         category,
         latitude,
         longitude,
+        gpsAccuracy,
+        uploadedBy: profile.id,
+        metadata,
       });
     },
     onMutate: async ({ file, category, latitude, longitude }) => {
@@ -52,12 +60,34 @@ export function useUploadPhoto(inspectionId: string) {
         inspection_id: inspectionId,
         company_id: profile.company_id,
         category,
+        section_key: null,
+        subcategory: null,
+        display_name: null,
+        sort_order: null,
+        is_required: null,
         storage_path: "",
         public_url: blobUrl,
+        thumbnail_url: blobUrl,
         file_size: file.size,
         mime_type: file.type || "image/jpeg",
+        content_hash: null,
+        width: null,
+        height: null,
+        resolution: null,
         latitude: latitude ?? null,
         longitude: longitude ?? null,
+        gps_accuracy: null,
+        captured_at: new Date().toISOString(),
+        device_model: null,
+        device_os: null,
+        uploaded_by: profile.id,
+        status: "UPLOADING",
+        damage_location: null,
+        damage_category: null,
+        damage_severity: null,
+        complementary_name: null,
+        complementary_category: null,
+        ai_validation: null,
         watermark_applied: false,
         created_at: new Date().toISOString(),
       };
@@ -102,6 +132,7 @@ export function useDeletePhoto(inspectionId: string) {
     mutationFn: ({ id, storagePath }: { id: string; storagePath: string }) =>
       photoService.remove(id, storagePath),
     onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.photos(inspectionId) });
       invalidateInspectionQueries(qc, inspectionId);
     },
   });
