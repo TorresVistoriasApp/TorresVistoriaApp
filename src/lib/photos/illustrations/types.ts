@@ -39,9 +39,16 @@ export type IllustrationPart = {
 export type TechnicalIllustrationDefinition = {
   id: TechnicalIllustrationId;
   viewBox: string;
-  /** Linhas estruturais fixas (contornos gerais, detalhes finos). */
+  /**
+   * Silhueta base unificada — contorno reconhecível do veículo/componente.
+   * Quando presente, a UI desenha UMA silhueta cinza e destaca só a peça alvo em azul.
+   */
+  silhouette?: string;
+  /** Preenchimentos sobre a silhueta (vidros, rodas, áreas internas). */
+  fills?: IllustrationStroke[];
+  /** Linhas estruturais fixas (contornos, frisos, detalhes). */
   structure: IllustrationStroke[];
-  /** Peças destacáveis — cada uma com ID para animação/IA/AR futura. */
+  /** Regiões destacáveis — cada uma com ID para animação/IA/AR futura. */
   parts: IllustrationPart[];
 };
 
