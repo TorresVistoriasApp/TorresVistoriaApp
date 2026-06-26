@@ -8,11 +8,19 @@ import { ProtectedRoute } from "@/components/shared/protected-route";
 import { RequirePasswordChanged } from "@/components/shared/require-password-changed";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ROUTE_PATTERNS, ROUTES } from "@/lib/constants";
+import { reloadOnceOnChunkLoadError } from "@/lib/chunk-load-recovery";
 
 function lazyPage(loader: () => Promise<{ Page: ComponentType }>) {
   const Lazy = lazy(async () => {
-    const { Page } = await loader();
-    return { default: Page };
+    try {
+      const { Page } = await loader();
+      return { default: Page };
+    } catch (error) {
+      if (reloadOnceOnChunkLoadError(error)) {
+        return new Promise<{ default: ComponentType }>(() => {});
+      }
+      throw error;
+    }
   });
 
   return (

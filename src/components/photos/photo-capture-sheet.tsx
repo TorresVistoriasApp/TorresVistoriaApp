@@ -56,8 +56,6 @@ export function PhotoCaptureSheet({
         <PhotoVisualGuidePanel
           guide={guide}
           categoryName={category.name}
-          captured={hasPhoto}
-          imageUrl={latestPhoto?.public_url}
         />
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">

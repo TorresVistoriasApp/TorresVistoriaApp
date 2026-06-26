@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { TechnicalIllustrationId } from "@/lib/photos/illustrations/types";
 
 /** Tipo de slot de captura — preparado para regras distintas por categoria. */
 export type PhotoCategoryType = "SINGLE" | "MULTI" | "DAMAGE" | "COMPLEMENTARY";
@@ -15,7 +16,7 @@ export type PhotoCaptureStatus =
   | "NEEDS_RETAKE"
   | "REJECTED";
 
-/** Visão do wireframe técnico do veículo. */
+/** Visão do wireframe técnico do veículo. @deprecated Use TechnicalIllustrationId */
 export type WireframeView =
   | "exterior_side"
   | "exterior_front"
@@ -28,7 +29,7 @@ export type WireframeView =
   | "document"
   | "detail";
 
-/** Região destacada no wireframe (coordenadas em %). */
+/** Região destacada no wireframe (coordenadas em %). @deprecated Use highlightPartId */
 export type WireframeHighlight = {
   x: number;
   y: number;
@@ -62,13 +63,18 @@ export type PhotoGuideFutureConfig = {
 
 /** Guia técnico completo de captura por categoria. */
 export type PhotoTechnicalGuide = {
-  view: WireframeView;
-  highlight: WireframeHighlight;
+  /** Ilustração vetorial mestre — estilo manual automotivo. */
+  illustrationId: TechnicalIllustrationId;
+  /** ID da peça destacada dentro da ilustração (animação/IA/AR futuros). */
+  highlightPartId: string;
   highlightLabel?: string;
-  camera: CameraAngleGuide;
   instruction: string;
   exampleImageUrl?: string | null;
   future?: PhotoGuideFutureConfig;
+  /** @deprecated Use illustrationId + highlightPartId */
+  view?: WireframeView;
+  highlight?: WireframeHighlight;
+  camera?: CameraAngleGuide;
 };
 
 /** @deprecated Use PhotoTechnicalGuide */

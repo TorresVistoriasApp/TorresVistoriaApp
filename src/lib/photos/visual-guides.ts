@@ -1,3 +1,4 @@
+import { getCategoryIllustration } from "@/lib/photos/illustrations/catalog";
 import type {
   CameraAngleGuide,
   PhotoTechnicalGuide,
@@ -30,11 +31,13 @@ const DEFAULT_CAMERA: Record<WireframeView, CameraAngleGuide> = {
 export function createTechnicalGuide(input: GuideInput): PhotoTechnicalGuide {
   const defaults = DEFAULT_CAMERA[input.view];
   return {
-    view: input.view,
+    illustrationId: "damage-detail",
+    highlightPartId: "component-area",
     highlight: input.highlight,
     highlightLabel: input.highlightLabel,
     instruction: input.instruction,
     exampleImageUrl: input.exampleImageUrl ?? null,
+    view: input.view,
     camera: {
       rotation: input.camera?.rotation ?? defaults.rotation,
       tilt: input.camera?.tilt ?? defaults.tilt,
@@ -186,7 +189,13 @@ export function getDefaultTechnicalGuide(categoryName: string): PhotoTechnicalGu
 }
 
 export function resolveTechnicalGuide(categoryKey: string, categoryName: string): PhotoTechnicalGuide {
-  return getTechnicalGuide(categoryKey) ?? getDefaultTechnicalGuide(categoryName);
+  const guide = getTechnicalGuide(categoryKey) ?? getDefaultTechnicalGuide(categoryName);
+  const illustration = getCategoryIllustration(categoryKey);
+  return {
+    ...guide,
+    illustrationId: illustration.illustrationId,
+    highlightPartId: illustration.highlightPartId,
+  };
 }
 
 /** Retrocompatibilidade */

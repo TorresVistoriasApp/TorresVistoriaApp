@@ -2,8 +2,22 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { router } from "@/app/router";
+import { reloadOnceOnChunkLoadError, clearChunkReloadFlag } from "@/lib/chunk-load-recovery";
 import { getMissingProductionEnvVars } from "@/lib/env";
 import "@/styles/globals.css";
+
+if (typeof window !== "undefined") {
+  window.addEventListener("vite:preloadError", (event) => {
+    event.preventDefault();
+    reloadOnceOnChunkLoadError(event.payload);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    if (reloadOnceOnChunkLoadError(event.reason)) {
+      event.preventDefault();
+    }
+  });
+}
 
 function renderConfigError(missing: string[]) {
   const root = document.getElementById("root");
@@ -30,6 +44,7 @@ const missingEnv = import.meta.env.PROD ? getMissingProductionEnvVars() : [];
 if (missingEnv.length > 0) {
   renderConfigError(missingEnv);
 } else {
+  clearChunkReloadFlag();
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <RouterProvider router={router} />

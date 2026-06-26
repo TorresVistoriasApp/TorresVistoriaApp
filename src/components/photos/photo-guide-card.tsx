@@ -1,5 +1,5 @@
 import { Camera, CheckCircle2, Eye, RotateCcw } from "lucide-react";
-import { TechnicalWireframe } from "@/components/photos/technical-wireframe";
+import { TechnicalIllustration } from "@/components/photos/technical-illustration";
 import type { PhotoGuideCardStatus, PhotoTechnicalGuide } from "@/lib/photos/types";
 import { cn } from "@/lib/utils";
 
@@ -102,11 +102,10 @@ export function PhotoGuideCard({
           >
             <div className="relative h-full w-full bg-gradient-to-b from-slate-50 to-slate-100/80">
               <div className="absolute inset-1.5 sm:inset-2.5">
-                <TechnicalWireframe
-                  view={guide.view}
-                  highlight={guide.highlight}
-                  highlightLabel={guide.highlightLabel}
-                  variant="slot"
+                <TechnicalIllustration
+                  illustrationId={guide.illustrationId}
+                  highlightPartId={guide.highlightPartId}
+                  label={guide.highlightLabel ?? categoryName}
                 />
               </div>
 
