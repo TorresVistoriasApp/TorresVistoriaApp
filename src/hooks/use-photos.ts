@@ -4,6 +4,9 @@ import { photoService, type InspectionPhoto } from "@/services/photo-service";
 import { pdfService } from "@/services/pdf-service";
 import { useAuth } from "@/hooks/use-auth";
 import { invalidateInspectionQueries } from "@/lib/cache-invalidation";
+import { offlineStore } from "@/features/draft/lib/offline-store";
+import { useSyncStore } from "@/features/draft/stores/sync-store";
+import { syncLogger } from "@/features/draft/lib/sync-logger";
 import type { PhotoCaptureMetadata } from "@/lib/photos/types";
 
 export function isPendingPhoto(photo: InspectionPhoto): boolean {
@@ -111,13 +114,43 @@ export function useUploadPhoto(inspectionId: string) {
 
       URL.revokeObjectURL(context.blobUrl);
     },
-    onError: (_error, _variables, context) => {
+    onError: async (error, variables, context) => {
+      const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
+
+      if (isOffline && profile?.company_id) {
+        const pendingId = `offline-${variables.category}-${Date.now()}`;
+        await offlineStore.queuePhotoUpload({
+          id: pendingId,
+          inspectionId,
+          companyId: profile.company_id,
+          category: variables.category,
+          fileName: variables.file.name || `${Date.now()}.jpg`,
+          mimeType: variables.file.type || "image/jpeg",
+          blob: variables.file,
+          latitude: variables.latitude,
+          longitude: variables.longitude,
+          gpsAccuracy: variables.gpsAccuracy,
+          uploadedBy: profile.id,
+          createdAt: new Date().toISOString(),
+        });
+
+        useSyncStore.getState().markOffline();
+        useSyncStore.getState().markPending();
+        syncLogger.warn("Foto enfileirada offline", { inspectionId, category: variables.category });
+        return;
+      }
+
       if (context?.previous) {
         qc.setQueryData(queryKeys.photos(inspectionId), context.previous);
       }
       if (context?.blobUrl) {
         URL.revokeObjectURL(context.blobUrl);
       }
+
+      syncLogger.error("Falha no upload de foto", {
+        inspectionId,
+        error: error instanceof Error ? error.message : String(error),
+      });
     },
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.photos(inspectionId) });

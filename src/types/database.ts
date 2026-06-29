@@ -633,8 +633,10 @@ export type Database = {
           client_phone: string | null
           color: string
           company_id: string
+          completion_percent: number
           created_at: string
           deleted_at: string | null
+          draft_expires_at: string | null
           engine_displacement: number | null
           fuel: string
           id: string
@@ -649,6 +651,7 @@ export type Database = {
           judicial_court: string | null
           judicial_district: string | null
           judicial_process: string | null
+          last_auto_saved_at: string | null
           location: string
           market_average_value: number | null
           market_fipe_value: number | null
@@ -688,8 +691,10 @@ export type Database = {
           client_phone?: string | null
           color: string
           company_id: string
+          completion_percent?: number
           created_at?: string
           deleted_at?: string | null
+          draft_expires_at?: string | null
           engine_displacement?: number | null
           fuel: string
           id?: string
@@ -704,6 +709,7 @@ export type Database = {
           judicial_court?: string | null
           judicial_district?: string | null
           judicial_process?: string | null
+          last_auto_saved_at?: string | null
           location: string
           market_average_value?: number | null
           market_fipe_value?: number | null
@@ -743,8 +749,10 @@ export type Database = {
           client_phone?: string | null
           color?: string
           company_id?: string
+          completion_percent?: number
           created_at?: string
           deleted_at?: string | null
+          draft_expires_at?: string | null
           engine_displacement?: number | null
           fuel?: string
           id?: string
@@ -759,6 +767,7 @@ export type Database = {
           judicial_court?: string | null
           judicial_district?: string | null
           judicial_process?: string | null
+          last_auto_saved_at?: string | null
           location?: string
           market_average_value?: number | null
           market_fipe_value?: number | null
@@ -1062,6 +1071,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_inspection_drafts: { Args: never; Returns: number }
       get_dashboard_stats: { Args: { p_company_id: string }; Returns: Json }
       get_financial_summary: {
         Args: { p_company_id: string; p_end_date: string; p_start_date: string }

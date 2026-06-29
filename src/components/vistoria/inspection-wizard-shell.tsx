@@ -7,6 +7,7 @@ import {
 } from "@/components/vistoria/inspection-wizard-stepper";
 import { cn } from "@/lib/utils";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
+import { DraftAutoSaveBanner } from "@/features/draft/components/draft-auto-save-banner";
 
 interface InspectionWizardShellProps {
   currentStep: WizardStep;
@@ -19,6 +20,8 @@ interface InspectionWizardShellProps {
   isSubmitting?: boolean;
   onCancel?: () => void;
   cancelLabel?: string;
+  showDraftBanner?: boolean;
+  draftExpiresAt?: string | null;
 }
 
 function getStepPath(step: WizardStep, inspectionId: string): string {
@@ -45,6 +48,8 @@ export function InspectionWizardShell({
   isSubmitting = false,
   onCancel,
   cancelLabel = "Voltar",
+  showDraftBanner = false,
+  draftExpiresAt,
 }: InspectionWizardShellProps) {
   const navigate = useNavigate();
 
@@ -124,6 +129,10 @@ export function InspectionWizardShell({
           )}
         </div>
       </div>
+
+      {showDraftBanner && (
+        <DraftAutoSaveBanner draftExpiresAt={draftExpiresAt} />
+      )}
 
       <div className="rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5 lg:p-4">
         <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:text-xs lg:sr-only">

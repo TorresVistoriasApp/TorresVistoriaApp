@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { vistoriaSchema, type VistoriaInput } from "@/schemas/vistoria";
+import { vistoriaSchema, vistoriaDraftSchema, type VistoriaInput } from "@/schemas/vistoria";
 import {
   InspectionOpinion,
   InspectionSituation,
@@ -45,6 +45,8 @@ interface VistoriaFormProps {
   backLabel?: string;
   formId?: string;
   stickyActions?: boolean;
+  enableAutoSave?: boolean;
+  onAutoSave?: (data: Partial<VistoriaInput>) => void;
 }
 
 export function VistoriaForm({
@@ -57,17 +59,20 @@ export function VistoriaForm({
   backLabel = "Voltar",
   formId,
   stickyActions = false,
+  enableAutoSave = false,
+  onAutoSave,
 }: VistoriaFormProps) {
   const { data: inspectionTypes = [], isLoading: typesLoading } = useInspectionTypes(true);
   const formRef = useRef<HTMLFormElement>(null);
   const {
     register,
     control,
-    handleSubmit,
     watch,
+    getValues,
+    setError,
     formState: { errors, isSubmitting, submitCount },
   } = useForm<VistoriaInput>({
-    resolver: zodResolver(vistoriaSchema),
+    resolver: zodResolver(enableAutoSave ? vistoriaDraftSchema : vistoriaSchema),
     defaultValues: {
       inspection_date: new Date().toISOString().slice(0, 10),
       inspection_time: new Date().toTimeString().slice(0, 5),
@@ -83,12 +88,42 @@ export function VistoriaForm({
 
   const selectedTypeId = watch("inspection_type_id");
   const selectedType = inspectionTypes.find((type) => type.id === selectedTypeId);
+  const onAutoSaveRef = useRef(onAutoSave);
+  onAutoSaveRef.current = onAutoSave;
 
   useEffect(() => {
     if (submitCount === 0 || Object.keys(errors).length === 0) return;
     const firstError = formRef.current?.querySelector("[role='alert'], .text-destructive");
     firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [submitCount, errors]);
+
+  useEffect(() => {
+    if (!enableAutoSave) return;
+
+    const subscription = watch((values) => {
+      onAutoSaveRef.current?.(values as Partial<VistoriaInput>);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [enableAutoSave, watch]);
+
+  const handleValidatedSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const values = getValues();
+    const parsed = vistoriaSchema.safeParse(values);
+
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+        if (typeof field === "string") {
+          setError(field as keyof VistoriaInput, { message: issue.message });
+        }
+      }
+      return;
+    }
+
+    await onSubmit(parsed.data);
+  };
 
   const identificacaoFields = (
     <div className="space-y-6 sm:space-y-8 lg:space-y-6">
@@ -408,7 +443,7 @@ export function VistoriaForm({
       <form
         id={formId}
         ref={formRef}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleValidatedSubmit}
         className="w-full space-y-5 sm:space-y-6 lg:space-y-5"
       >
         {wizardContent}
@@ -421,7 +456,7 @@ export function VistoriaForm({
     <form
       id={formId}
       ref={formRef}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleValidatedSubmit}
       className={cn("min-w-0 w-full space-y-6", stickyActions && "max-sm:pb-2")}
     >
       {standardContent}

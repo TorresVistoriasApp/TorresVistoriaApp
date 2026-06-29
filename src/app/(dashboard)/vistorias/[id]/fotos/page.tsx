@@ -13,9 +13,11 @@ import {
   useInspectionPhotos,
   useUploadPhoto,
 } from "@/hooks/use-photos";
+import { useInspection } from "@/hooks/use-inspection";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
+import { InspectionStatus } from "@/lib/enums";
 import type { InspectionPhoto } from "@/services/photo-service";
 
 type GeoCoords = { latitude: number; longitude: number };
@@ -43,6 +45,7 @@ export function Page() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
+  const { data: inspection } = useInspection(id);
   const { data: photos = [], isLoading } = useInspectionPhotos(id);
   const upload = useUploadPhoto(id!);
   const deletePhoto = useDeletePhoto(id!);
@@ -140,7 +143,12 @@ export function Page() {
 
   if (isWizardFlow) {
     return (
-      <InspectionWizardShell currentStep={2} inspectionId={id}>
+      <InspectionWizardShell
+        currentStep={2}
+        inspectionId={id}
+        showDraftBanner={inspection?.status === InspectionStatus.DRAFT}
+        draftExpiresAt={inspection?.draft_expires_at}
+      >
         {content}
       </InspectionWizardShell>
     );

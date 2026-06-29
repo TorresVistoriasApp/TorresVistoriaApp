@@ -7,6 +7,7 @@ import {
   PhotoCaptureProgressSummary,
   PhotoSectionProgressBar,
 } from "@/components/photos/photo-section-progress";
+import { PhotoActionSheet } from "@/features/draft/components/photo-action-sheet";
 import { Button } from "@/components/ui/button";
 import { isPendingPhoto } from "@/hooks/use-photos";
 import {
@@ -28,6 +29,12 @@ type PhotoPreviewState = {
   url: string;
   category: PhotoCategoryDefinition;
   photo: InspectionPhoto;
+};
+
+type PhotoActionState = {
+  categoryKey: string;
+  categoryName: string;
+  multiple: boolean;
 };
 
 function getPhotosForCategory(
@@ -65,29 +72,56 @@ function resolveSlotStatus(
   return "pending";
 }
 
+function pickFiles(options: { capture?: boolean; multiple?: boolean }): Promise<File[]> {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    if (options.capture) {
+      input.capture = "environment";
+    }
+    input.multiple = Boolean(options.multiple);
+    input.onchange = () => resolve(Array.from(input.files ?? []));
+    input.click();
+  });
+}
+
 export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps) {
   const [preview, setPreview] = useState<PhotoPreviewState | null>(null);
+  const [photoAction, setPhotoAction] = useState<PhotoActionState | null>(null);
 
   const captureProgress = useMemo(() => computeCaptureProgress(photos), [photos]);
   const confirmedPhotoCount = photos.filter((photo) => !isPendingPhoto(photo)).length;
 
-  const openFilePicker = (categoryKey: string, multiple = false) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.capture = "environment";
-    input.multiple = multiple;
-    input.onchange = () => {
-      Array.from(input.files ?? []).forEach((file) => onUpload(file, categoryKey));
-    };
-    input.click();
+  const uploadFiles = (files: File[], categoryKey: string) => {
+    files.forEach((file) => onUpload(file, categoryKey));
   };
 
-  const handleRetakeFromPreview = () => {
+  const openPhotoActions = (category: PhotoCategoryDefinition, multiple = false) => {
+    setPhotoAction({
+      categoryKey: category.key,
+      categoryName: category.name,
+      multiple,
+    });
+  };
+
+  const handleTakePhoto = async () => {
+    if (!photoAction) return;
+    const files = await pickFiles({ capture: true, multiple: photoAction.multiple });
+    uploadFiles(files, photoAction.categoryKey);
+  };
+
+  const handlePickGallery = async () => {
+    if (!photoAction) return;
+    const files = await pickFiles({ multiple: photoAction.multiple });
+    uploadFiles(files, photoAction.categoryKey);
+  };
+
+  const handleRetakeFromPreview = async () => {
     if (!preview || !onDelete) return;
     onDelete(preview.photo);
     setPreview(null);
-    openFilePicker(preview.category.key);
+    openPhotoActions(preview.category);
   };
 
   const renderCategorySlot = (category: PhotoCategoryDefinition) => {
@@ -104,13 +138,13 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
           guide={guide}
           photos={categoryPhotos}
           required={category.required}
-          onCapture={() => openFilePicker(category.key, true)}
+          onCapture={() => openPhotoActions(category, true)}
           onViewPhoto={(photo) =>
             photo.public_url && setPreview({ url: photo.public_url, category, photo })
           }
           onRetakePhoto={(photo) => {
             onDelete?.(photo);
-            openFilePicker(category.key, true);
+            openPhotoActions(category, true);
           }}
         />
       );
@@ -125,14 +159,14 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
         required={category.required}
         imageUrl={latestPhoto?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
-        onCapture={() => openFilePicker(category.key)}
+        onCapture={() => openPhotoActions(category)}
         onView={() =>
           latestPhoto?.public_url &&
           setPreview({ url: latestPhoto.public_url, category, photo: latestPhoto })
         }
         onRetake={() => {
           if (latestPhoto && onDelete) onDelete(latestPhoto);
-          openFilePicker(category.key);
+          openPhotoActions(category);
         }}
       />
     );
@@ -185,6 +219,16 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
         );
       })}
 
+      <PhotoActionSheet
+        open={Boolean(photoAction)}
+        onOpenChange={(open) => {
+          if (!open) setPhotoAction(null);
+        }}
+        categoryName={photoAction?.categoryName}
+        onTakePhoto={() => void handleTakePhoto()}
+        onPickGallery={() => void handlePickGallery()}
+      />
+
       {preview && (
         <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/85 p-4">
           <button
@@ -215,7 +259,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
                 type="button"
                 variant="outline"
                 className="mt-4 touch-target border-white/30 bg-white/10 text-white hover:bg-white/20"
-                onClick={handleRetakeFromPreview}
+                onClick={() => void handleRetakeFromPreview()}
               >
                 <RotateCcw className="mr-2 size-4" />
                 Refazer fotografia

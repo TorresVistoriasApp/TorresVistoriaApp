@@ -3,6 +3,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { SyncStatusIndicator } from "@/features/draft/components/sync-status-indicator";
+import { useSyncStatus } from "@/features/draft/hooks/use-offline-sync";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +17,7 @@ import { cn } from "@/lib/utils";
 export function Header() {
   const { profile, signOut } = useAuth();
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen);
+  const { status, pendingCount } = useSyncStatus();
   const displayName = profile?.full_name ?? "Usuário";
 
   return (
@@ -38,6 +41,8 @@ export function Header() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            <SyncStatusIndicator status={status} pendingCount={pendingCount} className="hidden sm:inline-flex" />
+            <SyncStatusIndicator status={status} pendingCount={pendingCount} compact className="sm:hidden" />
             <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

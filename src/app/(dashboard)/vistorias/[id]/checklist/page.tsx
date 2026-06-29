@@ -7,8 +7,9 @@ import {
   WizardNavButtons,
 } from "@/components/vistoria/inspection-wizard-shell";
 import { useInspectionChecklist, useUpdateChecklistItem } from "@/hooks/use-checklist";
+import { useInspection } from "@/hooks/use-inspection";
 import { Button } from "@/components/ui/button";
-import { ChecklistStatus } from "@/lib/enums";
+import { ChecklistStatus, InspectionStatus } from "@/lib/enums";
 import { useToast } from "@/hooks/use-toast";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 
@@ -17,6 +18,7 @@ export function Page() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
+  const { data: inspection } = useInspection(id);
   const { data: items = [], isLoading } = useInspectionChecklist(id);
   const updateItem = useUpdateChecklistItem(id!);
   const { toast } = useToast();
@@ -91,7 +93,12 @@ export function Page() {
 
   if (isWizardFlow) {
     return (
-      <InspectionWizardShell currentStep={3} inspectionId={id}>
+      <InspectionWizardShell
+        currentStep={3}
+        inspectionId={id}
+        showDraftBanner={inspection?.status === InspectionStatus.DRAFT}
+        draftExpiresAt={inspection?.draft_expires_at}
+      >
         {checklistContent}
       </InspectionWizardShell>
     );

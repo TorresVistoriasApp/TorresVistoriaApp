@@ -76,5 +76,32 @@ export const vistoriaSchema = z
 
 export const vistoriaUpdateSchema = vistoriaSchema.partial();
 
+/** Validação flexível para auto-save de rascunhos (campos parciais). */
+export const vistoriaDraftSchema = vistoriaSchema
+  .partial()
+  .extend({
+    inspection_date: z.string().optional(),
+    inspection_time: z.string().optional(),
+    location: z.string().max(300).optional(),
+    inspection_type_id: z.union([z.string().uuid(), z.literal("")]).optional(),
+    client_name: z.string().max(200).optional(),
+    client_document: z.string().max(18).optional(),
+    plate: z.string().max(10).optional(),
+    chassis: z.string().max(17).optional(),
+    brand: z.string().max(100).optional(),
+    model: z.string().max(100).optional(),
+    color: z.string().max(50).optional(),
+    fuel: z.string().max(50).optional(),
+    technical_notes: z.string().max(5000).optional(),
+    opinion: z
+      .preprocess(
+        (value) => (value === "" || value === null ? undefined : value),
+        opinionEnum.optional(),
+      )
+      .optional(),
+    status: statusEnum.default(InspectionStatus.DRAFT),
+  });
+
 export type VistoriaInput = z.infer<typeof vistoriaSchema>;
 export type VistoriaUpdateInput = z.infer<typeof vistoriaUpdateSchema>;
+export type VistoriaDraftInput = z.infer<typeof vistoriaDraftSchema>;

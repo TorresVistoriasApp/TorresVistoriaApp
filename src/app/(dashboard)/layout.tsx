@@ -1,10 +1,13 @@
 import { Outlet } from "react-router-dom";
 import { AppShell } from "@/components/layout/app-shell";
+import { DraftSystemProvider } from "@/features/draft/components/draft-system-provider";
 
 export function DashboardLayout() {
   return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <DraftSystemProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </DraftSystemProvider>
   );
 }

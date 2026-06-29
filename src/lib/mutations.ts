@@ -35,16 +35,21 @@ export const mutations = {
         .single();
     },
 
-    update(id: string, data: Partial<VistoriaInput>) {
-      return db
-        .from("inspections")
-        .update({
-          ...data,
-          plate: data.plate?.toUpperCase(),
-        })
-        .eq("id", id)
-        .select("*")
-        .single();
+    update(
+      id: string,
+      data: Partial<VistoriaInput> & {
+        completion_percent?: number;
+        last_auto_saved_at?: string;
+        draft_expires_at?: string | null;
+      },
+    ) {
+      const patch = {
+        ...data,
+        plate: data.plate?.toUpperCase(),
+        inspection_type_id: data.inspection_type_id === "" ? null : data.inspection_type_id,
+      };
+
+      return db.from("inspections").update(patch).eq("id", id).select("*").single();
     },
 
     softDelete(id: string) {

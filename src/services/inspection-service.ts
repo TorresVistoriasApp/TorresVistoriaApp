@@ -75,6 +75,9 @@ export type Inspection = {
   insurance_acceptance_percent: number | null;
   vehicle_condition: string | null;
   status: string;
+  completion_percent: number;
+  draft_expires_at: string | null;
+  last_auto_saved_at: string | null;
   created_at: string;
   updated_at: string;
 };
