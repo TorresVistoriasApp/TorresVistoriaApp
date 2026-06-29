@@ -4,6 +4,7 @@ import {
   formatEstimatedTime,
   getSectionStatusLabel,
 } from "@/lib/photos/photo-progress";
+import { PHOTO_REQUIREMENTS_ENABLED } from "@/lib/photos/photo-requirements-flag";
 import { cn } from "@/lib/utils";
 
 interface PhotoSectionProgressBarProps {
@@ -47,13 +48,15 @@ export function PhotoSectionProgressBar({
         />
       </div>
 
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-        <span>
-          {progress.completedPhotos}/{progress.requiredPhotos} obrigatórias
-        </span>
-        {progress.remainingPhotos > 0 && <span>{progress.remainingPhotos} restante(s)</span>}
-        <span>{formatEstimatedTime(progress.estimatedSecondsRemaining)}</span>
-      </div>
+      {PHOTO_REQUIREMENTS_ENABLED && (
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+          <span>
+            {progress.completedPhotos}/{progress.requiredPhotos} obrigatórias
+          </span>
+          {progress.remainingPhotos > 0 && <span>{progress.remainingPhotos} restante(s)</span>}
+          <span>{formatEstimatedTime(progress.estimatedSecondsRemaining)}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -81,9 +84,18 @@ export function PhotoCaptureProgressSummary({
         <div className="min-w-0 space-y-1">
           <p className="text-sm font-semibold text-foreground">Progresso geral</p>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            {totalCompleted} de {totalRequired} fotografias obrigatórias concluídas.
-            {totalRequired - totalCompleted > 0 &&
-              ` Faltam ${totalRequired - totalCompleted} para continuar.`}
+            {PHOTO_REQUIREMENTS_ENABLED ? (
+              <>
+                {totalCompleted} de {totalRequired} fotografias obrigatórias concluídas.
+                {totalRequired - totalCompleted > 0 &&
+                  ` Faltam ${totalRequired - totalCompleted} para continuar.`}
+              </>
+            ) : (
+              <>
+                {totalPhotos} foto{totalPhotos === 1 ? "" : "s"} registrada
+                {totalPhotos === 1 ? "" : "s"}.
+              </>
+            )}
           </p>
         </div>
         <div className="text-right">

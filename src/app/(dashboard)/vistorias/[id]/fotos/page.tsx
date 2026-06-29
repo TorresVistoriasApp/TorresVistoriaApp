@@ -17,6 +17,7 @@ import { useInspection } from "@/hooks/use-inspection";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
+import { PHOTO_REQUIREMENTS_ENABLED } from "@/lib/photos/photo-requirements-flag";
 import { InspectionStatus } from "@/lib/enums";
 import type { InspectionPhoto } from "@/services/photo-service";
 
@@ -171,7 +172,11 @@ export function Page() {
         </Button>
         <PageHeader
           title="Fotos e evidências"
-          description="Passo 2 de 4. Capture cada fotografia seguindo o guia visual. Todas as obrigatórias devem ser concluídas."
+          description={
+            PHOTO_REQUIREMENTS_ENABLED
+              ? "Passo 2 de 4. Capture cada fotografia seguindo o guia visual. Todas as obrigatórias devem ser concluídas."
+              : "Passo 2 de 4. Capture cada fotografia seguindo o guia visual."
+          }
         />
       </div>
       {content}
