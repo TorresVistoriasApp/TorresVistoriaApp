@@ -5,6 +5,10 @@ import {
   getPhotoCategoryLabel,
   photoMatchesCategory,
 } from "@/lib/photos/photo-catalog";
+import {
+  PHOTO_REQUIREMENTS_ENABLED,
+  isPhotoRequirementActive,
+} from "@/lib/photos/photo-requirements-flag";
 import type {
   PhotoCaptureProgress,
   PhotoSectionProgress,
@@ -71,7 +75,9 @@ export function computeSectionProgress(
     };
   }
 
-  const requiredCategories = section.categories.filter((c) => c.required && c.type === "SINGLE");
+  const requiredCategories = section.categories.filter(
+    (c) => isPhotoRequirementActive(c.required) && c.type === "SINGLE",
+  );
   const completedCategories = requiredCategories.filter((c) =>
     isCategoryComplete(photos, c.key),
   ).length;
@@ -88,7 +94,12 @@ export function computeSectionProgress(
     requiredPhotos > 0 ? Math.round((completedPhotos / requiredPhotos) * 100) : totalPhotos > 0 ? 100 : 0;
 
   const estimatedSecondsRemaining = section.categories
-    .filter((c) => c.required && c.type === "SINGLE" && !isCategoryComplete(photos, c.key))
+    .filter(
+      (c) =>
+        isPhotoRequirementActive(c.required) &&
+        c.type === "SINGLE" &&
+        !isCategoryComplete(photos, c.key),
+    )
     .reduce((sum, c) => sum + (c.estimatedCaptureSeconds ?? 25), 0);
 
   return {
@@ -108,15 +119,17 @@ export function computeSectionProgress(
 export function computeCaptureProgress(photos: PhotoLike[]): PhotoCaptureProgress {
   const sections = PHOTO_CATALOG.map((section) => computeSectionProgress(section.key, photos));
 
-  const mandatoryKeys = MANDATORY_PHOTO_CATEGORY_KEYS;
+  const mandatoryKeys = PHOTO_REQUIREMENTS_ENABLED ? MANDATORY_PHOTO_CATEGORY_KEYS : [];
   const totalRequired = mandatoryKeys.length;
   const totalCompleted = mandatoryKeys.filter((key) => isCategoryComplete(photos, key)).length;
   const percentComplete =
     totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : 100;
 
-  const missingRequiredLabels = mandatoryKeys
-    .filter((key) => !isCategoryComplete(photos, key))
-    .map((key) => getPhotoCategoryLabel(key));
+  const missingRequiredLabels = PHOTO_REQUIREMENTS_ENABLED
+    ? mandatoryKeys
+        .filter((key) => !isCategoryComplete(photos, key))
+        .map((key) => getPhotoCategoryLabel(key))
+    : [];
 
   const estimatedSecondsRemaining = sections.reduce(
     (sum, s) => sum + s.estimatedSecondsRemaining,
@@ -129,7 +142,7 @@ export function computeCaptureProgress(photos: PhotoLike[]): PhotoCaptureProgres
     totalCompleted,
     percentComplete,
     estimatedSecondsRemaining,
-    canProceed: missingRequiredLabels.length === 0,
+    canProceed: !PHOTO_REQUIREMENTS_ENABLED || missingRequiredLabels.length === 0,
     missingRequiredLabels,
   };
 }

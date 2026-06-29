@@ -3,6 +3,7 @@ import type { ChecklistItem } from "@/services/checklist-service";
 import type { InspectionPhoto } from "@/services/photo-service";
 import { validateChecklistCompletion } from "@/components/forms/checklist-form";
 import { computeCaptureProgress } from "@/lib/photos/photo-progress";
+import { PHOTO_REQUIREMENTS_ENABLED } from "@/lib/photos/photo-requirements-flag";
 import { getOpinionLabel, summarizeLaudoChecklist } from "@/lib/laudo/laudo-model";
 import { formatPlate } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
@@ -47,11 +48,13 @@ export function buildLaudoReadiness(
     },
     {
       id: "photos",
-      title: "Fotos obrigatórias",
-      description: photoProgress.canProceed
-        ? `${photos.length} foto(s) registrada(s). ${photoProgress.totalCompleted}/${photoProgress.totalRequired} obrigatórias concluídas.`
-        : `Faltam ${photoProgress.missingRequiredLabels.length} fotografia(s) obrigatória(s) em ${12 - photoProgress.sections.filter((s) => s.status === "COMPLETED").length} seção(ões).`,
-      ok: photoProgress.canProceed,
+      title: PHOTO_REQUIREMENTS_ENABLED ? "Fotos obrigatórias" : "Fotos",
+      description: PHOTO_REQUIREMENTS_ENABLED
+        ? photoProgress.canProceed
+          ? `${photos.length} foto(s) registrada(s). ${photoProgress.totalCompleted}/${photoProgress.totalRequired} obrigatórias concluídas.`
+          : `Faltam ${photoProgress.missingRequiredLabels.length} fotografia(s) obrigatória(s) em ${12 - photoProgress.sections.filter((s) => s.status === "COMPLETED").length} seção(ões).`
+        : `${photos.length} foto(s) registrada(s).`,
+      ok: PHOTO_REQUIREMENTS_ENABLED ? photoProgress.canProceed : true,
     },
     {
       id: "opinion",

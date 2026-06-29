@@ -12,6 +12,7 @@ import { PhotoVisualGuidePanel } from "@/components/photos/photo-visual-guide";
 import type { PhotoCategoryDefinition } from "@/lib/photos/types";
 import type { InspectionPhoto } from "@/services/photo-service";
 import { resolveVisualGuide } from "@/lib/photos/visual-guides";
+import { isPhotoRequirementActive } from "@/lib/photos/photo-requirements-flag";
 
 interface PhotoCaptureSheetProps {
   open: boolean;
@@ -44,7 +45,7 @@ export function PhotoCaptureSheet({
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2">
             {category.name}
-            {category.required && (
+            {isPhotoRequirementActive(category.required) && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-800">
                 Obrigatória
               </span>

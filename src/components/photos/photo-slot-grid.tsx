@@ -17,6 +17,7 @@ import {
   photoMatchesCategory,
 } from "@/lib/photos/photo-catalog";
 import { computeCaptureProgress, computeSectionProgress } from "@/lib/photos/photo-progress";
+import { isPhotoRequirementActive } from "@/lib/photos/photo-requirements-flag";
 import type { PhotoGuideCardStatus } from "@/lib/photos/types";
 import type { InspectionPhoto } from "@/services/photo-service";
 
@@ -168,7 +169,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
           label={category.name}
           guide={guide}
           photos={categoryPhotos}
-          required={category.required}
+          required={isPhotoRequirementActive(category.required)}
           onCapture={() => openPhotoActions(category, true)}
           onViewPhoto={(photo) =>
             photo.public_url && setPreview({ url: photo.public_url, category, photo })
@@ -187,7 +188,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
         categoryName={category.name}
         guide={guide}
         status={resolveSlotStatus(categoryPhotos, confirmed)}
-        required={category.required}
+        required={isPhotoRequirementActive(category.required)}
         imageUrl={displayPhoto?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
         onCapture={() => openPhotoActions(category)}
@@ -224,7 +225,9 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
 
       {PHOTO_CATALOG.map((section) => {
         const sectionProgress = captureProgress.sections.find((s) => s.sectionKey === section.key)!;
-        const isOptionalSection = section.categories.every((c) => !c.required);
+        const isOptionalSection = section.categories.every(
+          (c) => !isPhotoRequirementActive(c.required),
+        );
 
         return (
           <FormSectionCard
