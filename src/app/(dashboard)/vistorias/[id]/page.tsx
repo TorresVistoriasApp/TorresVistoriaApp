@@ -220,7 +220,7 @@ export function Page() {
             <CardTitle className="text-sm">Checklist</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            {conformeCount}/{checklist.length} itens conformes
+            {conformeCount}/{checklist.length} itens aprovados
           </CardContent>
         </Card>
       )}

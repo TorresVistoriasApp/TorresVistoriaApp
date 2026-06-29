@@ -29,7 +29,7 @@ export function Page() {
         return;
       }
       if (missingNotesCount > 0) {
-        toast(`Preencha observações nos ${missingNotesCount} item(ns) não conforme(s).`);
+        toast(`Preencha observações nos ${missingNotesCount} item(ns) com ressalvas.`);
         return;
       }
     }
@@ -112,7 +112,7 @@ export function Page() {
         <div className="min-w-0">
           <h1 className="text-lg font-bold md:text-xl">Checklist</h1>
           <p className="text-xs text-muted-foreground">
-            Toque no status. Observações apenas em itens não conformes.
+            Toque no status. Observações apenas em itens com ressalvas.
           </p>
         </div>
       </div>

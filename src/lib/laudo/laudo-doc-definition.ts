@@ -4,7 +4,8 @@ import {
   groupPhotosBySection,
 } from "@/lib/photos/pdf-photo-layout";
 import { formatDate, formatDocument, formatPhone, formatPlate } from "@/lib/formatters";
-import { getChecklistCategoryLabel, getChecklistStatusLabel } from "@/lib/checklist-catalog";
+import { getChecklistCategoryLabel } from "@/lib/checklist-catalog";
+import { getChecklistStatusLabel, getChecklistStatusPdfColor } from "@/lib/checklist-status";
 import {
   buildInspectionInfoRows,
   buildSaleMarketInfoRows,
@@ -180,7 +181,7 @@ function buildStatsDashboard(
       body: [
         [
           statCardCell("Checklist", `${stats.evaluated}/${stats.total}`, primaryColor),
-          statCardCell("Não conforme", String(stats.naoConforme), "#dc2626"),
+          statCardCell("Com ressalvas", String(stats.naoConforme), "#d97706"),
           statCardCell("Fotos", String(photoCount), "#2563eb"),
           statCardCell("Risco", stats.riskLevel, riskColor),
         ],
@@ -344,22 +345,14 @@ function buildCoverHeader(
 }
 
 function checklistStatusNode(status: string): PdfNode {
-  const statusConfig: Record<string, { label: string; color: string }> = {
-    CONFORME: { label: "Conforme", color: "#16a34a" },
-    NAO_CONFORME: { label: "Não conforme", color: "#dc2626" },
-    NA: { label: "Não se aplica", color: "#64748b" },
-    PENDENTE: { label: "Pendente", color: "#f59e0b" },
-  };
-  const config = statusConfig[status] ?? {
-    label: getChecklistStatusLabel(status),
-    color: "#64748b",
-  };
+  const label = getChecklistStatusLabel(status);
+  const color = getChecklistStatusPdfColor(status);
 
   return {
-    text: config.label,
+    text: label,
     fontSize: 8,
     bold: true,
-    color: config.color,
+    color,
   };
 }
 
@@ -368,10 +361,10 @@ function checklistBarChart(payload: LaudoPayload): PdfNode {
   const total = Math.max(stats.total, 1);
   const width = PAGE_CONTENT_WIDTH;
   const segments = [
-    { label: "Conforme", value: stats.conforme, color: "#16a34a" },
-    { label: "Não conforme", value: stats.naoConforme, color: "#dc2626" },
-    { label: "N/A", value: stats.naoAplicavel, color: SLATE },
-    { label: "Pendente", value: stats.pendente, color: "#f59e0b" },
+    { label: getChecklistStatusLabel("CONFORME"), value: stats.conforme, color: "#16a34a" },
+    { label: getChecklistStatusLabel("NAO_CONFORME"), value: stats.naoConforme, color: "#d97706" },
+    { label: getChecklistStatusLabel("NA"), value: stats.naoAplicavel, color: SLATE },
+    { label: getChecklistStatusLabel("PENDENTE"), value: stats.pendente, color: "#f59e0b" },
   ];
 
   const activeSegments = segments.filter((segment) => segment.value > 0);
@@ -427,7 +420,7 @@ function buildChecklistSection(payload: LaudoPayload): PdfNode[] {
       {
         text: item.notes || "Sem observação",
         fontSize: 8,
-        color: item.status === "NAO_CONFORME" ? "#991b1b" : "#0f172a",
+        color: item.status === "NAO_CONFORME" ? "#92400e" : "#0f172a",
         bold: item.status === "NAO_CONFORME",
       },
     ]);

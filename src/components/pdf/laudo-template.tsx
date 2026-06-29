@@ -3,6 +3,8 @@ import type { ChecklistItem } from "@/services/checklist-service";
 import type { InspectionPhoto } from "@/services/photo-service";
 import type { LaudoCompany, LaudoInspector, LaudoSettings } from "@/lib/laudo/laudo-model";
 import { getOpinionLabel, summarizeLaudoChecklist } from "@/lib/laudo/laudo-model";
+import { getChecklistStatusLabel } from "@/lib/checklist-status";
+import { ChecklistStatus } from "@/lib/enums";
 import { formatDate, formatDocument, formatKM, formatPlate, getDocumentTypeLabel } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
@@ -101,8 +103,10 @@ export function LaudoTemplate({
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-muted-foreground">Não conforme</dt>
-              <dd className="font-bold text-destructive">{stats.naoConforme}</dd>
+              <dt className="text-xs text-muted-foreground">
+                {getChecklistStatusLabel(ChecklistStatus.NAO_CONFORME)}
+              </dt>
+              <dd className="font-bold text-amber-700">{stats.naoConforme}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">Fotos</dt>

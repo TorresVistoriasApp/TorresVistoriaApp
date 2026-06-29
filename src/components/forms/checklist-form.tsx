@@ -7,6 +7,7 @@ import {
   CHECKLIST_CATEGORY_ORDER,
   getChecklistCategoryLabel,
 } from "@/lib/checklist-catalog";
+import { CHECKLIST_RESSALVAS_FILTER_LABEL } from "@/lib/checklist-status";
 import { ChecklistStatus } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Scale, Shield } from "lucide-react";
@@ -64,7 +65,7 @@ export function ChecklistForm({
   const filterOptions: { key: FilterKey; label: string; count?: number }[] = [
     { key: "ALL", label: "Todos", count: items.length },
     { key: "PENDING", label: "Pendentes", count: summary.pending },
-    { key: "NON_CONFORM", label: "Não conformes", count: summary.naoConforme },
+    { key: "NON_CONFORM", label: CHECKLIST_RESSALVAS_FILTER_LABEL, count: summary.naoConforme },
   ];
 
   return (
@@ -85,7 +86,7 @@ export function ChecklistForm({
           Checklist técnico para vistoria cautelar com parâmetros exigidos pelo{" "}
           <strong className="text-foreground">DETRAN</strong>, seguradoras e{" "}
           <strong className="text-foreground">perícia judicial</strong>. Registre observações
-          detalhadas em itens não conformes, pois são obrigatórias para a validade do laudo.
+          detalhadas em itens com ressalvas, pois são obrigatórias para a validade do laudo.
         </p>
       </details>
       <div className="hidden rounded-xl border border-border bg-muted/20 p-4 text-xs leading-relaxed text-muted-foreground md:block">
@@ -95,7 +96,7 @@ export function ChecklistForm({
             Checklist técnico para vistoria cautelar com parâmetros exigidos pelo{" "}
             <strong className="text-foreground">DETRAN</strong>, seguradoras e{" "}
             <strong className="text-foreground">perícia judicial</strong>. Registre observações
-            detalhadas em itens não conformes, pois são obrigatórias para a validade do laudo.
+            detalhadas em itens com ressalvas, pois são obrigatórias para a validade do laudo.
           </p>
         </div>
       </div>

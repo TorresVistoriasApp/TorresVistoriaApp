@@ -1,4 +1,6 @@
 import { formatCurrency, formatDateTime } from "@/lib/formatters";
+import { getChecklistStatusLabel } from "@/lib/checklist-status";
+import { ChecklistStatus } from "@/lib/enums";
 import type { AuditLog } from "@/services/audit-service";
 
 export const AUDIT_ACTIONS = ["INSERT", "UPDATE", "DELETE"] as const;
@@ -74,6 +76,14 @@ export function formatAuditValue(value: unknown): string {
   if (typeof value === "string") {
     if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
       return formatDateTime(value);
+    }
+    if (
+      value === ChecklistStatus.CONFORME ||
+      value === ChecklistStatus.NAO_CONFORME ||
+      value === ChecklistStatus.NA ||
+      value === ChecklistStatus.PENDENTE
+    ) {
+      return getChecklistStatusLabel(value);
     }
     return value;
   }

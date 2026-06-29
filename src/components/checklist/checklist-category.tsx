@@ -1,6 +1,7 @@
 import type { ChecklistItem } from "@/services/checklist-service";
 import { ChecklistItemRow } from "@/components/checklist/checklist-item";
 import { getChecklistCategoryLabel } from "@/lib/checklist-catalog";
+import { getChecklistStatusShortLabel } from "@/lib/checklist-status";
 import { ChecklistStatus } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 
@@ -51,8 +52,8 @@ export function ChecklistCategory({
               {evaluated}/{items.length}
             </span>
             {nonConform > 0 && (
-              <span className="rounded-full bg-red-100 px-2.5 py-1 font-semibold text-destructive">
-                {nonConform} NC
+              <span className="rounded-full bg-amber-100 px-2.5 py-1 font-semibold text-amber-800">
+                {nonConform} {getChecklistStatusShortLabel(ChecklistStatus.NAO_CONFORME)}
               </span>
             )}
           </div>

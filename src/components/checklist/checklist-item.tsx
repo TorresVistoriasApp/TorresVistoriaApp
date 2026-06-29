@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ChecklistItem } from "@/services/checklist-service";
 import { ChecklistStatus } from "@/lib/enums";
 import { getChecklistItemCriteria } from "@/lib/checklist-catalog";
+import { getChecklistStatusMeta } from "@/lib/checklist-status";
 import { ChecklistStatusToggle } from "@/components/checklist/checklist-status-toggle";
 import { cn } from "@/lib/utils";
 import { AlertCircle, ChevronDown, MessageSquarePlus } from "lucide-react";
@@ -27,6 +28,8 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
   const isEvaluated = !isPending;
   const needsNote = isNonConform && !notes.trim();
   const showNotesField = isNonConform || showOptionalNotes;
+  const ressalvasMeta = getChecklistStatusMeta(ChecklistStatus.NAO_CONFORME);
+  const pendingMeta = getChecklistStatusMeta(ChecklistStatus.PENDENTE);
 
   useEffect(() => {
     if (isNonConform) {
@@ -71,8 +74,8 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
     <li
       className={cn(
         "border-b border-border/60 px-3 py-3.5 transition-colors last:border-b-0 sm:px-4 sm:py-4",
-        isPending && "bg-amber-50/40",
-        isNonConform && "bg-red-50/30",
+        isPending && pendingMeta.itemBg,
+        isNonConform && ressalvasMeta.itemBg,
       )}
     >
       <div className="space-y-2.5">
@@ -81,9 +84,9 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
             className={cn(
               "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
               isPending
-                ? "bg-amber-100 text-amber-800"
+                ? pendingMeta.itemIndexBg
                 : isNonConform
-                  ? "bg-red-100 text-destructive"
+                  ? ressalvasMeta.itemIndexBg
                   : "bg-muted text-muted-foreground",
             )}
           >
@@ -116,7 +119,7 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
           className={cn(
             "mt-3 space-y-2 rounded-xl border p-3",
             isNonConform
-              ? "border-destructive/40 bg-destructive/[0.04]"
+              ? cn(ressalvasMeta.notesBorder, ressalvasMeta.notesBg)
               : "border-border bg-muted/20",
           )}
         >
@@ -125,7 +128,7 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
               <p
                 className={cn(
                   "text-xs font-semibold",
-                  isNonConform ? "text-destructive" : "text-foreground",
+                  isNonConform ? ressalvasMeta.notesText : "text-foreground",
                 )}
               >
                 Observações técnicas
@@ -136,8 +139,8 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
                 )}
               </p>
               {isNonConform && (
-                <p className="mt-0.5 text-[11px] text-destructive/80">
-                  Descreva a não conformidade para validar o laudo.
+                <p className="mt-0.5 text-[11px] text-amber-700/80">
+                  Descreva a ressalva para validar o laudo.
                 </p>
               )}
             </div>
@@ -171,13 +174,13 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
               "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
               "disabled:opacity-50",
               needsNote
-                ? "border-destructive/60 ring-1 ring-destructive/25"
+                ? "border-amber-500/60 ring-1 ring-amber-500/25"
                 : "border-border",
             )}
           />
 
           {needsNote && (
-            <p className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-amber-800">
               <AlertCircle className="size-3.5 shrink-0" />
               Preencha antes de gerar o laudo.
             </p>

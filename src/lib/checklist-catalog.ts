@@ -2,12 +2,11 @@
  * Catálogo técnico de vistoria veicular cautelar/pericial.
  * Parâmetros alinhados a laudos para DETRAN, seguradoras e uso judicial.
  */
-import { ChecklistStatus } from "@/lib/enums";
 export type ChecklistCatalogItem = {
   name: string;
   /** Critério de avaliação exibido ao vistoriador. */
   criteria: string;
-  /** Observação obrigatória quando marcado como não conforme. */
+  /** Observação obrigatória quando marcado como aprovado com ressalvas. */
   requiresNoteOnNonConform?: boolean;
 };
 
@@ -159,13 +158,4 @@ export function buildChecklistSeedRows(companyId: string, inspectionId: string) 
   );
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  [ChecklistStatus.PENDENTE]: "Pendente",
-  [ChecklistStatus.CONFORME]: "Conforme",
-  [ChecklistStatus.NAO_CONFORME]: "Não conforme",
-  [ChecklistStatus.NA]: "Não se aplica",
-};
-
-export function getChecklistStatusLabel(status: string): string {
-  return STATUS_LABELS[status] ?? status.replace(/_/g, " ");
-}
+export { getChecklistStatusLabel } from "@/lib/checklist-status";

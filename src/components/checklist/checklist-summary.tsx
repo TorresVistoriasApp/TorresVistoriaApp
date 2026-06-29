@@ -1,6 +1,7 @@
 import { ChecklistStatus } from "@/lib/enums";
+import { getChecklistStatusLabel } from "@/lib/checklist-status";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { AlertTriangle, Check, Circle, Clock } from "lucide-react";
 
 type ChecklistSummaryProps = {
   total: number;
@@ -24,6 +25,10 @@ export function ChecklistSummary({
   const evaluatedPct = total > 0 ? Math.round((evaluated / total) * 100) : 0;
   const conformePct = evaluated > 0 ? Math.round((conforme / evaluated) * 100) : 0;
 
+  const aprovadoLabel = getChecklistStatusLabel(ChecklistStatus.CONFORME);
+  const ressalvasLabel = getChecklistStatusLabel(ChecklistStatus.NAO_CONFORME);
+  const naoAvaliadoLabel = getChecklistStatusLabel(ChecklistStatus.NA);
+
   if (variant === "compact") {
     return (
       <div className="space-y-2">
@@ -33,11 +38,11 @@ export function ChecklistSummary({
           </p>
           <div className="flex shrink-0 items-center gap-2 text-[11px] font-semibold">
             <span className="inline-flex items-center gap-1 text-emerald-700">
-              <CheckCircle2 className="size-3" />
+              <Check className="size-3" />
               {conforme}
             </span>
             {naoConforme > 0 && (
-              <span className="inline-flex items-center gap-1 text-destructive">
+              <span className="inline-flex items-center gap-1 text-amber-700">
                 <AlertTriangle className="size-3" />
                 {naoConforme}
               </span>
@@ -82,19 +87,19 @@ export function ChecklistSummary({
 
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <StatCard
-          icon={CheckCircle2}
-          label="Conforme"
+          icon={Check}
+          label={aprovadoLabel}
           value={conforme}
           tone="success"
           sub={evaluated > 0 ? `${conformePct}% dos avaliados` : undefined}
         />
         <StatCard
           icon={AlertTriangle}
-          label="Não conforme"
+          label={ressalvasLabel}
           value={naoConforme}
-          tone="danger"
+          tone="warning"
         />
-        <StatCard icon={Clock} label="Não se aplica" value={na} tone="muted" />
+        <StatCard icon={Circle} label={naoAvaliadoLabel} value={na} tone="muted" />
       </div>
 
       <div className="space-y-1.5">
@@ -123,20 +128,20 @@ function StatCard({
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number;
-  tone: "success" | "danger" | "muted";
+  tone: "success" | "warning" | "muted";
   sub?: string;
 }) {
   const tones = {
     success: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    danger: "border-red-200 bg-red-50 text-red-800",
-    muted: "border-border bg-muted/50 text-muted-foreground",
+    warning: "border-amber-200 bg-amber-50 text-amber-800",
+    muted: "border-slate-200 bg-slate-50 text-slate-600",
   };
 
   return (
     <div className={cn("rounded-lg border p-3", tones[tone])}>
       <div className="flex items-center gap-1.5 text-xs font-medium opacity-80">
-        <Icon className="size-3.5" />
-        {label}
+        <Icon className="size-3.5 shrink-0" />
+        <span className="leading-tight">{label}</span>
       </div>
       <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
       {sub && <p className="mt-0.5 text-[10px] opacity-70">{sub}</p>}
