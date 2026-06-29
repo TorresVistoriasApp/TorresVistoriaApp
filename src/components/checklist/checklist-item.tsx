@@ -140,7 +140,7 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
               </p>
               {isNonConform && (
                 <p className="mt-0.5 text-[11px] text-amber-700/80">
-                  Descreva a ressalva para validar o laudo.
+                  Descreva o apontamento para validar o laudo.
                 </p>
               )}
             </div>
@@ -206,7 +206,7 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
                 Observações técnicas
               </span>
               <span className="mt-0.5 block text-[11px] text-muted-foreground">
-                Opcional. Toque para registrar achados ou ressalvas.
+                Opcional. Toque para registrar achados ou apontamentos.
               </span>
             </span>
             <ChevronDown className="size-4 shrink-0 -rotate-90 text-muted-foreground" />

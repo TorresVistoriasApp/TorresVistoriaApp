@@ -6,7 +6,7 @@ export type ChecklistCatalogItem = {
   name: string;
   /** Critério de avaliação exibido ao vistoriador. */
   criteria: string;
-  /** Observação obrigatória quando marcado como aprovado com ressalvas. */
+  /** Observação obrigatória quando marcado como aprovado com apontamentos. */
   requiresNoteOnNonConform?: boolean;
 };
 

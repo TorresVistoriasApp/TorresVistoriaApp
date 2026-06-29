@@ -240,7 +240,7 @@ export function VistoriaForm({
         label="Observações técnicas"
         error={errors.technical_notes?.message}
         className={formGridFullWidthClass}
-        hint="Descreva achados, ressalvas ou recomendações. Entra no laudo PDF."
+        hint="Descreva achados, apontamentos ou recomendações. Entra no laudo PDF."
       >
         <textarea
           {...register("technical_notes")}
