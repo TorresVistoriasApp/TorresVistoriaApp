@@ -28,9 +28,9 @@ const CHECKLIST_STATUS_META: Record<ChecklistStatus, ChecklistStatusMeta> = {
     badgeActive: "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30",
   },
   [ChecklistStatus.NAO_CONFORME]: {
-    label: "⚠ Aprovado com Ressalvas",
-    shortLabel: "Ressalvas",
-    mobileLabel: "Ressalvas",
+    label: "⚠ Aprovado com Apontamentos",
+    shortLabel: "Apontamentos",
+    mobileLabel: "Apontamentos",
     pdfColor: "#d97706",
     tone: "warning",
     badgeIdle: "bg-amber-50 text-amber-800 hover:bg-amber-100 active:bg-amber-200",
@@ -89,4 +89,4 @@ export function getChecklistStatusPdfColor(status: string): string {
   return getChecklistStatusMeta(status).pdfColor;
 }
 
-export const CHECKLIST_RESSALVAS_FILTER_LABEL = "Com ressalvas";
+export const CHECKLIST_APONTAMENTOS_FILTER_LABEL = "Com apontamentos";

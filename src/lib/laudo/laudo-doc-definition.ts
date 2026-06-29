@@ -5,7 +5,7 @@ import {
 } from "@/lib/photos/pdf-photo-layout";
 import { formatDate, formatDocument, formatPhone, formatPlate } from "@/lib/formatters";
 import { getChecklistCategoryLabel } from "@/lib/checklist-catalog";
-import { getChecklistStatusLabel, getChecklistStatusPdfColor } from "@/lib/checklist-status";
+import { CHECKLIST_APONTAMENTOS_FILTER_LABEL, getChecklistStatusLabel, getChecklistStatusPdfColor } from "@/lib/checklist-status";
 import {
   buildInspectionInfoRows,
   buildSaleMarketInfoRows,
@@ -181,7 +181,7 @@ function buildStatsDashboard(
       body: [
         [
           statCardCell("Checklist", `${stats.evaluated}/${stats.total}`, primaryColor),
-          statCardCell("Com ressalvas", String(stats.naoConforme), "#d97706"),
+          statCardCell(CHECKLIST_APONTAMENTOS_FILTER_LABEL, String(stats.naoConforme), "#d97706"),
           statCardCell("Fotos", String(photoCount), "#2563eb"),
           statCardCell("Risco", stats.riskLevel, riskColor),
         ],
