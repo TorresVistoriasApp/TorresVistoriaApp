@@ -3,7 +3,6 @@ import { queryKeys } from "@/lib/queries";
 import { photoService, type InspectionPhoto } from "@/services/photo-service";
 import { pdfService } from "@/services/pdf-service";
 import { useAuth } from "@/hooks/use-auth";
-import { invalidateInspectionQueries } from "@/lib/cache-invalidation";
 import { offlineStore } from "@/features/draft/lib/offline-store";
 import { useSyncStore } from "@/features/draft/stores/sync-store";
 import { syncLogger } from "@/features/draft/lib/sync-logger";
@@ -117,7 +116,7 @@ export function useUploadPhoto(inspectionId: string) {
     onError: async (error, variables, context) => {
       const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
 
-      if (isOffline && profile?.company_id) {
+      if (isOffline && profile?.company_id && context?.optimisticId) {
         const pendingId = `offline-${variables.category}-${Date.now()}`;
         await offlineStore.queuePhotoUpload({
           id: pendingId,
@@ -133,6 +132,14 @@ export function useUploadPhoto(inspectionId: string) {
           uploadedBy: profile.id,
           createdAt: new Date().toISOString(),
         });
+
+        qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), (current) =>
+          (current ?? []).map((photo) =>
+            photo.id === context.optimisticId
+              ? { ...photo, id: pendingId, status: "CAPTURED" }
+              : photo,
+          ),
+        );
 
         useSyncStore.getState().markOffline();
         useSyncStore.getState().markPending();
@@ -152,9 +159,10 @@ export function useUploadPhoto(inspectionId: string) {
         error: error instanceof Error ? error.message : String(error),
       });
     },
-    onSettled: () => {
-      void qc.invalidateQueries({ queryKey: queryKeys.photos(inspectionId) });
-      invalidateInspectionQueries(qc, inspectionId);
+    onSettled: (_data, error) => {
+      if (error) {
+        void qc.invalidateQueries({ queryKey: queryKeys.photos(inspectionId) });
+      }
     },
   });
 }
@@ -166,7 +174,6 @@ export function useDeletePhoto(inspectionId: string) {
       photoService.remove(id, storagePath),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.photos(inspectionId) });
-      invalidateInspectionQueries(qc, inspectionId);
     },
   });
 }

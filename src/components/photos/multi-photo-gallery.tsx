@@ -31,11 +31,12 @@ export function MultiPhotoGallery({
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
   const confirmed = sortedPhotos.filter((photo) => !isPendingPhoto(photo));
-  const latest = confirmed[confirmed.length - 1];
+  const pending = sortedPhotos.filter((photo) => isPendingPhoto(photo));
+  const latest = confirmed[confirmed.length - 1] ?? pending[pending.length - 1];
   const extras = confirmed.slice(0, -1);
-  const isUploading = sortedPhotos.some((photo) => isPendingPhoto(photo));
+  const isUploading = pending.length > 0;
 
-  const mainStatus = isUploading && !latest ? "uploading" : latest ? "captured" : "pending";
+  const mainStatus = isUploading ? "uploading" : latest && !isPendingPhoto(latest) ? "captured" : "pending";
 
   return (
     <>

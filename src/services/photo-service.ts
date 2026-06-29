@@ -3,11 +3,12 @@ import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
 import {
   buildPhotoPath,
-  compressToWebP,
   extractImageMetadata,
   getDeviceInfo,
+  preparePhotoForUpload,
   STORAGE_BUCKET,
 } from "@/lib/compress-image";
+import { runPhotoUpload } from "@/lib/photos/upload-queue";
 import { getPhotoCategory, normalizePhotoCategory } from "@/lib/photos/photo-catalog";
 import { insertInspectionPhoto } from "@/lib/photos/photo-insert";
 import type { PhotoCaptureMetadata, PhotoCaptureStatus } from "@/lib/photos/types";
@@ -87,61 +88,63 @@ export const photoService = {
 
   async upload(file: File, params: PhotoUploadParams): Promise<InspectionPhoto> {
     try {
-      const webp = await compressToWebP(file);
-      const imageMeta = await extractImageMetadata(webp);
-      const device = getDeviceInfo();
-      const categoryMeta = resolveCategoryMeta(params.category);
-      const fileName = `${Date.now()}.webp`;
-      const storagePath = buildPhotoPath(
-        params.companyId,
-        params.inspectionId,
-        categoryMeta.normalizedCategory,
-        fileName,
-      );
+      return await runPhotoUpload(async () => {
+        const webp = await preparePhotoForUpload(file);
+        const imageMeta = await extractImageMetadata(webp);
+        const device = getDeviceInfo();
+        const categoryMeta = resolveCategoryMeta(params.category);
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
+        const storagePath = buildPhotoPath(
+          params.companyId,
+          params.inspectionId,
+          categoryMeta.normalizedCategory,
+          fileName,
+        );
 
-      const { error: uploadError } = await db.storage
-        .from(STORAGE_BUCKET)
-        .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await db.storage
+          .from(STORAGE_BUCKET)
+          .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
+        if (uploadError) throw uploadError;
 
-      const { data: urlData } = db.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
-      const now = new Date().toISOString();
+        const { data: urlData } = db.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
+        const now = new Date().toISOString();
 
-      const insertResult = await insertInspectionPhoto({
-        company_id: params.companyId,
-        inspection_id: params.inspectionId,
-        category: categoryMeta.normalizedCategory,
-        section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,
-        subcategory: params.metadata?.subcategory ?? null,
-        display_name: params.metadata?.displayName ?? categoryMeta.displayName,
-        sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
-        is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
-        storage_path: storagePath,
-        public_url: urlData.publicUrl,
-        thumbnail_url: urlData.publicUrl,
-        file_size: webp.size,
-        mime_type: "image/webp",
-        content_hash: imageMeta.contentHash,
-        width: imageMeta.width,
-        height: imageMeta.height,
-        resolution: imageMeta.resolution,
-        latitude: params.latitude ?? null,
-        longitude: params.longitude ?? null,
-        gps_accuracy: params.gpsAccuracy ?? null,
-        captured_at: params.metadata?.capturedAt ?? now,
-        device_model: params.metadata?.deviceModel ?? device.deviceModel,
-        device_os: params.metadata?.deviceOs ?? device.deviceOs,
-        uploaded_by: params.uploadedBy ?? null,
-        status: params.metadata?.status ?? "CAPTURED",
-        damage_location: params.metadata?.damageLocation ?? null,
-        damage_category: params.metadata?.damageCategory ?? null,
-        damage_severity: params.metadata?.damageSeverity ?? null,
-        complementary_name: params.metadata?.complementaryName ?? null,
-        complementary_category: params.metadata?.complementaryCategory ?? null,
-        ai_validation: params.metadata?.aiValidation ?? {},
+        const insertResult = await insertInspectionPhoto({
+          company_id: params.companyId,
+          inspection_id: params.inspectionId,
+          category: categoryMeta.normalizedCategory,
+          section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,
+          subcategory: params.metadata?.subcategory ?? null,
+          display_name: params.metadata?.displayName ?? categoryMeta.displayName,
+          sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
+          is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
+          storage_path: storagePath,
+          public_url: urlData.publicUrl,
+          thumbnail_url: urlData.publicUrl,
+          file_size: webp.size,
+          mime_type: "image/webp",
+          content_hash: imageMeta.contentHash,
+          width: imageMeta.width,
+          height: imageMeta.height,
+          resolution: imageMeta.resolution,
+          latitude: params.latitude ?? null,
+          longitude: params.longitude ?? null,
+          gps_accuracy: params.gpsAccuracy ?? null,
+          captured_at: params.metadata?.capturedAt ?? now,
+          device_model: params.metadata?.deviceModel ?? device.deviceModel,
+          device_os: params.metadata?.deviceOs ?? device.deviceOs,
+          uploaded_by: params.uploadedBy ?? null,
+          status: params.metadata?.status ?? "CAPTURED",
+          damage_location: params.metadata?.damageLocation ?? null,
+          damage_category: params.metadata?.damageCategory ?? null,
+          damage_severity: params.metadata?.damageSeverity ?? null,
+          complementary_name: params.metadata?.complementaryName ?? null,
+          complementary_category: params.metadata?.complementaryCategory ?? null,
+          ai_validation: params.metadata?.aiValidation ?? {},
+        });
+
+        return throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
       });
-
-      return throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

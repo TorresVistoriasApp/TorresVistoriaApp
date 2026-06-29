@@ -37,8 +37,9 @@ export function PhotoGuideCard({
   onRetake,
   className,
 }: PhotoGuideCardProps) {
-  const isCaptured = status === "captured" && Boolean(imageUrl);
+  const hasPreview = Boolean(imageUrl);
   const isUploading = status === "uploading";
+  const isCaptured = status === "captured" && hasPreview;
 
   return (
     <article
@@ -57,10 +58,10 @@ export function PhotoGuideCard({
       )}
 
       <div className="relative min-h-0 flex-1">
-        {isCaptured ? (
+        {hasPreview ? (
           <button
             type="button"
-            onClick={onView}
+            onClick={isCaptured ? onView : onCapture}
             className="relative block aspect-square w-full sm:aspect-[4/3]"
           >
             <img
@@ -75,7 +76,7 @@ export function PhotoGuideCard({
                 {indexBadge}
               </span>
             ) : (
-              !isUploading && (
+              isCaptured && (
                 <span className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md sm:size-7">
                   {countBadge != null && countBadge > 1 ? (
                     <span className="text-[10px] font-bold sm:text-xs">{countBadge}</span>
@@ -85,10 +86,12 @@ export function PhotoGuideCard({
                 </span>
               )
             )}
-            <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/45 px-2 py-1 text-[9px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-              <Eye className="size-3" />
-              Ver
-            </span>
+            {isCaptured && (
+              <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/45 px-2 py-1 text-[9px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+                <Eye className="size-3" />
+                Ver
+              </span>
+            )}
           </button>
         ) : (
           <button
@@ -130,7 +133,7 @@ export function PhotoGuideCard({
         <p className="line-clamp-2 text-[11px] font-bold leading-tight text-foreground sm:text-xs">
           {categoryName}
         </p>
-        {!isCaptured && (
+        {!hasPreview && (
           <p className="mt-0.5 hidden line-clamp-2 text-[10px] leading-snug text-muted-foreground sm:block">
             {guide.instruction}
           </p>

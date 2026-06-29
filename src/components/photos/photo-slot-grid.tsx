@@ -10,6 +10,7 @@ import {
 import { PhotoActionSheet } from "@/features/draft/components/photo-action-sheet";
 import { Button } from "@/components/ui/button";
 import { isPendingPhoto } from "@/hooks/use-photos";
+import { isSupportedImageFile } from "@/lib/compress-image";
 import {
   PHOTO_CATALOG,
   type PhotoCategoryDefinition,
@@ -67,21 +68,50 @@ function resolveSlotStatus(
   categoryPhotos: InspectionPhoto[],
   confirmed: InspectionPhoto[],
 ): PhotoGuideCardStatus {
-  if (categoryPhotos.some((p) => isPendingPhoto(p)) && confirmed.length === 0) return "uploading";
+  const hasPending = categoryPhotos.some((p) => isPendingPhoto(p));
+  if (hasPending) return "uploading";
   if (confirmed.length > 0) return "captured";
   return "pending";
+}
+
+function resolveDisplayPhoto(categoryPhotos: InspectionPhoto[]): InspectionPhoto | undefined {
+  const confirmed = categoryPhotos.filter((p) => !isPendingPhoto(p));
+  const pending = categoryPhotos.filter((p) => isPendingPhoto(p));
+  return confirmed[confirmed.length - 1] ?? pending[pending.length - 1];
 }
 
 function pickFiles(options: { capture?: boolean; multiple?: boolean }): Promise<File[]> {
   return new Promise((resolve) => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "image/*";
+    input.accept = "image/jpeg,image/png,image/webp,image/gif,image/bmp,image/heic,image/heif,.heic,.heif";
     if (options.capture) {
       input.capture = "environment";
     }
     input.multiple = Boolean(options.multiple);
-    input.onchange = () => resolve(Array.from(input.files ?? []));
+
+    let settled = false;
+    const finish = (files: File[]) => {
+      if (settled) return;
+      settled = true;
+      input.remove();
+      resolve(files.filter(isSupportedImageFile));
+    };
+
+    input.onchange = () => finish(Array.from(input.files ?? []));
+
+    const inputWithCancel = input as HTMLInputElement & { oncancel?: (() => void) | null };
+    if ("oncancel" in inputWithCancel) {
+      inputWithCancel.oncancel = () => finish([]);
+    } else {
+      const onWindowFocus = () => {
+        window.setTimeout(() => {
+          if (!input.files?.length) finish([]);
+        }, 400);
+      };
+      window.addEventListener("focus", onWindowFocus, { once: true });
+    }
+
     input.click();
   });
 }
@@ -94,6 +124,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
   const confirmedPhotoCount = photos.filter((photo) => !isPendingPhoto(photo)).length;
 
   const uploadFiles = (files: File[], categoryKey: string) => {
+    if (files.length === 0) return;
     files.forEach((file) => onUpload(file, categoryKey));
   };
 
@@ -127,7 +158,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
   const renderCategorySlot = (category: PhotoCategoryDefinition) => {
     const categoryPhotos = getPhotosForCategory(photos, category.key);
     const confirmed = categoryPhotos.filter((p) => !isPendingPhoto(p));
-    const latestPhoto = confirmed[confirmed.length - 1];
+    const displayPhoto = resolveDisplayPhoto(categoryPhotos);
     const guide = resolveGuide(category);
 
     if (isMultiCategory(category)) {
@@ -157,15 +188,16 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
         guide={guide}
         status={resolveSlotStatus(categoryPhotos, confirmed)}
         required={category.required}
-        imageUrl={latestPhoto?.public_url}
+        imageUrl={displayPhoto?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
         onCapture={() => openPhotoActions(category)}
         onView={() =>
-          latestPhoto?.public_url &&
-          setPreview({ url: latestPhoto.public_url, category, photo: latestPhoto })
+          displayPhoto?.public_url &&
+          setPreview({ url: displayPhoto.public_url, category, photo: displayPhoto })
         }
         onRetake={() => {
-          if (latestPhoto && onDelete) onDelete(latestPhoto);
+          const latestConfirmed = confirmed[confirmed.length - 1];
+          if (latestConfirmed && onDelete) onDelete(latestConfirmed);
           openPhotoActions(category);
         }}
       />

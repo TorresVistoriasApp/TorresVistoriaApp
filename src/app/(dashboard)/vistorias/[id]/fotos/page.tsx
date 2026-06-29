@@ -73,7 +73,11 @@ export function Page() {
         },
         {
           onError: (err) => {
-            toast(err instanceof Error ? err.message : "Erro no upload");
+            const message =
+              err instanceof Error
+                ? err.message
+                : "Não foi possível enviar a foto. Tente outra imagem ou use a câmera.";
+            toast(message);
           },
         },
       );
