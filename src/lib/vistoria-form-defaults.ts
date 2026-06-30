@@ -19,5 +19,7 @@ export function formatVistoriaFormDefaults(
     result.plate = maskPlate(result.plate);
   }
 
+  delete result.inspection_purpose;
+
   return result;
 }

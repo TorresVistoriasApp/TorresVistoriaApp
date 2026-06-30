@@ -3,7 +3,6 @@ import { clienteSchema } from "./cliente";
 import { veiculoSchema } from "./veiculo";
 import {
   InspectionOpinion,
-  InspectionPurpose,
   InspectionStatus,
 } from "@/lib/enums";
 import { parseCurrency } from "@/lib/masks";
@@ -23,15 +22,6 @@ const statusEnum = z.enum([
   InspectionStatus.ARCHIVED,
 ]);
 
-const purposeEnum = z.enum([
-  InspectionPurpose.CAUTELAR,
-  InspectionPurpose.VENDA,
-  InspectionPurpose.DETRAN,
-  InspectionPurpose.JUDICIAL,
-  InspectionPurpose.SEGURADORA,
-  InspectionPurpose.LEILAO,
-]);
-
 const optionalNumericField = (schema: z.ZodNumber) =>
   z.preprocess((value) => {
     if (value === "") return null;
@@ -39,13 +29,15 @@ const optionalNumericField = (schema: z.ZodNumber) =>
     return value;
   }, schema.optional().nullable());
 
+const purposeField = z.string().max(120).optional().nullable();
+
 export const vistoriaSchema = z
   .object({
     inspection_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
     inspection_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Hora inválida"),
     location: z.string().min(2, "Local obrigatório").max(300),
     inspection_type_id: z.string().uuid("Selecione o tipo de vistoria"),
-    inspection_purpose: purposeEnum.optional().nullable(),
+    inspection_purpose: purposeField,
     requester_name: z.string().max(200).optional().nullable().or(z.literal("")),
     requester_document: z.string().max(18).optional().nullable().or(z.literal("")),
     buyer_name: z.string().max(200).optional().nullable().or(z.literal("")),
@@ -76,6 +68,51 @@ export const vistoriaSchema = z
 
 export const vistoriaUpdateSchema = vistoriaSchema.partial();
 
+const WIZARD_PLACEHOLDER_FIELDS: Array<{ field: string; placeholder: string; label: string }> = [
+  { field: "location", placeholder: "A definir", label: "Local da vistoria" },
+  { field: "client_name", placeholder: "Rascunho em andamento", label: "Nome do contratante" },
+  { field: "client_document", placeholder: "00000000000", label: "CPF/CNPJ do contratante" },
+  { field: "plate", placeholder: "AAA0A00", label: "Placa" },
+  { field: "chassis", placeholder: "00000000000000000", label: "Chassi" },
+  { field: "brand", placeholder: "Pendente", label: "Marca" },
+  { field: "model", placeholder: "Pendente", label: "Modelo" },
+  { field: "color", placeholder: "Pendente", label: "Cor" },
+  { field: "fuel", placeholder: "Pendente", label: "Combustível" },
+];
+
+/**
+ * Validação do passo 1 do wizard: dados para seguir às fotos.
+ * Parecer e observações técnicas podem ser preenchidos depois (antes do laudo).
+ */
+export const vistoriaWizardContinueSchema = vistoriaSchema
+  .omit({ opinion: true, technical_notes: true })
+  .extend({
+    opinion: z
+      .preprocess(
+        (value) => (value === "" || value === null ? undefined : value),
+        opinionEnum.optional(),
+      )
+      .optional(),
+    technical_notes: z.string().max(5000).optional().or(z.literal("")),
+    inspection_type_id: z.string().uuid("Selecione o tipo de vistoria"),
+  })
+  .superRefine((data, ctx) => {
+    for (const { field, placeholder, label } of WIZARD_PLACEHOLDER_FIELDS) {
+      const value = data[field as keyof typeof data];
+      const normalized =
+        field === "client_document" && typeof value === "string"
+          ? value.replace(/\D/g, "")
+          : value;
+      if (normalized === placeholder) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Preencha o campo ${label}`,
+          path: [field],
+        });
+      }
+    }
+  });
+
 /** Validação flexível para auto-save de rascunhos (campos parciais). */
 export const vistoriaDraftSchema = vistoriaSchema
   .partial()
@@ -105,3 +142,4 @@ export const vistoriaDraftSchema = vistoriaSchema
 export type VistoriaInput = z.infer<typeof vistoriaSchema>;
 export type VistoriaUpdateInput = z.infer<typeof vistoriaUpdateSchema>;
 export type VistoriaDraftInput = z.infer<typeof vistoriaDraftSchema>;
+export type VistoriaWizardContinueInput = z.infer<typeof vistoriaWizardContinueSchema>;
