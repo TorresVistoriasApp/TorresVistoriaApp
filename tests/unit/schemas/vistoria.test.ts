@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { vistoriaSchema } from "@/schemas/vistoria";
+import { vistoriaSchema, vistoriaWizardContinueSchema } from "@/schemas/vistoria";
 import { InspectionSituation, InspectionStatus } from "@/lib/enums";
 import { FIELD_NA_VALUE } from "@/lib/field-na";
 
@@ -72,5 +72,26 @@ describe("vistoriaSchema", () => {
 
     expect(result.success).toBe(true);
     expect(result.data?.market_fipe_value).toBe(78000);
+  });
+
+  it("permite continuar o wizard sem parecer e observações técnicas", () => {
+    const result = vistoriaWizardContinueSchema.safeParse({
+      ...basePayload,
+      opinion: "",
+      technical_notes: "",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("bloqueia continuar o wizard com valores de rascunho", () => {
+    const result = vistoriaWizardContinueSchema.safeParse({
+      ...basePayload,
+      client_name: "Rascunho em andamento",
+      opinion: "",
+      technical_notes: "",
+    });
+
+    expect(result.success).toBe(false);
   });
 });

@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { vistoriaSchema, vistoriaDraftSchema, type VistoriaInput } from "@/schemas/vistoria";
+import { vistoriaSchema, vistoriaDraftSchema, vistoriaWizardContinueSchema, type VistoriaInput } from "@/schemas/vistoria";
 import {
   InspectionOpinion,
   InspectionSituation,
   InspectionStatus,
 } from "@/lib/enums";
 import { useInspectionTypes } from "@/hooks/use-inspection-types";
+import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +63,7 @@ export function VistoriaForm({
   enableAutoSave = false,
   onAutoSave,
 }: VistoriaFormProps) {
+  const { toast } = useToast();
   const { data: inspectionTypes = [], isLoading: typesLoading } = useInspectionTypes(true);
   const formRef = useRef<HTMLFormElement>(null);
   const {
@@ -109,8 +111,9 @@ export function VistoriaForm({
 
   const handleValidatedSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const values = getValues();
-    const parsed = vistoriaSchema.safeParse(values);
+    const { inspection_purpose: _purpose, ...values } = getValues();
+    const submitSchema = wizardMode ? vistoriaWizardContinueSchema : vistoriaSchema;
+    const parsed = submitSchema.safeParse(values);
 
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
@@ -119,10 +122,18 @@ export function VistoriaForm({
           setError(field as keyof VistoriaInput, { message: issue.message });
         }
       }
+      toast(parsed.error.issues[0]?.message ?? "Verifique os campos obrigatórios antes de continuar.");
+      requestAnimationFrame(() => {
+        const firstError = formRef.current?.querySelector("[role='alert'], .text-destructive");
+        firstError?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
       return;
     }
 
-    await onSubmit(parsed.data);
+    await onSubmit({
+      ...parsed.data,
+      inspection_purpose: null,
+    } as VistoriaInput);
   };
 
   const identificacaoFields = (

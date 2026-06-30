@@ -11,7 +11,7 @@ import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 import { InspectionStatus } from "@/lib/enums";
 import { STORAGE_BUCKET } from "@/lib/compress-image";
 import type { VistoriaInput, VistoriaUpdateInput } from "@/schemas/vistoria";
-import type { Inspection } from "@/services/inspection-service";
+import { inspectionService, type Inspection } from "@/services/inspection-service";
 
 function draftSelectFields() {
   return `
@@ -97,7 +97,10 @@ export const draftService = {
     completionPercent?: number,
   ): Promise<Inspection> {
     try {
-      const payload: Record<string, unknown> = {
+      const payload: Partial<VistoriaInput> & {
+        completion_percent?: number;
+        last_auto_saved_at?: string;
+      } = {
         ...input,
         last_auto_saved_at: new Date().toISOString(),
       };
@@ -107,16 +110,13 @@ export const draftService = {
       }
 
       if (payload.inspection_type_id === "") {
-        payload.inspection_type_id = null;
+        delete payload.inspection_type_id;
       }
 
-      const updated = throwIfError(
-        await mutations.inspections.update(id, payload as Partial<VistoriaInput>),
-        "Erro ao salvar rascunho",
-      );
+      const updated = await inspectionService.update(id, payload);
 
       syncLogger.info("Auto-save concluído", { inspectionId: id });
-      return updated as Inspection;
+      return updated;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

@@ -10,6 +10,7 @@ import { rememberActiveDraftId } from "@/features/draft/services/draft-service";
 import { useInspection } from "@/hooks/use-inspection";
 import { useUpdateInspection } from "@/hooks/use-inspections";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { isSuperAdmin } from "@/lib/rbac";
 import { formatVistoriaFormDefaults } from "@/lib/vistoria-form-defaults";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
@@ -26,12 +27,23 @@ export function Page() {
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
   const { profile } = useAuth();
+  const { toast } = useToast();
   const { data: inspection, isLoading } = useInspection(id);
   const update = useUpdateInspection(id!);
   const { scheduleSave } = useAutoSaveInspection({
     inspectionId: id ?? "",
     enabled: Boolean(id && inspection?.status === InspectionStatus.DRAFT),
   });
+
+  const isDraft = inspection?.status === InspectionStatus.DRAFT;
+
+  const handleAutoSave = useCallback(
+    (data: Partial<VistoriaInput>) => {
+      if (!id || !isDraft) return;
+      scheduleSave(data);
+    },
+    [id, isDraft, scheduleSave],
+  );
 
   if (isLoading || !inspection) {
     return (
@@ -41,26 +53,20 @@ export function Page() {
     );
   }
 
-  const isDraft = inspection.status === InspectionStatus.DRAFT;
-
   const handleSubmit = async (data: VistoriaInput) => {
-    await update.mutateAsync(data);
-    if (!id) return;
-    rememberActiveDraftId(id);
-    if (isWizardFlow) {
-      navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)));
-      return;
+    try {
+      await update.mutateAsync(data);
+      if (!id) return;
+      rememberActiveDraftId(id);
+      if (isWizardFlow) {
+        navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)));
+        return;
+      }
+      navigate(ROUTES.inspection(id));
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Erro ao salvar vistoria");
     }
-    navigate(ROUTES.inspection(id));
   };
-
-  const handleAutoSave = useCallback(
-    (data: Partial<VistoriaInput>) => {
-      if (!id || !isDraft) return;
-      scheduleSave(data);
-    },
-    [id, isDraft, scheduleSave],
-  );
 
   const handleCancelEdit = () => {
     if (!id) return;

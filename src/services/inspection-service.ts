@@ -199,7 +199,14 @@ export const inspectionService = {
     }
   },
 
-  async update(id: string, input: Partial<VistoriaInput>): Promise<Inspection> {
+  async update(
+    id: string,
+    input: Partial<VistoriaInput> & {
+      completion_percent?: number;
+      last_auto_saved_at?: string;
+      draft_expires_at?: string | null;
+    },
+  ): Promise<Inspection> {
     try {
       const payload = await withInspectionPurpose(input);
       return throwIfError(

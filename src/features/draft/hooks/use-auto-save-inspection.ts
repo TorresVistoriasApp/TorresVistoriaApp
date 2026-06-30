@@ -21,8 +21,9 @@ type AutoSaveOptions = {
 };
 
 function sanitizeDraftPayload(data: Partial<VistoriaInput>): Partial<VistoriaUpdateInput> {
-  const parsed = vistoriaDraftSchema.safeParse(data);
-  if (!parsed.success) return data as Partial<VistoriaUpdateInput>;
+  const { inspection_purpose: _purpose, ...formData } = data;
+  const parsed = vistoriaDraftSchema.safeParse(formData);
+  if (!parsed.success) return formData as Partial<VistoriaUpdateInput>;
   return parsed.data as Partial<VistoriaUpdateInput>;
 }
 
