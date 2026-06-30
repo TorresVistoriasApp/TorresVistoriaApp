@@ -33,10 +33,14 @@ export function MultiPhotoGallery({
   const confirmed = sortedPhotos.filter((photo) => !isPendingPhoto(photo));
   const pending = sortedPhotos.filter((photo) => isPendingPhoto(photo));
   const latest = confirmed[confirmed.length - 1] ?? pending[pending.length - 1];
-  const extras = confirmed.slice(0, -1);
-  const isUploading = pending.length > 0;
+  const olderConfirmed = confirmed.slice(0, -1);
+  const otherPending = pending.filter((photo) => photo.id !== latest?.id);
 
-  const mainStatus = isUploading ? "uploading" : latest && !isPendingPhoto(latest) ? "captured" : "pending";
+  const mainStatus: "uploading" | "captured" | "pending" = !latest
+    ? "pending"
+    : isPendingPhoto(latest)
+      ? "uploading"
+      : "captured";
 
   return (
     <>
@@ -59,17 +63,29 @@ export function MultiPhotoGallery({
         }
       />
 
-      {extras.map((photo, index) => (
+      {olderConfirmed.map((photo, index) => (
         <PhotoGuideCard
           key={photo.id}
           categoryName={`${label} ${index + 1}`}
           guide={guide}
-          status={isPendingPhoto(photo) ? "uploading" : "captured"}
+          status="captured"
           imageUrl={photo.public_url}
           indexBadge={index + 1}
           onCapture={onCapture}
           onView={onViewPhoto ? () => onViewPhoto(photo) : undefined}
           onRetake={onRetakePhoto ? () => onRetakePhoto(photo) : undefined}
+        />
+      ))}
+
+      {otherPending.map((photo, index) => (
+        <PhotoGuideCard
+          key={photo.id}
+          categoryName={`${label} ${olderConfirmed.length + index + 1}`}
+          guide={guide}
+          status="uploading"
+          imageUrl={photo.public_url}
+          indexBadge={olderConfirmed.length + index + 1}
+          onCapture={onCapture}
         />
       ))}
     </>

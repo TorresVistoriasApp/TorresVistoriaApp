@@ -1,4 +1,4 @@
-const MAX_CONCURRENT_UPLOADS = 2;
+const MAX_CONCURRENT_UPLOADS = 3;
 
 let activeUploads = 0;
 const waitQueue: Array<() => void> = [];
