@@ -95,21 +95,23 @@ export function useUploadPhoto(inspectionId: string) {
       };
 
       await qc.cancelQueries({ queryKey: queryKeys.photos(inspectionId) });
-      const previous = qc.getQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId));
 
-      qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), [
-        ...(previous ?? []),
+      qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), (current) => [
+        ...(current ?? []),
         optimistic,
       ]);
 
-      return { previous, blobUrl, optimisticId };
+      return { blobUrl, optimisticId };
     },
     onSuccess: (data, _variables, context) => {
       if (!context?.optimisticId) return;
 
-      qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), (current) =>
-        (current ?? []).map((photo) => (photo.id === context.optimisticId ? data : photo)),
-      );
+      qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), (current) => {
+        const list = current ?? [];
+        const hasOptimistic = list.some((photo) => photo.id === context.optimisticId);
+        if (!hasOptimistic) return [...list, data];
+        return list.map((photo) => (photo.id === context.optimisticId ? data : photo));
+      });
 
       URL.revokeObjectURL(context.blobUrl);
     },
@@ -147,9 +149,9 @@ export function useUploadPhoto(inspectionId: string) {
         return;
       }
 
-      if (context?.previous) {
-        qc.setQueryData(queryKeys.photos(inspectionId), context.previous);
-      }
+      qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), (current) =>
+        (current ?? []).filter((photo) => photo.id !== context?.optimisticId),
+      );
       if (context?.blobUrl) {
         URL.revokeObjectURL(context.blobUrl);
       }

@@ -88,8 +88,9 @@ export const photoService = {
 
   async upload(file: File, params: PhotoUploadParams): Promise<InspectionPhoto> {
     try {
+      const webp = await preparePhotoForUpload(file);
+
       return await runPhotoUpload(async () => {
-        const webp = await preparePhotoForUpload(file);
         const imageMeta = await extractImageMetadata(webp);
         const device = getDeviceInfo();
         const categoryMeta = resolveCategoryMeta(params.category);

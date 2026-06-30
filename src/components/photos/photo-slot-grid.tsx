@@ -65,14 +65,10 @@ function resolveGuide(category: PhotoCategoryDefinition) {
   return category.technicalGuide ?? category.visualGuide!;
 }
 
-function resolveSlotStatus(
-  categoryPhotos: InspectionPhoto[],
-  confirmed: InspectionPhoto[],
-): PhotoGuideCardStatus {
-  const hasPending = categoryPhotos.some((p) => isPendingPhoto(p));
-  if (hasPending) return "uploading";
-  if (confirmed.length > 0) return "captured";
-  return "pending";
+function resolveSlotStatus(displayPhoto: InspectionPhoto | undefined): PhotoGuideCardStatus {
+  if (!displayPhoto) return "pending";
+  if (isPendingPhoto(displayPhoto)) return "uploading";
+  return "captured";
 }
 
 function resolveDisplayPhoto(categoryPhotos: InspectionPhoto[]): InspectionPhoto | undefined {
@@ -187,7 +183,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
         key={category.key}
         categoryName={category.name}
         guide={guide}
-        status={resolveSlotStatus(categoryPhotos, confirmed)}
+        status={resolveSlotStatus(displayPhoto)}
         required={isPhotoRequirementActive(category.required)}
         imageUrl={displayPhoto?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
