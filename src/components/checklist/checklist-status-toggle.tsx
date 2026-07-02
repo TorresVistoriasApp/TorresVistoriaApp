@@ -1,7 +1,7 @@
 import { ChecklistStatus } from "@/lib/enums";
 import { getChecklistStatusMeta } from "@/lib/checklist-status";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Check, Circle } from "lucide-react";
+import { Circle } from "lucide-react";
 
 const EVALUATION_STATUSES = [
   ChecklistStatus.CONFORME,
@@ -9,11 +9,9 @@ const EVALUATION_STATUSES = [
   ChecklistStatus.NA,
 ] as const;
 
-const STATUS_ICONS = {
-  [ChecklistStatus.CONFORME]: Check,
-  [ChecklistStatus.NAO_CONFORME]: AlertTriangle,
+const STATUS_ICONS: Partial<Record<(typeof EVALUATION_STATUSES)[number], typeof Circle>> = {
   [ChecklistStatus.NA]: Circle,
-} as const;
+};
 
 type ChecklistStatusToggleProps = {
   value: string;
@@ -65,7 +63,7 @@ export function ChecklistStatusToggle({
               isActive ? meta.badgeActive : meta.badgeIdle,
             )}
           >
-            <Icon className="size-4 shrink-0" />
+            {Icon ? <Icon className="size-4 shrink-0" /> : null}
             {stackedMobile ? (
               <>
                 <span className="text-center text-[10px] font-bold leading-tight sm:hidden">

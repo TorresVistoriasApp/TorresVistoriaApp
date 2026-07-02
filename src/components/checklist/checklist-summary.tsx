@@ -1,7 +1,7 @@
 import { ChecklistStatus } from "@/lib/enums";
 import { getChecklistStatusLabel } from "@/lib/checklist-status";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Check, Circle, Clock } from "lucide-react";
+import { Circle, Clock } from "lucide-react";
 
 type ChecklistSummaryProps = {
   total: number;
@@ -38,12 +38,10 @@ export function ChecklistSummary({
           </p>
           <div className="flex shrink-0 items-center gap-2 text-[11px] font-semibold">
             <span className="inline-flex items-center gap-1 text-emerald-700">
-              <Check className="size-3" />
               {conforme}
             </span>
             {naoConforme > 0 && (
               <span className="inline-flex items-center gap-1 text-amber-700">
-                <AlertTriangle className="size-3" />
                 {naoConforme}
               </span>
             )}
@@ -87,14 +85,12 @@ export function ChecklistSummary({
 
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <StatCard
-          icon={Check}
           label={aprovadoLabel}
           value={conforme}
           tone="success"
           sub={evaluated > 0 ? `${conformePct}% dos avaliados` : undefined}
         />
         <StatCard
-          icon={AlertTriangle}
           label={ressalvasLabel}
           value={naoConforme}
           tone="warning"
@@ -125,7 +121,7 @@ function StatCard({
   tone,
   sub,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }>;
   label: string;
   value: number;
   tone: "success" | "warning" | "muted";
@@ -140,7 +136,7 @@ function StatCard({
   return (
     <div className={cn("rounded-lg border p-3", tones[tone])}>
       <div className="flex items-center gap-1.5 text-xs font-medium opacity-80">
-        <Icon className="size-3.5 shrink-0" />
+        {Icon ? <Icon className="size-3.5 shrink-0" /> : null}
         <span className="leading-tight">{label}</span>
       </div>
       <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
