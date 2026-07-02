@@ -14,6 +14,7 @@ import {
   formatPhone,
   formatPlate,
 } from "@/lib/formatters";
+import { hasLaudoValue } from "@/lib/laudo/laudo-field-utils";
 import { UserRole } from "@/lib/enums";
 import { ROUTES } from "@/lib/constants";
 import { Camera, ClipboardList, Edit, FileText, ArrowLeft } from "lucide-react";
@@ -129,7 +130,9 @@ export function Page() {
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
           <p className="font-medium">{inspection.client_name}</p>
-          <p className="text-muted-foreground">{formatDocument(inspection.client_document)}</p>
+          {hasLaudoValue(inspection.client_document) && (
+            <p className="text-muted-foreground">{formatDocument(inspection.client_document)}</p>
+          )}
           {inspection.client_phone && (
             <p className="text-muted-foreground">{formatPhone(inspection.client_phone)}</p>
           )}

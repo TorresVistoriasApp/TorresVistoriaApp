@@ -2,7 +2,7 @@ import type { Control, FieldErrors } from "react-hook-form";
 import type { VistoriaInput } from "@/schemas/vistoria";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField } from "@/components/forms/form-field";
-import { MaskedField, OptionalMaskedField } from "@/components/forms/masked-fields";
+import { OptionalMaskedField } from "@/components/forms/masked-fields";
 import { Input } from "@/components/ui/input";
 import { formGridClass, formGridFullWidthClass } from "@/lib/form-styles";
 
@@ -31,14 +31,14 @@ export function ClienteForm({
         />
       </FormField>
 
-      <MaskedField
+      <OptionalMaskedField
         control={control}
         name="client_document"
         label="CPF/CNPJ"
         mask="cpfCnpj"
         error={errors.client_document?.message}
         placeholder="000.000.000-00"
-        optional
+        naLabel="Não informado"
       />
 
       <OptionalMaskedField

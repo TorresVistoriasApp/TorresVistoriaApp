@@ -5,6 +5,7 @@ import {
   InspectionOpinion,
   InspectionStatus,
 } from "@/lib/enums";
+import { FIELD_NA_VALUE } from "@/lib/field-na";
 import { parseCurrency } from "@/lib/masks";
 
 const opinionEnum = z.enum(
@@ -118,7 +119,7 @@ export const vistoriaDraftSchema = vistoriaSchema
     location: z.string().max(300).optional(),
     inspection_type_id: z.union([z.string().uuid(), z.literal("")]).optional(),
     client_name: z.string().max(200).optional(),
-    client_document: z.string().max(18).optional(),
+    client_document: z.union([z.literal(FIELD_NA_VALUE), z.string().max(18)]).optional(),
     plate: z.string().max(10).optional(),
     chassis: z.string().max(17).optional(),
     brand: z.string().max(100).optional(),

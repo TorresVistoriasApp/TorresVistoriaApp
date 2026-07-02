@@ -1,4 +1,5 @@
 import { InspectionSituation, InspectionStatus } from "@/lib/enums";
+import { isFieldNA } from "@/lib/field-na";
 import type { VistoriaInput } from "@/schemas/vistoria";
 
 const now = () => new Date();
@@ -60,6 +61,7 @@ export function buildEmptyDraftInput(): VistoriaInput {
 
 export function isPlaceholderDraftValue(field: string, value: unknown): boolean {
   if (value === null || value === undefined || value === "") return true;
+  if (typeof value === "string" && isFieldNA(value)) return true;
 
   const placeholders: Record<string, unknown> = {
     client_name: "Rascunho em andamento",

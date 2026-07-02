@@ -100,7 +100,7 @@
   }
 
   .surface-elevated {
-    @apply min-w-0 max-w-full rounded-2xl border border-border/60 bg-card text-card-foreground;
+    @apply min-w-0 rounded-2xl border border-border/60 bg-card text-card-foreground;
     box-shadow: var(--shadow-elevated);
   }
 

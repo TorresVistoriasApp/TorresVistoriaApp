@@ -44,7 +44,7 @@ export function DraftRecoveryModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-[min(100vw-2rem,26rem)] gap-5 sm:max-w-md"
+        className="w-[calc(100%-2rem)] max-w-sm gap-5"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader className="space-y-0">
@@ -74,23 +74,21 @@ export function DraftRecoveryModal({
           <dd className="tabular-nums">{updatedAt}</dd>
         </dl>
 
-        <DialogFooter className="flex-col gap-3 sm:flex-col sm:items-stretch">
-          <div className="flex w-full flex-col gap-2 sm:flex-row">
-            <Button className="flex-1 touch-target" onClick={onContinue} disabled={isBusy}>
-              Continuar vistoria
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 touch-target"
-              onClick={onStartNew}
-              disabled={isBusy}
-            >
-              Iniciar nova vistoria
-            </Button>
-          </div>
+        <DialogFooter className="flex-col gap-2 sm:flex-col sm:items-stretch">
+          <Button className="w-full touch-target" onClick={onContinue} disabled={isBusy}>
+            Continuar vistoria
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full touch-target"
+            onClick={onStartNew}
+            disabled={isBusy}
+          >
+            Iniciar nova vistoria
+          </Button>
           <Button
             variant="ghost"
-            className="touch-target text-destructive hover:text-destructive sm:self-center"
+            className="w-full touch-target text-destructive hover:text-destructive"
             onClick={onDelete}
             disabled={isBusy}
           >
