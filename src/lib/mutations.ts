@@ -29,6 +29,7 @@ export const mutations = {
           inspector_id: userId,
           client_email: data.client_email || null,
           client_phone: data.client_phone || null,
+          inspection_type_id: data.inspection_type_id === "" ? null : data.inspection_type_id,
           plate: data.plate.toUpperCase(),
         })
         .select("*")
