@@ -41,8 +41,8 @@ export function PhotoActionSheet({
             variant="ghost"
             className="h-12 justify-start gap-3 rounded-xl px-4 text-base font-normal"
             onClick={() => {
-              close();
               onTakePhoto();
+              close();
             }}
           >
             <Camera className="size-5 text-primary" aria-hidden />
@@ -53,8 +53,8 @@ export function PhotoActionSheet({
             variant="ghost"
             className="h-12 justify-start gap-3 rounded-xl px-4 text-base font-normal"
             onClick={() => {
-              close();
               onPickGallery();
+              close();
             }}
           >
             <ImageIcon className="size-5 text-primary" aria-hidden />
