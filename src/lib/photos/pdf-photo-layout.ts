@@ -2,12 +2,60 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   PHOTO_CATALOG,
+  PHOTO_CATEGORY_MAP,
   getPhotoCategoryLabel,
   photoMatchesCategory,
 } from "@/lib/photos/photo-catalog";
 import type { LaudoPhoto } from "@/lib/laudo/laudo-model";
 
 type PdfNode = Record<string, unknown>;
+
+function photoTimestamp(photo: LaudoPhoto): number {
+  return new Date(photo.captured_at ?? photo.created_at ?? 0).getTime();
+}
+
+function comparePhotoCandidates(a: LaudoPhoto, b: LaudoPhoto): number {
+  const aHasDataUrl = a.dataUrl ? 1 : 0;
+  const bHasDataUrl = b.dataUrl ? 1 : 0;
+  if (aHasDataUrl !== bHasDataUrl) return bHasDataUrl - aHasDataUrl;
+
+  const aHasUrl = a.public_url ? 1 : 0;
+  const bHasUrl = b.public_url ? 1 : 0;
+  if (aHasUrl !== bHasUrl) return bHasUrl - aHasUrl;
+
+  return photoTimestamp(b) - photoTimestamp(a);
+}
+
+function pickBestPhoto(candidates: LaudoPhoto[]): LaudoPhoto | undefined {
+  if (candidates.length === 0) return undefined;
+  return [...candidates].sort(comparePhotoCandidates)[0];
+}
+
+function selectPhotosForCategory(
+  photos: LaudoPhoto[],
+  categoryKey: string,
+  usedPhotoIds: Set<string>,
+): LaudoPhoto[] {
+  const matched = photos
+    .filter(
+      (photo) =>
+        !usedPhotoIds.has(photo.id) && photoMatchesCategory(photo.category, categoryKey),
+    )
+    .sort((a, b) => photoTimestamp(a) - photoTimestamp(b));
+
+  const categoryDef = PHOTO_CATEGORY_MAP[categoryKey];
+  if (!categoryDef || categoryDef.type === "SINGLE") {
+    const best = pickBestPhoto(matched);
+    return best ? [best] : [];
+  }
+
+  const seen = new Set<string>();
+  return matched.filter((photo) => {
+    if (seen.has(photo.id)) return false;
+    seen.add(photo.id);
+    return true;
+  });
+}
 
 function formatPhotoCaption(photo: LaudoPhoto, index: number): string {
   const name = photo.display_name ?? photo.label ?? getPhotoCategoryLabel(photo.category);
@@ -27,21 +75,24 @@ export function buildSectionPhotoCaption(photo: LaudoPhoto, sectionIndex: number
   return `${sectionIndex}.${photoIndex} ${name} · ${dateStr}`;
 }
 
-export function groupPhotosBySection(photos: LaudoPhoto[]): Map<string, LaudoPhoto[]> {
+export function groupPhotosBySection(
+  photos: LaudoPhoto[],
+  options?: { excludePhotoIds?: Set<string> },
+): Map<string, LaudoPhoto[]> {
   const grouped = new Map<string, LaudoPhoto[]>();
+  const excludedIds = options?.excludePhotoIds ?? new Set<string>();
+  const usedPhotoIds = new Set(excludedIds);
+  const availablePhotos = photos.filter((photo) => !excludedIds.has(photo.id));
 
   for (const section of PHOTO_CATALOG) {
     const sectionPhotos: LaudoPhoto[] = [];
 
     for (const category of section.categories) {
-      const matched = photos
-        .filter((photo) => photoMatchesCategory(photo.category, category.key))
-        .sort(
-          (a, b) =>
-            new Date(a.captured_at ?? a.created_at ?? 0).getTime() -
-            new Date(b.captured_at ?? b.created_at ?? 0).getTime(),
-        );
-      sectionPhotos.push(...matched);
+      const selected = selectPhotosForCategory(availablePhotos, category.key, usedPhotoIds);
+      for (const photo of selected) {
+        sectionPhotos.push(photo);
+        usedPhotoIds.add(photo.id);
+      }
     }
 
     if (sectionPhotos.length > 0) {
@@ -101,12 +152,21 @@ export function buildPhotoNode(photo: LaudoPhoto, labelOverride?: string): PdfNo
 export function buildPhotoPairs(photos: LaudoPhoto[], labels?: (string | undefined)[]): PdfNode[] {
   const pairs: PdfNode[] = [];
   for (let index = 0; index < photos.length; index += 2) {
+    const first = buildPhotoNode(photos[index], labels?.[index]);
+    const second = photos[index + 1];
+
+    if (second) {
+      pairs.push({
+        columns: [first, buildPhotoNode(second, labels?.[index + 1])],
+        columnGap: 12,
+        margin: [0, 0, 0, 4],
+        unbreakable: true,
+      });
+      continue;
+    }
+
     pairs.push({
-      columns: [
-        buildPhotoNode(photos[index], labels?.[index]),
-        photos[index + 1] ? buildPhotoNode(photos[index + 1], labels?.[index + 1]) : {},
-      ],
-      columnGap: 12,
+      ...first,
       margin: [0, 0, 0, 4],
       unbreakable: true,
     });

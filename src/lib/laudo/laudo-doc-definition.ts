@@ -457,7 +457,11 @@ function buildChecklistSection(payload: LaudoPayload): PdfNode[] {
   });
 }
 
-function buildPhotoSection(payload: LaudoPayload, color: string): PdfNode[] {
+function buildPhotoSection(
+  payload: LaudoPayload,
+  color: string,
+  excludePhotoIds?: Set<string>,
+): PdfNode[] {
   const photos = payload.photos;
   if (photos.length === 0) {
     return [
@@ -466,7 +470,7 @@ function buildPhotoSection(payload: LaudoPayload, color: string): PdfNode[] {
     ];
   }
 
-  const grouped = groupPhotosBySection(photos);
+  const grouped = groupPhotosBySection(photos, { excludePhotoIds });
   const nodes: PdfNode[] = [premiumHeader("REGISTRO FOTOGRÁFICO")];
 
   for (const section of PHOTO_CATALOG) {
@@ -554,6 +558,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
           !photo.category.startsWith("DOC_")),
     )
     .slice(0, 2);
+  const featuredPhotoIds = new Set(featuredPhotos.map((photo) => photo.id));
 
   const content: PdfNode[] = [
     ...buildCoverHeader(payload, inspection, company, color, opinion, validationUrl),
@@ -587,7 +592,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     ...buildSaleMarketSection(inspection),
     premiumHeader("CHECKLIST TÉCNICO"),
     ...buildChecklistSection(payload),
-    ...buildPhotoSection(payload, color),
+    ...buildPhotoSection(payload, color, featuredPhotoIds),
     ...buildTechnicalOpinionSection(inspection),
     premiumHeader("INFORMATIVO JURÍDICO"),
     { text: getLaudoLegalFooter(payload.settings), fontSize: 8, alignment: "justify", margin: [0, 6, 0, 12] },
