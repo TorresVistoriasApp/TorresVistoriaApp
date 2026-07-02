@@ -57,6 +57,23 @@ function selectPhotosForCategory(
   });
 }
 
+const FEATURED_VEHICLE_PHOTO_CATEGORIES = ["EXT_FRENTE_45_ESQ", "EXT_FRENTE_45_DIR"] as const;
+
+/** Fotos de destaque em "Dados do veículo": frente 45° esquerda e direita. */
+export function selectFeaturedVehiclePhotos(photos: LaudoPhoto[]): LaudoPhoto[] {
+  const featured: LaudoPhoto[] = [];
+  const usedPhotoIds = new Set<string>();
+
+  for (const categoryKey of FEATURED_VEHICLE_PHOTO_CATEGORIES) {
+    const selected = selectPhotosForCategory(photos, categoryKey, usedPhotoIds);
+    if (!selected[0]) continue;
+    featured.push(selected[0]);
+    usedPhotoIds.add(selected[0].id);
+  }
+
+  return featured;
+}
+
 function formatPhotoCaption(photo: LaudoPhoto, index: number): string {
   const name = photo.display_name ?? photo.label ?? getPhotoCategoryLabel(photo.category);
   const date = photo.captured_at ?? photo.created_at;
