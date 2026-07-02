@@ -95,6 +95,17 @@ describe("vistoriaSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("permite continuar o wizard com CPF marcado como não informado", () => {
+    const result = vistoriaWizardContinueSchema.safeParse({
+      ...basePayload,
+      client_document: "N/A",
+      opinion: "",
+      technical_notes: "",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("bloqueia continuar o wizard com local de rascunho", () => {
     const result = vistoriaWizardContinueSchema.safeParse({
       ...basePayload,

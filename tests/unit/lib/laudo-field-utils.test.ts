@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildInspectionInfoRows,
   buildSaleMarketInfoRows,
   buildVehicleInfoRows,
   hasLaudoValue,
   hasSaleMarketSectionData,
 } from "@/lib/laudo/laudo-field-utils";
+import { formatDocument } from "@/lib/formatters";
 import type { LaudoPayload } from "@/lib/laudo/laudo-model";
 
 function makeInspection(
@@ -72,5 +74,41 @@ describe("laudo-field-utils", () => {
 
   it("ignora valores N/A como vazio", () => {
     expect(hasLaudoValue("N/A")).toBe(false);
+  });
+
+  it("omite CPF do contratante no laudo quando não informado", () => {
+    const rows = buildInspectionInfoRows(
+      makeInspection({ client_document: "" }),
+      null,
+      (date) => date,
+      (phone) => phone ?? "",
+      (doc) => doc ?? "",
+    );
+
+    expect(rows.map(([label]) => label)).not.toContain("CPF/CNPJ do contratante");
+  });
+
+  it("omite CPF do contratante no laudo quando marcado como não informado", () => {
+    const rows = buildInspectionInfoRows(
+      makeInspection({ client_document: "N/A" }),
+      null,
+      (date) => date,
+      (phone) => phone ?? "",
+      (doc) => formatDocument(doc),
+    );
+
+    expect(rows.map(([label]) => label)).not.toContain("CPF/CNPJ do contratante");
+  });
+
+  it("inclui CPF do contratante no laudo quando informado", () => {
+    const rows = buildInspectionInfoRows(
+      makeInspection({ client_document: "12345678901" }),
+      null,
+      (date) => date,
+      (phone) => phone ?? "",
+      (doc) => formatDocument(doc),
+    );
+
+    expect(rows).toContainEqual(["CPF/CNPJ do contratante", "123.456.789-01"]);
   });
 });

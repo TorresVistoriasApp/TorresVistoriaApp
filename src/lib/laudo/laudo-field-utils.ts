@@ -121,6 +121,8 @@ export function buildInspectionInfoRows(
   formatPhoneFn: (phone: string | null | undefined) => string,
   formatDocumentFn: (doc: string | null | undefined) => string,
 ): [string, string][] {
+  const clientDocument = inspectionText(inspection, "client_document");
+
   return buildFilledInfoRows([
     ["Empresa", company?.name?.trim() || null],
     ["CPF/CNPJ", company?.document ? formatDocumentFn(company.document) : null],
@@ -133,6 +135,7 @@ export function buildInspectionInfoRows(
     ["Local da vistoria", inspection.location],
     ["Finalidade", inspectionText(inspection, "inspection_purpose")],
     ["Contratante", inspection.client_name],
+    ["CPF/CNPJ do contratante", clientDocument ? formatDocumentFn(clientDocument) : null],
     ["Indicado por", inspectionText(inspection, "requester_name")],
   ]);
 }
