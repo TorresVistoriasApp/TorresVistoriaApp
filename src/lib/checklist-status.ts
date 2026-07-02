@@ -42,7 +42,7 @@ const CHECKLIST_STATUS_META: Record<ChecklistStatus, ChecklistStatusMeta> = {
     notesText: "text-amber-800",
   },
   [ChecklistStatus.NA]: {
-    label: "○ Não Avaliado",
+    label: "Não Avaliado",
     shortLabel: "Não Avaliado",
     mobileLabel: "N/A",
     pdfColor: "#64748b",
@@ -79,6 +79,11 @@ export function getChecklistStatusMeta(status: string): ChecklistStatusMeta {
 
 export function getChecklistStatusLabel(status: string): string {
   return getChecklistStatusMeta(status).label;
+}
+
+/** Rótulo sem ícones/símbolos prefixados — uso no laudo PDF. */
+export function getChecklistStatusPdfLabel(status: string): string {
+  return getChecklistStatusLabel(status).replace(/^[\s○✔✓⚠•●◦▪►]+/u, "").trim();
 }
 
 export function getChecklistStatusShortLabel(status: string): string {

@@ -6,7 +6,7 @@ import {
 } from "@/lib/photos/pdf-photo-layout";
 import { formatDate, formatDocument, formatPhone, formatPlate } from "@/lib/formatters";
 import { getChecklistCategoryLabel } from "@/lib/checklist-catalog";
-import { CHECKLIST_APONTAMENTOS_FILTER_LABEL, getChecklistStatusLabel, getChecklistStatusPdfColor } from "@/lib/checklist-status";
+import { CHECKLIST_APONTAMENTOS_FILTER_LABEL, getChecklistStatusPdfColor, getChecklistStatusPdfLabel } from "@/lib/checklist-status";
 import {
   buildInspectionInfoRows,
   buildSaleMarketInfoRows,
@@ -347,7 +347,7 @@ function buildCoverHeader(
 }
 
 function checklistStatusNode(status: string): PdfNode {
-  const label = getChecklistStatusLabel(status);
+  const label = getChecklistStatusPdfLabel(status);
   const color = getChecklistStatusPdfColor(status);
 
   return {
@@ -363,10 +363,10 @@ function checklistBarChart(payload: LaudoPayload): PdfNode {
   const total = Math.max(stats.total, 1);
   const width = PAGE_CONTENT_WIDTH;
   const segments = [
-    { label: getChecklistStatusLabel("CONFORME"), value: stats.conforme, color: "#16a34a" },
-    { label: getChecklistStatusLabel("NAO_CONFORME"), value: stats.naoConforme, color: "#d97706" },
-    { label: getChecklistStatusLabel("NA"), value: stats.naoAplicavel, color: SLATE },
-    { label: getChecklistStatusLabel("PENDENTE"), value: stats.pendente, color: "#f59e0b" },
+    { label: getChecklistStatusPdfLabel("CONFORME"), value: stats.conforme, color: "#16a34a" },
+    { label: getChecklistStatusPdfLabel("NAO_CONFORME"), value: stats.naoConforme, color: "#d97706" },
+    { label: getChecklistStatusPdfLabel("NA"), value: stats.naoAplicavel, color: SLATE },
+    { label: getChecklistStatusPdfLabel("PENDENTE"), value: stats.pendente, color: "#f59e0b" },
   ];
 
   const activeSegments = segments.filter((segment) => segment.value > 0);
