@@ -1,7 +1,8 @@
-import { PHOTO_CATALOG, PAINT_PHOTO_CATEGORY_KEYS } from "@/lib/photos/photo-catalog";
+import { PHOTO_CATALOG } from "@/lib/photos/photo-catalog";
 import {
   buildPhotoPairs,
   groupPhotosBySection,
+  selectFeaturedVehiclePhotos,
 } from "@/lib/photos/pdf-photo-layout";
 import { formatDate, formatDocument, formatPhone, formatPlate } from "@/lib/formatters";
 import { getChecklistCategoryLabel } from "@/lib/checklist-catalog";
@@ -543,21 +544,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
   const company = payload.company;
   const opinion = getOpinionLabel(inspection.opinion);
   const validationUrl = payload.validationUrl ?? "";
-  const paintCategorySet = new Set<string>([...PAINT_PHOTO_CATEGORY_KEYS, "PINTURA_CAPO", "PINTURA_TETO"]);
-  const featuredPhotos = payload.photos
-    .filter(
-      (photo) =>
-        photo.section_key === "IDENTIFICACAO_EXTERNA" ||
-        (!paintCategorySet.has(photo.category) &&
-          !photo.category.startsWith("PINT_") &&
-          !photo.category.startsWith("PINTURA_") &&
-          photo.category !== "DOCUMENTOS" &&
-          photo.category !== "EXTRAS" &&
-          photo.category !== "COMPLEMENTAR" &&
-          photo.category !== "AVARIA" &&
-          !photo.category.startsWith("DOC_")),
-    )
-    .slice(0, 2);
+  const featuredPhotos = selectFeaturedVehiclePhotos(payload.photos);
   const featuredPhotoIds = new Set(featuredPhotos.map((photo) => photo.id));
 
   const content: PdfNode[] = [
