@@ -204,8 +204,9 @@ function buildStatsDashboard(
 }
 
 function opinionAccent(opinion: string): string {
-  if (opinion.includes("REPROVADO")) return "#dc2626";
-  if (opinion.includes("APONTAMENTO")) return "#f97316";
+  const normalized = opinion.toUpperCase();
+  if (normalized.includes("REPROVADO")) return "#dc2626";
+  if (normalized.includes("APONTAMENTO")) return "#f97316";
   return "#16a34a";
 }
 

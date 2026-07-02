@@ -27,9 +27,9 @@ export function LaudoTemplate({
   const firstPhoto = photos.find((photo) => photo.public_url)?.public_url;
   const brandLogoPath = getBrandLogoPath(inspection.brand);
 
-  const opinionTone = opinion.includes("REPROVADO")
+  const opinionTone = opinion.toUpperCase().includes("REPROVADO")
     ? "bg-destructive text-destructive-foreground"
-    : opinion.includes("APONTAMENTO")
+    : opinion.toUpperCase().includes("APONTAMENTO")
       ? "bg-orange-100 text-orange-800"
       : "bg-emerald-100 text-emerald-800";
 
