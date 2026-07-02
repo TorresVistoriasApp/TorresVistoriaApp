@@ -1,8 +1,8 @@
 import type { ChecklistItem } from "@/services/checklist-service";
 import type { Inspection } from "@/services/inspection-service";
 import type { InspectionPhoto } from "@/services/photo-service";
-import { ChecklistStatus, InspectionOpinion } from "@/lib/enums";
-import { getChecklistStatusLabel } from "@/lib/checklist-status";
+import { ChecklistStatus } from "@/lib/enums";
+import { getInspectionOpinionLabel } from "@/lib/inspection-opinion-labels";
 
 export type LaudoCompany = {
   name?: string | null;
@@ -69,13 +69,7 @@ export function summarizeLaudoChecklist(items: ChecklistItem[]): ChecklistStats 
 }
 
 export function getOpinionLabel(opinion: string | null | undefined): string {
-  if (!opinion) return "PENDENTE";
-  const labels: Record<string, string> = {
-    [InspectionOpinion.APROVADO]: getChecklistStatusLabel(ChecklistStatus.CONFORME),
-    [InspectionOpinion.APROVADO_COM_OBSERVACOES]: getChecklistStatusLabel(ChecklistStatus.NAO_CONFORME),
-    [InspectionOpinion.REPROVADO]: "REPROVADO",
-  };
-  return labels[opinion] ?? opinion.replace(/_/g, " ");
+  return getInspectionOpinionLabel(opinion);
 }
 
 export function getLaudoLegalFooter(settings?: LaudoSettings | null): string {
