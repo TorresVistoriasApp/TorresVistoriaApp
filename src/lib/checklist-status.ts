@@ -19,7 +19,7 @@ export type ChecklistStatusMeta = {
 
 const CHECKLIST_STATUS_META: Record<ChecklistStatus, ChecklistStatusMeta> = {
   [ChecklistStatus.CONFORME]: {
-    label: "✔ Aprovado",
+    label: "Aprovado",
     shortLabel: "Aprovado",
     mobileLabel: "Aprovado",
     pdfColor: "#16a34a",
@@ -28,7 +28,7 @@ const CHECKLIST_STATUS_META: Record<ChecklistStatus, ChecklistStatusMeta> = {
     badgeActive: "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30",
   },
   [ChecklistStatus.NAO_CONFORME]: {
-    label: "⚠ Aprovado com Apontamentos",
+    label: "Aprovado com Apontamentos",
     shortLabel: "Apontamentos",
     mobileLabel: "Apontamentos",
     pdfColor: "#d97706",
