@@ -84,6 +84,31 @@ describe("vistoriaSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("permite continuar o wizard sem CPF do contratante", () => {
+    const result = vistoriaWizardContinueSchema.safeParse({
+      ...basePayload,
+      client_document: "",
+      opinion: "",
+      technical_notes: "",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("bloqueia continuar o wizard com local de rascunho", () => {
+    const result = vistoriaWizardContinueSchema.safeParse({
+      ...basePayload,
+      location: "A definir",
+      opinion: "",
+      technical_notes: "",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.path[0] === "location")).toBe(true);
+    }
+  });
+
   it("bloqueia continuar o wizard com valores de rascunho", () => {
     const result = vistoriaWizardContinueSchema.safeParse({
       ...basePayload,

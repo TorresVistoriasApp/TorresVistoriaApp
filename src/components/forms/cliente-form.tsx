@@ -38,6 +38,7 @@ export function ClienteForm({
         mask="cpfCnpj"
         error={errors.client_document?.message}
         placeholder="000.000.000-00"
+        optional
       />
 
       <OptionalMaskedField
