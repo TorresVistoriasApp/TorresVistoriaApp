@@ -10,7 +10,7 @@ import {
 import { PhotoActionSheet } from "@/features/draft/components/photo-action-sheet";
 import { Button } from "@/components/ui/button";
 import { isPendingPhoto } from "@/hooks/use-photos";
-import { isSupportedImageFile } from "@/lib/compress-image";
+import { pickImageFiles } from "@/lib/pick-image-files";
 import {
   PHOTO_CATALOG,
   type PhotoCategoryDefinition,
@@ -25,6 +25,7 @@ interface PhotoSlotGridProps {
   photos: InspectionPhoto[];
   onUpload: (file: File, category: string, metadata?: Record<string, string>) => void;
   onDelete?: (photo: InspectionPhoto) => void;
+  onPickError?: (message: string) => void;
 }
 
 type PhotoPreviewState = {
@@ -77,52 +78,19 @@ function resolveDisplayPhoto(categoryPhotos: InspectionPhoto[]): InspectionPhoto
   return confirmed[confirmed.length - 1] ?? pending[pending.length - 1];
 }
 
-function pickFiles(options: { capture?: boolean; multiple?: boolean }): Promise<File[]> {
-  return new Promise((resolve) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/jpeg,image/png,image/webp,image/gif,image/bmp,image/heic,image/heif,.heic,.heif";
-    if (options.capture) {
-      input.capture = "environment";
-    }
-    input.multiple = Boolean(options.multiple);
-
-    let settled = false;
-    const finish = (files: File[]) => {
-      if (settled) return;
-      settled = true;
-      input.remove();
-      resolve(files.filter(isSupportedImageFile));
-    };
-
-    input.onchange = () => finish(Array.from(input.files ?? []));
-
-    const inputWithCancel = input as HTMLInputElement & { oncancel?: (() => void) | null };
-    if ("oncancel" in inputWithCancel) {
-      inputWithCancel.oncancel = () => finish([]);
-    } else {
-      const onWindowFocus = () => {
-        window.setTimeout(() => {
-          if (!input.files?.length) finish([]);
-        }, 400);
-      };
-      window.addEventListener("focus", onWindowFocus, { once: true });
-    }
-
-    input.click();
-  });
-}
-
-export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps) {
+export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: PhotoSlotGridProps) {
   const [preview, setPreview] = useState<PhotoPreviewState | null>(null);
   const [photoAction, setPhotoAction] = useState<PhotoActionState | null>(null);
 
   const captureProgress = useMemo(() => computeCaptureProgress(photos), [photos]);
   const confirmedPhotoCount = photos.filter((photo) => !isPendingPhoto(photo)).length;
 
-  const uploadFiles = (files: File[], categoryKey: string) => {
-    if (files.length === 0) return;
-    files.forEach((file) => onUpload(file, categoryKey));
+  const uploadFiles = (result: { files: File[]; rejectedCount: number }, categoryKey: string) => {
+    if (result.rejectedCount > 0) {
+      onPickError?.("Formato de arquivo não suportado. Use JPEG, PNG ou WebP.");
+    }
+    if (result.files.length === 0) return;
+    result.files.forEach((file) => onUpload(file, categoryKey));
   };
 
   const openPhotoActions = (category: PhotoCategoryDefinition, multiple = false) => {
@@ -134,15 +102,17 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete }: PhotoSlotGridProps
   };
 
   const handleTakePhoto = async () => {
-    if (!photoAction) return;
-    const files = await pickFiles({ capture: true, multiple: photoAction.multiple });
-    uploadFiles(files, photoAction.categoryKey);
+    const action = photoAction;
+    if (!action) return;
+    const result = await pickImageFiles({ capture: true, multiple: action.multiple });
+    uploadFiles(result, action.categoryKey);
   };
 
   const handlePickGallery = async () => {
-    if (!photoAction) return;
-    const files = await pickFiles({ multiple: photoAction.multiple });
-    uploadFiles(files, photoAction.categoryKey);
+    const action = photoAction;
+    if (!action) return;
+    const result = await pickImageFiles({ multiple: action.multiple });
+    uploadFiles(result, action.categoryKey);
   };
 
   const handleRetakeFromPreview = async () => {

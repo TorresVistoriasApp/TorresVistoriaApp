@@ -36,6 +36,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
+    "heic2any": "^0.0.4",
     "lucide-react": "^0.513.0",
     "pdfmake": "^0.2.20",
     "react": "^19.1.0",

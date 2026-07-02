@@ -101,17 +101,40 @@ export async function compressToWebP(file: File): Promise<File> {
   }
 }
 
+async function convertHeicToJpeg(file: File): Promise<File> {
+  const { default: heic2any } = await import("heic2any");
+  const converted = await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: 0.9,
+  });
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  const baseName = file.name.replace(/\.(heic|heif)$/i, "") || "foto";
+  return new File([blob as Blob], `${baseName}.jpg`, { type: "image/jpeg" });
+}
+
 /** Prepara qualquer imagem da câmera ou galeria para upload. */
 export async function preparePhotoForUpload(file: File): Promise<File> {
   if (!isSupportedImageFile(file)) {
     throw new Error("Formato não suportado. Use JPEG, PNG ou WebP.");
   }
 
-  if (file.type === "image/webp" && file.size <= MAX_OUTPUT_MB * 1024 * 1024) {
-    return file;
+  let source = file;
+  if (isHeicFile(file)) {
+    try {
+      source = await convertHeicToJpeg(file);
+    } catch {
+      throw new Error(
+        "Formato HEIC não pôde ser convertido. Salve a foto como JPEG na galeria ou use a câmera do app.",
+      );
+    }
   }
 
-  return compressToWebP(file);
+  if (source.type === "image/webp" && source.size <= MAX_OUTPUT_MB * 1024 * 1024) {
+    return source;
+  }
+
+  return compressToWebP(source);
 }
 
 export async function extractImageMetadata(file: File | Blob): Promise<ImageMetadata> {

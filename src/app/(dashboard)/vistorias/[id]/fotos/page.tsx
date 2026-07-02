@@ -122,7 +122,12 @@ export function Page() {
       {isLoading ? (
         <LoadingSpinner label="Carregando fotos..." />
       ) : (
-        <PhotoSlotGrid photos={photos} onUpload={handleUpload} onDelete={handleDelete} />
+        <PhotoSlotGrid
+          photos={photos}
+          onUpload={handleUpload}
+          onDelete={handleDelete}
+          onPickError={(message) => toast(message)}
+        />
       )}
 
       {isWizardFlow ? (
