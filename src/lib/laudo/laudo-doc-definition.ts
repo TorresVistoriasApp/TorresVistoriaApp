@@ -26,6 +26,7 @@ import {
   summarizeLaudoChecklist,
   type LaudoPayload,
 } from "@/lib/laudo/laudo-model";
+import { isOpinionReproved, isOpinionWithObservations } from "@/lib/inspection-opinion-labels";
 
 type PdfNode = Record<string, unknown>;
 
@@ -204,9 +205,8 @@ function buildStatsDashboard(
 }
 
 function opinionAccent(opinion: string): string {
-  const normalized = opinion.toUpperCase();
-  if (normalized.includes("REPROVADO")) return "#dc2626";
-  if (normalized.includes("APONTAMENTO")) return "#f97316";
+  if (isOpinionReproved(opinion)) return "#dc2626";
+  if (isOpinionWithObservations(opinion)) return "#f97316";
   return "#16a34a";
 }
 

@@ -2,7 +2,11 @@ import type { Inspection } from "@/services/inspection-service";
 import type { ChecklistItem } from "@/services/checklist-service";
 import type { InspectionPhoto } from "@/services/photo-service";
 import type { LaudoCompany, LaudoInspector, LaudoSettings } from "@/lib/laudo/laudo-model";
-import { getOpinionLabel, summarizeLaudoChecklist } from "@/lib/laudo/laudo-model";
+import {
+  getOpinionLabel,
+  summarizeLaudoChecklist,
+} from "@/lib/laudo/laudo-model";
+import { isOpinionReproved, isOpinionWithObservations } from "@/lib/inspection-opinion-labels";
 import { getChecklistStatusLabel } from "@/lib/checklist-status";
 import { ChecklistStatus } from "@/lib/enums";
 import { formatDate, formatDocument, formatKM, formatPlate, getDocumentTypeLabel } from "@/lib/formatters";
@@ -27,9 +31,9 @@ export function LaudoTemplate({
   const firstPhoto = photos.find((photo) => photo.public_url)?.public_url;
   const brandLogoPath = getBrandLogoPath(inspection.brand);
 
-  const opinionTone = opinion.toUpperCase().includes("REPROVADO")
+  const opinionTone = isOpinionReproved(opinion)
     ? "bg-destructive text-destructive-foreground"
-    : opinion.toUpperCase().includes("APONTAMENTO")
+    : isOpinionWithObservations(opinion)
       ? "bg-orange-100 text-orange-800"
       : "bg-emerald-100 text-emerald-800";
 

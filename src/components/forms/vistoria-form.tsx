@@ -7,6 +7,7 @@ import {
   InspectionSituation,
   InspectionStatus,
 } from "@/lib/enums";
+import { INSPECTION_OPINION_FORM_LABELS } from "@/lib/inspection-opinion-labels";
 import { useInspectionTypes } from "@/hooks/use-inspection-types";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
@@ -29,12 +30,6 @@ import {
 import { cn } from "@/lib/utils";
 
 const opinionOptions = Object.values(InspectionOpinion);
-
-const OPINION_LABELS: Record<InspectionOpinion, string> = {
-  [InspectionOpinion.APROVADO]: "Aprovado",
-  [InspectionOpinion.APROVADO_COM_OBSERVACOES]: "Aprovado com observações",
-  [InspectionOpinion.REPROVADO]: "Reprovado",
-};
 
 interface VistoriaFormProps {
   defaultValues?: Partial<VistoriaInput>;
@@ -279,7 +274,7 @@ export function VistoriaForm({
           <option value="">Selecione o parecer</option>
           {opinionOptions.map((o) => (
             <option key={o} value={o}>
-              {OPINION_LABELS[o]}
+              {INSPECTION_OPINION_FORM_LABELS[o]}
             </option>
           ))}
         </select>
