@@ -24,7 +24,8 @@ const ERROR_TRANSLATIONS: Array<{ pattern: RegExp; message: string }> = [
     message: "Você não possui permissão para executar esta operação.",
   },
   {
-    pattern: /not authenticated|missing authorization|jwt expired|session expired/i,
+    pattern:
+      /not authenticated|missing authorization|jwt expired|session expired|"exp"\s+claim|exp claim/i,
     message: "Sua sessão expirou ou não está autenticada. Efetue login novamente.",
   },
   {

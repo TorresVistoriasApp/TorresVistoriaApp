@@ -13,4 +13,10 @@ describe("formatUserFacingError", () => {
       "Senha deve ter no mínimo 8 caracteres",
     );
   });
+
+  it("traduz erro de token JWT expirado", () => {
+    expect(formatUserFacingError('"exp" claim timestamp check failed')).toBe(
+      "Sua sessão expirou ou não está autenticada. Efetue login novamente.",
+    );
+  });
 });
