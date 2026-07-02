@@ -71,7 +71,6 @@ export const vistoriaUpdateSchema = vistoriaSchema.partial();
 const WIZARD_PLACEHOLDER_FIELDS: Array<{ field: string; placeholder: string; label: string }> = [
   { field: "location", placeholder: "A definir", label: "Local da vistoria" },
   { field: "client_name", placeholder: "Rascunho em andamento", label: "Nome do contratante" },
-  { field: "client_document", placeholder: "00000000000", label: "CPF/CNPJ do contratante" },
   { field: "plate", placeholder: "AAA0A00", label: "Placa" },
   { field: "chassis", placeholder: "00000000000000000", label: "Chassi" },
   { field: "brand", placeholder: "Pendente", label: "Marca" },
@@ -99,10 +98,7 @@ export const vistoriaWizardContinueSchema = vistoriaSchema
   .superRefine((data, ctx) => {
     for (const { field, placeholder, label } of WIZARD_PLACEHOLDER_FIELDS) {
       const value = data[field as keyof typeof data];
-      const normalized =
-        field === "client_document" && typeof value === "string"
-          ? value.replace(/\D/g, "")
-          : value;
+      const normalized = typeof value === "string" ? value.trim() : value;
       if (normalized === placeholder) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

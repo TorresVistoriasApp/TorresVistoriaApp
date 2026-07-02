@@ -29,6 +29,7 @@ export const mutations = {
           inspector_id: userId,
           client_email: data.client_email || null,
           client_phone: data.client_phone || null,
+          client_document: data.client_document || "",
           inspection_type_id: data.inspection_type_id === "" ? null : data.inspection_type_id,
           plate: data.plate.toUpperCase(),
         })
@@ -47,6 +48,7 @@ export const mutations = {
       const patch = {
         ...data,
         plate: data.plate?.toUpperCase(),
+        client_document: data.client_document === undefined ? undefined : data.client_document || "",
         inspection_type_id: data.inspection_type_id === "" ? null : data.inspection_type_id,
       };
 

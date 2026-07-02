@@ -28,7 +28,7 @@ export function buildEmptyDraftInput(): VistoriaInput {
     insurance_acceptance_percent: null,
     vehicle_condition: "",
     client_name: "Rascunho em andamento",
-    client_document: "00000000000",
+    client_document: "",
     client_phone: "",
     client_email: "",
     plate: "AAA0A00",
@@ -63,7 +63,7 @@ export function isPlaceholderDraftValue(field: string, value: unknown): boolean 
 
   const placeholders: Record<string, unknown> = {
     client_name: "Rascunho em andamento",
-    client_document: "00000000000",
+    client_document: "",
     plate: "AAA0A00",
     chassis: "00000000000000000",
     brand: "Pendente",

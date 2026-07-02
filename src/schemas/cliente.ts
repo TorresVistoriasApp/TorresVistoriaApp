@@ -14,10 +14,12 @@ export const clienteSchema = z.object({
   client_name: z.string().min(3, "Nome deve ter no mínimo 3 caracteres").max(200),
   client_document: z
     .string()
-    .min(11, "CPF/CNPJ inválido")
     .max(18)
-    .transform((v) => v.replace(/\D/g, ""))
-    .refine((v) => cpfCnpjRegex.test(v), "CPF/CNPJ inválido"),
+    .optional()
+    .nullable()
+    .or(z.literal(""))
+    .transform((v) => (v ?? "").replace(/\D/g, ""))
+    .refine((v) => v === "" || cpfCnpjRegex.test(v), "CPF/CNPJ inválido"),
   client_phone: z
     .union([z.literal(FIELD_NA_VALUE), phoneSchema, z.literal("")])
     .optional()

@@ -72,6 +72,7 @@ export function VistoriaForm({
     watch,
     getValues,
     setError,
+    clearErrors,
     formState: { errors, isSubmitting, submitCount },
   } = useForm<VistoriaInput>({
     resolver: zodResolver(enableAutoSave ? vistoriaDraftSchema : vistoriaSchema),
@@ -111,6 +112,7 @@ export function VistoriaForm({
 
   const handleValidatedSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    clearErrors();
     const { inspection_purpose: _purpose, ...values } = getValues();
     const submitSchema = wizardMode ? vistoriaWizardContinueSchema : vistoriaSchema;
     const parsed = submitSchema.safeParse(values);
