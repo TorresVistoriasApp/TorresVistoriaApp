@@ -39,7 +39,13 @@ export async function loginAsDemo(page: Page, role: DemoRole = "vistoriador"): P
   await page.getByRole("button", { name: /Entrar no painel/i }).click();
   await expect(page).toHaveURL("/", { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
-  await expect(page.getByText(profileName)).toBeVisible({ timeout: 15_000 });
+
+  const cookieAccept = page.getByRole("button", { name: /Aceitar essenciais/i });
+  if (await cookieAccept.isVisible().catch(() => false)) {
+    await cookieAccept.click();
+  }
+
+  await expect(page.getByText(profileName).first()).toBeVisible({ timeout: 15_000 });
 }
 
 export async function expectDashboard(page: Page): Promise<void> {
