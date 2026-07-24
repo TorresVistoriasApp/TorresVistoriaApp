@@ -293,7 +293,7 @@ function buildBrandIdentityColumn(
         lineHeight: 1.2,
       },
       {
-        text: `Nº ${payload.verificationCode}`,
+        text: `Nº ${payload.laudoNumber}`,
         fontSize: 14,
         bold: true,
         color: NAVY,
@@ -618,7 +618,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
         {
           columns: [
             {
-              text: `${company?.name?.trim() || "Torres Vistorias"} · Laudo cautelar veicular · ${payload.verificationCode}`,
+              text: `${company?.name?.trim() || "Torres Vistorias"} · Laudo cautelar veicular · ${payload.laudoNumber}`,
               style: "small",
               margin: [36, 6, 0, 0],
             },

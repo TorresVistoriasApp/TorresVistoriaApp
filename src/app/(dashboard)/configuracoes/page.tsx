@@ -20,6 +20,7 @@ import { companyToAddressInput } from "@/lib/cep";
 import { maskCpfCnpj } from "@/lib/masks";
 import { CompanyAddressFields } from "@/features/settings/components/company-address-fields";
 import { InspectionTypesSection } from "@/features/settings/components/inspection-types-section";
+import { PrivacyRightsSection } from "@/features/settings/components/privacy-rights-section";
 import {
   SETTINGS_FIELD_LABEL_CLASS,
   SettingsNotice,
@@ -349,6 +350,8 @@ export function Page() {
           fillHeight
         />
       </div>
+
+      <PrivacyRightsSection />
 
       <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-20 border-t border-border/60 bg-card/95 px-4 py-3 shadow-elevated backdrop-blur-sm sm:hidden">
         <SaveSettingsButton

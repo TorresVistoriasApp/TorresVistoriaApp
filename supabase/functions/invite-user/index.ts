@@ -1,4 +1,4 @@
-import { corsHeaders } from "../_shared/cors.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { validatePassword } from "../_shared/password-policy.ts";
 import { requireSuperAdmin } from "../_shared/require-super-admin.ts";
@@ -8,6 +8,7 @@ const ALLOWED_ROLES = ["SUPER_ADMIN", "VISTORIADOR"] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
