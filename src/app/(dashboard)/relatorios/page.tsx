@@ -13,7 +13,8 @@ import type { InspectionFilters } from "@/services/inspection-service";
 
 export function Page() {
   const [filters, setFilters] = useState<InspectionFilters>({});
-  const { data = [], isLoading } = useInspections(filters);
+  const { data: pageData, isLoading } = useInspections({ ...filters, limit: 500, offset: 0 });
+  const data = pageData?.data ?? [];
 
   const resultCountLabel = `${data.length} vistoria${data.length !== 1 ? "s" : ""} encontrada${data.length !== 1 ? "s" : ""}`;
 

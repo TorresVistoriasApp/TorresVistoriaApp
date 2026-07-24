@@ -2,6 +2,8 @@ import { db } from "@/lib/db-client";
 import { AppError, getErrorMessage } from "@/lib/errors";
 import { formatUserFacingError, USER_MESSAGES } from "@/lib/user-facing-errors";
 import { sanitizeEmail } from "@/lib/sanitize";
+import { resolveStorageUrl } from "@/lib/storage-url";
+import { AVATARS_BUCKET } from "@/lib/storage-buckets";
 import type { Profile } from "@/types";
 import type { ChangePasswordInput } from "@/schemas/auth";
 
@@ -67,6 +69,9 @@ export const authService = {
       .maybeSingle();
 
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
-    return data as Profile | null;
+    if (!data) return null;
+    const profile = data as Profile;
+    profile.avatar_url = await resolveStorageUrl(AVATARS_BUCKET, profile.avatar_url);
+    return profile;
   },
 };

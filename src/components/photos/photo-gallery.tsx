@@ -1,6 +1,10 @@
 import type { InspectionPhoto } from "@/services/photo-service";
 import { PhotoPreview } from "@/components/photos/photo-preview";
 
+function gridUrl(photo: InspectionPhoto) {
+  return photo.thumbnail_url || photo.public_url;
+}
+
 export function PhotoGallery({ photos }: { photos: InspectionPhoto[] }) {
   if (photos.length === 0) {
     return <p className="text-sm text-muted-foreground">Nenhuma foto enviada.</p>;
@@ -8,10 +12,12 @@ export function PhotoGallery({ photos }: { photos: InspectionPhoto[] }) {
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-      {photos.map((photo) => (
+      {photos.map((photo) => {
+        const url = gridUrl(photo);
+        return (
         <figure key={photo.id}>
-          {photo.public_url ? (
-            <PhotoPreview url={photo.public_url} category={photo.category} />
+          {url ? (
+            <PhotoPreview url={url} category={photo.category} />
           ) : (
             <div className="flex aspect-square items-center justify-center rounded-lg border border-border bg-muted text-xs">
               Sem preview
@@ -21,7 +27,8 @@ export function PhotoGallery({ photos }: { photos: InspectionPhoto[] }) {
             {photo.category.replace(/_/g, " ")}
           </figcaption>
         </figure>
-      ))}
+        );
+      })}
     </div>
   );
 }

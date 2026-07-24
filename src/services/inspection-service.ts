@@ -3,9 +3,9 @@ import { buildChecklistSeedRows } from "@/lib/checklist-catalog";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
 import { AppError, getErrorMessage, throwIfEdgeError, throwIfError } from "@/lib/errors";
-import { withSignedPhotoUrls, type InspectionPhoto } from "@/services/photo-service";
 import type { VistoriaInput } from "@/schemas/vistoria";
 import type { InspectionStatus } from "@/lib/enums";
+import type { InspectionPhoto } from "@/services/photo-service";
 
 async function withInspectionPurpose<T extends Partial<VistoriaInput>>(data: T): Promise<T> {
   if (!data.inspection_type_id) return data;
@@ -124,11 +124,16 @@ function buildChecklistSeed(companyId: string, inspectionId: string) {
 }
 
 export const inspectionService = {
-  async list(filters?: InspectionFilters): Promise<Inspection[]> {
+  async list(filters?: InspectionFilters): Promise<{ data: Inspection[]; count: number }> {
     try {
-      let query = queries.inspections.base().is("deleted_at", null).order("inspection_date", {
-        ascending: false,
-      });
+      const limit = filters?.limit ?? 25;
+      const offset = filters?.offset ?? 0;
+
+      let query = queries.inspections
+        .base({ count: "exact" })
+        .is("deleted_at", null)
+        .order("inspection_date", { ascending: false })
+        .range(offset, offset + limit - 1);
 
       if (filters?.plate) query = query.ilike("plate", `%${filters.plate}%`);
       if (filters?.status) query = query.eq("status", filters.status);
@@ -140,9 +145,9 @@ export const inspectionService = {
         );
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       if (error) throw error;
-      return (data ?? []) as Inspection[];
+      return { data: (data ?? []) as Inspection[], count: count ?? 0 };
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
@@ -172,16 +177,10 @@ export const inspectionService = {
 
   async getById(id: string): Promise<InspectionDetail> {
     try {
-      const detail = throwIfError(
+      return throwIfError(
         await queries.inspections.byId(id),
         "Vistoria não encontrada",
       ) as InspectionDetail;
-
-      if (detail.inspection_photos?.length) {
-        detail.inspection_photos = await withSignedPhotoUrls(detail.inspection_photos);
-      }
-
-      return detail;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

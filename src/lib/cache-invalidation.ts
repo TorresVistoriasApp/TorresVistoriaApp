@@ -2,12 +2,14 @@ import type { QueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 
 export function invalidateInspectionQueries(qc: QueryClient, id?: string) {
-  void qc.invalidateQueries({ queryKey: queryKeys.inspections.all });
   if (id) {
     void qc.invalidateQueries({ queryKey: queryKeys.inspections.detail(id) });
     void qc.invalidateQueries({ queryKey: queryKeys.checklist(id) });
     void qc.invalidateQueries({ queryKey: queryKeys.photos(id) });
+    void qc.invalidateQueries({ queryKey: queryKeys.inspections.search({}) });
+    return;
   }
+  void qc.invalidateQueries({ queryKey: queryKeys.inspections.all });
 }
 
 export function invalidateFinancialQueries(qc: QueryClient) {

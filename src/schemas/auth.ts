@@ -8,9 +8,7 @@ export const strongPasswordSchema = z
 
 export const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
-  // Login não exige política forte: contas legadas podem ter senha antiga.
-  // Criação/troca usam strongPasswordSchema.
-  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+  password: strongPasswordSchema,
   acceptTerms: z.boolean().refine((value) => value, {
     message: "Você deve aceitar a Política de Privacidade e LGPD",
   }),

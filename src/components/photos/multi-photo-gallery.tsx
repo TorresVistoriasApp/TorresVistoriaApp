@@ -50,7 +50,7 @@ export function MultiPhotoGallery({
         guide={guide}
         status={mainStatus}
         required={required}
-        imageUrl={latest?.public_url}
+        imageUrl={latest?.thumbnail_url || latest?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
         onCapture={onCapture}
         onView={latest && onViewPhoto ? () => onViewPhoto(latest) : undefined}
@@ -69,7 +69,7 @@ export function MultiPhotoGallery({
           categoryName={`${label} ${index + 1}`}
           guide={guide}
           status="captured"
-          imageUrl={photo.public_url}
+          imageUrl={photo.thumbnail_url || photo.public_url}
           indexBadge={index + 1}
           onCapture={onCapture}
           onView={onViewPhoto ? () => onViewPhoto(photo) : undefined}
@@ -83,7 +83,7 @@ export function MultiPhotoGallery({
           categoryName={`${label} ${olderConfirmed.length + index + 1}`}
           guide={guide}
           status="uploading"
-          imageUrl={photo.public_url}
+          imageUrl={photo.thumbnail_url || photo.public_url}
           indexBadge={olderConfirmed.length + index + 1}
           onCapture={onCapture}
         />

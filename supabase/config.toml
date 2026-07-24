@@ -24,3 +24,18 @@ file_size_limit = "50MiB"
 [studio]
 enabled = true
 port = 54323
+
+[functions.create-report]
+verify_jwt = true
+
+[functions.generate-pdf]
+verify_jwt = true
+
+[functions.invite-user]
+verify_jwt = true
+
+[functions.compress-image]
+verify_jwt = true
+
+[functions.validate-report]
+verify_jwt = false

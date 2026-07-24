@@ -1,5 +1,6 @@
--- Torres Vistoria — Seed data (Fase 1 single-tenant)
--- Executar após migrations. Usuário admin deve ser criado via Supabase Auth Dashboard.
+-- Torres Vistoria — Seed data (apenas ambiente local / db reset)
+-- Executar após migrations. Contas demo (se necessárias) devem ser criadas
+-- pelo Studio Auth — nunca com senha fixa em arquivo versionado.
 
 INSERT INTO public.settings (company_id, primary_color, theme_mode, legal_footer)
 VALUES (
@@ -32,6 +33,6 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO public.role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM public.roles r
-JOIN public.permissions p ON p.code IN ('inspections.create','inspections.read.own','inspections.update.own')
+JOIN public.permissions p ON p.code IN ('inspections.create','inspections.read.own','inspections.update.own','reports.export')
 WHERE r.code = 'VISTORIADOR'
 ON CONFLICT DO NOTHING;

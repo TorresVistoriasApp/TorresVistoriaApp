@@ -7,11 +7,12 @@ import { invalidateFinancialQueries } from "@/lib/cache-invalidation";
 import { hasPermission } from "@/lib/rbac";
 import type { UserRole } from "@/lib/enums";
 
-export function useFinancialEntries() {
+export function useFinancialEntries(page = 1, pageSize = 50) {
   const { profile } = useAuth();
+  const offset = (page - 1) * pageSize;
   return useQuery({
-    queryKey: queryKeys.financial.all,
-    queryFn: () => financialService.list(profile?.company_id),
+    queryKey: queryKeys.financial.list(page, pageSize),
+    queryFn: () => financialService.list(profile?.company_id, pageSize, offset),
     enabled: !!profile?.company_id,
   });
 }

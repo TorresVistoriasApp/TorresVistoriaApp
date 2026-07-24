@@ -1,19 +1,21 @@
 import { db } from "@/lib/db-client";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
+import { STORAGE_BUCKET } from "@/lib/storage-buckets";
 import {
   buildPhotoPath,
+  buildThumbnailPath,
+  createThumbnailWebP,
   extractImageMetadata,
   getDeviceInfo,
   preparePhotoForUpload,
-  STORAGE_BUCKET,
 } from "@/lib/compress-image";
 import { runPhotoUpload } from "@/lib/photos/upload-queue";
 import { getPhotoCategory, normalizePhotoCategory } from "@/lib/photos/photo-catalog";
 import { insertInspectionPhoto } from "@/lib/photos/photo-insert";
 import type { PhotoCaptureMetadata, PhotoCaptureStatus } from "@/lib/photos/types";
 import { withFreshSession } from "@/lib/ensure-session";
-import { getSignedUrl, getSignedUrls } from "@/lib/storage-url";
+import { extractStoragePath, getSignedUrl, getSignedUrls } from "@/lib/storage-url";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 import { formatUserFacingError } from "@/lib/user-facing-errors";
 
@@ -80,21 +82,29 @@ function resolveCategoryMeta(category: string) {
 
 /**
  * O bucket de fotos é privado, então public_url gravada no banco não abre.
- * Toda leitura reescreve as URLs a partir do storage_path com assinatura válida.
+ * Toda leitura reescreve as URLs a partir do storage_path (e do path do thumb) com assinatura.
  */
 export async function withSignedPhotoUrls<T extends Pick<InspectionPhoto, "storage_path" | "public_url" | "thumbnail_url">>(
   photos: T[],
 ): Promise<T[]> {
   if (photos.length === 0) return photos;
 
-  const signed = await getSignedUrls(
-    STORAGE_BUCKET,
-    photos.map((photo) => photo.storage_path),
+  const thumbPaths = photos.map(
+    (photo) =>
+      extractStoragePath(photo.thumbnail_url, STORAGE_BUCKET) ??
+      buildThumbnailPath(photo.storage_path),
   );
 
-  return photos.map((photo) => {
-    const url = signed.get(photo.storage_path) ?? null;
-    return { ...photo, public_url: url, thumbnail_url: url };
+  const signed = await getSignedUrls(STORAGE_BUCKET, [
+    ...photos.map((photo) => photo.storage_path),
+    ...thumbPaths,
+  ]);
+
+  return photos.map((photo, index) => {
+    const fullUrl = signed.get(photo.storage_path) ?? null;
+    const thumbPath = thumbPaths[index];
+    const thumbUrl = signed.get(thumbPath) ?? fullUrl;
+    return { ...photo, public_url: fullUrl, thumbnail_url: thumbUrl };
   });
 }
 
@@ -126,14 +136,24 @@ export const photoService = {
             fileName,
           );
 
+          const thumbPath = buildThumbnailPath(storagePath);
+          const thumbnail = await createThumbnailWebP(webp);
+
           const { error: uploadError } = await db.storage
             .from(STORAGE_BUCKET)
             .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
           if (uploadError) throw uploadError;
 
-          // Valor transitório só para a UI logo após o upload; toda leitura
-          // posterior reassina a partir do storage_path.
-          const signedUrl = await getSignedUrl(STORAGE_BUCKET, storagePath);
+          const { error: thumbError } = await db.storage
+            .from(STORAGE_BUCKET)
+            .upload(thumbPath, thumbnail, { contentType: "image/webp", upsert: false });
+          if (thumbError) throw thumbError;
+
+          // URLs assinadas só para a UI imediata; no banco guardamos paths estáveis.
+          const [signedUrl, signedThumb] = await Promise.all([
+            getSignedUrl(STORAGE_BUCKET, storagePath),
+            getSignedUrl(STORAGE_BUCKET, thumbPath),
+          ]);
           const now = new Date().toISOString();
 
           const insertResult = await insertInspectionPhoto({
@@ -146,8 +166,8 @@ export const photoService = {
             sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
             is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
             storage_path: storagePath,
-            public_url: signedUrl ?? "",
-            thumbnail_url: signedUrl,
+            public_url: storagePath,
+            thumbnail_url: thumbPath,
             file_size: webp.size,
             mime_type: "image/webp",
             content_hash: imageMeta.contentHash,
@@ -170,7 +190,12 @@ export const photoService = {
             ai_validation: params.metadata?.aiValidation ?? {},
           });
 
-          return throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
+          const row = throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
+          return {
+            ...row,
+            public_url: signedUrl,
+            thumbnail_url: signedThumb ?? signedUrl,
+          };
         });
       });
     } catch (error) {
@@ -181,7 +206,8 @@ export const photoService = {
   async remove(id: string, storagePath: string): Promise<void> {
     try {
       await withFreshSession(async () => {
-        const { error: storageError } = await db.storage.from(STORAGE_BUCKET).remove([storagePath]);
+        const paths = [storagePath, buildThumbnailPath(storagePath)];
+        const { error: storageError } = await db.storage.from(STORAGE_BUCKET).remove(paths);
         if (storageError) throw storageError;
 
         const { error } = await mutations.photos.softDelete(id);

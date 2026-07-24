@@ -155,7 +155,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: Photo
         guide={guide}
         status={resolveSlotStatus(displayPhoto)}
         required={isPhotoRequirementActive(category.required)}
-        imageUrl={displayPhoto?.public_url}
+        imageUrl={displayPhoto?.thumbnail_url || displayPhoto?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
         onCapture={() => openPhotoActions(category)}
         onView={() =>

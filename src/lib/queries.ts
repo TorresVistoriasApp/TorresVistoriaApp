@@ -17,6 +17,7 @@ export const queryKeys = {
   },
   financial: {
     all: ["financial"] as const,
+    list: (page: number, pageSize: number) => ["financial", "list", page, pageSize] as const,
     summary: (startDate?: string, endDate?: string) =>
       ["financial", "summary", startDate, endDate] as const,
   },
@@ -35,7 +36,8 @@ export const queryKeys = {
   },
   audit: {
     all: ["audit"] as const,
-    list: (filters?: Record<string, unknown>) => ["audit", "list", filters] as const,
+    list: (filters?: Record<string, unknown>, page?: number, pageSize?: number) =>
+      ["audit", "list", filters, page, pageSize] as const,
   },
   notifications: {
     all: ["notifications"] as const,
@@ -44,8 +46,9 @@ export const queryKeys = {
 
 export const queries = {
   inspections: {
-    base() {
-      return db.from("inspections").select(`
+    base(options?: { count?: "exact" }) {
+      return db.from("inspections").select(
+        `
         id, inspection_number, inspection_date, inspection_time, location,
         inspection_purpose, inspection_type_id, requester_name, requester_document,
         buyer_name, buyer_document, seller_name, seller_document,
@@ -60,15 +63,15 @@ export const queries = {
         completion_percent, draft_expires_at, last_auto_saved_at,
         company_id, inspector_id, created_at, updated_at,
         inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url, role)
-      `);
+      `,
+        options?.count ? { count: options.count } : undefined,
+      );
     },
 
     withRelations() {
       return db.from("inspections").select(`
         *,
         inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url, role),
-        inspection_checklists(*),
-        inspection_photos(*),
         inspection_comments(*)
       `);
     },
@@ -105,13 +108,14 @@ export const queries = {
   },
 
   financial: {
-    byCompany(companyId: string) {
+    byCompany(companyId: string, limit = 50, offset = 0) {
       return db
         .from("financial_entries")
-        .select("*")
+        .select("*", { count: "exact" })
         .eq("company_id", companyId)
         .is("deleted_at", null)
-        .order("entry_date", { ascending: false });
+        .order("entry_date", { ascending: false })
+        .range(offset, offset + limit - 1);
     },
 
     async summary(companyId: string, startDate: string, endDate: string) {

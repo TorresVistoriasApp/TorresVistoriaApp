@@ -5,10 +5,13 @@ import type { Profile } from "@/types";
 
 export type UserDataExport = {
   exportedAt: string;
-  profile: Pick<Profile, "id" | "full_name" | "role" | "created_at">;
+  profile: Pick<
+    Profile,
+    "id" | "full_name" | "role" | "created_at" | "company_id" | "email" | "is_active"
+  >;
   email: string | null;
-  inspectionsCount: number;
-  auditLogsCount: number;
+  inspections: Array<Record<string, unknown>>;
+  auditLogs: Array<Record<string, unknown>>;
 };
 
 export const lgpdService = {
@@ -17,17 +20,24 @@ export const lgpdService = {
       const profile = await authService.getProfile(userId);
       if (!profile) throw new AppError("Perfil não encontrado");
 
-      const { count: inspectionsCount, error: inspError } = await db
+      const { data: inspections, error: inspError } = await db
         .from("inspections")
-        .select("id", { count: "exact", head: true })
+        .select(
+          "id, inspection_number, inspection_date, plate, brand, model, client_name, status, opinion, created_at, updated_at",
+        )
         .eq("inspector_id", userId)
-        .is("deleted_at", null);
+        .is("deleted_at", null)
+        .order("inspection_date", { ascending: false })
+        .limit(500);
       if (inspError) throw inspError;
 
-      const { count: auditLogsCount, error: auditError } = await db
+      const { data: auditLogs, error: auditError } = await db
         .from("audit_logs")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId);
+        .select("id, action, entity_type, entity_id, created_at")
+        .eq("user_id", userId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(500);
       if (auditError) throw auditError;
 
       return {
@@ -37,10 +47,13 @@ export const lgpdService = {
           full_name: profile.full_name,
           role: profile.role,
           created_at: profile.created_at,
+          company_id: profile.company_id,
+          email: profile.email ?? null,
+          is_active: profile.is_active ?? true,
         },
         email: email ?? null,
-        inspectionsCount: inspectionsCount ?? 0,
-        auditLogsCount: auditLogsCount ?? 0,
+        inspections: (inspections ?? []) as Array<Record<string, unknown>>,
+        auditLogs: (auditLogs ?? []) as Array<Record<string, unknown>>,
       };
     } catch (error) {
       throw new AppError(getErrorMessage(error));

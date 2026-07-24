@@ -11,10 +11,19 @@ describe("loginSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("rejeita senha fraca no login", () => {
+    const result = loginSchema.safeParse({
+      email: "admin@torresvistorias.com.br",
+      password: "123456",
+      acceptTerms: true,
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejeita e-mail inválido", () => {
     const result = loginSchema.safeParse({
       email: "invalido",
-      password: "123456",
+      password: "TorresDemo2026!",
       acceptTerms: true,
     });
     expect(result.success).toBe(false);

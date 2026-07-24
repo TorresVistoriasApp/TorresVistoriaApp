@@ -2,6 +2,8 @@ import { db } from "@/lib/db-client";
 import { queries } from "@/lib/queries";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 import { compressToWebP } from "@/lib/compress-image";
+import { COMPANY_ASSETS_BUCKET } from "@/lib/storage-buckets";
+import { getSignedUrl, resolveStorageUrl, extractStoragePath } from "@/lib/storage-url";
 import { buildCompanyAddress, buildCompanyLocation } from "@/lib/cep";
 import type { CompanyInput, SettingsInput } from "@/schemas/settings";
 
@@ -36,7 +38,12 @@ export type CompanySettings = {
 export const companyService = {
   async getCompany(companyId: string): Promise<Company> {
     try {
-      return throwIfError(await queries.companies.byId(companyId), "Empresa não encontrada");
+      const company = throwIfError(
+        await queries.companies.byId(companyId),
+        "Empresa não encontrada",
+      ) as Company;
+      company.logo_url = await resolveStorageUrl(COMPANY_ASSETS_BUCKET, company.logo_url);
+      return company;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
@@ -73,7 +80,13 @@ export const companyService = {
     try {
       const { data, error } = await queries.companies.settings(companyId);
       if (error) throw error;
-      return data as CompanySettings | null;
+      if (!data) return null;
+      const settings = data as CompanySettings;
+      settings.signature_image_url = await resolveStorageUrl(
+        COMPANY_ASSETS_BUCKET,
+        settings.signature_image_url,
+      );
+      return settings;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
@@ -81,11 +94,15 @@ export const companyService = {
 
   async updateSettings(companyId: string, input: SettingsInput): Promise<CompanySettings> {
     try {
+      const signaturePath =
+        extractStoragePath(input.signature_image_url || null, COMPANY_ASSETS_BUCKET) ??
+        (input.signature_image_url?.startsWith("http") ? null : input.signature_image_url || null);
+
       const payload = {
         primary_color: input.primary_color,
         theme_mode: input.theme_mode,
         legal_footer: input.legal_footer ?? null,
-        signature_image_url: input.signature_image_url || null,
+        signature_image_url: signaturePath,
         watermark_enabled: input.watermark_enabled,
       };
 
@@ -122,31 +139,28 @@ export const companyService = {
       const compressed = await compressToWebP(file);
       const path = `${companyId}/${kind}.webp`;
       const { error: uploadError } = await db.storage
-        .from("company-assets")
+        .from(COMPANY_ASSETS_BUCKET)
         .upload(path, compressed, { upsert: true, contentType: "image/webp" });
       if (uploadError) throw uploadError;
 
-      const { data } = db.storage.from("company-assets").getPublicUrl(path);
-      const publicUrl = data.publicUrl;
-
       if (kind === "logo") {
-        await db.from("companies").update({ logo_url: publicUrl }).eq("id", companyId);
+        await db.from("companies").update({ logo_url: path }).eq("id", companyId);
       } else {
         const settings = await companyService.getSettings(companyId);
         if (settings) {
           await db
             .from("settings")
-            .update({ signature_image_url: publicUrl })
+            .update({ signature_image_url: path })
             .eq("company_id", companyId);
         } else {
           await db.from("settings").insert({
             company_id: companyId,
-            signature_image_url: publicUrl,
+            signature_image_url: path,
           });
         }
       }
 
-      return publicUrl;
+      return (await getSignedUrl(COMPANY_ASSETS_BUCKET, path)) ?? path;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
