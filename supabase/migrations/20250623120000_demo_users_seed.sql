@@ -1,5 +1,13 @@
 -- Demo users: Super Admin + Vistoriador
--- Senha padrão: TorresDemo2026!
+--
+-- A senha é sorteada a cada execução e não é registrada em lugar nenhum.
+-- Uma senha fixa aqui vira credencial pública: este arquivo é versionado, então
+-- qualquer valor literal fica no histórico do Git e vale para todo ambiente em
+-- que a migration rodar, inclusive produção.
+--
+-- Para usar estas contas no ambiente local, defina a senha depois do reset pelo
+-- Studio (http://localhost:54323, em Authentication > Users) ou dispare a
+-- recuperação de senha e leia o e-mail no Inbucket local.
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -8,7 +16,7 @@ DECLARE
   v_company UUID := '00000000-0000-4000-8000-000000000001';
   v_admin UUID := '11111111-1111-4111-8111-111111111101';
   v_vistoriador UUID := '11111111-1111-4111-8111-111111111102';
-  v_pwd TEXT := 'TorresDemo2026!';
+  v_pwd TEXT := encode(gen_random_bytes(24), 'base64');
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@torresvistorias.com.br') THEN
     INSERT INTO auth.users (
