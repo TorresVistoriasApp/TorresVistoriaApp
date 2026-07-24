@@ -61,7 +61,7 @@ export function buildLaudoReadiness(
       title: "Parecer técnico",
       description: hasOpinion
         ? getOpinionLabel(inspection.opinion)
-        : "Selecione o parecer na etapa de dados da vistoria.",
+        : "Selecione o parecer ao final do checklist.",
       ok: hasOpinion,
     },
     {
@@ -69,7 +69,7 @@ export function buildLaudoReadiness(
       title: "Observações técnicas",
       description: hasTechnicalNotes
         ? "Observações registradas e incluídas no laudo."
-        : "Descreva as observações técnicas na etapa de dados.",
+        : "Descreva as observações técnicas ao final do checklist.",
       ok: hasTechnicalNotes,
     },
   ];

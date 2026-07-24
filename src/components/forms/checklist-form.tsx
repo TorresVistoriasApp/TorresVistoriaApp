@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { ChecklistItem } from "@/services/checklist-service";
 import { ChecklistCategory } from "@/components/checklist/checklist-category";
 import { ChecklistSummary, summarizeChecklist } from "@/components/checklist/checklist-summary";
@@ -18,10 +18,13 @@ export function ChecklistForm({
   items,
   onUpdate,
   disabled,
+  afterItems,
 }: {
   items: ChecklistItem[];
   onUpdate: (id: string, status: string, notes?: string) => void;
   disabled?: boolean;
+  /** Conteúdo após os itens de inspeção (ex.: Parecer Técnico). */
+  afterItems?: ReactNode;
 }) {
   const [filter, setFilter] = useState<FilterKey>("ALL");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -192,6 +195,8 @@ export function ChecklistForm({
           />
         ))
       )}
+
+      {afterItems}
 
       <details className="group rounded-xl border border-border bg-card md:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3 text-xs font-medium text-muted-foreground [&::-webkit-details-marker]:hidden">
