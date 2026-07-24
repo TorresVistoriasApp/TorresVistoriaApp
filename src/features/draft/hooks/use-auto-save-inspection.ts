@@ -12,6 +12,7 @@ import { useNetworkStatus } from "@/features/draft/hooks/use-network-status";
 import { useSyncStore } from "@/features/draft/stores/sync-store";
 import type { VistoriaInput, VistoriaUpdateInput } from "@/schemas/vistoria";
 import { vistoriaDraftSchema } from "@/schemas/vistoria";
+import { prepareVistoriaFormForSave } from "@/lib/vistoria-form-defaults";
 
 type AutoSaveOptions = {
   inspectionId: string;
@@ -21,7 +22,7 @@ type AutoSaveOptions = {
 };
 
 function sanitizeDraftPayload(data: Partial<VistoriaInput>): Partial<VistoriaUpdateInput> {
-  const { inspection_purpose: _purpose, ...formData } = data;
+  const { inspection_purpose: _purpose, ...formData } = prepareVistoriaFormForSave(data);
   const parsed = vistoriaDraftSchema.safeParse(formData);
   if (!parsed.success) return formData as Partial<VistoriaUpdateInput>;
   return parsed.data as Partial<VistoriaUpdateInput>;

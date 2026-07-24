@@ -12,7 +12,10 @@ import { useUpdateInspection } from "@/hooks/use-inspections";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { isSuperAdmin } from "@/lib/rbac";
-import { formatVistoriaFormDefaults } from "@/lib/vistoria-form-defaults";
+import {
+  formatVistoriaFormDefaults,
+  prepareVistoriaFormForSave,
+} from "@/lib/vistoria-form-defaults";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { InspectionStatus } from "@/lib/enums";
@@ -55,7 +58,7 @@ export function Page() {
 
   const handleSubmit = async (data: VistoriaInput) => {
     try {
-      await update.mutateAsync(data);
+      await update.mutateAsync(prepareVistoriaFormForSave(data) as VistoriaInput);
       if (!id) return;
       rememberActiveDraftId(id);
       if (isWizardFlow) {

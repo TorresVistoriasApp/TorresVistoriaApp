@@ -26,7 +26,7 @@ export function ClienteForm({
       >
         <Input
           {...register("client_name")}
-          placeholder="Nome completo ou empresa"
+          placeholder="Nome ou razão social"
           autoComplete="name"
         />
       </FormField>

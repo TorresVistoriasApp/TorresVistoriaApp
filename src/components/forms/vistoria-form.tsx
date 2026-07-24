@@ -146,9 +146,11 @@ export function VistoriaForm({
           label="Local da vistoria"
           error={errors.location?.message}
           className={formGridFullWidthClass}
-          hint="Endereço, referência ou nome do local"
-          >
-          <Input {...register("location")} placeholder="Rua, número, bairro, cidade" />
+        >
+          <Input
+            {...register("location")}
+            placeholder="Endereço, referência ou nome do local"
+          />
         </FormField>
       </FormFieldGroup>
 
@@ -193,10 +195,9 @@ export function VistoriaForm({
         label="Indicado por"
         error={errors.requester_name?.message}
         optional
-        hint="Se preenchido, entra no laudo. Deixe em branco se não houver indicador."
         className={formGridFullWidthClass}
       >
-        <Input {...register("requester_name")} placeholder="Nome do indicador" />
+        <Input {...register("requester_name")} placeholder="Nome do indicador (opcional)" />
       </FormField>
     </div>
   );
