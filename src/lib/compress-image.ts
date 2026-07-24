@@ -6,6 +6,9 @@ const MAX_DIMENSION = 1920;
 const MAX_OUTPUT_BYTES = 2 * 1024 * 1024;
 const QUALITY_STEPS = [0.85, 0.8, 0.75, 0.72] as const;
 const WEB_WORKER_THRESHOLD_BYTES = 1_500_000;
+const PREVIEW_MAX_SIDE = 320;
+const DEFAULT_WEBP_QUALITY = 0.82;
+const FALLBACK_WEBP_QUALITY = 0.72;
 
 const HEIC_EXTENSIONS = new Set(["heic", "heif", "heics", "heifs"]);
 
@@ -72,7 +75,6 @@ async function canvasEncodeWebP(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Não foi possível processar a imagem.");
 
-  // Sem fill branco: preserva canal alpha quando existir.
   ctx.clearRect(0, 0, width, height);
   ctx.drawImage(source, 0, 0, width, height);
 
@@ -85,24 +87,21 @@ async function canvasEncodeWebP(
   });
 }
 
-async function encodeWebPWithQualityLadder(
-  source: ImageBitmap | HTMLImageElement,
-  width: number,
-  height: number,
+async function createImageBitmapResized(source: Blob): Promise<ImageBitmap> {
+  return createImageBitmap(source, {
+    resizeWidth: MAX_DIMENSION,
+    resizeHeight: MAX_DIMENSION,
+    resizeQuality: "medium",
+  });
+}
+
+async function encodeBitmapToWebP(
+  bitmap: ImageBitmap,
+  quality: number,
   sourceName?: string,
 ): Promise<File> {
-  let bestBlob: Blob | null = null;
-
-  for (const quality of QUALITY_STEPS) {
-    const blob = await canvasEncodeWebP(source, width, height, quality);
-    bestBlob = blob;
-    if (blob.size <= MAX_OUTPUT_BYTES) {
-      return blobToWebPFile(blob, sourceName);
-    }
-  }
-
-  if (!bestBlob) throw new Error("Falha ao converter imagem.");
-  return blobToWebPFile(bestBlob, sourceName);
+  const blob = await canvasEncodeWebP(bitmap, bitmap.width, bitmap.height, quality);
+  return blobToWebPFile(blob, sourceName);
 }
 
 async function compressWithLibrary(file: File): Promise<File> {
@@ -111,12 +110,24 @@ async function compressWithLibrary(file: File): Promise<File> {
     maxSizeMB: MAX_OUTPUT_BYTES / (1024 * 1024),
     useWebWorker: file.size > WEB_WORKER_THRESHOLD_BYTES,
     fileType: "image/webp",
-    initialQuality: QUALITY_STEPS[0],
+    initialQuality: DEFAULT_WEBP_QUALITY,
     alwaysKeepResolution: false,
     preserveExif: false,
   });
 
   return blobToWebPFile(compressed, file.name);
+}
+
+/** Fallback local: redimensiona no decode e encoda no máximo duas vezes. */
+async function compressWithCanvas(source: File): Promise<File> {
+  const bitmap = await createImageBitmapResized(source);
+  try {
+    const first = await encodeBitmapToWebP(bitmap, DEFAULT_WEBP_QUALITY, source.name);
+    if (first.size <= MAX_OUTPUT_BYTES) return first;
+    return encodeBitmapToWebP(bitmap, FALLBACK_WEBP_QUALITY, source.name);
+  } finally {
+    bitmap.close();
+  }
 }
 
 async function convertHeicToJpeg(file: File): Promise<File> {
@@ -132,15 +143,55 @@ async function convertHeicToJpeg(file: File): Promise<File> {
 }
 
 /**
- * Converte qualquer imagem suportada para WebP:
- * - sempre re-encoda (remove EXIF/GPS/ICC)
- * - preserva transparência
- * - redimensiona só se o lado maior > 1920
- * - usa ladder de qualidade para equilibrar tamanho e fidelidade visual
+ * Converte qualquer imagem suportada para WebP.
+ * Caminho principal: browser-image-compression em Web Worker (arquivos > 1,5 MB).
+ * Fallback: canvas com resize no decode e no máximo dois encodes.
  */
 export async function compressToWebP(file: File): Promise<File> {
   if (!isSupportedImageFile(file)) {
     throw new Error("Arquivo inválido. Selecione uma imagem JPEG, PNG ou WebP.");
+  }
+
+  try {
+    return await compressWithLibrary(file);
+  } catch {
+    return compressWithCanvas(file);
+  }
+}
+
+/** Preview leve para UI otimista — evita decodificar a foto original em tela cheia. */
+export async function createPreviewObjectUrl(file: File): Promise<string> {
+  try {
+    const bitmap = await createImageBitmap(file, {
+      resizeWidth: PREVIEW_MAX_SIDE,
+      resizeHeight: PREVIEW_MAX_SIDE,
+      resizeQuality: "low",
+    });
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Não foi possível gerar preview.");
+
+      ctx.drawImage(bitmap, 0, 0);
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob((result) => resolve(result), "image/jpeg", 0.7);
+      });
+      if (!blob) throw new Error("Falha ao gerar preview.");
+      return URL.createObjectURL(blob);
+    } finally {
+      bitmap.close();
+    }
+  } catch {
+    return URL.createObjectURL(file);
+  }
+}
+
+/** Prepara qualquer imagem da câmera ou galeria para upload (sempre WebP limpo). */
+export async function preparePhotoForUpload(file: File): Promise<File> {
+  if (!isSupportedImageFile(file)) {
+    throw new Error("Formato não suportado. Use JPEG, PNG ou WebP.");
   }
 
   let source = file;
@@ -154,25 +205,11 @@ export async function compressToWebP(file: File): Promise<File> {
     }
   }
 
-  try {
-    const bitmap = await createImageBitmap(source);
-    try {
-      const { width, height } = scaleDimensions(bitmap.width, bitmap.height, MAX_DIMENSION);
-      return await encodeWebPWithQualityLadder(bitmap, width, height, file.name);
-    } finally {
-      bitmap.close();
-    }
-  } catch {
-    return compressWithLibrary(source);
+  if (source.type === "image/webp" && source.size <= MAX_OUTPUT_BYTES) {
+    return source;
   }
-}
 
-/** Prepara qualquer imagem da câmera ou galeria para upload (sempre WebP limpo). */
-export async function preparePhotoForUpload(file: File): Promise<File> {
-  if (!isSupportedImageFile(file)) {
-    throw new Error("Formato não suportado. Use JPEG, PNG ou WebP.");
-  }
-  return compressToWebP(file);
+  return compressToWebP(source);
 }
 
 export async function extractImageMetadata(file: File | Blob): Promise<ImageMetadata> {
