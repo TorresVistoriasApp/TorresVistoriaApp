@@ -3,7 +3,8 @@ import imageCompression from "browser-image-compression";
 const STORAGE_BUCKET = "inspection-photos";
 
 const MAX_DIMENSION = 1920;
-const MAX_OUTPUT_MB = 2;
+const MAX_OUTPUT_BYTES = 2 * 1024 * 1024;
+const QUALITY_STEPS = [0.85, 0.8, 0.75, 0.72] as const;
 const WEB_WORKER_THRESHOLD_BYTES = 1_500_000;
 
 const HEIC_EXTENSIONS = new Set(["heic", "heif", "heics", "heifs"]);
@@ -28,77 +29,94 @@ export function isSupportedImageFile(file: File): boolean {
   return ext ? ["jpg", "jpeg", "png", "webp", "gif", "bmp", "heic", "heif"].includes(ext) : false;
 }
 
-function scaleDimensions(width: number, height: number, maxSide: number) {
+/** Redimensiona só quando o lado maior ultrapassa o limite; nunca faz upscale. */
+export function scaleDimensions(width: number, height: number, maxSide: number) {
   if (width <= maxSide && height <= maxSide) {
     return { width, height };
   }
   const ratio = Math.min(maxSide / width, maxSide / height);
   return {
-    width: Math.round(width * ratio),
-    height: Math.round(height * ratio),
+    width: Math.max(1, Math.round(width * ratio)),
+    height: Math.max(1, Math.round(height * ratio)),
   };
 }
 
-async function loadImageElement(file: File): Promise<HTMLImageElement> {
-  const url = URL.createObjectURL(file);
-  try {
-    return await new Promise<HTMLImageElement>((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () =>
-        reject(
-          new Error(
-            isHeicFile(file)
-              ? "Formato HEIC não suportado neste navegador. Use a câmera do app ou salve a foto como JPEG na galeria."
-              : "Não foi possível abrir a imagem selecionada.",
-          ),
-        );
-      image.src = url;
-    });
-  } finally {
-    URL.revokeObjectURL(url);
+/** Escolhe a menor qualidade da ladder cujo blob cabe no limite (ou a última). */
+export function pickWebpQuality(blobSizes: number[], maxBytes: number): number {
+  for (let i = 0; i < QUALITY_STEPS.length; i++) {
+    if ((blobSizes[i] ?? Number.POSITIVE_INFINITY) <= maxBytes) {
+      return QUALITY_STEPS[i];
+    }
   }
+  return QUALITY_STEPS[QUALITY_STEPS.length - 1];
 }
 
-async function canvasToWebP(image: HTMLImageElement, quality = 0.82): Promise<File> {
-  const { width, height } = scaleDimensions(image.naturalWidth, image.naturalHeight, MAX_DIMENSION);
+function webpFileName(sourceName?: string): string {
+  const base = sourceName?.replace(/\.[^.]+$/i, "") || "photo";
+  return `${base}-${Date.now()}.webp`;
+}
+
+async function blobToWebPFile(blob: Blob, sourceName?: string): Promise<File> {
+  return new File([blob], webpFileName(sourceName), { type: "image/webp" });
+}
+
+async function canvasEncodeWebP(
+  source: ImageBitmap | HTMLImageElement,
+  width: number,
+  height: number,
+  quality: number,
+): Promise<Blob> {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Não foi possível processar a imagem.");
 
-  ctx.drawImage(image, 0, 0, width, height);
+  // Sem fill branco: preserva canal alpha quando existir.
+  ctx.clearRect(0, 0, width, height);
+  ctx.drawImage(source, 0, 0, width, height);
 
-  const blob = await new Promise<Blob>((resolve, reject) => {
+  return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (result) => (result ? resolve(result) : reject(new Error("Falha ao converter imagem."))),
       "image/webp",
       quality,
     );
   });
-
-  return new File([blob], `photo-${Date.now()}.webp`, { type: "image/webp" });
 }
 
-export async function compressToWebP(file: File): Promise<File> {
-  if (!isSupportedImageFile(file)) {
-    throw new Error("Arquivo inválido. Selecione uma imagem JPEG, PNG ou WebP.");
+async function encodeWebPWithQualityLadder(
+  source: ImageBitmap | HTMLImageElement,
+  width: number,
+  height: number,
+  sourceName?: string,
+): Promise<File> {
+  let bestBlob: Blob | null = null;
+
+  for (const quality of QUALITY_STEPS) {
+    const blob = await canvasEncodeWebP(source, width, height, quality);
+    bestBlob = blob;
+    if (blob.size <= MAX_OUTPUT_BYTES) {
+      return blobToWebPFile(blob, sourceName);
+    }
   }
 
-  try {
-    return await imageCompression(file, {
-      maxWidthOrHeight: MAX_DIMENSION,
-      maxSizeMB: MAX_OUTPUT_MB,
-      useWebWorker: file.size > WEB_WORKER_THRESHOLD_BYTES,
-      fileType: "image/webp",
-      initialQuality: 0.82,
-      alwaysKeepResolution: false,
-    });
-  } catch {
-    const image = await loadImageElement(file);
-    return canvasToWebP(image);
-  }
+  if (!bestBlob) throw new Error("Falha ao converter imagem.");
+  return blobToWebPFile(bestBlob, sourceName);
+}
+
+async function compressWithLibrary(file: File): Promise<File> {
+  const compressed = await imageCompression(file, {
+    maxWidthOrHeight: MAX_DIMENSION,
+    maxSizeMB: MAX_OUTPUT_BYTES / (1024 * 1024),
+    useWebWorker: file.size > WEB_WORKER_THRESHOLD_BYTES,
+    fileType: "image/webp",
+    initialQuality: QUALITY_STEPS[0],
+    alwaysKeepResolution: false,
+    preserveExif: false,
+  });
+
+  return blobToWebPFile(compressed, file.name);
 }
 
 async function convertHeicToJpeg(file: File): Promise<File> {
@@ -113,10 +131,16 @@ async function convertHeicToJpeg(file: File): Promise<File> {
   return new File([blob as Blob], `${baseName}.jpg`, { type: "image/jpeg" });
 }
 
-/** Prepara qualquer imagem da câmera ou galeria para upload. */
-export async function preparePhotoForUpload(file: File): Promise<File> {
+/**
+ * Converte qualquer imagem suportada para WebP:
+ * - sempre re-encoda (remove EXIF/GPS/ICC)
+ * - preserva transparência
+ * - redimensiona só se o lado maior > 1920
+ * - usa ladder de qualidade para equilibrar tamanho e fidelidade visual
+ */
+export async function compressToWebP(file: File): Promise<File> {
   if (!isSupportedImageFile(file)) {
-    throw new Error("Formato não suportado. Use JPEG, PNG ou WebP.");
+    throw new Error("Arquivo inválido. Selecione uma imagem JPEG, PNG ou WebP.");
   }
 
   let source = file;
@@ -130,11 +154,25 @@ export async function preparePhotoForUpload(file: File): Promise<File> {
     }
   }
 
-  if (source.type === "image/webp" && source.size <= MAX_OUTPUT_MB * 1024 * 1024) {
-    return source;
+  try {
+    const bitmap = await createImageBitmap(source);
+    try {
+      const { width, height } = scaleDimensions(bitmap.width, bitmap.height, MAX_DIMENSION);
+      return await encodeWebPWithQualityLadder(bitmap, width, height, file.name);
+    } finally {
+      bitmap.close();
+    }
+  } catch {
+    return compressWithLibrary(source);
   }
+}
 
-  return compressToWebP(source);
+/** Prepara qualquer imagem da câmera ou galeria para upload (sempre WebP limpo). */
+export async function preparePhotoForUpload(file: File): Promise<File> {
+  if (!isSupportedImageFile(file)) {
+    throw new Error("Formato não suportado. Use JPEG, PNG ou WebP.");
+  }
+  return compressToWebP(file);
 }
 
 export async function extractImageMetadata(file: File | Blob): Promise<ImageMetadata> {
@@ -184,4 +222,4 @@ export function buildPhotoPath(
   return `${companyId}/${inspectionId}/${category}/${fileName}`;
 }
 
-export { STORAGE_BUCKET };
+export { STORAGE_BUCKET, MAX_DIMENSION, MAX_OUTPUT_BYTES, QUALITY_STEPS };

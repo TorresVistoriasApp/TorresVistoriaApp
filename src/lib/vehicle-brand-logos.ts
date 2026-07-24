@@ -1,20 +1,7 @@
 import { CAR_BRANDS } from "@/lib/vehicle-brands";
+import { PUBLIC_IMAGES } from "@/lib/public-images";
 
-/** Logos reais importados via Vite — evita referências quebradas em `public/`. */
-const brandLogoModules = import.meta.glob<string>("../assets/brands/*.png", {
-  eager: true,
-  query: "?url",
-  import: "default",
-});
-
-const slugToLogoUrl = Object.fromEntries(
-  Object.entries(brandLogoModules).map(([path, url]) => {
-    const slug = path.split("/").pop()?.replace(/\.png$/i, "");
-    return slug ? [slug, url] : [];
-  }),
-) as Record<string, string>;
-
-/** Slug do arquivo em `src/assets/brands/{slug}.png`. */
+/** Slug do arquivo em `public/images/vehicle-brands/{slug}.webp`. */
 const BRAND_LOGO_SLUGS: Record<string, string> = {
   Fiat: "fiat",
   Volkswagen: "volkswagen",
@@ -62,8 +49,8 @@ const slugByNormalizedKey = Object.fromEntries(
   Object.entries(BRAND_LOGO_SLUGS).map(([brand, slug]) => [normalizeBrandKey(brand), slug]),
 );
 
-function resolveBrandLogoUrl(slug: string): string | null {
-  return slugToLogoUrl[slug] ?? null;
+function resolveBrandLogoUrl(slug: string): string {
+  return PUBLIC_IMAGES.vehicleBrands(slug);
 }
 
 /** Retorna a URL do logo da marca, ou null se não houver arquivo. */

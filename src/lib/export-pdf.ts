@@ -1,4 +1,5 @@
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
+import { optimizePdfBlob } from "@/lib/optimize-pdf";
 
 type ExportPdfColumn<T> = {
   header: string;
@@ -7,7 +8,7 @@ type ExportPdfColumn<T> = {
 
 type PdfMakeDocument = {
   createPdf: (definition: TDocumentDefinitions) => {
-    download: (filename: string) => void;
+    getBlob: (cb: (blob: Blob) => void) => void;
   };
 };
 
@@ -27,6 +28,19 @@ async function getPdfMake(): Promise<PdfMakeDocument> {
 function formatPdfValue(value: unknown): string {
   if (value == null) return "";
   return String(value);
+}
+
+function triggerDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  try {
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.rel = "noopener";
+    anchor.click();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 export async function exportToPdf<T extends Record<string, unknown>>(
@@ -75,5 +89,9 @@ export async function exportToPdf<T extends Record<string, unknown>>(
     },
   };
 
-  pdfDoc.createPdf(definition).download(filename);
+  const rawBlob = await new Promise<Blob>((resolve) => {
+    pdfDoc.createPdf(definition).getBlob(resolve);
+  });
+  const optimized = await optimizePdfBlob(rawBlob);
+  triggerDownload(optimized, filename);
 }
