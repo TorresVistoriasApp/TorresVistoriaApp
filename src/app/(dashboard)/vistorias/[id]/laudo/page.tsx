@@ -72,8 +72,8 @@ export function Page() {
     const routes: Record<string, string> = {
       checklist: ROUTES.inspectionChecklist(id),
       photos: ROUTES.inspectionPhotos(id),
-      opinion: ROUTES.inspectionEdit(id),
-      notes: ROUTES.inspectionEdit(id),
+      opinion: `${ROUTES.inspectionChecklist(id)}#checklist-parecer`,
+      notes: `${ROUTES.inspectionChecklist(id)}#checklist-parecer`,
     };
     const path = routes[itemId];
     if (!path) return;

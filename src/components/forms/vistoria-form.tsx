@@ -3,11 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { vistoriaSchema, vistoriaDraftSchema, vistoriaWizardContinueSchema, type VistoriaInput } from "@/schemas/vistoria";
 import {
-  InspectionOpinion,
   InspectionSituation,
   InspectionStatus,
 } from "@/lib/enums";
-import { INSPECTION_OPINION_FORM_LABELS } from "@/lib/inspection-opinion-labels";
 import { useInspectionTypes } from "@/hooks/use-inspection-types";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/formatters";
@@ -20,16 +18,13 @@ import { VeiculoForm } from "@/components/forms/veiculo-form";
 import { FormField } from "@/components/forms/form-field";
 import { FormFieldGroup } from "@/components/forms/form-field-group";
 import { FormSectionCard } from "@/components/forms/form-section-card";
+import { ParecerTecnicoFields } from "@/components/forms/parecer-tecnico-fields";
 import { maskCurrency } from "@/lib/masks";
 import {
-  formGridClass,
   formGridFullWidthClass,
   selectInputClass,
-  textareaInputClass,
 } from "@/lib/form-styles";
 import { cn } from "@/lib/utils";
-
-const opinionOptions = Object.values(InspectionOpinion);
 
 interface VistoriaFormProps {
   defaultValues?: Partial<VistoriaInput>;
@@ -66,6 +61,7 @@ export function VistoriaForm({
     control,
     watch,
     getValues,
+    setValue,
     setError,
     clearErrors,
     formState: { errors, isSubmitting, submitCount },
@@ -263,47 +259,45 @@ export function VistoriaForm({
     </div>
   );
 
+  const opinionValue = watch("opinion") ?? "";
+  const technicalNotesValue = watch("technical_notes") ?? "";
+  const internalNotesValue = watch("internal_notes") ?? "";
+
   const parecerFields = (
-    <div className={formGridClass}>
-      <FormField
-        label="Parecer técnico"
-        error={errors.opinion?.message}
-        className={formGridFullWidthClass}
-        hint="Resultado final da vistoria, exibido em destaque no laudo"
-      >
-        <select {...register("opinion")} className={selectInputClass}>
-          <option value="">Selecione o parecer</option>
-          {opinionOptions.map((o) => (
-            <option key={o} value={o}>
-              {INSPECTION_OPINION_FORM_LABELS[o]}
-            </option>
-          ))}
-        </select>
-      </FormField>
-      <FormField
-        label="Observações técnicas"
-        error={errors.technical_notes?.message}
-        className={formGridFullWidthClass}
-        hint="Descreva achados, apontamentos ou recomendações. Entra no laudo PDF."
-      >
-        <textarea
-          {...register("technical_notes")}
-          rows={5}
-          placeholder="Ex.: Pintura original na lateral direita, pneus com desgaste irregular..."
-          className={textareaInputClass}
-        />
-      </FormField>
-      {showInternalNotes && (
-        <FormField
-          label="Comentários internos (admin)"
-          error={errors.internal_notes?.message}
-          className={formGridFullWidthClass}
-          optional
-        >
-          <textarea {...register("internal_notes")} rows={4} className={textareaInputClass} />
-        </FormField>
-      )}
-    </div>
+    <ParecerTecnicoFields
+      opinion={typeof opinionValue === "string" ? opinionValue : ""}
+      technicalNotes={technicalNotesValue}
+      onOpinionChange={(value) => {
+        clearErrors("opinion");
+        setValue("opinion", value as VistoriaInput["opinion"], {
+          shouldDirty: true,
+          shouldValidate: submitCount > 0,
+        });
+      }}
+      onTechnicalNotesChange={(value) => {
+        clearErrors("technical_notes");
+        setValue("technical_notes", value, {
+          shouldDirty: true,
+          shouldValidate: submitCount > 0,
+        });
+      }}
+      opinionError={errors.opinion?.message}
+      technicalNotesError={errors.technical_notes?.message}
+      showInternalNotes={showInternalNotes}
+      internalNotes={internalNotesValue ?? ""}
+      onInternalNotesChange={
+        showInternalNotes
+          ? (value) => {
+              clearErrors("internal_notes");
+              setValue("internal_notes", value, {
+                shouldDirty: true,
+                shouldValidate: submitCount > 0,
+              });
+            }
+          : undefined
+      }
+      internalNotesError={errors.internal_notes?.message}
+    />
   );
 
   const wizardContent = (
@@ -345,15 +339,6 @@ export function VistoriaForm({
         defaultOpen={false}
       >
         {vendaMercadoFields}
-      </FormSectionCard>
-
-      <FormSectionCard
-        id="wizard-parecer"
-        index={5}
-        title="Parecer"
-        description="Conclusão técnica da vistoria, com resultado e observações no laudo"
-      >
-        {parecerFields}
       </FormSectionCard>
     </>
   );

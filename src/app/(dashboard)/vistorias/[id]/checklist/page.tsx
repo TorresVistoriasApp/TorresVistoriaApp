@@ -1,6 +1,13 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, FileText } from "lucide-react";
 import { ChecklistForm, validateChecklistCompletion } from "@/components/forms/checklist-form";
+import {
+  ParecerTecnicoSection,
+  useParecerTecnicoDraft,
+  validateParecerTecnico,
+  type ParecerTecnicoValue,
+} from "@/components/forms/parecer-tecnico-section";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import {
   InspectionWizardShell,
@@ -8,10 +15,12 @@ import {
 } from "@/components/vistoria/inspection-wizard-shell";
 import { useInspectionChecklist, useUpdateChecklistItem } from "@/hooks/use-checklist";
 import { useInspection } from "@/hooks/use-inspection";
+import { useUpdateInspection } from "@/hooks/use-inspections";
 import { Button } from "@/components/ui/button";
 import { ChecklistStatus, InspectionStatus } from "@/lib/enums";
 import { useToast } from "@/hooks/use-toast";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
+import type { VistoriaInput } from "@/schemas/vistoria";
 
 export function Page() {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +30,55 @@ export function Page() {
   const { data: inspection } = useInspection(id);
   const { data: items = [], isLoading } = useInspectionChecklist(id);
   const updateItem = useUpdateChecklistItem(id!);
+  const updateInspection = useUpdateInspection(id!);
   const { toast } = useToast();
+  const [parecerErrors, setParecerErrors] = useState<
+    Partial<Record<keyof ParecerTecnicoValue, string>>
+  >({});
+
+  const initialParecer = useMemo<ParecerTecnicoValue | null>(() => {
+    if (!inspection) return null;
+    return {
+      opinion: inspection.opinion ?? "",
+      technical_notes: inspection.technical_notes ?? "",
+    };
+  }, [inspection]);
+
+  const persistParecer = useCallback(
+    (value: ParecerTecnicoValue) => {
+      if (!id) return;
+      updateInspection.mutate(
+        {
+          opinion: (value.opinion || null) as VistoriaInput["opinion"],
+          technical_notes: value.technical_notes,
+        },
+        {
+          onError: (err) => {
+            toast(err instanceof Error ? err.message : "Erro ao salvar parecer");
+          },
+        },
+      );
+    },
+    [id, toast, updateInspection],
+  );
+
+  const [parecer, setParecer] = useParecerTecnicoDraft(initialParecer, persistParecer);
+
+  useEffect(() => {
+    if (isLoading || items.length === 0) return;
+    if (window.location.hash !== "#checklist-parecer") return;
+    requestAnimationFrame(() => {
+      document.getElementById("checklist-parecer")?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
+  }, [isLoading, items.length]);
+
+  const handleParecerChange = (value: ParecerTecnicoValue) => {
+    setParecerErrors({});
+    setParecer(value);
+  };
 
   const goToLaudo = () => {
     const { valid, pendingCount, missingNotesCount } = validateChecklistCompletion(items);
@@ -35,9 +92,41 @@ export function Page() {
         return;
       }
     }
+
+    const parecerResult = validateParecerTecnico(parecer);
+    if (!parecerResult.valid) {
+      setParecerErrors(parecerResult.errors);
+      toast(
+        parecerResult.errors.opinion ??
+          parecerResult.errors.technical_notes ??
+          "Preencha o parecer técnico antes de continuar.",
+      );
+      requestAnimationFrame(() => {
+        document.getElementById("checklist-parecer")?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      });
+      return;
+    }
+
     if (!id) return;
-    const path = ROUTES.inspectionReport(id);
-    navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
+
+    updateInspection.mutate(
+      {
+        opinion: parecer.opinion as VistoriaInput["opinion"],
+        technical_notes: parecer.technical_notes.trim(),
+      },
+      {
+        onSuccess: () => {
+          const path = ROUTES.inspectionReport(id);
+          navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
+        },
+        onError: (err) => {
+          toast(err instanceof Error ? err.message : "Erro ao salvar parecer");
+        },
+      },
+    );
   };
 
   const checklistContent = (
@@ -69,6 +158,14 @@ export function Page() {
               },
             );
           }}
+          afterItems={
+            <ParecerTecnicoSection
+              value={parecer}
+              onChange={handleParecerChange}
+              errors={parecerErrors}
+              disabled={!inspection}
+            />
+          }
         />
       )}
 
@@ -79,9 +176,15 @@ export function Page() {
               onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)))}
               onNext={goToLaudo}
               nextLabel="Revisar e gerar laudo"
+              nextDisabled={updateInspection.isPending}
             />
           ) : (
-            <Button className="h-12 w-full touch-target" size="lg" onClick={goToLaudo}>
+            <Button
+              className="h-12 w-full touch-target"
+              size="lg"
+              onClick={goToLaudo}
+              disabled={updateInspection.isPending}
+            >
               <FileText className="mr-2 h-5 w-5" />
               Revisar e gerar laudo
             </Button>
@@ -119,7 +222,7 @@ export function Page() {
         <div className="min-w-0">
           <h1 className="text-lg font-bold md:text-xl">Checklist</h1>
           <p className="text-xs text-muted-foreground">
-            Toque no status. Observações apenas em itens com apontamentos.
+            Toque no status. Observações apenas em itens com apontamentos. Parecer ao final.
           </p>
         </div>
       </div>
