@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart3,
@@ -16,18 +16,36 @@ import {
 } from "@/hooks/use-dashboard";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
 import { ChartWrapper } from "@/components/charts/chart-wrapper";
-import { RevenueChart } from "@/components/charts/revenue-chart";
-import { InspectionsPieChart } from "@/components/charts/inspections-pie-chart";
-import { MonthlyOverview } from "@/components/dashboard/monthly-overview";
 import { RecentInspections } from "@/components/dashboard/recent-inspections";
 import { PageHeader } from "@/components/shared/page-header";
+import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { ROUTES } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { UserRole } from "@/lib/enums";
 
+const MonthlyOverview = lazy(() =>
+  import("@/components/dashboard/monthly-overview").then((m) => ({ default: m.MonthlyOverview })),
+);
+const RevenueChart = lazy(() =>
+  import("@/components/charts/revenue-chart").then((m) => ({ default: m.RevenueChart })),
+);
+const InspectionsPieChart = lazy(() =>
+  import("@/components/charts/inspections-pie-chart").then((m) => ({
+    default: m.InspectionsPieChart,
+  })),
+);
+
 const MONTHLY_CHART_WINDOW_SIZE = 6;
+
+function ChartFallback() {
+  return (
+    <div className="flex h-64 items-center justify-center">
+      <LoadingSpinner label="Carregando gráfico..." />
+    </div>
+  );
+}
 
 function getDefaultMonthlyWindowStart() {
   return new Date().getMonth() >= MONTHLY_CHART_WINDOW_SIZE ? MONTHLY_CHART_WINDOW_SIZE : 0;
@@ -136,15 +154,17 @@ export function Page() {
           description="Evolução de vistorias realizadas"
           icon={BarChart3}
         >
-          <MonthlyOverview
-            data={monthly}
-            visibleStart={currentInspectionMonthStart}
-            visibleSize={MONTHLY_CHART_WINDOW_SIZE}
-            canPrevious={canPreviousInspectionWindow}
-            canNext={canNextInspectionWindow}
-            onPrevious={showPreviousInspectionWindow}
-            onNext={showNextInspectionWindow}
-          />
+          <Suspense fallback={<ChartFallback />}>
+            <MonthlyOverview
+              data={monthly}
+              visibleStart={currentInspectionMonthStart}
+              visibleSize={MONTHLY_CHART_WINDOW_SIZE}
+              canPrevious={canPreviousInspectionWindow}
+              canNext={canNextInspectionWindow}
+              onPrevious={showPreviousInspectionWindow}
+              onNext={showNextInspectionWindow}
+            />
+          </Suspense>
         </ChartWrapper>
 
         <ChartWrapper
@@ -153,15 +173,17 @@ export function Page() {
           description="Valores reais das vistorias conforme tipos cadastrados"
           icon={TrendingUp}
         >
-          <RevenueChart
-            data={monthly}
-            visibleStart={currentRevenueMonthStart}
-            visibleSize={MONTHLY_CHART_WINDOW_SIZE}
-            canPrevious={canPreviousRevenueWindow}
-            canNext={canNextRevenueWindow}
-            onPrevious={showPreviousRevenueWindow}
-            onNext={showNextRevenueWindow}
-          />
+          <Suspense fallback={<ChartFallback />}>
+            <RevenueChart
+              data={monthly}
+              visibleStart={currentRevenueMonthStart}
+              visibleSize={MONTHLY_CHART_WINDOW_SIZE}
+              canPrevious={canPreviousRevenueWindow}
+              canNext={canNextRevenueWindow}
+              onPrevious={showPreviousRevenueWindow}
+              onNext={showNextRevenueWindow}
+            />
+          </Suspense>
         </ChartWrapper>
 
         <ChartWrapper
@@ -170,7 +192,9 @@ export function Page() {
           description="Participação por fabricante"
           icon={PieChart}
         >
-          <InspectionsPieChart data={brands} />
+          <Suspense fallback={<ChartFallback />}>
+            <InspectionsPieChart data={brands} />
+          </Suspense>
         </ChartWrapper>
 
         <div className="xl:col-span-7">
