@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createPreviewObjectUrl } from "@/lib/compress-image";
 import { queryKeys } from "@/lib/queries";
 import { photoService, type InspectionPhoto } from "@/services/photo-service";
 import { pdfService } from "@/services/pdf-service";
@@ -55,7 +56,7 @@ export function useUploadPhoto(inspectionId: string) {
     onMutate: async ({ file, category, latitude, longitude }) => {
       if (!profile?.company_id) return;
 
-      const blobUrl = URL.createObjectURL(file);
+      const blobUrl = await createPreviewObjectUrl(file);
       const optimisticId = `pending-${category}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const optimistic: InspectionPhoto = {
         id: optimisticId,

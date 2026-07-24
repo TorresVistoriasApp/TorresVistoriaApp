@@ -90,10 +90,10 @@ export const photoService = {
 
   async upload(file: File, params: PhotoUploadParams): Promise<InspectionPhoto> {
     try {
-      const webp = await preparePhotoForUpload(file);
+      return await runPhotoUpload(async () => {
+        const webp = await preparePhotoForUpload(file);
 
-      return await runPhotoUpload(async () =>
-        withFreshSession(async () => {
+        return withFreshSession(async () => {
           const imageMeta = await extractImageMetadata(webp);
           const device = getDeviceInfo();
           const categoryMeta = resolveCategoryMeta(params.category);
@@ -148,8 +148,8 @@ export const photoService = {
           });
 
           return throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
-        }),
-      );
+        });
+      });
     } catch (error) {
       throw new AppError(formatUserFacingError(getErrorMessage(error)));
     }
