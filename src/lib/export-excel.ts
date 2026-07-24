@@ -1,4 +1,3 @@
-import ExcelJS from "exceljs";
 import { PUBLIC_IMAGES } from "@/lib/public-images";
 
 type ExportColumn<T> = {
@@ -40,6 +39,7 @@ export async function exportToExcel<T extends Record<string, unknown>>(
   filename: string,
   options: ExportExcelOptions = {},
 ): Promise<void> {
+  const { default: ExcelJS } = await import("exceljs");
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet(options.sheetName ?? "Dados");
   const headerRowNumber = options.title || options.subtitle ? 5 : 1;

@@ -4,6 +4,15 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
+/** Chunks pesados: só baixam sob demanda; não entram no precache do SW. */
+const HEAVY_CHUNK_IGNORE = [
+  "**/pdfmake-*.js",
+  "**/pdf-lib-*.js",
+  "**/exceljs-*.js",
+  "**/heic2any-*.js",
+  "**/charts-*.js",
+];
+
 export default defineConfig({
   server: {
     port: 3000,
@@ -24,10 +33,36 @@ export default defineConfig({
       ],
       workbox: {
         cleanupOutdatedCaches: true,
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp}"],
+        // Shell + rotas comuns cabem abaixo disso; libs de PDF/Excel ficam de fora.
+        maximumFileSizeToCacheInBytes: 800 * 1024,
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
+        globIgnores: ["**/node_modules/**", ...HEAVY_CHUNK_IGNORE],
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.destination === "image",
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "images",
+              expiration: {
+                maxEntries: 80,
+                maxAgeSeconds: 60 * 60 * 24 * 7,
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts",
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+            },
+          },
+        ],
       },
       manifest: {
         name: "Torres Vistoria",
@@ -60,12 +95,14 @@ export default defineConfig({
   build: {
     target: "es2020",
     sourcemap: false,
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes("node_modules/pdfmake")) return "pdfmake";
           if (id.includes("node_modules/pdf-lib")) return "pdf-lib";
           if (id.includes("node_modules/exceljs")) return "exceljs";
+          if (id.includes("node_modules/heic2any")) return "heic2any";
           if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) return "charts";
           if (id.includes("node_modules/@supabase")) return "api";
           if (id.includes("node_modules/@tanstack/react-query")) return "query";
