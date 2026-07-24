@@ -21,6 +21,7 @@ import { maskCpfCnpj } from "@/lib/masks";
 import { CompanyAddressFields } from "@/features/settings/components/company-address-fields";
 import { InspectionTypesSection } from "@/features/settings/components/inspection-types-section";
 import { PrivacyRightsSection } from "@/features/settings/components/privacy-rights-section";
+import { ChangePasswordSection } from "@/features/settings/components/change-password-section";
 import {
   SETTINGS_FIELD_LABEL_CLASS,
   SettingsNotice,
@@ -351,7 +352,10 @@ export function Page() {
         />
       </div>
 
-      <PrivacyRightsSection />
+      <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-stretch">
+        <ChangePasswordSection className="min-w-0 h-full" />
+        <PrivacyRightsSection className="min-w-0 h-full" />
+      </div>
 
       <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-20 border-t border-border/60 bg-card/95 px-4 py-3 shadow-elevated backdrop-blur-sm sm:hidden">
         <SaveSettingsButton
