@@ -41,6 +41,22 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
+            urlPattern: ({ url }) =>
+              url.pathname.includes("/storage/v1/object/sign/") ||
+              url.pathname.includes("/storage/v1/object/public/"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "supabase-storage",
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
             urlPattern: ({ request }) => request.destination === "image",
             handler: "StaleWhileRevalidate",
             options: {

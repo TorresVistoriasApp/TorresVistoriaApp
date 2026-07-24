@@ -27,17 +27,24 @@ export type AuditFilters = {
 };
 
 export const auditService = {
-  async list(filters: AuditFilters = {}, limit = 1000): Promise<AuditLogWithUser[]> {
+  async list(
+    filters: AuditFilters = {},
+    limit = 50,
+    offset = 0,
+  ): Promise<{ logs: AuditLogWithUser[]; total: number }> {
     let query = db
       .from("audit_logs")
-      .select(`
+      .select(
+        `
         id, company_id, user_id, action, entity_type, entity_id,
         old_data, new_data, ip_address, user_agent, created_at,
         user:profiles!audit_logs_user_id_fkey(id, full_name)
-      `)
+      `,
+        { count: "exact" },
+      )
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(limit);
+      .range(offset, offset + limit - 1);
 
     if (filters.action) query = query.eq("action", filters.action);
     if (filters.entityType) query = query.eq("entity_type", filters.entityType);
@@ -45,12 +52,15 @@ export const auditService = {
     if (filters.startDate) query = query.gte("created_at", `${filters.startDate}T00:00:00`);
     if (filters.endDate) query = query.lte("created_at", `${filters.endDate}T23:59:59`);
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
     if (error) throw error;
 
-    return (data ?? []).map((row) => ({
-      ...(row as AuditLog),
-      user: (row as { user: AuditLogWithUser["user"] }).user ?? null,
-    }));
+    return {
+      logs: (data ?? []).map((row) => ({
+        ...(row as AuditLog),
+        user: (row as { user: AuditLogWithUser["user"] }).user ?? null,
+      })),
+      total: count ?? 0,
+    };
   },
 };

@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { router } from "@/app/router";
 import { reloadOnceOnChunkLoadError, clearChunkReloadFlag } from "@/lib/chunk-load-recovery";
-import { getMissingProductionEnvVars } from "@/lib/env";
+import { getMissingProductionEnvVars, validateEnv } from "@/lib/env";
 import "@/styles/globals.css";
 
 if (typeof window !== "undefined") {
@@ -63,6 +63,7 @@ const missingEnv = import.meta.env.PROD ? getMissingProductionEnvVars() : [];
 if (missingEnv.length > 0) {
   renderConfigError(missingEnv);
 } else {
+  validateEnv();
   clearChunkReloadFlag();
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

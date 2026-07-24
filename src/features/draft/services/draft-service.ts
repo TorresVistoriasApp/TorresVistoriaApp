@@ -9,7 +9,7 @@ import { ACTIVE_DRAFT_STORAGE_KEY } from "@/features/draft/lib/constants";
 import type { ActiveDraftSummary } from "@/features/draft/types";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 import { InspectionStatus } from "@/lib/enums";
-import { STORAGE_BUCKET } from "@/lib/compress-image";
+import { STORAGE_BUCKET } from "@/lib/storage-buckets";
 import type { VistoriaInput, VistoriaUpdateInput } from "@/schemas/vistoria";
 import { inspectionService, type Inspection } from "@/services/inspection-service";
 
@@ -127,17 +127,19 @@ export const draftService = {
       const inspection = throwIfError(
         await queries.inspections.byId(id),
         "Vistoria não encontrada",
-      ) as Inspection & {
-        inspection_checklists?: Array<{ status: string }>;
-        inspection_photos?: Array<{ category: string }>;
-      };
+      ) as Inspection;
+
+      const [{ data: photos }, { data: checklist }] = await Promise.all([
+        queries.photos.byInspection(id),
+        queries.checklist.byInspection(id),
+      ]);
 
       const percent = computeInspectionCompletionPercent({
         inspection,
-        photos: (inspection.inspection_photos ?? []) as never[],
-        checklist: (inspection.inspection_checklists ?? []).map((item, index) => ({
-          id: String(index),
-          status: item.status,
+        photos: (photos ?? []) as never[],
+        checklist: (checklist ?? []).map((item, index) => ({
+          id: String((item as { id?: string }).id ?? index),
+          status: (item as { status: string }).status,
         })) as never[],
       });
 

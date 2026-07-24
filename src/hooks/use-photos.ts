@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPreviewObjectUrl } from "@/lib/compress-image";
 import { queryKeys } from "@/lib/queries";
 import { photoService, type InspectionPhoto } from "@/services/photo-service";
-import { pdfService } from "@/services/pdf-service";
 import { useAuth } from "@/hooks/use-auth";
 import { offlineStore } from "@/features/draft/lib/offline-store";
 import { useSyncStore } from "@/features/draft/stores/sync-store";
@@ -178,11 +177,5 @@ export function useDeletePhoto(inspectionId: string) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.photos(inspectionId) });
     },
-  });
-}
-
-export function useGeneratePdfPayload() {
-  return useMutation({
-    mutationFn: (inspectionId: string) => pdfService.fetchInspectionPayload(inspectionId),
   });
 }

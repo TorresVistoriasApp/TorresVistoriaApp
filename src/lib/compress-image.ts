@@ -1,7 +1,5 @@
 import imageCompression from "browser-image-compression";
 
-const STORAGE_BUCKET = "inspection-photos";
-
 const MAX_DIMENSION = 1920;
 const MAX_OUTPUT_BYTES = 2 * 1024 * 1024;
 const QUALITY_STEPS = [0.85, 0.8, 0.75, 0.72] as const;
@@ -259,4 +257,27 @@ export function buildPhotoPath(
   return `${companyId}/${inspectionId}/${category}/${fileName}`;
 }
 
-export { STORAGE_BUCKET, MAX_DIMENSION, MAX_OUTPUT_BYTES, QUALITY_STEPS };
+/** Path do thumbnail ao lado da foto full: .../file.webp → .../thumbs/file.webp */
+export function buildThumbnailPath(storagePath: string): string {
+  const parts = storagePath.split("/");
+  const fileName = parts.pop();
+  if (!fileName) return storagePath;
+  return [...parts, "thumbs", fileName].join("/");
+}
+
+/** WebP leve (~320px) para grade/lista — reduz bytes nas telas de fotos. */
+export async function createThumbnailWebP(file: File): Promise<File> {
+  const compressed = await imageCompression(file, {
+    maxWidthOrHeight: PREVIEW_MAX_SIDE,
+    maxSizeMB: 0.15,
+    useWebWorker: false,
+    fileType: "image/webp",
+    initialQuality: 0.7,
+    alwaysKeepResolution: false,
+    preserveExif: false,
+  });
+  return blobToWebPFile(compressed, file.name);
+}
+
+export { STORAGE_BUCKET } from "@/lib/storage-buckets";
+export { MAX_DIMENSION, MAX_OUTPUT_BYTES, QUALITY_STEPS };

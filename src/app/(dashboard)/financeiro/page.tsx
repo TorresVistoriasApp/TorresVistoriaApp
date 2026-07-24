@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { RequirePermission } from "@/app/require-role";
 import { PageHeader } from "@/components/shared/page-header";
@@ -37,7 +37,9 @@ export function Page() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(10);
   const { data: summary, isLoading } = useFinancialSummary();
-  const { data: entries = [] } = useFinancialEntries();
+  const { data: listResult } = useFinancialEntries(page, pageSize);
+  const entries = listResult?.entries ?? [];
+  const total = listResult?.total ?? 0;
   const create = useCreateFinancialEntry();
   const { toast } = useToast();
 
@@ -80,20 +82,8 @@ export function Page() {
     );
   };
 
-  const sortedEntries = useMemo(
-    () =>
-      [...entries].sort(
-        (a, b) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime(),
-      ),
-    [entries],
-  );
-
-  const totalPages = Math.max(1, Math.ceil(sortedEntries.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const currentPage = Math.min(page, totalPages);
-  const paginatedEntries = sortedEntries.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
 
   const exportExcel = async () => {
     await exportToExcel(
@@ -220,16 +210,15 @@ export function Page() {
                       className: "text-right font-medium",
                     },
                   ]}
-                  rows={paginatedEntries}
+                  rows={entries}
                   rowKey={(e) => e.id}
                 />
 
-                {sortedEntries.length > pageSize && (
+                {total > pageSize && (
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-muted-foreground">
                       {(currentPage - 1) * pageSize + 1}–
-                      {Math.min(currentPage * pageSize, sortedEntries.length)} de{" "}
-                      {sortedEntries.length} lançamentos
+                      {Math.min(currentPage * pageSize, total)} de {total} lançamentos
                     </p>
                     <div className="flex items-center justify-center gap-3 sm:justify-end">
                       <Button

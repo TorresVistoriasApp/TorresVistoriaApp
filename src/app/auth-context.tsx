@@ -13,6 +13,8 @@ import { authService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
 import { clearSignedUrlCache } from "@/lib/storage-url";
 import { offlineStore } from "@/features/draft/lib/offline-store";
+import { queryClient } from "@/lib/query-client";
+import { logger } from "@/lib/logger";
 import { ROUTES } from "@/lib/constants";
 import type { Profile } from "@/types";
 
@@ -37,7 +39,7 @@ async function fetchProfile(userId: string): Promise<ProfileFetchResult> {
   try {
     return { status: "ok", profile: await authService.getProfile(userId) };
   } catch (error) {
-    console.error("Erro ao carregar perfil:", error instanceof Error ? error.message : error);
+    logger.error("Erro ao carregar perfil", error instanceof Error ? error.message : error);
     return { status: "error" };
   }
 }
@@ -138,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authService.signOut();
     clearSignedUrlCache();
     await offlineStore.clearAll();
+    queryClient.clear();
     setProfile(null);
   }, []);
 

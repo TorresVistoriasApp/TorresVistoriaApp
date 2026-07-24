@@ -57,6 +57,41 @@ export async function getSignedUrl(
   return data.signedUrl;
 }
 
+/** Extrai o path de uma URL pública antiga ou devolve o valor se já for path. */
+export function extractStoragePath(
+  stored: string | null | undefined,
+  bucket: string,
+): string | null {
+  if (!stored) return null;
+  const marker = `/object/public/${bucket}/`;
+  const idx = stored.indexOf(marker);
+  if (idx >= 0) {
+    const rest = stored.slice(idx + marker.length).split("?")[0];
+    return decodeURIComponent(rest);
+  }
+  const signedMarker = `/object/sign/${bucket}/`;
+  const signedIdx = stored.indexOf(signedMarker);
+  if (signedIdx >= 0) {
+    const rest = stored.slice(signedIdx + signedMarker.length).split("?")[0];
+    return decodeURIComponent(rest);
+  }
+  if (stored.startsWith("http://") || stored.startsWith("https://")) {
+    return null;
+  }
+  return stored.replace(/^\//, "");
+}
+
+/** Resolve path ou URL legada para uma URL assinada utilizável no browser. */
+export async function resolveStorageUrl(
+  bucket: string,
+  stored: string | null | undefined,
+  ttlSeconds = DEFAULT_TTL_SECONDS,
+): Promise<string | null> {
+  const path = extractStoragePath(stored, bucket);
+  if (!path) return stored?.startsWith("http") ? stored : null;
+  return getSignedUrl(bucket, path, ttlSeconds);
+}
+
 /** Assina vários caminhos numa chamada só — uma vistoria tem dezenas de fotos. */
 export async function getSignedUrls(
   bucket: string,

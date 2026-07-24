@@ -189,6 +189,7 @@ export function Page() {
                       <Link
                         to={ROUTES.privacy}
                         target="_blank"
+                        rel="noopener noreferrer"
                         className="font-semibold text-primary hover:underline"
                       >
                         Política de Privacidade

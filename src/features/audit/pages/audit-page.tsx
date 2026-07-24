@@ -33,7 +33,9 @@ export function AuditPage() {
   const [pageSize, setPageSize] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(15);
   const [selectedLog, setSelectedLog] = useState<AuditLogWithUser | null>(null);
 
-  const { data: logs = [], isLoading } = useAuditLogs(filters);
+  const { data: listResult, isLoading } = useAuditLogs(filters, page, pageSize);
+  const logs = listResult?.logs ?? [];
+  const total = listResult?.total ?? 0;
   const { data: team = [] } = useTeamProfiles();
 
   const filteredLogs = useMemo(() => {
@@ -57,12 +59,12 @@ export function AuditPage() {
 
   const stats = useMemo(() => computeAuditStats(filteredLogs), [filteredLogs]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredLogs.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil((search.trim() ? filteredLogs.length : total) / pageSize));
   const currentPage = Math.min(page, totalPages);
-  const paginatedLogs = filteredLogs.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  const displayTotal = search.trim() ? filteredLogs.length : total;
+  const paginatedLogs = search.trim()
+    ? filteredLogs
+    : logs;
 
   const handleFiltersChange = (next: AuditFilters) => {
     setFilters(next);
@@ -180,11 +182,11 @@ export function AuditPage() {
             <div>
               <CardTitle>Registro de alterações</CardTitle>
               <p className="mt-1 text-sm text-muted-foreground">
-                {filteredLogs.length} evento{filteredLogs.length !== 1 ? "s" : ""} encontrado
-                {filteredLogs.length !== 1 ? "s" : ""}
+                {displayTotal} evento{displayTotal !== 1 ? "s" : ""} encontrado
+                {displayTotal !== 1 ? "s" : ""}
               </p>
             </div>
-            {filteredLogs.length > 0 && (
+            {displayTotal > 0 && (
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 <label htmlFor="audit-page-size" className="whitespace-nowrap">
                   Exibir
@@ -270,12 +272,11 @@ export function AuditPage() {
                   rowKey={(log) => log.id}
                 />
 
-                {filteredLogs.length > pageSize && (
+                {!search.trim() && total > pageSize && (
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-muted-foreground">
                       {(currentPage - 1) * pageSize + 1}–
-                      {Math.min(currentPage * pageSize, filteredLogs.length)} de{" "}
-                      {filteredLogs.length} eventos
+                      {Math.min(currentPage * pageSize, total)} de {total} eventos
                     </p>
                     <div className="flex items-center justify-center gap-3 sm:justify-end">
                       <Button

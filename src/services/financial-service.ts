@@ -32,12 +32,16 @@ function defaultDateRange() {
 }
 
 export const financialService = {
-  async list(companyId?: string): Promise<FinancialEntry[]> {
+  async list(
+    companyId?: string,
+    limit = 50,
+    offset = 0,
+  ): Promise<{ entries: FinancialEntry[]; total: number }> {
     try {
-      if (!companyId) return [];
-      const { data, error } = await queries.financial.byCompany(companyId);
+      if (!companyId) return { entries: [], total: 0 };
+      const { data, error, count } = await queries.financial.byCompany(companyId, limit, offset);
       if (error) throw error;
-      return (data ?? []) as FinancialEntry[];
+      return { entries: (data ?? []) as FinancialEntry[], total: count ?? 0 };
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
