@@ -14,6 +14,7 @@ export const PUBLIC_IMAGES = {
       "/images/auth/inspection-4.webp",
     ] as const,
   },
+  vehicleBrands: (slug: string) => `/images/vehicle-brands/${slug}.webp` as const,
   placeholders: {
     logo: "/images/placeholders/logo.svg",
   },

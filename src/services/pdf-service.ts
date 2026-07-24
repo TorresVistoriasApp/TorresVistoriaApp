@@ -6,6 +6,8 @@ import type { InspectionPhoto } from "@/services/photo-service";
 import { buildLaudoDocDefinition } from "@/lib/laudo/laudo-doc-definition";
 import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoSettings } from "@/lib/laudo/laudo-model";
 import { PUBLIC_IMAGES } from "@/lib/public-images";
+import { imageUrlToPdfDataUrl } from "@/lib/pdf-embed-image";
+import { optimizePdfBlob } from "@/lib/optimize-pdf";
 import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
 import { buildVerificationCode } from "@/lib/laudo/verification-code";
 
@@ -23,39 +25,18 @@ function generateVerificationCode(inspection: Inspection): string {
   return buildVerificationCode(inspection.inspection_number, inspection.inspection_date);
 }
 
-async function imageUrlToJpegDataUrl(
-  url: string,
-  maxWidth = 1200,
-  maxHeight = 1200,
-): Promise<string | undefined> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return undefined;
-    const blob = await response.blob();
-    const bitmap = await createImageBitmap(blob);
-    const scale = Math.min(maxWidth / bitmap.width, maxHeight / bitmap.height, 1);
-    const width = Math.max(1, Math.round(bitmap.width * scale));
-    const height = Math.max(1, Math.round(bitmap.height * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return undefined;
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(bitmap, 0, 0, width, height);
-    bitmap.close?.();
-    return canvas.toDataURL("image/jpeg", 0.82);
-  } catch {
-    return undefined;
-  }
-}
-
 async function loadPhotoDataUrls(photos: InspectionPhoto[]) {
   return Promise.all(
     photos.map(async (photo) => ({
       ...photo,
-      dataUrl: photo.public_url ? await imageUrlToJpegDataUrl(photo.public_url, 960, 720) : undefined,
+      dataUrl: photo.public_url
+        ? await imageUrlToPdfDataUrl(photo.public_url, {
+            maxWidth: 960,
+            maxHeight: 720,
+            preferAlpha: false,
+            jpegQuality: 0.8,
+          })
+        : undefined,
     })),
   );
 }
@@ -165,8 +146,18 @@ export const pdfService = {
       verificationCode,
       integrityHash: baseHash,
       validationUrl: options.validationUrl,
-      logoDataUrl: await imageUrlToJpegDataUrl(PUBLIC_IMAGES.brand.trim, 320, 128),
-      brandLogoDataUrl: brandLogoPath ? await imageUrlToJpegDataUrl(brandLogoPath, 240, 120) : undefined,
+      logoDataUrl: await imageUrlToPdfDataUrl(PUBLIC_IMAGES.brand.trim, {
+        maxWidth: 320,
+        maxHeight: 128,
+        preferAlpha: true,
+      }),
+      brandLogoDataUrl: brandLogoPath
+        ? await imageUrlToPdfDataUrl(brandLogoPath, {
+            maxWidth: 240,
+            maxHeight: 120,
+            preferAlpha: true,
+          })
+        : undefined,
       generatedAt: new Date(),
     };
 
@@ -180,8 +171,8 @@ export const pdfService = {
 
   async downloadLaudo(docDefinition: Record<string, unknown>, fileName: string): Promise<void> {
     try {
-      const pdfDoc = await getPdfMake();
-      pdfDoc.createPdf(cloneDocDefinition(docDefinition)).download(fileName);
+      const blob = await this.createPdfBlob(docDefinition);
+      await this.downloadPdfBlob(blob, fileName);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
@@ -203,9 +194,10 @@ export const pdfService = {
   async createPdfBlob(docDefinition: Record<string, unknown>): Promise<Blob> {
     try {
       const pdfDoc = await getPdfMake();
-      return await new Promise<Blob>((resolve) => {
+      const rawBlob = await new Promise<Blob>((resolve) => {
         pdfDoc.createPdf(cloneDocDefinition(docDefinition)).getBlob(resolve);
       });
+      return optimizePdfBlob(rawBlob);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
