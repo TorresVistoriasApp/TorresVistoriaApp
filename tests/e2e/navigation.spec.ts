@@ -1,12 +1,14 @@
 import { test, expect } from "@playwright/test";
-import { loginAsDemo } from "./helpers";
+import { e2eCredentialsConfigured, loginAsDemo } from "./helpers";
 
 test.describe("Navegação autenticada", () => {
+  test.skip(!e2eCredentialsConfigured(), "Defina E2E_*_EMAIL/PASSWORD no ambiente");
+
   test.beforeEach(async ({ page }) => {
     await loginAsDemo(page, "vistoriador");
   });
 
-  test("lista vistorias demo", async ({ page }) => {
+  test("lista vistorias", async ({ page }) => {
     await page.getByRole("link", { name: /Vistorias/i }).first().click();
     await expect(page).toHaveURL("/vistorias");
     await expect(page.getByRole("heading", { name: "Vistorias" })).toBeVisible();
