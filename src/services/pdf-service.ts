@@ -240,8 +240,9 @@ export const pdfService = {
         .upload(storagePath, finalBlob, { contentType: "application/pdf", upsert: false });
       if (uploadError) throw uploadError;
 
-      const { data: publicUrl } = db.storage.from(REPORTS_BUCKET).getPublicUrl(storagePath);
-
+      // O bucket de laudos é privado: o download sai do blob em memória e a
+      // validação pública lê pelo storage_path no servidor. Uma URL pública aqui
+      // só serviria para expor o PDF completo sem autenticação.
       const { error: reportError } = await db.functions.invoke("create-report", {
         body: {
           inspectionId: params.inspection.id,
@@ -249,7 +250,7 @@ export const pdfService = {
           verificationCode,
           integrityHash,
           qrCodeData: validationUrl,
-          publicUrl: publicUrl.publicUrl,
+          publicUrl: null,
         },
       });
       if (reportError) throw reportError;

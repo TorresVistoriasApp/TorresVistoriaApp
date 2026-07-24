@@ -3,6 +3,7 @@ import { buildChecklistSeedRows } from "@/lib/checklist-catalog";
 import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
 import { AppError, getErrorMessage, throwIfEdgeError, throwIfError } from "@/lib/errors";
+import { withSignedPhotoUrls, type InspectionPhoto } from "@/services/photo-service";
 import type { VistoriaInput } from "@/schemas/vistoria";
 import type { InspectionStatus } from "@/lib/enums";
 
@@ -91,6 +92,7 @@ export type InspectionProfile = {
 
 export type InspectionDetail = Inspection & {
   inspector?: InspectionProfile | null;
+  inspection_photos?: InspectionPhoto[];
 };
 
 export type InspectionFilters = {
@@ -170,7 +172,16 @@ export const inspectionService = {
 
   async getById(id: string): Promise<InspectionDetail> {
     try {
-      return throwIfError(await queries.inspections.byId(id), "Vistoria não encontrada") as InspectionDetail;
+      const detail = throwIfError(
+        await queries.inspections.byId(id),
+        "Vistoria não encontrada",
+      ) as InspectionDetail;
+
+      if (detail.inspection_photos?.length) {
+        detail.inspection_photos = await withSignedPhotoUrls(detail.inspection_photos);
+      }
+
+      return detail;
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
