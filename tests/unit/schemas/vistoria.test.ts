@@ -120,6 +120,20 @@ describe("vistoriaSchema", () => {
     }
   });
 
+  it("bloqueia continuar o wizard com local vazio", () => {
+    const result = vistoriaWizardContinueSchema.safeParse({
+      ...basePayload,
+      location: "",
+      opinion: "",
+      technical_notes: "",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.path[0] === "location")).toBe(true);
+    }
+  });
+
   it("bloqueia continuar o wizard com valores de rascunho", () => {
     const result = vistoriaWizardContinueSchema.safeParse({
       ...basePayload,

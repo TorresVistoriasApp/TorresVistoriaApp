@@ -7,6 +7,10 @@ import {
 } from "@/lib/enums";
 import { FIELD_NA_VALUE } from "@/lib/field-na";
 import { parseCurrency } from "@/lib/masks";
+import {
+  isPlaceholderDraftValue,
+  WIZARD_REQUIRED_DRAFT_FIELDS,
+} from "@/features/draft/lib/draft-defaults";
 
 const opinionEnum = z.enum(
   [
@@ -69,17 +73,6 @@ export const vistoriaSchema = z
 
 export const vistoriaUpdateSchema = vistoriaSchema.partial();
 
-const WIZARD_PLACEHOLDER_FIELDS: Array<{ field: string; placeholder: string; label: string }> = [
-  { field: "location", placeholder: "A definir", label: "Local da vistoria" },
-  { field: "client_name", placeholder: "Rascunho em andamento", label: "Nome do contratante" },
-  { field: "plate", placeholder: "AAA0A00", label: "Placa" },
-  { field: "chassis", placeholder: "00000000000000000", label: "Chassi" },
-  { field: "brand", placeholder: "Pendente", label: "Marca" },
-  { field: "model", placeholder: "Pendente", label: "Modelo" },
-  { field: "color", placeholder: "Pendente", label: "Cor" },
-  { field: "fuel", placeholder: "Pendente", label: "Combustível" },
-];
-
 /**
  * Validação do passo 1 do wizard: dados para seguir às fotos.
  * Parecer e observações técnicas podem ser preenchidos depois (antes do laudo).
@@ -97,10 +90,9 @@ export const vistoriaWizardContinueSchema = vistoriaSchema
     inspection_type_id: z.string().uuid("Selecione o tipo de vistoria"),
   })
   .superRefine((data, ctx) => {
-    for (const { field, placeholder, label } of WIZARD_PLACEHOLDER_FIELDS) {
+    for (const { field, label } of WIZARD_REQUIRED_DRAFT_FIELDS) {
       const value = data[field as keyof typeof data];
-      const normalized = typeof value === "string" ? value.trim() : value;
-      if (normalized === placeholder) {
+      if (isPlaceholderDraftValue(field, value)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Preencha o campo ${label}`,
