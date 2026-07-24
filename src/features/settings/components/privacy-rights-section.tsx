@@ -43,12 +43,13 @@ export function PrivacyRightsSection({ className }: { className?: string }) {
       title="Privacidade (LGPD)"
       description="Exporte uma cópia dos seus dados ou solicite a anonimização da conta."
       className={className}
+      fillHeight
     >
       <div className="space-y-5">
         <div>
           <p className={SETTINGS_FIELD_LABEL_CLASS}>Exportar meus dados</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Baixa um JSON com perfil, e-mail e totais de vistorias e registros de auditoria.
+            Baixa um JSON com perfil, e-mail, vistorias e registros de auditoria.
           </p>
           <Button
             type="button"
