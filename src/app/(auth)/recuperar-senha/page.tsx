@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
+import { checkRateLimit, formatRetryAfter } from "@/lib/rate-limit";
 import { forgotPasswordSchema, type ForgotPasswordInput } from "@/schemas/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,11 +24,22 @@ export function Page() {
   const onSubmit = handleSubmit(async ({ email }) => {
     setMessage(null);
     setError(null);
+
+    const normalized = email.trim().toLowerCase();
+    const perEmail = checkRateLimit(`reset:${normalized}`, 3, 15 * 60 * 1000);
+    const global = checkRateLimit("reset:global", 20, 15 * 60 * 1000);
+    if (!perEmail.allowed || !global.allowed) {
+      const retry = Math.max(perEmail.retryAfterMs, global.retryAfterMs);
+      setError(`Muitas tentativas. Tente novamente em ${formatRetryAfter(retry)}.`);
+      return;
+    }
+
     try {
       await resetPassword(email);
-      setMessage("Enviamos um link de recuperação para seu e-mail.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível enviar o e-mail");
+      // Mesma mensagem se o e-mail existir ou não — evita enumeração de contas.
+      setMessage("Se o e-mail estiver cadastrado, enviaremos um link de recuperação.");
+    } catch {
+      setMessage("Se o e-mail estiver cadastrado, enviaremos um link de recuperação.");
     }
   });
 
@@ -42,14 +54,18 @@ export function Page() {
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" {...register("email")} />
+              <Input id="email" type="email" autoComplete="email" {...register("email")} />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
             {message && <p className="text-sm text-success">{message}</p>}
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>Enviar link</Button>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              Enviar link
+            </Button>
             <p className="text-center text-sm">
-              <Link to={ROUTES.login} className="text-primary hover:underline">Voltar ao login</Link>
+              <Link to={ROUTES.login} className="text-primary hover:underline">
+                Voltar ao login
+              </Link>
             </p>
           </form>
         </CardContent>
