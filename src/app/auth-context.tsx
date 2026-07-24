@@ -11,6 +11,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { db } from "@/lib/db-client";
 import { authService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
+import { clearSignedUrlCache } from "@/lib/storage-url";
 import { ROUTES } from "@/lib/constants";
 import type { Profile } from "@/types";
 
@@ -134,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     await authService.signOut();
+    clearSignedUrlCache();
     setProfile(null);
   }, []);
 

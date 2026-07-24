@@ -13,6 +13,7 @@ import { getPhotoCategory, normalizePhotoCategory } from "@/lib/photos/photo-cat
 import { insertInspectionPhoto } from "@/lib/photos/photo-insert";
 import type { PhotoCaptureMetadata, PhotoCaptureStatus } from "@/lib/photos/types";
 import { withFreshSession } from "@/lib/ensure-session";
+import { getSignedUrl, getSignedUrls } from "@/lib/storage-url";
 import { AppError, getErrorMessage, throwIfError } from "@/lib/errors";
 import { formatUserFacingError } from "@/lib/user-facing-errors";
 
@@ -77,12 +78,32 @@ function resolveCategoryMeta(category: string) {
   };
 }
 
+/**
+ * O bucket de fotos é privado, então public_url gravada no banco não abre.
+ * Toda leitura reescreve as URLs a partir do storage_path com assinatura válida.
+ */
+export async function withSignedPhotoUrls<T extends Pick<InspectionPhoto, "storage_path" | "public_url" | "thumbnail_url">>(
+  photos: T[],
+): Promise<T[]> {
+  if (photos.length === 0) return photos;
+
+  const signed = await getSignedUrls(
+    STORAGE_BUCKET,
+    photos.map((photo) => photo.storage_path),
+  );
+
+  return photos.map((photo) => {
+    const url = signed.get(photo.storage_path) ?? null;
+    return { ...photo, public_url: url, thumbnail_url: url };
+  });
+}
+
 export const photoService = {
   async listByInspection(inspectionId: string): Promise<InspectionPhoto[]> {
     try {
       const { data, error } = await queries.photos.byInspection(inspectionId);
       if (error) throw error;
-      return (data ?? []) as InspectionPhoto[];
+      return withSignedPhotoUrls((data ?? []) as InspectionPhoto[]);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
@@ -110,7 +131,9 @@ export const photoService = {
             .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
           if (uploadError) throw uploadError;
 
-          const { data: urlData } = db.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
+          // Valor transitório só para a UI logo após o upload; toda leitura
+          // posterior reassina a partir do storage_path.
+          const signedUrl = await getSignedUrl(STORAGE_BUCKET, storagePath);
           const now = new Date().toISOString();
 
           const insertResult = await insertInspectionPhoto({
@@ -123,8 +146,8 @@ export const photoService = {
             sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
             is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
             storage_path: storagePath,
-            public_url: urlData.publicUrl,
-            thumbnail_url: urlData.publicUrl,
+            public_url: signedUrl ?? "",
+            thumbnail_url: signedUrl,
             file_size: webp.size,
             mime_type: "image/webp",
             content_hash: imageMeta.contentHash,
