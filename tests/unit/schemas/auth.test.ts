@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { loginSchema, resetPasswordSchema } from "@/schemas/auth";
 
+/** Senha forte só para validar o schema — não é credencial de ambiente. */
+const SAMPLE_STRONG_PASSWORD = "Str0ngTestPass!";
+
 describe("loginSchema", () => {
   it("aceita credenciais válidas", () => {
     const result = loginSchema.safeParse({
-      email: "admin@torresvistorias.com.br",
-      password: "TorresDemo2026!",
+      email: "usuario@exemplo.com",
+      password: SAMPLE_STRONG_PASSWORD,
       acceptTerms: true,
     });
     expect(result.success).toBe(true);
@@ -13,7 +16,7 @@ describe("loginSchema", () => {
 
   it("rejeita senha fraca no login", () => {
     const result = loginSchema.safeParse({
-      email: "admin@torresvistorias.com.br",
+      email: "usuario@exemplo.com",
       password: "123456",
       acceptTerms: true,
     });
@@ -23,7 +26,7 @@ describe("loginSchema", () => {
   it("rejeita e-mail inválido", () => {
     const result = loginSchema.safeParse({
       email: "invalido",
-      password: "TorresDemo2026!",
+      password: SAMPLE_STRONG_PASSWORD,
       acceptTerms: true,
     });
     expect(result.success).toBe(false);
@@ -31,8 +34,8 @@ describe("loginSchema", () => {
 
   it("exige aceite dos termos LGPD", () => {
     const result = loginSchema.safeParse({
-      email: "admin@torresvistorias.com.br",
-      password: "TorresDemo2026!",
+      email: "usuario@exemplo.com",
+      password: SAMPLE_STRONG_PASSWORD,
       acceptTerms: false,
     });
     expect(result.success).toBe(false);

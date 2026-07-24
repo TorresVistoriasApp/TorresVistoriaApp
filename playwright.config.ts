@@ -19,6 +19,11 @@ function loadEnvLocal(): Record<string, string> {
   return vars;
 }
 
+const localEnv = loadEnvLocal();
+for (const [key, value] of Object.entries(localEnv)) {
+  if (process.env[key] === undefined) process.env[key] = value;
+}
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -43,8 +48,8 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
-      ...loadEnvLocal(),
-      VITE_DEMO_MODE: "true",
+      ...localEnv,
+      VITE_DEMO_MODE: "false",
     },
   },
 });

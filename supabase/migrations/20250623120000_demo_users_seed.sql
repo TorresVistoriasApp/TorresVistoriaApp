@@ -1,8 +1,8 @@
--- Contas demo locais: criação movida para fora de migrations versionadas.
--- Em `supabase db reset`, crie o admin pelo Studio (Auth > Users) com
+-- Contas de demonstração não são criadas por migrations versionadas.
+-- Em ambiente local, crie usuários pelo Studio (Auth > Users) com
 -- company_id/role no app_metadata, ou use o seed de roles em seed.sql.
 --
--- Esta migration permanece apenas como no-op para não recriar senhas
--- conhecidas em novos ambientes a partir do histórico do Git.
+-- Esta migration permanece como no-op para preservar o histórico de
+-- schema sem reintroduzir credenciais em novos ambientes.
 
 SELECT 1;
