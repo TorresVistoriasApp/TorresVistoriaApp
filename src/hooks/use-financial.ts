@@ -4,6 +4,8 @@ import { financialService } from "@/services/financial-service";
 import type { FinancialEntryInput } from "@/schemas/financial";
 import { useAuth } from "@/hooks/use-auth";
 import { invalidateFinancialQueries } from "@/lib/cache-invalidation";
+import { hasPermission } from "@/lib/rbac";
+import type { UserRole } from "@/lib/enums";
 
 export function useFinancialEntries() {
   const { profile } = useAuth();
@@ -16,10 +18,14 @@ export function useFinancialEntries() {
 
 export function useFinancialSummary(startDate?: string, endDate?: string) {
   const { profile } = useAuth();
+  // get_financial_summary é restrita a super admin no banco; sem esta guarda a
+  // consulta dispararia e falharia antes do RequirePermission renderizar.
+  const canRead = hasPermission(profile?.role as UserRole | undefined, "financial.manage");
+
   return useQuery({
     queryKey: queryKeys.financial.summary(startDate, endDate),
     queryFn: () => financialService.getSummary(profile!.company_id, startDate, endDate),
-    enabled: !!profile?.company_id,
+    enabled: !!profile?.company_id && canRead,
   });
 }
 
