@@ -1,4 +1,5 @@
 import {
+  ACTIVE_DRAFT_STORAGE_KEY,
   OFFLINE_DB_NAME,
   OFFLINE_DB_VERSION,
   OFFLINE_STORES,
@@ -156,5 +157,25 @@ export const offlineStore = {
       this.listPhotoUploads(),
     ]);
     return updates.length + photos.length;
+  },
+
+  /** Apaga rascunhos e filas locais — chamado no logout (LGPD / troca de conta). */
+  async clearAll(): Promise<void> {
+    await Promise.all([
+      runTransaction(OFFLINE_STORES.inspectionUpdates, "readwrite", (store) => {
+        store.clear();
+      }),
+      runTransaction(OFFLINE_STORES.photoUploads, "readwrite", (store) => {
+        store.clear();
+      }),
+      runTransaction(OFFLINE_STORES.formSnapshots, "readwrite", (store) => {
+        store.clear();
+      }),
+    ]);
+    try {
+      localStorage.removeItem(ACTIVE_DRAFT_STORAGE_KEY);
+    } catch {
+      // localStorage pode estar indisponível (modo privado restrito)
+    }
   },
 };

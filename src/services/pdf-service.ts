@@ -9,7 +9,7 @@ import { PUBLIC_IMAGES } from "@/lib/public-images";
 import { imageUrlToPdfDataUrl } from "@/lib/pdf-embed-image";
 import { optimizePdfBlob } from "@/lib/optimize-pdf";
 import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
-import { buildVerificationCode } from "@/lib/laudo/verification-code";
+import { buildVerificationCode, formatLaudoNumber } from "@/lib/laudo/verification-code";
 
 const REPORTS_BUCKET = "reports";
 
@@ -21,8 +21,19 @@ async function sha256Bytes(data: Blob | string): Promise<string> {
     .join("");
 }
 
-function generateVerificationCode(inspection: Inspection): string {
-  return buildVerificationCode(inspection.inspection_number, inspection.inspection_date);
+/** Reutiliza o código ativo em reemissões; senão gera um opaco. */
+async function resolveVerificationCode(inspectionId: string): Promise<string> {
+  const { data } = await db
+    .from("inspection_reports")
+    .select("verification_code")
+    .eq("inspection_id", inspectionId)
+    .is("deleted_at", null)
+    .order("version", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (data?.verification_code) return data.verification_code;
+  return buildVerificationCode();
 }
 
 async function loadPhotoDataUrls(photos: InspectionPhoto[]) {
@@ -131,7 +142,11 @@ export const pdfService = {
     payload: LaudoPayload;
   }> {
     const verificationCode =
-      options.verificationCode ?? generateVerificationCode(inspection);
+      options.verificationCode ?? buildVerificationCode();
+    const laudoNumber = formatLaudoNumber(
+      inspection.inspection_number,
+      inspection.inspection_date,
+    );
     const baseHash =
       options.integrityHash ??
       (await sha256Bytes(JSON.stringify({ inspection, checklist, photos, verificationCode })));
@@ -143,6 +158,7 @@ export const pdfService = {
       company: options.company,
       settings: options.settings,
       inspector: options.inspector,
+      laudoNumber,
       verificationCode,
       integrityHash: baseHash,
       validationUrl: options.validationUrl,
@@ -213,7 +229,7 @@ export const pdfService = {
     validationBaseUrl?: string;
   }): Promise<{ verificationCode: string; integrityHash: string; storagePath: string }> {
     try {
-      const verificationCode = generateVerificationCode(params.inspection);
+      const verificationCode = await resolveVerificationCode(params.inspection.id);
       const validationUrl = `${params.validationBaseUrl ?? window.location.origin}/validar/${encodeURIComponent(verificationCode)}`;
       const firstPass = await this.generateLaudoPayload(params.inspection, params.checklist, params.photos, {
         company: params.company,

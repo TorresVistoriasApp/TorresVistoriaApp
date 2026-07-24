@@ -41,7 +41,7 @@ export function Page() {
     return (
       <Card>
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          Informe o código de verificação na URL: <code>/validar/TV-2026-000148</code>
+          Informe o código de verificação na URL: <code>/validar/TV-K7M2-9XQH-4NWP</code>
         </CardContent>
       </Card>
     );

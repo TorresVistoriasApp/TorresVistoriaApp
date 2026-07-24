@@ -38,6 +38,9 @@ export type LaudoPayload = {
   company?: LaudoCompany | null;
   settings?: LaudoSettings | null;
   inspector?: LaudoInspector | null;
+  /** Número sequencial legível no PDF (TV-2026-000148). */
+  laudoNumber: string;
+  /** Código opaco usado no QR e na URL /validar. */
   verificationCode: string;
   integrityHash: string;
   validationUrl?: string;

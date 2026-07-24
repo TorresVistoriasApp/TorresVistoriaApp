@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { checkRateLimit, clientKey } from "../_shared/rate-limit.ts";
 import { createServiceClient } from "../_shared/supabase-client.ts";
 
 async function sha256Hex(data: ArrayBuffer): Promise<string> {
@@ -24,9 +25,24 @@ function formatDatePtBr(isoDate: string): string {
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
+  const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const limit = checkRateLimit(`validate:${clientKey(req)}`, 30, 60_000);
+    if (!limit.allowed) {
+      return new Response(
+        JSON.stringify({ error: "Muitas tentativas. Aguarde e tente novamente." }),
+        {
+          headers: {
+            ...jsonHeaders,
+            "Retry-After": String(limit.retryAfterSec),
+          },
+          status: 429,
+        },
+      );
+    }
+
     const body = req.method === "GET"
       ? { verificationCode: new URL(req.url).searchParams.get("code") }
       : await req.json();
@@ -73,7 +89,7 @@ Deno.serve(async (req) => {
           valid: false,
           message: "Código de verificação não encontrado",
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+        { headers: jsonHeaders, status: 200 },
       );
     }
 
@@ -117,7 +133,7 @@ Deno.serve(async (req) => {
         inspectionNumber: inspection.inspection_number,
         inspectionDate: inspection.inspection_date,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      { headers: jsonHeaders, status: 200 },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro desconhecido";

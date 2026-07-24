@@ -1,13 +1,15 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { canAccessInspection, isAuthFailure, requireCaller } from "../_shared/require-caller.ts";
 
-function laudoYear(referenceDate: string): number {
-  const match = referenceDate.match(/^(\d{4})/);
-  return match ? Number(match[1]) : new Date(referenceDate).getFullYear();
-}
+const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-function buildVerificationCode(inspectionNumber: number, referenceDate: string): string {
-  return `TV-${laudoYear(referenceDate)}-${String(inspectionNumber).padStart(6, "0")}`;
+function buildVerificationCode(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  let raw = "";
+  for (const byte of bytes) {
+    raw += CODE_ALPHABET[byte % CODE_ALPHABET.length];
+  }
+  return `TV-${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 12)}`;
 }
 
 function randomHash(): string {
@@ -60,14 +62,15 @@ Deno.serve(async (req) => {
 
     const { data: existingReports } = await supabase
       .from("inspection_reports")
-      .select("id, version")
+      .select("id, version, verification_code")
       .eq("inspection_id", inspectionId)
       .is("deleted_at", null)
       .order("version", { ascending: false });
 
     const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
-    const code = providedVerificationCode ||
-      buildVerificationCode(inspection.inspection_number, inspection.inspection_date);
+    const code = providedVerificationCode
+      || existingReports?.[0]?.verification_code
+      || buildVerificationCode();
     const hash = providedIntegrityHash || randomHash();
     const supersededAt = new Date().toISOString();
 
