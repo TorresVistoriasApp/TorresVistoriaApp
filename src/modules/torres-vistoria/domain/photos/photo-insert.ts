@@ -3,7 +3,7 @@ import { getErrorMessage } from "@/core/errors/app-error";
 
 /** Campos mínimos compatíveis com o schema original de inspection_photos. */
 export type LegacyPhotoInsertRow = {
-  company_id: string;
+  tenant_id: string;
   inspection_id: string;
   category: string;
   storage_path: string;
@@ -42,7 +42,7 @@ export type ExtendedPhotoInsertRow = LegacyPhotoInsertRow & {
 
 export function toLegacyPhotoInsert(row: ExtendedPhotoInsertRow): LegacyPhotoInsertRow {
   return {
-    company_id: row.company_id,
+    tenant_id: row.tenant_id,
     inspection_id: row.inspection_id,
     category: row.category,
     storage_path: row.storage_path,

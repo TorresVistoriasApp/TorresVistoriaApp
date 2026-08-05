@@ -5,7 +5,7 @@ export type AuthorizedCaller = {
   supabase: ReturnType<typeof createServiceClient>;
   userId: string;
   role: string;
-  companyId: string;
+  tenantId: string;
 };
 
 export type AuthFailure = { error: string; status: 401 | 403 };
@@ -28,7 +28,7 @@ export async function requireCaller(req: Request): Promise<AuthorizedCaller | Au
   const supabase = createServiceClient();
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role, company_id, is_active")
+    .select("role, tenant_id, is_active")
     .eq("id", user.id)
     .is("deleted_at", null)
     .maybeSingle();
@@ -45,7 +45,7 @@ export async function requireCaller(req: Request): Promise<AuthorizedCaller | Au
     supabase,
     userId: user.id,
     role: profile.role,
-    companyId: profile.company_id,
+    tenantId: profile.tenant_id,
   };
 }
 
@@ -55,9 +55,9 @@ export async function requireCaller(req: Request): Promise<AuthorizedCaller | Au
  */
 export function canAccessInspection(
   caller: AuthorizedCaller,
-  inspection: { company_id: string; inspector_id: string },
+  inspection: { tenant_id: string; inspector_id: string },
 ): boolean {
-  if (inspection.company_id !== caller.companyId) return false;
+  if (inspection.tenant_id !== caller.tenantId) return false;
   if (caller.role === "SUPER_ADMIN") return true;
   return inspection.inspector_id === caller.userId;
 }

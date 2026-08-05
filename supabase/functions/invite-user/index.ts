@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
           must_change_password: true,
         },
         app_metadata: {
-          company_id: adminProfile.company_id,
+          tenant_id: adminProfile.tenant_id,
           role,
         },
       });
@@ -85,20 +85,20 @@ Deno.serve(async (req) => {
 
       const { data: target, error: targetError } = await supabase
         .from("profiles")
-        .select("id, company_id, email")
+        .select("id, tenant_id, email")
         .eq("id", userId)
         .is("deleted_at", null)
         .single();
 
       if (targetError) throw targetError;
-      if (target.company_id !== adminProfile.company_id) {
+      if (target.tenant_id !== adminProfile.tenant_id) {
         throw new Error("O usuário selecionado não pertence à sua empresa.");
       }
 
       const normalizedEmail = String(email).trim().toLowerCase();
       const authUpdates: Record<string, unknown> = {
         user_metadata: { full_name: fullName },
-        app_metadata: { company_id: adminProfile.company_id, role },
+        app_metadata: { tenant_id: adminProfile.tenant_id, role },
       };
 
       if (normalizedEmail !== target.email) {
@@ -136,13 +136,13 @@ Deno.serve(async (req) => {
 
       const { data: target, error: targetError } = await supabase
         .from("profiles")
-        .select("id, company_id")
+        .select("id, tenant_id")
         .eq("id", userId)
         .is("deleted_at", null)
         .single();
 
       if (targetError) throw targetError;
-      if (target.company_id !== adminProfile.company_id) {
+      if (target.tenant_id !== adminProfile.tenant_id) {
         throw new Error("O usuário selecionado não pertence à sua empresa.");
       }
 
@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
 
     const { error: updateError } = await supabase.auth.admin.updateUserById(invited.user.id, {
       app_metadata: {
-        company_id: adminProfile.company_id,
+        tenant_id: adminProfile.tenant_id,
         role,
       },
     });

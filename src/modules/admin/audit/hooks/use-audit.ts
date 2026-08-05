@@ -9,12 +9,12 @@ export function useAuditLogs(
   page = 1,
   pageSize = 50,
 ) {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
   const { can } = usePermission();
   const offset = (page - 1) * pageSize;
   return useQuery({
-    queryKey: queryKeys.audit.list(companyId ?? undefined, filters, page, pageSize),
-    queryFn: () => auditService.list(companyId ?? undefined, filters, pageSize, offset),
-    enabled: can("users.manage") && !!companyId,
+    queryKey: queryKeys.audit.list(tenantId ?? undefined, filters, page, pageSize),
+    queryFn: () => auditService.list(tenantId ?? undefined, filters, pageSize, offset),
+    enabled: can("users.manage") && !!tenantId,
   });
 }

@@ -250,7 +250,7 @@ export const pdfService = {
       });
       const finalBlob = await this.createPdfBlob(finalPass.docDefinition);
       const storagePath = buildReportStoragePath(
-        params.inspection.company_id,
+        params.inspection.tenant_id,
         params.inspection.id,
         `${Date.now()}-${reportFileName(params.inspection)}`,
       );

@@ -146,10 +146,10 @@ export function getExpectedChecklistCount(): number {
   return CHECKLIST_CATALOG.reduce((sum, cat) => sum + cat.items.length, 0);
 }
 
-export function buildChecklistSeedRows(companyId: string, inspectionId: string) {
+export function buildChecklistSeedRows(tenantId: string, inspectionId: string) {
   return CHECKLIST_CATALOG.flatMap((category) =>
     category.items.map((item) => ({
-      company_id: companyId,
+      tenant_id: tenantId,
       inspection_id: inspectionId,
       category: category.key,
       item_name: item.name,

@@ -3,13 +3,13 @@ import { UserRole } from "@/core/rbac/roles";
 /** Sessão autenticada no tenant (espelha auth.uid + profiles). */
 export type TenantSession = {
   userId: string;
-  companyId: string;
+  tenantId: string;
   role: string;
 };
 
-/** Recurso com escopo multi-tenant (espelha colunas company_id + created_by). */
+/** Recurso com escopo multi-tenant (espelha colunas tenant_id + created_by). */
 export type TenantResource = {
-  companyId: string;
+  tenantId: string;
   createdBy: string | null;
 };
 
@@ -24,7 +24,7 @@ export type FinancialResource = TenantResource & {
  * SUPER_ADMIN → toda a empresa; INSPECTOR → apenas created_by = auth.uid().
  */
 export function canAccessTenantRow(session: TenantSession, resource: TenantResource): boolean {
-  if (resource.companyId !== session.companyId) {
+  if (resource.tenantId !== session.tenantId) {
     return false;
   }
   if (session.role === UserRole.SUPER_ADMIN) {
@@ -44,7 +44,7 @@ export function canAccessFinancialRow(
   session: TenantSession,
   resource: FinancialResource,
 ): boolean {
-  if (resource.companyId !== session.companyId) {
+  if (resource.tenantId !== session.tenantId) {
     return false;
   }
   if (session.role === UserRole.SUPER_ADMIN) {
@@ -63,20 +63,20 @@ export function canAccessFinancialRow(
 }
 
 /** Auditoria: somente SUPER_ADMIN da mesma empresa (users.manage + RLS). */
-export function canAccessAuditLog(session: TenantSession, logCompanyId: string | null): boolean {
+export function canAccessAuditLog(session: TenantSession, logTenantId: string | null): boolean {
   if (session.role !== UserRole.SUPER_ADMIN) {
     return false;
   }
-  if (!logCompanyId) {
+  if (!logTenantId) {
     return false;
   }
-  return logCompanyId === session.companyId;
+  return logTenantId === session.tenantId;
 }
 
 const UUID_PREFIX_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Extrai company_id do primeiro segmento de um path canônico de Storage. */
-export function storagePathCompanyId(storagePath: string): string | null {
+/** Extrai tenant_id do primeiro segmento de um path canônico de Storage. */
+export function storagePathTenantId(storagePath: string): string | null {
   const first = storagePath.split("/").filter(Boolean)[0];
   if (!first || !UUID_PREFIX_RE.test(first)) {
     return null;
@@ -84,23 +84,23 @@ export function storagePathCompanyId(storagePath: string): string | null {
   return first;
 }
 
-export function storagePathBelongsToCompany(storagePath: string, companyId: string): boolean {
-  return storagePathCompanyId(storagePath) === companyId;
+export function storagePathBelongsToTenant(storagePath: string, tenantId: string): boolean {
+  return storagePathTenantId(storagePath) === tenantId;
 }
 
 /** Retorna true quando o path aponta para outro tenant. */
-export function isCrossTenantStoragePath(storagePath: string, expectedCompanyId: string): boolean {
-  const pathCompanyId = storagePathCompanyId(storagePath);
-  return pathCompanyId !== null && pathCompanyId !== expectedCompanyId;
+export function isCrossTenantStoragePath(storagePath: string, expectedTenantId: string): boolean {
+  const pathTenantId = storagePathTenantId(storagePath);
+  return pathTenantId !== null && pathTenantId !== expectedTenantId;
 }
 
 /** Filtra perfis visíveis: mesma empresa; inspector só enxerga a si. */
-export function filterVisibleProfiles<T extends { id: string; companyId: string }>(
+export function filterVisibleProfiles<T extends { id: string; tenantId: string }>(
   session: TenantSession,
   profiles: T[],
 ): T[] {
   return profiles.filter((profile) => {
-    if (profile.companyId !== session.companyId) {
+    if (profile.tenantId !== session.tenantId) {
       return false;
     }
     if (session.role === UserRole.SUPER_ADMIN) {

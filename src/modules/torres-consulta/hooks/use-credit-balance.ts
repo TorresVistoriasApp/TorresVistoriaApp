@@ -14,7 +14,7 @@ export function useCreditBalance() {
   const available = isIntegrationAvailable("credits");
 
   return useQuery<CreditBalance | null>({
-    queryKey: ["consulta", "credits", context?.companyId ?? ""],
+    queryKey: ["consulta", "credits", context?.tenantId ?? ""],
     queryFn: async () => {
       const result = await getIntegration("credits").getBalance(context!);
       return result.ok ? result.data : null;

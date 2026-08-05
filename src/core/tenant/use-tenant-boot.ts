@@ -8,12 +8,12 @@ import { usePermission } from "@/core/rbac/use-permission";
  */
 export function useTenantBoot() {
   const { session, isPlatformAdmin, loading: authLoading } = useAuth();
-  const { profile, companyId } = useUser();
+  const { profile, tenantId } = useUser();
   const { company, settings, plan, loading: companyLoading, error: companyError } =
     useCompanyContext();
   const { permissions, loading: permissionLoading } = usePermission();
 
-  const needsTenant = !!session && !isPlatformAdmin && !!companyId;
+  const needsTenant = !!session && !isPlatformAdmin && !!tenantId;
   const loading =
     authLoading || permissionLoading || (needsTenant && companyLoading);
 

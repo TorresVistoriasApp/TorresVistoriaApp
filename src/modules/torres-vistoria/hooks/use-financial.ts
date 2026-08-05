@@ -7,38 +7,38 @@ import { useUser } from "@/core/auth/user-context";
 import { invalidateFinancialQueries } from "@/infra/query/cache-invalidation";
 
 export function useFinancialEntries(page = 1, pageSize = 50) {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
   const { can } = usePermission();
   const canRead = can("financial.manage") || can("financial.read.own");
   const offset = (page - 1) * pageSize;
   return useQuery({
-    queryKey: queryKeys.financial.list(companyId ?? undefined, page, pageSize),
-    queryFn: () => financialService.list(companyId!, pageSize, offset),
-    enabled: !!companyId && canRead,
+    queryKey: queryKeys.financial.list(tenantId ?? undefined, page, pageSize),
+    queryFn: () => financialService.list(tenantId!, pageSize, offset),
+    enabled: !!tenantId && canRead,
   });
 }
 
 export function useFinancialSummary(startDate?: string, endDate?: string) {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
   const { can } = usePermission();
   const canRead = can("financial.manage") || can("financial.read.own");
 
   return useQuery({
-    queryKey: queryKeys.financial.summary(companyId ?? undefined, startDate, endDate),
-    queryFn: () => financialService.getSummary(companyId!, startDate, endDate),
-    enabled: !!companyId && canRead,
+    queryKey: queryKeys.financial.summary(tenantId ?? undefined, startDate, endDate),
+    queryFn: () => financialService.getSummary(tenantId!, startDate, endDate),
+    enabled: !!tenantId && canRead,
   });
 }
 
 export function useCreateFinancialEntry() {
   const qc = useQueryClient();
-  const { userId, companyId } = useUser();
+  const { userId, tenantId } = useUser();
 
   return useMutation({
     mutationFn: (input: FinancialEntryInput) => {
-      if (!companyId || !userId) throw new Error("Sessão inválida");
+      if (!tenantId || !userId) throw new Error("Sessão inválida");
       return financialService.create(input, {
-        companyId,
+        tenantId,
         userId,
       });
     },

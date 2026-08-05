@@ -15,14 +15,13 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
       audit_logs: {
         Row: {
           action: string
-          company_id: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -33,6 +32,7 @@ export type Database = {
           ip_address: unknown
           new_data: Json | null
           old_data: Json | null
+          tenant_id: string | null
           updated_at: string
           updated_by: string | null
           user_agent: string | null
@@ -40,7 +40,6 @@ export type Database = {
         }
         Insert: {
           action: string
-          company_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -51,6 +50,7 @@ export type Database = {
           ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
+          tenant_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_agent?: string | null
@@ -58,7 +58,6 @@ export type Database = {
         }
         Update: {
           action?: string
-          company_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -69,6 +68,7 @@ export type Database = {
           ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
+          tenant_id?: string | null
           updated_at?: string
           updated_by?: string | null
           user_agent?: string | null
@@ -76,10 +76,31 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "audit_logs_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "audit_logs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -107,6 +128,7 @@ export type Database = {
           deleted_by: string | null
           document: string | null
           email: string | null
+          feature_flags: Json
           id: string
           legal_name: string | null
           location: string | null
@@ -135,6 +157,7 @@ export type Database = {
           deleted_by?: string | null
           document?: string | null
           email?: string | null
+          feature_flags?: Json
           id?: string
           legal_name?: string | null
           location?: string | null
@@ -163,6 +186,7 @@ export type Database = {
           deleted_by?: string | null
           document?: string | null
           email?: string | null
+          feature_flags?: Json
           id?: string
           legal_name?: string | null
           location?: string | null
@@ -174,13 +198,380 @@ export type Database = {
           subscription_plan?: string
           trade_name?: string
           updated_at?: string
+          updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "companies_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "companies_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_branches: {
+        Row: {
+          address: Json | null
+          code: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          is_headquarters: boolean
+          name: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          address?: Json | null
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_headquarters?: boolean
+          name: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          address?: Json | null
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_headquarters?: boolean
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_branches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_branches_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_branches_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_branches_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_custom_permissions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          granted: boolean
+          id: string
+          permission_code: string
+          profile_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          granted?: boolean
+          id?: string
+          permission_code: string
+          profile_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          granted?: boolean
+          id?: string
+          permission_code?: string
+          profile_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_custom_permissions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_custom_permissions_permission_code_fkey"
+            columns: ["permission_code"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "company_custom_permissions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_custom_permissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_subscriptions: {
+        Row: {
+          cancel_at: string | null
+          created_at: string
+          created_by: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          external_provider: string | null
+          external_subscription_id: string | null
+          id: string
+          plan_code: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cancel_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          external_provider?: string | null
+          external_subscription_id?: string | null
+          id?: string
+          plan_code: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cancel_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          external_provider?: string | null
+          external_subscription_id?: string | null
+          id?: string
+          plan_code?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_subscriptions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscriptions_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_team_members: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          profile_id: string
+          role_in_team: string
+          team_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          profile_id: string
+          role_in_team?: string
+          team_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          profile_id?: string
+          role_in_team?: string
+          team_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_team_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "company_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_team_members_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_teams: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_teams_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "company_branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_teams_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_teams_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_teams_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_teams_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       financial_entries: {
         Row: {
           amount: number
-          company_id: string
           created_at: string
           created_by: string
           deleted_at: string | null
@@ -191,12 +582,12 @@ export type Database = {
           id: string
           inspection_id: string | null
           source: string
+          tenant_id: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           amount: number
-          company_id: string
           created_at?: string
           created_by: string
           deleted_at?: string | null
@@ -207,12 +598,12 @@ export type Database = {
           id?: string
           inspection_id?: string | null
           source?: string
+          tenant_id: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           amount?: number
-          company_id?: string
           created_at?: string
           created_by?: string
           deleted_at?: string | null
@@ -223,20 +614,21 @@ export type Database = {
           id?: string
           inspection_id?: string | null
           source?: string
+          tenant_id?: string
           updated_at?: string
           updated_by?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "financial_entries_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "financial_entries_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "companies"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "financial_entries_created_by_fkey"
-            columns: ["created_by"]
+            foreignKeyName: "financial_entries_deleted_by_fkey"
+            columns: ["deleted_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -248,42 +640,25 @@ export type Database = {
             referencedRelation: "inspections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "financial_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_entries_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      legacy_storage_path_map: {
-        Row: {
-          bucket_id: string
-          old_path: string
-          new_path: string
-          entity_table: string | null
-          entity_id: string | null
-          migrated_at: string | null
-          created_at: string
-        }
-        Insert: {
-          bucket_id: string
-          old_path: string
-          new_path: string
-          entity_table?: string | null
-          entity_id?: string | null
-          migrated_at?: string | null
-          created_at?: string
-        }
-        Update: {
-          bucket_id?: string
-          old_path?: string
-          new_path?: string
-          entity_table?: string | null
-          entity_id?: string | null
-          migrated_at?: string | null
-          created_at?: string
-        }
-        Relationships: []
       }
       inspection_checklists: {
         Row: {
           category: string
-          company_id: string
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -293,12 +668,12 @@ export type Database = {
           item_name: string
           notes: string | null
           status: string
+          tenant_id: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           category: string
-          company_id: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -308,12 +683,12 @@ export type Database = {
           item_name: string
           notes?: string | null
           status?: string
+          tenant_id: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           category?: string
-          company_id?: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -323,15 +698,23 @@ export type Database = {
           item_name?: string
           notes?: string | null
           status?: string
+          tenant_id?: string
           updated_at?: string
           updated_by?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "inspection_checklists_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "inspection_checklists_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "companies"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_checklists_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -341,12 +724,25 @@ export type Database = {
             referencedRelation: "inspections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "inspection_checklists_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_checklists_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       inspection_comments: {
         Row: {
           author_id: string
-          company_id: string
           content: string
           created_at: string
           created_by: string | null
@@ -354,12 +750,12 @@ export type Database = {
           deleted_by: string | null
           id: string
           inspection_id: string
+          tenant_id: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           author_id: string
-          company_id: string
           content: string
           created_at?: string
           created_by?: string | null
@@ -367,12 +763,12 @@ export type Database = {
           deleted_by?: string | null
           id?: string
           inspection_id: string
+          tenant_id: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           author_id?: string
-          company_id?: string
           content?: string
           created_at?: string
           created_by?: string | null
@@ -380,6 +776,7 @@ export type Database = {
           deleted_by?: string | null
           id?: string
           inspection_id?: string
+          tenant_id?: string
           updated_at?: string
           updated_by?: string | null
         }
@@ -392,10 +789,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "inspection_comments_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "inspection_comments_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "companies"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_comments_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -405,6 +809,101 @@ export type Database = {
             referencedRelation: "inspections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "inspection_comments_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_comments_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inspection_paint_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          inspection_id: string
+          notes: string | null
+          part_code: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          inspection_id: string
+          notes?: string | null
+          part_code: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          inspection_id?: string
+          notes?: string | null
+          part_code?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_paint_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_paint_items_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_paint_items_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "inspections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_paint_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_paint_items_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       inspection_photos: {
@@ -412,7 +911,6 @@ export type Database = {
           ai_validation: Json | null
           captured_at: string | null
           category: string
-          company_id: string
           complementary_category: string | null
           complementary_name: string | null
           content_hash: string | null
@@ -443,6 +941,7 @@ export type Database = {
           status: string | null
           storage_path: string
           subcategory: string | null
+          tenant_id: string
           thumbnail_url: string | null
           updated_at: string
           updated_by: string | null
@@ -454,7 +953,6 @@ export type Database = {
           ai_validation?: Json | null
           captured_at?: string | null
           category: string
-          company_id: string
           complementary_category?: string | null
           complementary_name?: string | null
           content_hash?: string | null
@@ -485,6 +983,7 @@ export type Database = {
           status?: string | null
           storage_path: string
           subcategory?: string | null
+          tenant_id: string
           thumbnail_url?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -496,7 +995,6 @@ export type Database = {
           ai_validation?: Json | null
           captured_at?: string | null
           category?: string
-          company_id?: string
           complementary_category?: string | null
           complementary_name?: string | null
           content_hash?: string | null
@@ -527,6 +1025,7 @@ export type Database = {
           status?: string | null
           storage_path?: string
           subcategory?: string | null
+          tenant_id?: string
           thumbnail_url?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -536,10 +1035,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inspection_photos_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "inspection_photos_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "companies"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_photos_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -549,71 +1055,31 @@ export type Database = {
             referencedRelation: "inspections"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      inspection_paint_items: {
-        Row: {
-          company_id: string
-          created_at: string
-          created_by: string | null
-          deleted_at: string | null
-          deleted_by: string | null
-          id: string
-          inspection_id: string
-          notes: string | null
-          part_code: string
-          status: string
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          company_id: string
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          deleted_by?: string | null
-          id?: string
-          inspection_id: string
-          notes?: string | null
-          part_code: string
-          status?: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          company_id?: string
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          deleted_by?: string | null
-          id?: string
-          inspection_id?: string
-          notes?: string | null
-          part_code?: string
-          status?: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "inspection_paint_items_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "inspection_photos_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "inspection_paint_items_inspection_id_fkey"
-            columns: ["inspection_id"]
+            foreignKeyName: "inspection_photos_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: "inspections"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_photos_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       inspection_reports: {
         Row: {
-          company_id: string
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -625,13 +1091,13 @@ export type Database = {
           public_url: string | null
           qr_code_data: string | null
           storage_path: string
+          tenant_id: string
           updated_at: string
           updated_by: string | null
           verification_code: string
           version: number
         }
         Insert: {
-          company_id: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -643,13 +1109,13 @@ export type Database = {
           public_url?: string | null
           qr_code_data?: string | null
           storage_path: string
+          tenant_id: string
           updated_at?: string
           updated_by?: string | null
           verification_code: string
           version?: number
         }
         Update: {
-          company_id?: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -661,6 +1127,7 @@ export type Database = {
           public_url?: string | null
           qr_code_data?: string | null
           storage_path?: string
+          tenant_id?: string
           updated_at?: string
           updated_by?: string | null
           verification_code?: string
@@ -668,10 +1135,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inspection_reports_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "inspection_reports_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "companies"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_reports_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -688,12 +1162,25 @@ export type Database = {
             referencedRelation: "inspections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "inspection_reports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_reports_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       inspection_types: {
         Row: {
           amount: number
-          company_id: string
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -702,12 +1189,12 @@ export type Database = {
           is_active: boolean
           name: string
           sort_order: number
+          tenant_id: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           amount?: number
-          company_id: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -716,12 +1203,12 @@ export type Database = {
           is_active?: boolean
           name: string
           sort_order?: number
+          tenant_id: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           amount?: number
-          company_id?: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -730,15 +1217,37 @@ export type Database = {
           is_active?: boolean
           name?: string
           sort_order?: number
+          tenant_id?: string
           updated_at?: string
           updated_by?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "inspection_types_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "inspection_types_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_types_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_types_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_types_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -754,7 +1263,6 @@ export type Database = {
           client_name: string
           client_phone: string | null
           color: string
-          company_id: string
           completion_percent: number
           created_at: string
           created_by: string | null
@@ -764,22 +1272,23 @@ export type Database = {
           engine_displacement: number | null
           fuel: string
           id: string
-          inspection_purpose: string | null
-          inspection_type_id: string | null
           inspection_date: string
           inspection_number: number
+          inspection_purpose: string | null
           inspection_time: string
+          inspection_type_id: string | null
           inspector_id: string
-          internal_notes: string | null
           insurance_acceptance_percent: number | null
+          internal_notes: string | null
+          is_armored: boolean
           judicial_court: string | null
           judicial_district: string | null
           judicial_process: string | null
           last_auto_saved_at: string | null
           location: string
+          manufacture_year: number
           market_average_value: number | null
           market_fipe_value: number | null
-          manufacture_year: number
           mileage: number | null
           model: string
           model_year: number
@@ -788,8 +1297,8 @@ export type Database = {
           passenger_capacity: number | null
           plate: string
           power_cv: number | null
-          renavam: string | null
           registration_city_uf: string | null
+          renavam: string | null
           requester_document: string | null
           requester_name: string | null
           seller_document: string | null
@@ -797,11 +1306,11 @@ export type Database = {
           situation: string
           status: string
           technical_notes: string | null
+          tenant_id: string
           updated_at: string
           updated_by: string | null
           vehicle_category: string | null
           vehicle_condition: string | null
-          is_armored: boolean
           vehicle_species: string | null
           vehicle_uf: string | null
           version: string | null
@@ -816,7 +1325,6 @@ export type Database = {
           client_name: string
           client_phone?: string | null
           color: string
-          company_id: string
           completion_percent?: number
           created_at?: string
           created_by?: string | null
@@ -826,22 +1334,23 @@ export type Database = {
           engine_displacement?: number | null
           fuel: string
           id?: string
-          inspection_purpose?: string | null
-          inspection_type_id?: string | null
           inspection_date: string
           inspection_number?: number
+          inspection_purpose?: string | null
           inspection_time: string
+          inspection_type_id?: string | null
           inspector_id: string
-          internal_notes?: string | null
           insurance_acceptance_percent?: number | null
+          internal_notes?: string | null
+          is_armored?: boolean
           judicial_court?: string | null
           judicial_district?: string | null
           judicial_process?: string | null
           last_auto_saved_at?: string | null
           location: string
+          manufacture_year: number
           market_average_value?: number | null
           market_fipe_value?: number | null
-          manufacture_year: number
           mileage?: number | null
           model: string
           model_year: number
@@ -850,8 +1359,8 @@ export type Database = {
           passenger_capacity?: number | null
           plate: string
           power_cv?: number | null
-          renavam?: string | null
           registration_city_uf?: string | null
+          renavam?: string | null
           requester_document?: string | null
           requester_name?: string | null
           seller_document?: string | null
@@ -859,11 +1368,11 @@ export type Database = {
           situation: string
           status?: string
           technical_notes?: string | null
+          tenant_id: string
           updated_at?: string
           updated_by?: string | null
           vehicle_category?: string | null
           vehicle_condition?: string | null
-          is_armored?: boolean
           vehicle_species?: string | null
           vehicle_uf?: string | null
           version?: string | null
@@ -878,7 +1387,6 @@ export type Database = {
           client_name?: string
           client_phone?: string | null
           color?: string
-          company_id?: string
           completion_percent?: number
           created_at?: string
           created_by?: string | null
@@ -888,22 +1396,23 @@ export type Database = {
           engine_displacement?: number | null
           fuel?: string
           id?: string
-          inspection_purpose?: string | null
-          inspection_type_id?: string | null
           inspection_date?: string
           inspection_number?: number
+          inspection_purpose?: string | null
           inspection_time?: string
+          inspection_type_id?: string | null
           inspector_id?: string
-          internal_notes?: string | null
           insurance_acceptance_percent?: number | null
+          internal_notes?: string | null
+          is_armored?: boolean
           judicial_court?: string | null
           judicial_district?: string | null
           judicial_process?: string | null
           last_auto_saved_at?: string | null
           location?: string
+          manufacture_year?: number
           market_average_value?: number | null
           market_fipe_value?: number | null
-          manufacture_year?: number
           mileage?: number | null
           model?: string
           model_year?: number
@@ -912,8 +1421,8 @@ export type Database = {
           passenger_capacity?: number | null
           plate?: string
           power_cv?: number | null
-          renavam?: string | null
           registration_city_uf?: string | null
+          renavam?: string | null
           requester_document?: string | null
           requester_name?: string | null
           seller_document?: string | null
@@ -921,21 +1430,35 @@ export type Database = {
           situation?: string
           status?: string
           technical_notes?: string | null
+          tenant_id?: string
           updated_at?: string
           updated_by?: string | null
           vehicle_category?: string | null
           vehicle_condition?: string | null
-          is_armored?: boolean
           vehicle_species?: string | null
           vehicle_uf?: string | null
           version?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "inspections_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "inspections_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "companies"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_inspection_type_id_fkey"
+            columns: ["inspection_type_id"]
+            isOneToOne: false
+            referencedRelation: "inspection_types"
             referencedColumns: ["id"]
           },
           {
@@ -945,12 +1468,122 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "inspections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      integration_connections: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          last_sync_at: string | null
+          provider: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          last_sync_at?: string | null
+          provider: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          last_sync_at?: string | null
+          provider?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_connections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_connections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_connections_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      legacy_storage_path_map: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          entity_id: string | null
+          entity_table: string | null
+          migrated_at: string | null
+          new_path: string
+          old_path: string
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_table?: string | null
+          migrated_at?: string | null
+          new_path: string
+          old_path: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_table?: string | null
+          migrated_at?: string | null
+          new_path?: string
+          old_path?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
           body: string
-          company_id: string
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -958,6 +1591,7 @@ export type Database = {
           id: string
           metadata: Json | null
           read_at: string | null
+          tenant_id: string
           title: string
           updated_at: string
           updated_by: string | null
@@ -965,7 +1599,6 @@ export type Database = {
         }
         Insert: {
           body: string
-          company_id: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -973,6 +1606,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           read_at?: string | null
+          tenant_id: string
           title: string
           updated_at?: string
           updated_by?: string | null
@@ -980,7 +1614,6 @@ export type Database = {
         }
         Update: {
           body?: string
-          company_id?: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -988,6 +1621,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           read_at?: string | null
+          tenant_id?: string
           title?: string
           updated_at?: string
           updated_by?: string | null
@@ -995,10 +1629,31 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "notifications_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "notifications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1038,12 +1693,11 @@ export type Database = {
           name?: string
           updated_at?: string
         }
-        Relationships: [        ]
+        Relationships: []
       }
       photo_categories: {
         Row: {
           category_type: string
-          company_id: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -1061,13 +1715,13 @@ export type Database = {
           section_id: string | null
           section_key: string
           sort_order: number
+          tenant_id: string | null
           updated_at: string
           updated_by: string | null
           visual_guide: Json | null
         }
         Insert: {
           category_type?: string
-          company_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1085,13 +1739,13 @@ export type Database = {
           section_id?: string | null
           section_key: string
           sort_order?: number
+          tenant_id?: string | null
           updated_at?: string
           updated_by?: string | null
           visual_guide?: Json | null
         }
         Update: {
           category_type?: string
-          company_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1109,16 +1763,24 @@ export type Database = {
           section_id?: string | null
           section_key?: string
           sort_order?: number
+          tenant_id?: string | null
           updated_at?: string
           updated_by?: string | null
           visual_guide?: Json | null
         }
         Relationships: [
           {
-            foreignKeyName: "photo_categories_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "photo_categories_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "companies"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_categories_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1128,11 +1790,24 @@ export type Database = {
             referencedRelation: "photo_sections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "photo_categories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_categories_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       photo_sections: {
         Row: {
-          company_id: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -1147,11 +1822,11 @@ export type Database = {
           min_required_count: number
           name: string
           sort_order: number
+          tenant_id: string | null
           updated_at: string
           updated_by: string | null
         }
         Insert: {
-          company_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1166,11 +1841,11 @@ export type Database = {
           min_required_count?: number
           name: string
           sort_order?: number
+          tenant_id?: string | null
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
-          company_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1185,15 +1860,37 @@ export type Database = {
           min_required_count?: number
           name?: string
           sort_order?: number
+          tenant_id?: string | null
           updated_at?: string
           updated_by?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "photo_sections_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "photo_sections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_sections_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_sections_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_sections_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1230,9 +1927,8 @@ export type Database = {
       }
       profiles: {
         Row: {
-          auth_user_id: string
+          auth_user_id: string | null
           avatar_url: string | null
-          company_id: string
           created_at: string
           deleted_at: string | null
           email: string | null
@@ -1243,11 +1939,12 @@ export type Database = {
           phone: string | null
           role: Database["public"]["Enums"]["tenant_role"]
           status: string
+          tenant_id: string
           updated_at: string
         }
         Insert: {
+          auth_user_id?: string | null
           avatar_url?: string | null
-          company_id: string
           created_at?: string
           deleted_at?: string | null
           email?: string | null
@@ -1258,11 +1955,12 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["tenant_role"]
           status?: string
+          tenant_id: string
           updated_at?: string
         }
         Update: {
+          auth_user_id?: string | null
           avatar_url?: string | null
-          company_id?: string
           created_at?: string
           deleted_at?: string | null
           email?: string | null
@@ -1273,12 +1971,13 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["tenant_role"]
           status?: string
+          tenant_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
@@ -1359,7 +2058,6 @@ export type Database = {
       }
       settings: {
         Row: {
-          company_id: string
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -1367,13 +2065,13 @@ export type Database = {
           id: string
           legal_footer: string | null
           signature_image_url: string | null
+          tenant_id: string
           theme_mode: string
           updated_at: string
           updated_by: string | null
           watermark_enabled: boolean
         }
         Insert: {
-          company_id: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1381,13 +2079,13 @@ export type Database = {
           id?: string
           legal_footer?: string | null
           signature_image_url?: string | null
+          tenant_id: string
           theme_mode?: string
           updated_at?: string
           updated_by?: string | null
           watermark_enabled?: boolean
         }
         Update: {
-          company_id?: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1395,6 +2093,7 @@ export type Database = {
           id?: string
           legal_footer?: string | null
           signature_image_url?: string | null
+          tenant_id?: string
           theme_mode?: string
           updated_at?: string
           updated_by?: string | null
@@ -1402,9 +2101,93 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "settings_company_id_fkey"
-            columns: ["company_id"]
+            foreignKeyName: "settings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "settings_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "settings_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          role: string
+          status: string
+          tenant_id: string
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          invited_by: string
+          role: string
+          status?: string
+          tenant_id: string
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          role?: string
+          status?: string
+          tenant_id?: string
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -1415,57 +2198,141 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_expired_inspection_drafts: { Args: never; Returns: number }
-      get_dashboard_stats: { Args: { p_company_id: string }; Returns: Json }
-      get_migration_health_report: {
-        Args: { p_company_id?: string }
-        Returns: Json
-      }
-      mark_storage_path_migrated: {
-        Args: { p_bucket_id: string; p_old_path: string }
+      anonymize_user_account: {
+        Args: { p_user_id: string }
         Returns: undefined
       }
+      can_access_financial_row: {
+        Args: {
+          p_company_id: string
+          p_created_by: string
+          p_inspection_id: string
+        }
+        Returns: boolean
+      }
+      can_access_inspection_row: {
+        Args: { p_inspection_id: string }
+        Returns: boolean
+      }
+      can_access_tenant_row: {
+        Args: { p_company_id: string; p_created_by: string }
+        Returns: boolean
+      }
+      cleanup_expired_inspection_drafts: { Args: never; Returns: number }
+      company_inspection_revenue: {
+        Args: {
+          p_end_date?: string
+          p_inspector_id?: string
+          p_start_date?: string
+          p_tenant_id: string
+        }
+        Returns: number
+      }
+      company_manual_revenue: {
+        Args: {
+          p_end_date?: string
+          p_start_date?: string
+          p_tenant_id: string
+        }
+        Returns: number
+      }
+      dashboard_inspector_scope: { Args: never; Returns: string }
+      get_dashboard_stats: { Args: { p_tenant_id: string }; Returns: Json }
+      get_default_tenant_id: { Args: never; Returns: string }
+      get_entity_history: {
+        Args: { p_entity_id: string; p_entity_type: string; p_limit?: number }
+        Returns: {
+          action: string
+          changed_at: string
+          changed_by: string
+          changed_by_name: string
+          changed_fields: string[]
+          new_data: Json
+          old_data: Json
+          version: number
+        }[]
+      }
       get_financial_summary: {
-        Args: { p_company_id: string; p_end_date: string; p_start_date: string }
+        Args: { p_end_date: string; p_start_date: string; p_tenant_id: string }
         Returns: Json
       }
       get_inspections_by_brand: {
-        Args: { p_company_id: string }
+        Args: { p_tenant_id: string }
         Returns: {
           brand: string
           count: number
         }[]
       }
+      get_migration_health_report: {
+        Args: { p_tenant_id?: string }
+        Returns: Json
+      }
       get_monthly_inspections: {
-        Args: { p_company_id: string; p_year?: number }
+        Args: { p_tenant_id: string; p_year?: number }
         Returns: {
           count: number
           month: string
           revenue: number
         }[]
       }
-      get_user_company_id: { Args: never; Returns: string }
+      get_request_ip: { Args: never; Returns: unknown }
+      get_request_user_agent: { Args: never; Returns: string }
       get_user_role: { Args: never; Returns: string }
-      is_super_admin: { Args: never; Returns: boolean }
+      get_user_tenant_id: { Args: never; Returns: string }
+      inspection_photo_matches_storage_object: {
+        Args: {
+          p_object_name: string
+          p_storage_path: string
+          p_thumbnail_url: string
+        }
+        Returns: boolean
+      }
+      inspection_photo_object_category: {
+        Args: { p_name: string }
+        Returns: string
+      }
+      inspection_photo_thumbnail_path: {
+        Args: { p_storage_path: string }
+        Returns: string
+      }
+      is_canonical_inspection_photo_object_path: {
+        Args: { p_name: string }
+        Returns: boolean
+      }
+      is_canonical_report_object_path: {
+        Args: { p_name: string }
+        Returns: boolean
+      }
+      is_inspector: { Args: never; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
+      mark_storage_path_migrated: {
+        Args: { p_bucket_id: string; p_old_path: string }
+        Returns: undefined
+      }
+      normalize_tenant_role: {
+        Args: { p_role: string }
+        Returns: Database["public"]["Enums"]["tenant_role"]
+      }
       record_audit_event: {
         Args: {
           p_action: string
-          p_entity_type?: string
           p_entity_id?: string
+          p_entity_type?: string
           p_metadata?: Json
         }
         Returns: string
       }
+      redact_audit_jsonb: { Args: { payload: Json }; Returns: Json }
       search_inspections: {
         Args: {
-          p_company_id: string
           p_end_date?: string
           p_limit?: number
           p_offset?: number
           p_query?: string
           p_start_date?: string
           p_status?: string
+          p_tenant_id: string
         }
         Returns: {
           brand: string
@@ -1481,7 +2348,6 @@ export type Database = {
           total_count: number
         }[]
       }
-      anonymize_user_account: { Args: { p_user_id: string }; Returns: undefined }
       validate_report: { Args: { p_verification_code: string }; Returns: Json }
     }
     Enums: {

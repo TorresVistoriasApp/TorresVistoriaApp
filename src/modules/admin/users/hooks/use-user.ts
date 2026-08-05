@@ -8,13 +8,13 @@ import type { UserProfileInput } from "@/modules/admin/users/schemas/user";
 import { invalidateUserQueries } from "@/infra/query/cache-invalidation";
 
 export function useTeamProfiles() {
-  const { companyId } = useUserContext();
+  const { tenantId } = useUserContext();
   const { can } = usePermission();
 
   return useQuery({
-    queryKey: queryKeys.users.team(companyId ?? undefined),
-    queryFn: () => userService.listTeam(companyId!),
-    enabled: can("users.manage") && !!companyId,
+    queryKey: queryKeys.users.team(tenantId ?? undefined),
+    queryFn: () => userService.listTeam(tenantId!),
+    enabled: can("users.manage") && !!tenantId,
   });
 }
 

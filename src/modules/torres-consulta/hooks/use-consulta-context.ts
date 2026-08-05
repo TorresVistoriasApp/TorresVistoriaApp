@@ -1,17 +1,17 @@
 import { useMemo } from "react";
 import { useUser } from "@/core/auth/user-context";
-import { requireCompanyId, requireUserId } from "@/core/tenant/tenant";
+import { requireTenantId, requireUserId } from "@/core/tenant/tenant";
 import type { IntegrationContext } from "@/core/integrations/ports/shared";
 
 /** Contexto de integração derivado da sessão do tenant. */
 export function useConsultaContext(): IntegrationContext | null {
-  const { companyId, userId } = useUser();
+  const { tenantId, userId } = useUser();
 
   return useMemo(() => {
-    if (!companyId || !userId) return null;
+    if (!tenantId || !userId) return null;
     return {
-      companyId: requireCompanyId(companyId),
+      tenantId: requireTenantId(tenantId),
       userId: requireUserId(userId),
     };
-  }, [companyId, userId]);
+  }, [tenantId, userId]);
 }

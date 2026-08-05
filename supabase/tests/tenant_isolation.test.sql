@@ -18,7 +18,7 @@ SELECT ok(
   NOT public.is_canonical_inspection_photo_object_path(
     'legado/95968fbc-36d7-4e21-a4ad-dabc9390c390/EXT_FRENTE/foto.webp'
   ),
-  'path legado sem company_id é rejeitado'
+  'path legado sem tenant_id é rejeitado'
 );
 
 SELECT ok(
@@ -35,7 +35,7 @@ SELECT is(
     1
   ),
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-  'primeiro segmento do path é o company_id'
+  'primeiro segmento do path é o tenant_id'
 );
 
 SELECT isnt(

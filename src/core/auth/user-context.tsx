@@ -14,7 +14,7 @@ export interface UserContextValue {
   user: User | null;
   profile: Profile | null;
   userId: string | null;
-  companyId: string | null;
+  tenantId: string | null;
   role: UserRole | null;
   fullName: string | null;
   email: string | null;
@@ -37,7 +37,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       user,
       profile,
       userId: profile?.id ?? user?.id ?? null,
-      companyId: profile?.company_id ?? null,
+      tenantId: profile?.tenant_id ?? null,
       role: profile?.role ?? null,
       fullName: profile?.full_name ?? null,
       email: profile?.email ?? user?.email ?? null,

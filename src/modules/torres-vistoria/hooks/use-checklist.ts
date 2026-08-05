@@ -6,17 +6,17 @@ import { invalidateInspectionQueries } from "@/infra/query/cache-invalidation";
 import { useUser } from "@/core/auth/user-context";
 
 export function useInspectionChecklist(inspectionId: string | undefined) {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
 
   return useQuery({
     queryKey: queryKeys.checklist(inspectionId ?? ""),
     queryFn: async () => {
-      if (!companyId) {
+      if (!tenantId) {
         return checklistService.listByInspection(inspectionId!);
       }
-      return checklistService.syncWithCatalog(inspectionId!, companyId);
+      return checklistService.syncWithCatalog(inspectionId!, tenantId);
     },
-    enabled: Boolean(inspectionId) && Boolean(companyId),
+    enabled: Boolean(inspectionId) && Boolean(tenantId),
   });
 }
 

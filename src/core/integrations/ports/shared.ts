@@ -27,7 +27,7 @@ export type IntegrationResult<T> =
 
 /** Identificação do tenant e do ator que originou a operação. */
 export type IntegrationContext = {
-  companyId: string;
+  tenantId: string;
   userId: string;
   /** Chave de idempotência: evita cobrança dupla em retry de rede. */
   idempotencyKey?: string;

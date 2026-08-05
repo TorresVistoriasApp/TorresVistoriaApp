@@ -74,7 +74,7 @@ const IGNORED_FIELDS = new Set([
   "created_at",
   "deleted_at",
   "id",
-  "company_id",
+  "tenant_id",
 ]);
 
 export function getEntityLabel(entityType: string): string {

@@ -10,7 +10,7 @@ import type { AuditLog } from "@/core/audit/audit-service";
 function makeLog(overrides: Partial<AuditLog>): AuditLog {
   return {
     id: "log-1",
-    company_id: "company-1",
+    tenant_id: "company-1",
     user_id: "user-1",
     action: "INSERT",
     entity_type: "inspections",

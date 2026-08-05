@@ -4,18 +4,18 @@ import type { InspectionTypeInput, InspectionTypeUpdateInput } from "@/modules/t
 
 export type InspectionType = InspectionTypeInput & {
   id: string;
-  company_id: string;
+  tenant_id: string;
   created_at: string;
   updated_at: string;
 };
 
 export const inspectionTypeService = {
-  async list(companyId: string, activeOnly = false): Promise<InspectionType[]> {
+  async list(tenantId: string, activeOnly = false): Promise<InspectionType[]> {
     try {
       let query = db
         .from("inspection_types")
         .select("*")
-        .eq("company_id", companyId)
+        .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .order("sort_order", { ascending: true })
         .order("name", { ascending: true });
@@ -32,12 +32,12 @@ export const inspectionTypeService = {
     }
   },
 
-  async create(input: InspectionTypeInput, companyId: string): Promise<InspectionType> {
+  async create(input: InspectionTypeInput, tenantId: string): Promise<InspectionType> {
     try {
       return throwIfError(
         await db
           .from("inspection_types")
-          .insert({ ...input, company_id: companyId })
+          .insert({ ...input, tenant_id: tenantId })
           .select("*")
           .single(),
         "Erro ao cadastrar tipo de vistoria",

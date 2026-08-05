@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
 
     const { data: inspection, error: inspectionError } = await supabase
       .from("inspections")
-      .select("id, company_id, inspector_id, status, inspection_number, inspection_date")
+      .select("id, tenant_id, inspector_id, status, inspection_number, inspection_date")
       .eq("id", inspectionId)
       .is("deleted_at", null)
       .maybeSingle();
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
       .from("inspection_reports")
       .insert({
         inspection_id: inspectionId,
-        company_id: inspection.company_id,
+        tenant_id: inspection.tenant_id,
         version: nextVersion,
         storage_path: storagePath,
         verification_code: code,

@@ -2,13 +2,12 @@
 -- Executar após migrations. Contas demo (se necessárias) devem ser criadas
 -- pelo Studio Auth — nunca com senha fixa em arquivo versionado.
 
-INSERT INTO public.settings (company_id, primary_color, theme_mode, legal_footer)
+INSERT INTO public.settings (tenant_id, theme_mode, legal_footer)
 VALUES (
   '00000000-0000-4000-8000-000000000001',
-  '#1e40af',
   'light',
   'Laudo emitido por Torres Vistoria. Documento válido mediante verificação do código QR.'
-) ON CONFLICT (company_id) DO NOTHING;
+) ON CONFLICT (tenant_id) DO NOTHING;
 
 INSERT INTO public.roles (code, name, description) VALUES
   ('SUPER_ADMIN', 'Super Administrador', 'Controle total do sistema'),

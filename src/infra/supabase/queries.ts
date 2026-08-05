@@ -3,27 +3,27 @@ import { db } from "@/infra/supabase/client";
 export const queryKeys = {
   inspections: {
     all: ["inspections"] as const,
-    list: (companyId: string | undefined, filters?: Record<string, unknown>) =>
-      ["inspections", "list", companyId, filters] as const,
+    list: (tenantId: string | undefined, filters?: Record<string, unknown>) =>
+      ["inspections", "list", tenantId, filters] as const,
     detail: (id: string) => ["inspections", id] as const,
-    search: (companyId: string | undefined, params?: Record<string, unknown>) =>
-      ["inspections", "search", companyId, params] as const,
+    search: (tenantId: string | undefined, params?: Record<string, unknown>) =>
+      ["inspections", "search", tenantId, params] as const,
   },
   checklist: (inspectionId: string) => ["checklist", inspectionId] as const,
   photos: (inspectionId: string) => ["photos", inspectionId] as const,
   dashboard: {
-    metrics: (companyId?: string) => ["dashboard", "metrics", companyId] as const,
-    recent: (companyId?: string) => ["dashboard", "recent", companyId] as const,
-    monthly: (companyId?: string, year?: number) =>
-      ["dashboard", "monthly", companyId, year] as const,
-    brands: (companyId?: string) => ["dashboard", "brands", companyId] as const,
+    metrics: (tenantId?: string) => ["dashboard", "metrics", tenantId] as const,
+    recent: (tenantId?: string) => ["dashboard", "recent", tenantId] as const,
+    monthly: (tenantId?: string, year?: number) =>
+      ["dashboard", "monthly", tenantId, year] as const,
+    brands: (tenantId?: string) => ["dashboard", "brands", tenantId] as const,
   },
   financial: {
     all: ["financial"] as const,
-    list: (companyId: string | undefined, page: number, pageSize: number) =>
-      ["financial", "list", companyId, page, pageSize] as const,
-    summary: (companyId: string | undefined, startDate?: string, endDate?: string) =>
-      ["financial", "summary", companyId, startDate, endDate] as const,
+    list: (tenantId: string | undefined, page: number, pageSize: number) =>
+      ["financial", "list", tenantId, page, pageSize] as const,
+    summary: (tenantId: string | undefined, startDate?: string, endDate?: string) =>
+      ["financial", "summary", tenantId, startDate, endDate] as const,
   },
   profile: ["profile"] as const,
   company: {
@@ -32,11 +32,11 @@ export const queryKeys = {
   },
   inspectionTypes: {
     all: ["inspection-types"] as const,
-    list: (companyId?: string, activeOnly?: boolean) =>
-      ["inspection-types", companyId, activeOnly] as const,
+    list: (tenantId?: string, activeOnly?: boolean) =>
+      ["inspection-types", tenantId, activeOnly] as const,
   },
   users: {
-    team: (companyId?: string) => ["users", "team", companyId] as const,
+    team: (tenantId?: string) => ["users", "team", tenantId] as const,
   },
   platformCompanies: {
     all: ["platform-companies"] as const,
@@ -44,11 +44,11 @@ export const queryKeys = {
   audit: {
     all: ["audit"] as const,
     list: (
-      companyId: string | undefined,
+      tenantId: string | undefined,
       filters?: Record<string, unknown>,
       page?: number,
       pageSize?: number,
-    ) => ["audit", "list", companyId, filters, page, pageSize] as const,
+    ) => ["audit", "list", tenantId, filters, page, pageSize] as const,
   },
   notifications: {
     all: ["notifications"] as const,
@@ -72,7 +72,7 @@ export const queries = {
         market_fipe_value, market_average_value, insurance_acceptance_percent, vehicle_condition, is_armored,
         situation, opinion, status, technical_notes, internal_notes,
         completion_percent, draft_expires_at, last_auto_saved_at,
-        company_id, inspector_id, created_at, updated_at,
+        tenant_id, inspector_id, created_at, updated_at,
         inspector:profiles!inspections_inspector_id_fkey(id, full_name, avatar_url, role)
       `,
         options?.count ? { count: options.count } : undefined,
@@ -87,8 +87,8 @@ export const queries = {
       `);
     },
 
-    byCompany(companyId: string, options?: { count?: "exact" }) {
-      return this.base(options).eq("company_id", companyId).is("deleted_at", null);
+    byCompany(tenantId: string, options?: { count?: "exact" }) {
+      return this.base(options).eq("tenant_id", tenantId).is("deleted_at", null);
     },
 
     byId(id: string) {
@@ -119,19 +119,19 @@ export const queries = {
   },
 
   financial: {
-    byCompany(companyId: string, limit = 50, offset = 0) {
+    byCompany(tenantId: string, limit = 50, offset = 0) {
       return db
         .from("financial_entries")
         .select("*", { count: "exact" })
-        .eq("company_id", companyId)
+        .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .order("entry_date", { ascending: false })
         .range(offset, offset + limit - 1);
     },
 
-    async summary(companyId: string, startDate: string, endDate: string) {
+    async summary(tenantId: string, startDate: string, endDate: string) {
       return db.rpc("get_financial_summary", {
-        p_company_id: companyId,
+        p_tenant_id: tenantId,
         p_start_date: startDate,
         p_end_date: endDate,
       });
@@ -139,30 +139,30 @@ export const queries = {
   },
 
   dashboard: {
-    async stats(companyId: string) {
-      return db.rpc("get_dashboard_stats", { p_company_id: companyId });
+    async stats(tenantId: string) {
+      return db.rpc("get_dashboard_stats", { p_tenant_id: tenantId });
     },
 
-    async monthly(companyId: string, year?: number) {
+    async monthly(tenantId: string, year?: number) {
       return db.rpc("get_monthly_inspections", {
-        p_company_id: companyId,
+        p_tenant_id: tenantId,
         p_year: year ?? new Date().getFullYear(),
       });
     },
 
-    async byBrand(companyId: string) {
-      return db.rpc("get_inspections_by_brand", { p_company_id: companyId });
+    async byBrand(tenantId: string) {
+      return db.rpc("get_inspections_by_brand", { p_tenant_id: tenantId });
     },
   },
 
   profiles: {
-    team(companyId: string) {
+    team(tenantId: string) {
       return db
         .from("profiles")
         .select(
-          "id, company_id, full_name, role, avatar_url, email, phone, is_active, status, must_change_password, created_at",
+          "id, tenant_id, full_name, role, avatar_url, email, phone, is_active, status, must_change_password, created_at",
         )
-        .eq("company_id", companyId)
+        .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .order("full_name");
     },
@@ -182,11 +182,11 @@ export const queries = {
       return db.from("companies").select("*").eq("id", id).is("deleted_at", null).single();
     },
 
-    settings(companyId: string) {
+    settings(tenantId: string) {
       return db
         .from("settings")
         .select("*")
-        .eq("company_id", companyId)
+        .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .maybeSingle();
     },

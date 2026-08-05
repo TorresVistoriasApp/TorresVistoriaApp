@@ -2,7 +2,7 @@ import { db } from "@/infra/supabase/client";
 
 export type AppNotification = {
   id: string;
-  company_id: string;
+  tenant_id: string;
   user_id: string;
   title: string;
   body: string;

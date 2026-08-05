@@ -9,7 +9,7 @@ export class AppError extends Error {
 }
 
 function humanizeDbError(message: string): string {
-  if (message.includes("inspections_company_id_inspection_number_key")) {
+  if (message.includes("inspections_tenant_id_inspection_number_key")) {
     return "Não foi possível gerar o número da vistoria. Tente novamente em instantes.";
   }
   return message;

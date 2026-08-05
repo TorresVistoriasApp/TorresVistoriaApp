@@ -2,43 +2,43 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { draftService, rememberActiveDraftId } from "@/modules/torres-vistoria/draft/services/draft-service";
 import { useUser } from "@/core/auth/user-context";
-import { requireCompanyId, requireUserId } from "@/core/tenant/tenant";
+import { requireTenantId, requireUserId } from "@/core/tenant/tenant";
 import { ROUTES, withNewInspectionFlow } from "@/config/routes";
 import { invalidateInspectionQueries } from "@/infra/query/cache-invalidation";
 import type { ActiveDraftSummary } from "@/modules/torres-vistoria/draft/types";
 
 export const draftQueryKeys = {
-  active: (companyId?: string, inspectorId?: string) =>
-    ["draft", "active", companyId, inspectorId] as const,
+  active: (tenantId?: string, inspectorId?: string) =>
+    ["draft", "active", tenantId, inspectorId] as const,
 };
 
 export function useActiveDraft() {
-  const { companyId, userId } = useUser();
+  const { tenantId, userId } = useUser();
 
   return useQuery({
-    queryKey: draftQueryKeys.active(companyId ?? undefined, userId ?? undefined),
+    queryKey: draftQueryKeys.active(tenantId ?? undefined, userId ?? undefined),
     queryFn: () =>
-      draftService.findActiveDraft(requireCompanyId(companyId), requireUserId(userId)),
-    enabled: Boolean(companyId && userId),
+      draftService.findActiveDraft(requireTenantId(tenantId), requireUserId(userId)),
+    enabled: Boolean(tenantId && userId),
     staleTime: 30_000,
   });
 }
 
 export function useCreateDraftInspection() {
   const qc = useQueryClient();
-  const { companyId, userId } = useUser();
+  const { tenantId, userId } = useUser();
 
   return useMutation({
     mutationFn: () =>
       draftService.createEmptyDraft({
-        companyId: requireCompanyId(companyId),
+        tenantId: requireTenantId(tenantId),
         inspectorId: requireUserId(userId),
       }),
     onSuccess: (inspection) => {
       rememberActiveDraftId(inspection.id);
       invalidateInspectionQueries(qc);
       void qc.invalidateQueries({
-        queryKey: draftQueryKeys.active(companyId ?? undefined, userId ?? undefined),
+        queryKey: draftQueryKeys.active(tenantId ?? undefined, userId ?? undefined),
       });
     },
   });
@@ -46,14 +46,14 @@ export function useCreateDraftInspection() {
 
 export function useDeleteDraft() {
   const qc = useQueryClient();
-  const { companyId, userId } = useUser();
+  const { tenantId, userId } = useUser();
 
   return useMutation({
     mutationFn: (id: string) => draftService.deleteDraft(id),
     onSuccess: () => {
       invalidateInspectionQueries(qc);
       void qc.invalidateQueries({
-        queryKey: draftQueryKeys.active(companyId ?? undefined, userId ?? undefined),
+        queryKey: draftQueryKeys.active(tenantId ?? undefined, userId ?? undefined),
       });
     },
   });
@@ -86,13 +86,13 @@ export function useDraftRecoveryActions() {
 
 export function useDraftCleanup() {
   const qc = useQueryClient();
-  const { companyId, userId } = useUser();
+  const { tenantId, userId } = useUser();
 
   return useMutation({
     mutationFn: () => draftService.cleanupExpiredDrafts(),
     onSuccess: () => {
       void qc.invalidateQueries({
-        queryKey: draftQueryKeys.active(companyId ?? undefined, userId ?? undefined),
+        queryKey: draftQueryKeys.active(tenantId ?? undefined, userId ?? undefined),
       });
     },
   });

@@ -14,7 +14,7 @@ export async function requireSuperAdmin(req: Request) {
   const supabase = createServiceClient();
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role, company_id")
+    .select("role, tenant_id")
     .eq("id", user.id)
     .is("deleted_at", null)
     .single();

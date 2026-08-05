@@ -17,7 +17,7 @@ export type ConsultaStatus = (typeof ConsultaStatus)[keyof typeof ConsultaStatus
 /** Registro de uma consulta veicular executada pelo tenant. */
 export interface Consulta {
   id: string;
-  companyId: string;
+  tenantId: string;
   requestedBy: string;
   type: VehicleQueryType;
   status: ConsultaStatus;

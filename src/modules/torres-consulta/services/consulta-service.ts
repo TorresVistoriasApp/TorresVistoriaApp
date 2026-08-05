@@ -32,11 +32,11 @@ function newConsultaId(): string {
 
 export const consultaService = {
   async list(context: IntegrationContext, filters?: ConsultaFilters): Promise<Consulta[]> {
-    return getConsultaRepository().list(context.companyId, filters);
+    return getConsultaRepository().list(context.tenantId, filters);
   },
 
   async getById(context: IntegrationContext, id: string): Promise<Consulta> {
-    const consulta = await getConsultaRepository().findById(context.companyId, id);
+    const consulta = await getConsultaRepository().findById(context.tenantId, id);
     if (!consulta) throw new AppError("Consulta não encontrada.", "NOT_FOUND");
     return consulta;
   },
@@ -65,7 +65,7 @@ export const consultaService = {
 
     const pending: Consulta = {
       id,
-      companyId: context.companyId,
+      tenantId: context.tenantId,
       requestedBy: context.userId,
       type: input.type,
       status: ConsultaStatus.PROCESSING,

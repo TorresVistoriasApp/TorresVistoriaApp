@@ -44,20 +44,20 @@ function useCurrentYear() {
 
 function useDashboardRealtime() {
   const qc = useQueryClient();
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
 
   useEffect(() => {
-    if (!companyId) return;
+    if (!tenantId) return;
 
     const channel = db
-      .channel(`dashboard:${companyId}`)
+      .channel(`dashboard:${tenantId}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "inspections",
-          filter: `company_id=eq.${companyId}`,
+          filter: `tenant_id=eq.${tenantId}`,
         },
         () => invalidateDashboardQueries(qc),
       )
@@ -67,7 +67,7 @@ function useDashboardRealtime() {
           event: "*",
           schema: "public",
           table: "financial_entries",
-          filter: `company_id=eq.${companyId}`,
+          filter: `tenant_id=eq.${tenantId}`,
         },
         () => invalidateDashboardQueries(qc),
       )
@@ -77,7 +77,7 @@ function useDashboardRealtime() {
           event: "*",
           schema: "public",
           table: "inspection_types",
-          filter: `company_id=eq.${companyId}`,
+          filter: `tenant_id=eq.${tenantId}`,
         },
         () => invalidateDashboardQueries(qc),
       )
@@ -86,48 +86,48 @@ function useDashboardRealtime() {
     return () => {
       void db.removeChannel(channel);
     };
-  }, [companyId, qc]);
+  }, [tenantId, qc]);
 }
 
 export function useDashboardMetrics() {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
   useDashboardRealtime();
 
   return useQuery({
-    queryKey: queryKeys.dashboard.metrics(companyId ?? undefined),
-    queryFn: () => dashboardService.getMetrics(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.dashboard.metrics(tenantId ?? undefined),
+    queryFn: () => dashboardService.getMetrics(tenantId!),
+    enabled: !!tenantId,
   });
 }
 
 export function useRecentInspections() {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
 
   return useQuery({
-    queryKey: queryKeys.dashboard.recent(companyId ?? undefined),
-    queryFn: () => dashboardService.getRecentInspections(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.dashboard.recent(tenantId ?? undefined),
+    queryFn: () => dashboardService.getRecentInspections(tenantId!),
+    enabled: !!tenantId,
   });
 }
 
 export function useMonthlyInspections(year?: number) {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
   const currentYear = useCurrentYear();
   const selectedYear = year ?? currentYear;
 
   return useQuery({
-    queryKey: queryKeys.dashboard.monthly(companyId ?? undefined, selectedYear),
-    queryFn: () => dashboardService.getMonthlyInspections(companyId!, selectedYear),
-    enabled: !!companyId,
+    queryKey: queryKeys.dashboard.monthly(tenantId ?? undefined, selectedYear),
+    queryFn: () => dashboardService.getMonthlyInspections(tenantId!, selectedYear),
+    enabled: !!tenantId,
   });
 }
 
 export function useInspectionsByBrand() {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
   return useQuery({
-    queryKey: queryKeys.dashboard.brands(companyId ?? undefined),
-    queryFn: () => dashboardService.getInspectionsByBrand(companyId!),
-    enabled: !!companyId,
+    queryKey: queryKeys.dashboard.brands(tenantId ?? undefined),
+    queryFn: () => dashboardService.getInspectionsByBrand(tenantId!),
+    enabled: !!tenantId,
   });
 }
 

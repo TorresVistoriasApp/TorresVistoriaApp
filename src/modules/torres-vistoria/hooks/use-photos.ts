@@ -22,7 +22,7 @@ export function useInspectionPhotos(inspectionId: string | undefined) {
 
 export function useUploadPhoto(inspectionId: string) {
   const qc = useQueryClient();
-  const { companyId, userId } = useUser();
+  const { tenantId, userId } = useUser();
 
   return useMutation({
     mutationFn: ({
@@ -40,9 +40,9 @@ export function useUploadPhoto(inspectionId: string) {
       gpsAccuracy?: number | null;
       metadata?: Partial<PhotoCaptureMetadata>;
     }) => {
-      if (!companyId) throw new Error("Empresa não identificada");
+      if (!tenantId) throw new Error("Empresa não identificada");
       return photoService.upload(file, {
-        companyId,
+        tenantId,
         inspectionId,
         category,
         latitude,
@@ -53,14 +53,14 @@ export function useUploadPhoto(inspectionId: string) {
       });
     },
     onMutate: async ({ file, category, latitude, longitude }) => {
-      if (!companyId) return;
+      if (!tenantId) return;
 
       const blobUrl = await createPreviewObjectUrl(file);
       const optimisticId = `pending-${category}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const optimistic: InspectionPhoto = {
         id: optimisticId,
         inspection_id: inspectionId,
-        company_id: companyId,
+        tenant_id: tenantId,
         category,
         section_key: null,
         subcategory: null,
@@ -118,12 +118,12 @@ export function useUploadPhoto(inspectionId: string) {
     onError: async (error, variables, context) => {
       const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
 
-      if (isOffline && companyId && context?.optimisticId) {
+      if (isOffline && tenantId && context?.optimisticId) {
         const pendingId = `offline-${variables.category}-${Date.now()}`;
         await offlineStore.queuePhotoUpload({
           id: pendingId,
           inspectionId,
-          companyId,
+          tenantId,
           category: variables.category,
           fileName: variables.file.name || `${Date.now()}.jpg`,
           mimeType: variables.file.type || "image/jpeg",

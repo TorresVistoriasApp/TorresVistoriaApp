@@ -14,7 +14,7 @@ export type PendingInspectionUpdate = {
 export type PendingPhotoUpload = {
   id: string;
   inspectionId: string;
-  companyId: string;
+  tenantId: string;
   category: string;
   fileName: string;
   mimeType: string;

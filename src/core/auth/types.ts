@@ -5,7 +5,7 @@ export interface Profile {
   id: string;
   /** Espelho gerado de `id` (sempre igual). Ver comentário na migration da Etapa 2. */
   auth_user_id: string;
-  company_id: string;
+  tenant_id: string;
   full_name: string;
   role: UserRole;
   avatar_url: string | null;
@@ -19,7 +19,7 @@ export interface Profile {
   deleted_at: string | null;
 }
 
-/** Operador da plataforma: atua acima dos tenants, sem `company_id`. */
+/** Operador da plataforma: atua acima dos tenants, sem `tenant_id`. */
 export interface PlatformAdmin {
   id: string;
   full_name: string;

@@ -18,7 +18,7 @@ describe("legacy-migration path helpers", () => {
     expect(isCanonicalInspectionPhotoPath(path, COMPANY, INSPECTION)).toBe(true);
   });
 
-  it("rejeita path legado sem company_id", () => {
+  it("rejeita path legado sem tenant_id", () => {
     const path = `${INSPECTION}/FRENTE_45_ESQUERDA/foto.webp`;
     expect(isCanonicalInspectionPhotoPath(path, COMPANY, INSPECTION)).toBe(false);
   });

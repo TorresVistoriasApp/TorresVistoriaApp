@@ -7,7 +7,7 @@ import type { FinancialEntryType } from "@/modules/torres-vistoria/domain/enums"
 
 export type FinancialEntry = FinancialEntryInput & {
   id: string;
-  company_id: string;
+  tenant_id: string;
   created_by: string;
   created_at: string;
 };
@@ -33,13 +33,13 @@ function defaultDateRange() {
 
 export const financialService = {
   async list(
-    companyId?: string,
+    tenantId?: string,
     limit = 50,
     offset = 0,
   ): Promise<{ entries: FinancialEntry[]; total: number }> {
     try {
-      if (!companyId) return { entries: [], total: 0 };
-      const { data, error, count } = await queries.financial.byCompany(companyId, limit, offset);
+      if (!tenantId) return { entries: [], total: 0 };
+      const { data, error, count } = await queries.financial.byCompany(tenantId, limit, offset);
       if (error) throw error;
       return { entries: (data ?? []) as FinancialEntry[], total: count ?? 0 };
     } catch (error) {
@@ -47,11 +47,11 @@ export const financialService = {
     }
   },
 
-  async getSummary(companyId: string, startDate?: string, endDate?: string): Promise<FinancialSummary> {
+  async getSummary(tenantId: string, startDate?: string, endDate?: string): Promise<FinancialSummary> {
     try {
       const range = defaultDateRange();
       const { data, error } = await queries.financial.summary(
-        companyId,
+        tenantId,
         startDate ?? range.start,
         endDate ?? range.end,
       );
@@ -79,11 +79,11 @@ export const financialService = {
 
   async create(
     input: FinancialEntryInput,
-    meta: { companyId: string; userId: string },
+    meta: { tenantId: string; userId: string },
   ): Promise<FinancialEntry> {
     try {
       return throwIfError(
-        await mutations.financial.create(input, meta.userId, meta.companyId),
+        await mutations.financial.create(input, meta.userId, meta.tenantId),
         "Erro ao criar lançamento",
       ) as FinancialEntry;
     } catch (error) {

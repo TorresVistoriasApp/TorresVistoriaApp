@@ -37,7 +37,7 @@ export const platformCompanyService = {
     return (data ?? []) as Company[];
   },
 
-  async onboard(input: OnboardCompanyInput): Promise<{ companyId: string; adminUserId: string }> {
+  async onboard(input: OnboardCompanyInput): Promise<{ tenantId: string; adminUserId: string }> {
     const { data, error } = await db.functions.invoke("onboard-company", {
       body: {
         tradeName: input.tradeName,
@@ -60,6 +60,6 @@ export const platformCompanyService = {
       throw new AppError(USER_MESSAGES.emptyFunctionResponse);
     }
 
-    return { companyId: payload.companyId as string, adminUserId: payload.adminUserId as string };
+    return { tenantId: payload.tenantId as string, adminUserId: payload.adminUserId as string };
   },
 };
