@@ -2,18 +2,22 @@ import type { Inspection } from "@/services/inspection-service";
 import type { ChecklistItem } from "@/services/checklist-service";
 import type { InspectionPhoto } from "@/services/photo-service";
 import type { LaudoCompany, LaudoInspector, LaudoSettings } from "@/lib/laudo/laudo-model";
-import { FormSectionCard } from "@/components/forms/form-section-card";
+import { EvaluationSection } from "@/components/vistoria/evaluation-section";
 import {
   LaudoReadinessList,
   LaudoReadinessSummary,
   buildLaudoReadiness,
-  type LaudoReadinessItem,
 } from "@/components/laudo/laudo-readiness";
+import {
+  LaudoChecklistSummary,
+  LaudoDataSummary,
+  LaudoPhotosGrid,
+} from "@/components/laudo/laudo-review-sections";
 import { PdfDownloadButton } from "@/components/pdf/pdf-download-button";
 import { PdfPreview } from "@/components/pdf/pdf-preview";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, FileText, Info } from "lucide-react";
+import { CheckCircle2, FileText } from "lucide-react";
 
 interface LaudoReviewPanelProps {
   inspection: Inspection;
@@ -46,27 +50,58 @@ export function LaudoReviewPanel({
 }: LaudoReviewPanelProps) {
   const readinessItems = buildLaudoReadiness(inspection, checklist, photos);
   const isReady = readinessItems.every((item) => item.ok);
-  const readyStatus = isReady ? "Pronto" : "Pendente";
+  const pendingCount = readinessItems.filter((item) => !item.ok).length;
 
   return (
-    <div className="w-full space-y-5 sm:space-y-6 lg:space-y-5">
+    <div className="w-full space-y-3 pb-24 sm:space-y-4 sm:pb-0">
       <LaudoReadinessSummary inspection={inspection} items={readinessItems} />
 
-      <FormSectionCard
+      <EvaluationSection
         id="laudo-conferencia"
-        index={1}
-        title="Conferência final"
-        description="Verifique se dados, fotos, checklist e parecer estão completos"
-        statusLabel={readyStatus}
+        title="Conferência"
+        subtitle="Verifique pendências antes de emitir"
+        defaultOpen
+        statusText={isReady ? "Completo" : `${pendingCount} pendência(s)`}
+        statusTone={isReady ? "success" : "warning"}
       >
-        <LaudoReadinessList items={readinessItems} onFix={onFixItem} />
-      </FormSectionCard>
+        <LaudoReadinessList items={readinessItems} onFix={onFixItem} compact />
+      </EvaluationSection>
 
-      <FormSectionCard
+      <EvaluationSection
+        id="laudo-dados"
+        title="Dados da vistoria"
+        subtitle="Contratante, veículo e identificação"
+      >
+        <LaudoDataSummary inspection={inspection} />
+      </EvaluationSection>
+
+      <EvaluationSection
+        id="laudo-fotos"
+        title="Fotografias"
+        subtitle={`${photos.length} foto(s) registrada(s)`}
+        statusText={readinessItems.find((i) => i.id === "photos")?.ok ? "Ok" : "Pendente"}
+        statusTone={readinessItems.find((i) => i.id === "photos")?.ok ? "success" : "warning"}
+      >
+        <LaudoPhotosGrid
+          photos={photos}
+          onViewAll={!readinessItems.find((i) => i.id === "photos")?.ok ? () => onFixItem("photos") : undefined}
+        />
+      </EvaluationSection>
+
+      <EvaluationSection
+        id="laudo-checklist"
+        title="Checklist e parecer"
+        subtitle="Resumo da avaliação técnica"
+        statusText={readinessItems.find((i) => i.id === "checklist")?.ok ? "Ok" : "Pendente"}
+        statusTone={readinessItems.find((i) => i.id === "checklist")?.ok ? "success" : "warning"}
+      >
+        <LaudoChecklistSummary inspection={inspection} checklist={checklist} />
+      </EvaluationSection>
+
+      <EvaluationSection
         id="laudo-preview"
-        index={2}
         title="Pré-visualização"
-        description="Resumo do laudo antes da emissão do PDF"
+        subtitle="Resumo do laudo antes do PDF"
       >
         <PdfPreview
           inspection={inspection}
@@ -76,80 +111,69 @@ export function LaudoReviewPanel({
           settings={settings}
           inspector={inspector}
         />
-      </FormSectionCard>
+      </EvaluationSection>
 
-      <FormSectionCard
-        id="laudo-emissao"
-        index={3}
-        title="Emissão do laudo"
-        description="Gere o PDF profissional com QR de validação e registro da vistoria"
-        statusLabel={verificationCode ? "Emitido" : undefined}
-      >
-        <div className="space-y-4">
-          {verificationCode && (
-            <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4">
-              <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-emerald-900">Laudo registrado com sucesso</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-emerald-800">
-                  Código de validação:{" "}
-                  <span className="font-mono font-bold">{verificationCode}</span>
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Button
-              type="button"
-              className="touch-target h-12 w-full"
-              onClick={onGenerate}
-              disabled={generating || !isReady}
-            >
-              {generating ? (
-                <div className="size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <>
-                  <FileText className="mr-2 size-5" />
-                  Gerar, registrar e baixar
-                </>
-              )}
-            </Button>
-            <PdfDownloadButton
-              className="touch-target h-12 w-full"
-              variant="outline"
-              disabled={!isReady}
-              inspection={inspection}
-              checklist={checklist}
-              photos={photos}
-              company={company}
-              settings={settings}
-              inspector={inspector}
-            />
-          </div>
-
-          <div className="flex items-start gap-2 rounded-xl border border-sky-100 bg-sky-50/70 px-3 py-3 text-xs leading-relaxed text-sky-900">
-            <Info className="mt-0.5 size-4 shrink-0 text-sky-600" aria-hidden />
-            <p>
-              O PDF usa os dados de Configurações: razão social, CPF/CNPJ e endereço da empresa.
-              Inclui fotos, checklist, parecer e validação pública.
+      {verificationCode && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3.5 py-3">
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-emerald-900">Laudo emitido</p>
+            <p className="mt-0.5 text-xs text-emerald-800">
+              Código: <span className="font-mono font-bold">{verificationCode}</span>
             </p>
           </div>
-
-          {showFinishAction && onFinish && (
-            <Button
-              type="button"
-              variant={verificationCode ? "default" : "outline"}
-              className={cn("touch-target w-full", verificationCode && "h-12")}
-              onClick={onFinish}
-            >
-              {verificationCode ? "Concluir e ir para vistorias" : "Salvar rascunho e sair"}
-            </Button>
-          )}
         </div>
-      </FormSectionCard>
+      )}
+
+      <div
+        className={cn(
+          "space-y-3 rounded-xl border border-border bg-card p-3.5 shadow-soft sm:p-4",
+          "max-sm:fixed max-sm:bottom-20 max-sm:left-0 max-sm:right-0 max-sm:z-20",
+          "max-sm:mx-3 max-sm:rounded-2xl max-sm:border-border/80 max-sm:bg-card/95 max-sm:backdrop-blur-md max-sm:shadow-lg",
+        )}
+      >
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <Button
+            type="button"
+            className="touch-target h-11 w-full sm:h-12"
+            onClick={onGenerate}
+            disabled={generating || !isReady}
+          >
+            {generating ? (
+              <div className="size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <>
+                <FileText className="mr-2 size-4" />
+                Gerar e baixar PDF
+              </>
+            )}
+          </Button>
+          <PdfDownloadButton
+            className="touch-target h-11 w-full sm:h-12"
+            variant="outline"
+            disabled={!isReady}
+            inspection={inspection}
+            checklist={checklist}
+            photos={photos}
+            company={company}
+            settings={settings}
+            inspector={inspector}
+          />
+        </div>
+
+        {showFinishAction && onFinish && (
+          <Button
+            type="button"
+            variant={verificationCode ? "default" : "outline"}
+            className="touch-target hidden w-full sm:flex"
+            onClick={onFinish}
+          >
+            {verificationCode ? "Concluir e ir para vistorias" : "Salvar rascunho e sair"}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
 
-export type { LaudoReadinessItem };
+export type { LaudoReadinessItem } from "@/components/laudo/laudo-readiness";
