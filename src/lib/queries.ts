@@ -151,7 +151,9 @@ export const queries = {
     team(companyId: string) {
       return db
         .from("profiles")
-        .select("id, company_id, full_name, role, avatar_url, email, is_active, must_change_password, created_at")
+        .select(
+          "id, company_id, full_name, role, avatar_url, email, phone, is_active, status, must_change_password, created_at",
+        )
         .eq("company_id", companyId)
         .is("deleted_at", null)
         .order("full_name");

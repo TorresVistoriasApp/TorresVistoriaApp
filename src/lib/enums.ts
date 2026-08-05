@@ -1,8 +1,38 @@
+/** Papéis ativos no tenant (Etapa 3). */
 export const UserRole = {
   SUPER_ADMIN: "SUPER_ADMIN",
-  VISTORIADOR: "VISTORIADOR",
+  INSPECTOR: "INSPECTOR",
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
+/**
+ * Papéis reservados para expansão futura do RBAC (sem permissões nem UI ainda).
+ * Já existem no enum PostgreSQL `tenant_role` para facilitar migrations posteriores.
+ */
+export const FutureUserRole = {
+  FINANCIAL: "FINANCIAL",
+  MANAGER: "MANAGER",
+  READ_ONLY: "READ_ONLY",
+  SUPPORT: "SUPPORT",
+  OWNER: "OWNER",
+} as const;
+export type FutureUserRole = (typeof FutureUserRole)[keyof typeof FutureUserRole];
+
+/** União de todos os códigos de papel persistidos em `tenant_role`. */
+export type TenantRoleCode = UserRole | FutureUserRole;
+
+/**
+ * Status textual do usuário (coluna `status` de `profiles`), sincronizado no
+ * banco com `is_active` (true <-> ACTIVE, false <-> INACTIVE/SUSPENDED).
+ * SUSPENDED é reservado para uso futuro (ex.: bloqueio temporário distinto de
+ * uma desativação administrativa).
+ */
+export const UserStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+  SUSPENDED: "SUSPENDED",
+} as const;
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
 
 export const InspectionSituation = {
   PARTICULAR: "PARTICULAR",

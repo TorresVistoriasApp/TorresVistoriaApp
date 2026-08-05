@@ -7,23 +7,23 @@ describe("rbac", () => {
     expect(hasPermission(UserRole.SUPER_ADMIN, "financial.manage")).toBe(true);
   });
 
-  it("VISTORIADOR não tem financial.manage", () => {
-    expect(hasPermission(UserRole.VISTORIADOR, "financial.manage")).toBe(false);
+  it("INSPECTOR não tem financial.manage", () => {
+    expect(hasPermission(UserRole.INSPECTOR, "financial.manage")).toBe(false);
   });
 
-  it("VISTORIADOR pode criar vistorias", () => {
-    expect(hasPermission(UserRole.VISTORIADOR, "inspections.create")).toBe(true);
+  it("INSPECTOR pode criar vistorias", () => {
+    expect(hasPermission(UserRole.INSPECTOR, "inspections.create")).toBe(true);
   });
 
   it("isSuperAdmin identifica admin", () => {
     expect(isSuperAdmin(UserRole.SUPER_ADMIN)).toBe(true);
-    expect(isSuperAdmin(UserRole.VISTORIADOR)).toBe(false);
+    expect(isSuperAdmin(UserRole.INSPECTOR)).toBe(false);
   });
 
-  it("canViewInspection — vistoriador vê só a própria", () => {
+  it("canViewInspection — inspector vê só a própria", () => {
     const inspectorId = "user-1";
-    expect(canViewInspection(UserRole.VISTORIADOR, inspectorId, "user-1")).toBe(true);
-    expect(canViewInspection(UserRole.VISTORIADOR, inspectorId, "user-2")).toBe(false);
+    expect(canViewInspection(UserRole.INSPECTOR, inspectorId, "user-1")).toBe(true);
+    expect(canViewInspection(UserRole.INSPECTOR, inspectorId, "user-2")).toBe(false);
   });
 
   it("canViewInspection — admin vê todas", () => {

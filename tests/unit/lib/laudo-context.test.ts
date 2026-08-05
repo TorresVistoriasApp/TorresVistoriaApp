@@ -39,7 +39,7 @@ describe("companyToLaudoCompany", () => {
 describe("inspectorToLaudoInspector", () => {
   it("usa o nome do vistoriador da vistoria", () => {
     expect(
-      inspectorToLaudoInspector({ full_name: "Brendow Lucas", role: "VISTORIADOR" }),
+      inspectorToLaudoInspector({ full_name: "Brendow Lucas", role: "INSPECTOR" }),
     ).toEqual({
       full_name: "Brendow Lucas",
     });

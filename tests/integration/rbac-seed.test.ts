@@ -22,11 +22,11 @@ describe("RBAC seed alignment", () => {
     expect(Object.keys(PERMISSIONS).sort()).toEqual([...dbPermissionCodes].sort());
   });
 
-  it("vistoriador tem permissões operacionais", () => {
-    const vistoriadorPerms = dbPermissionCodes.filter((code) =>
-      hasPermission(UserRole.VISTORIADOR, code),
+  it("inspector tem permissões operacionais", () => {
+    const inspectorPerms = dbPermissionCodes.filter((code) =>
+      hasPermission(UserRole.INSPECTOR, code),
     );
-    expect(vistoriadorPerms).toEqual([
+    expect(inspectorPerms).toEqual([
       "inspections.create",
       "inspections.read.own",
       "inspections.update.own",

@@ -48,7 +48,7 @@ describe("authService", () => {
   });
 
   it("getProfile retorna perfil", async () => {
-    const profile = { id: "u1", full_name: "Test", company_id: "c1", role: "VISTORIADOR" };
+    const profile = { id: "u1", full_name: "Test", company_id: "c1", role: "INSPECTOR" };
     mockFrom.mockReturnValue({
       select: () => ({
         eq: () => ({

@@ -944,6 +944,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          auth_user_id: string
           avatar_url: string | null
           company_id: string
           created_at: string
@@ -953,7 +954,9 @@ export type Database = {
           id: string
           is_active: boolean
           must_change_password: boolean
-          role: string
+          phone: string | null
+          role: Database["public"]["Enums"]["tenant_role"]
+          status: string
           updated_at: string
         }
         Insert: {
@@ -966,7 +969,9 @@ export type Database = {
           id: string
           is_active?: boolean
           must_change_password?: boolean
-          role?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["tenant_role"]
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -979,7 +984,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           must_change_password?: boolean
-          role?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["tenant_role"]
+          status?: string
           updated_at?: string
         }
         Relationships: [
@@ -1036,7 +1043,7 @@ export type Database = {
       }
       roles: {
         Row: {
-          code: string
+          code: Database["public"]["Enums"]["tenant_role"]
           created_at: string
           deleted_at: string | null
           description: string | null
@@ -1045,7 +1052,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          code: string
+          code: Database["public"]["Enums"]["tenant_role"]
           created_at?: string
           deleted_at?: string | null
           description?: string | null
@@ -1054,7 +1061,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          code?: string
+          code?: Database["public"]["Enums"]["tenant_role"]
           created_at?: string
           deleted_at?: string | null
           description?: string | null
@@ -1166,7 +1173,14 @@ export type Database = {
       validate_report: { Args: { p_verification_code: string }; Returns: Json }
     }
     Enums: {
-      [_ in never]: never
+      tenant_role:
+        | "SUPER_ADMIN"
+        | "INSPECTOR"
+        | "FINANCIAL"
+        | "MANAGER"
+        | "READ_ONLY"
+        | "SUPPORT"
+        | "OWNER"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1293,6 +1307,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      tenant_role: [
+        "SUPER_ADMIN",
+        "INSPECTOR",
+        "FINANCIAL",
+        "MANAGER",
+        "READ_ONLY",
+        "SUPPORT",
+        "OWNER",
+      ],
+    },
   },
 } as const

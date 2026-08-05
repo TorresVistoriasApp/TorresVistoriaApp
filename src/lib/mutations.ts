@@ -1,6 +1,7 @@
 import { db } from "./db-client";
 import type { VistoriaInput } from "@/schemas/vistoria";
 import type { FinancialEntryInput } from "@/schemas/financial";
+import type { UserRole } from "@/lib/enums";
 
 export const mutationKeys = {
   inspection: {
@@ -145,7 +146,10 @@ export const mutations = {
   },
 
   profiles: {
-    update(id: string, data: { full_name?: string; role?: string; avatar_url?: string | null }) {
+    update(
+      id: string,
+      data: { full_name?: string; role?: UserRole; avatar_url?: string | null; phone?: string | null },
+    ) {
       return db.from("profiles").update(data).eq("id", id).select("*").single();
     },
   },

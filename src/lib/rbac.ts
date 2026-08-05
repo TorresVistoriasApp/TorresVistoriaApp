@@ -1,12 +1,12 @@
 import type { UserRole } from "@/lib/enums";
 
 export const PERMISSIONS = {
-  "inspections.create": ["SUPER_ADMIN", "VISTORIADOR"],
-  "inspections.read.own": ["SUPER_ADMIN", "VISTORIADOR"],
+  "inspections.create": ["SUPER_ADMIN", "INSPECTOR"],
+  "inspections.read.own": ["SUPER_ADMIN", "INSPECTOR"],
   "inspections.read.all": ["SUPER_ADMIN"],
-  "inspections.update.own": ["SUPER_ADMIN", "VISTORIADOR"],
+  "inspections.update.own": ["SUPER_ADMIN", "INSPECTOR"],
   "financial.manage": ["SUPER_ADMIN"],
-  "reports.export": ["SUPER_ADMIN", "VISTORIADOR"],
+  "reports.export": ["SUPER_ADMIN", "INSPECTOR"],
   "settings.manage": ["SUPER_ADMIN"],
   "users.manage": ["SUPER_ADMIN"],
 } as const satisfies Record<string, UserRole[]>;
@@ -20,6 +20,10 @@ export function hasPermission(role: UserRole | undefined, permission: Permission
 
 export function isSuperAdmin(role: UserRole | undefined): boolean {
   return role === "SUPER_ADMIN";
+}
+
+export function isInspector(role: UserRole | undefined): boolean {
+  return role === "INSPECTOR";
 }
 
 export function canViewInspection(
