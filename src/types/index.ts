@@ -23,6 +23,16 @@ export interface Profile {
   deleted_at: string | null;
 }
 
+export interface PlatformAdmin {
+  id: string;
+  full_name: string;
+  email: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 export interface DashboardMetrics {
   totalInspections: number;
   totalRevenue: number;

@@ -4,7 +4,9 @@ import { RootLayout } from "@/app/layout";
 import { AuthLayout } from "@/app/(auth)/layout";
 import { PublicLayout } from "@/app/(public)/layout";
 import { DashboardLayout } from "@/app/(dashboard)/layout";
+import { AdminLayout } from "@/app/(admin)/layout";
 import { ProtectedRoute } from "@/components/shared/protected-route";
+import { PlatformAdminRoute } from "@/components/shared/platform-admin-route";
 import { RequirePasswordChanged } from "@/components/shared/require-password-changed";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ROUTE_PATTERNS, ROUTES } from "@/lib/constants";
@@ -68,6 +70,20 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.resetPassword,
             element: lazyPage(() => import("@/app/(auth)/redefinir-senha/page")),
+          },
+        ],
+      },
+      {
+        element: <PlatformAdminRoute />,
+        children: [
+          {
+            element: <AdminLayout />,
+            children: [
+              {
+                path: ROUTES.adminCompanies,
+                element: lazyPage(() => import("@/app/(admin)/empresas/page")),
+              },
+            ],
           },
         ],
       },

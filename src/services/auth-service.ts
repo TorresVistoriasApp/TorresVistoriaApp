@@ -4,6 +4,7 @@ import { formatUserFacingError, USER_MESSAGES } from "@/lib/user-facing-errors";
 import { sanitizeEmail } from "@/lib/sanitize";
 import { resolveStorageUrl } from "@/lib/storage-url";
 import { AVATARS_BUCKET } from "@/lib/storage-buckets";
+import { platformAdminService } from "@/services/platform-admin-service";
 import type { Profile } from "@/types";
 import type { ChangePasswordInput } from "@/schemas/auth";
 
@@ -17,6 +18,14 @@ export const authService = {
     if (profile && !profile.is_active) {
       await db.auth.signOut();
       throw new AppError(USER_MESSAGES.accountDisabled);
+    }
+
+    if (!profile) {
+      const platformAdmin = await platformAdminService.getSelf(data.user.id);
+      if (platformAdmin && !platformAdmin.is_active) {
+        await db.auth.signOut();
+        throw new AppError(USER_MESSAGES.accountDisabled);
+      }
     }
   },
 

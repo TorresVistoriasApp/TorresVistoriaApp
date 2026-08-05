@@ -11,18 +11,23 @@ export function companyToLaudoCompany(company: Company | null | undefined): Laud
   if (!company) return null;
 
   const structuredAddress = buildCompanyAddress({
-    name: company.name,
+    trade_name: company.trade_name,
+    legal_name: company.legal_name ?? "",
     document: company.document ?? "",
+    primary_color: company.primary_color,
+    secondary_color: company.secondary_color,
     ...companyToAddressInput(company),
   });
 
   return {
-    name: company.name,
+    name: company.trade_name,
     document: company.document,
     phone: company.phone,
     email: company.email,
     logo_url: company.logo_url,
     address: structuredAddress || company.address,
+    primary_color: company.primary_color,
+    secondary_color: company.secondary_color,
   };
 }
 

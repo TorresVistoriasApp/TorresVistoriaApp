@@ -11,10 +11,11 @@ export type LaudoCompany = {
   email?: string | null;
   logo_url?: string | null;
   address?: string | null;
+  primary_color?: string | null;
+  secondary_color?: string | null;
 };
 
 export type LaudoSettings = {
-  primary_color?: string | null;
   legal_footer?: string | null;
   signature_image_url?: string | null;
   watermark_enabled?: boolean | null;
@@ -82,7 +83,7 @@ export function getLaudoLegalFooter(settings?: LaudoSettings | null): string {
   );
 }
 
-export function getPrimaryColor(settings?: LaudoSettings | null): string {
-  return settings?.primary_color || "#ea580c";
+export function getPrimaryColor(company?: LaudoCompany | null): string {
+  return company?.primary_color || "#ea580c";
 }
 

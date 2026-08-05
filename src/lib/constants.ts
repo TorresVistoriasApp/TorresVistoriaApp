@@ -25,6 +25,8 @@ export const ROUTE_SLUGS = {
   users: "usuarios",
   audit: "auditoria",
   changePassword: "trocar-senha",
+  admin: "admin",
+  adminCompanies: "empresas",
 } as const;
 
 const route = (...segments: string[]) => `/${segments.join("/")}`;
@@ -62,6 +64,7 @@ export const ROUTES = {
   legacySettingsUsers: settingsRoute(ROUTE_SLUGS.users),
   legacySettingsAudit: settingsRoute(ROUTE_SLUGS.audit),
   changePassword: route(ROUTE_SLUGS.changePassword),
+  adminCompanies: route(ROUTE_SLUGS.admin, ROUTE_SLUGS.adminCompanies),
 } as const;
 
 export const ROUTE_PATTERNS = {

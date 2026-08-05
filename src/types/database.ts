@@ -97,10 +97,15 @@ export type Database = {
           document: string | null
           email: string | null
           id: string
+          legal_name: string | null
           location: string | null
           logo_url: string | null
-          name: string
           phone: string | null
+          primary_color: string
+          secondary_color: string
+          status: string
+          subscription_plan: string
+          trade_name: string
           updated_at: string
         }
         Insert: {
@@ -117,10 +122,15 @@ export type Database = {
           document?: string | null
           email?: string | null
           id?: string
+          legal_name?: string | null
           location?: string | null
           logo_url?: string | null
-          name: string
           phone?: string | null
+          primary_color?: string
+          secondary_color?: string
+          status?: string
+          subscription_plan?: string
+          trade_name: string
           updated_at?: string
         }
         Update: {
@@ -137,10 +147,15 @@ export type Database = {
           document?: string | null
           email?: string | null
           id?: string
+          legal_name?: string | null
           location?: string | null
           logo_url?: string | null
-          name?: string
           phone?: string | null
+          primary_color?: string
+          secondary_color?: string
+          status?: string
+          subscription_plan?: string
+          trade_name?: string
           updated_at?: string
         }
         Relationships: []
@@ -897,6 +912,36 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_admins: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          email: string | null
+          full_name: string
+          id: string
+          is_active: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          full_name: string
+          id: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1026,7 +1071,6 @@ export type Database = {
           deleted_at: string | null
           id: string
           legal_footer: string | null
-          primary_color: string
           signature_image_url: string | null
           theme_mode: string
           updated_at: string
@@ -1038,7 +1082,6 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           legal_footer?: string | null
-          primary_color?: string
           signature_image_url?: string | null
           theme_mode?: string
           updated_at?: string
@@ -1050,7 +1093,6 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           legal_footer?: string | null
-          primary_color?: string
           signature_image_url?: string | null
           theme_mode?: string
           updated_at?: string
@@ -1095,6 +1137,7 @@ export type Database = {
       get_user_company_id: { Args: never; Returns: string }
       get_user_role: { Args: never; Returns: string }
       is_super_admin: { Args: never; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
       search_inspections: {
         Args: {
           p_company_id: string

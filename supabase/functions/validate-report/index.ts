@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
           deleted_at
         ),
         company:companies!inner (
-          name
+          trade_name
         )
       `)
       .eq("verification_code", verificationCode)
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       inspection_date: string;
       deleted_at: string | null;
     } | null;
-    const company = report?.company as { name: string } | null;
+    const company = report?.company as { trade_name: string } | null;
 
     if (!report || !inspection || inspection.deleted_at) {
       return new Response(
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
         hashStatus,
         status,
         version: report.version,
-        companyName: company?.name ?? "Torres Vistoria",
+        companyName: company?.trade_name ?? "Torres Vistoria",
         laudoNumber,
         verificationCode: report.verification_code,
         issuedAt,

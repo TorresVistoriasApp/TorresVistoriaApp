@@ -10,18 +10,22 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { db } from "@/lib/db-client";
 import { authService } from "@/services/auth-service";
+import { platformAdminService } from "@/services/platform-admin-service";
 import { useAuthStore } from "@/stores/auth-store";
 import { clearSignedUrlCache } from "@/lib/storage-url";
 import { offlineStore } from "@/features/draft/lib/offline-store";
 import { queryClient } from "@/lib/query-client";
 import { logger } from "@/lib/logger";
 import { ROUTES } from "@/lib/constants";
-import type { Profile } from "@/types";
+import type { PlatformAdmin, Profile } from "@/types";
 
 interface AuthContextValue {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
+  /** Preenchido só quando a conta é um operador da plataforma (fora de qualquer empresa). */
+  platformAdmin: PlatformAdmin | null;
+  isPlatformAdmin: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -31,47 +35,55 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-type ProfileFetchResult =
-  | { status: "ok"; profile: Profile | null }
-  | { status: "error" };
+type FetchResult<T> = { status: "ok"; data: T | null } | { status: "error" };
 
-async function fetchProfile(userId: string): Promise<ProfileFetchResult> {
+async function fetchProfile(userId: string): Promise<FetchResult<Profile>> {
   try {
-    return { status: "ok", profile: await authService.getProfile(userId) };
+    return { status: "ok", data: await authService.getProfile(userId) };
   } catch (error) {
     logger.error("Erro ao carregar perfil", error instanceof Error ? error.message : error);
     return { status: "error" };
   }
 }
 
-function applyProfileResult(
-  result: ProfileFetchResult,
-  apply: (profile: Profile | null) => void,
-) {
+async function fetchPlatformAdmin(userId: string): Promise<FetchResult<PlatformAdmin>> {
+  try {
+    return { status: "ok", data: await platformAdminService.getSelf(userId) };
+  } catch (error) {
+    logger.error(
+      "Erro ao carregar operador da plataforma",
+      error instanceof Error ? error.message : error,
+    );
+    return { status: "error" };
+  }
+}
+
+function applyResult<T>(result: FetchResult<T>, apply: (data: T | null) => void) {
   if (result.status === "ok") {
-    apply(result.profile);
+    apply(result.data);
   }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [platformAdmin, setPlatformAdmin] = useState<PlatformAdmin | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const loading =
-    authLoading || profileLoading || (!!session?.user.id && profile === null);
+  const [identityResolved, setIdentityResolved] = useState(false);
+  const loading = authLoading || (!!session?.user.id && !identityResolved);
 
   const refreshProfile = useCallback(async () => {
     if (!session?.user.id) {
       setProfile(null);
+      setPlatformAdmin(null);
       return;
     }
-    setProfileLoading(true);
-    try {
-      applyProfileResult(await fetchProfile(session.user.id), setProfile);
-    } finally {
-      setProfileLoading(false);
-    }
+    const [profileResult, platformAdminResult] = await Promise.all([
+      fetchProfile(session.user.id),
+      fetchPlatformAdmin(session.user.id),
+    ]);
+    applyResult(profileResult, setProfile);
+    applyResult(platformAdminResult, setPlatformAdmin);
   }, [session?.user.id]);
 
   useEffect(() => {
@@ -79,7 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     db.auth.getSession().then(({ data }) => {
       if (!isMounted) return;
-      setProfileLoading(!!data.session?.user.id);
       setSession(data.session);
       setAuthLoading(false);
     });
@@ -91,7 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (currentUserId !== nextUserId) {
           setProfile(null);
-          setProfileLoading(!!nextUserId);
+          setPlatformAdmin(null);
+          setIdentityResolved(false);
         }
 
         return nextSession;
@@ -108,13 +120,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (session?.user.id) {
       let isActive = true;
-      setProfileLoading(true);
-      void fetchProfile(session.user.id)
-        .then((result) => {
-          if (isActive) applyProfileResult(result, setProfile);
+      setIdentityResolved(false);
+      void Promise.all([fetchProfile(session.user.id), fetchPlatformAdmin(session.user.id)])
+        .then(([profileResult, platformAdminResult]) => {
+          if (!isActive) return;
+          applyResult(profileResult, setProfile);
+          applyResult(platformAdminResult, setPlatformAdmin);
         })
         .finally(() => {
-          if (isActive) setProfileLoading(false);
+          if (isActive) setIdentityResolved(true);
         });
 
       return () => {
@@ -122,7 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
     } else {
       setProfile(null);
-      setProfileLoading(false);
+      setPlatformAdmin(null);
+      setIdentityResolved(true);
     }
   }, [session?.user.id]);
 
@@ -142,6 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await offlineStore.clearAll();
     queryClient.clear();
     setProfile(null);
+    setPlatformAdmin(null);
   }, []);
 
   const resetPassword = useCallback(async (email: string) => {
@@ -149,8 +165,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ session, user: session?.user ?? null, profile, loading, signIn, signOut, resetPassword, refreshProfile }),
-    [session, profile, loading, signIn, signOut, resetPassword, refreshProfile],
+    () => ({
+      session,
+      user: session?.user ?? null,
+      profile,
+      platformAdmin,
+      isPlatformAdmin: !!platformAdmin,
+      loading,
+      signIn,
+      signOut,
+      resetPassword,
+      refreshProfile,
+    }),
+    [session, profile, platformAdmin, loading, signIn, signOut, resetPassword, refreshProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

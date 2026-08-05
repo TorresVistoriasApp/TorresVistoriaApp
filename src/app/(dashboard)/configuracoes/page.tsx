@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
-import { Building2, Camera, MapPin, Save, UserRound } from "lucide-react";
+import { Building2, Camera, MapPin, Palette, Save, UserRound } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/shared/page-header";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -166,19 +166,34 @@ function CompanySection({
         <div className="space-y-4">
           <div className="grid min-w-0 gap-4">
             <FormField
-              label="Nome ou razão social"
+              label="Nome fantasia"
               labelClassName={SETTINGS_FIELD_LABEL_CLASS}
-              hint="Informe conforme o documento de identificação ou registro empresarial."
-              error={form.formState.errors.name?.message}
+              hint="Nome pelo qual a empresa é conhecida comercialmente."
+              error={form.formState.errors.trade_name?.message}
               className="min-w-0"
             >
               <Input
-                id="company-name"
+                id="company-trade-name"
                 className="touch-target"
-                placeholder="Ex.: Torres Vistoria Ltda."
+                placeholder="Ex.: Torres Vistoria"
                 autoComplete="organization"
                 disabled={!canEdit}
-                {...form.register("name")}
+                {...form.register("trade_name")}
+              />
+            </FormField>
+            <FormField
+              label="Razão social"
+              labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+              hint="Opcional. Nome registrado no documento de constituição da empresa."
+              error={form.formState.errors.legal_name?.message}
+              className="min-w-0"
+            >
+              <Input
+                id="company-legal-name"
+                className="touch-target"
+                placeholder="Ex.: Torres Vistoria Ltda."
+                disabled={!canEdit}
+                {...form.register("legal_name")}
               />
             </FormField>
             <MaskedField
@@ -219,6 +234,75 @@ function CompanySection({
         />
       </SettingsSection>
     </>
+  );
+}
+
+function CompanyBrandColorsSection({
+  form,
+  canEdit,
+  className,
+  fillHeight = false,
+}: {
+  form: UseFormReturn<CompanyInput>;
+  canEdit: boolean;
+  className?: string;
+  fillHeight?: boolean;
+}) {
+  return (
+    <SettingsSection
+      icon={Palette}
+      title="Identidade visual"
+      description="Cores utilizadas no branding do painel e nos laudos em PDF."
+      className={className}
+      fillHeight={fillHeight}
+    >
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+        <FormField
+          label="Cor primária"
+          labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+          error={form.formState.errors.primary_color?.message}
+          className="min-w-0"
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              className="h-10 w-12 shrink-0 cursor-pointer rounded-md border border-input"
+              disabled={!canEdit}
+              {...form.register("primary_color")}
+              aria-label="Selecionar cor primária"
+            />
+            <Input
+              className="touch-target"
+              placeholder="#1e40af"
+              disabled={!canEdit}
+              {...form.register("primary_color")}
+            />
+          </div>
+        </FormField>
+        <FormField
+          label="Cor secundária"
+          labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+          error={form.formState.errors.secondary_color?.message}
+          className="min-w-0"
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              className="h-10 w-12 shrink-0 cursor-pointer rounded-md border border-input"
+              disabled={!canEdit}
+              {...form.register("secondary_color")}
+              aria-label="Selecionar cor secundária"
+            />
+            <Input
+              className="touch-target"
+              placeholder="#0f172a"
+              disabled={!canEdit}
+              {...form.register("secondary_color")}
+            />
+          </div>
+        </FormField>
+      </div>
+    </SettingsSection>
   );
 }
 
@@ -268,8 +352,11 @@ export function Page() {
     resolver: zodResolver(companySchema),
     values: company
       ? {
-          name: company.name,
+          trade_name: company.trade_name,
+          legal_name: company.legal_name ?? "",
           document: company.document ? maskCpfCnpj(company.document) : "",
+          primary_color: company.primary_color,
+          secondary_color: company.secondary_color,
           ...companyToAddressInput(company),
         }
       : undefined,
@@ -351,6 +438,10 @@ export function Page() {
           fillHeight
         />
       </div>
+
+      {isAdmin && (
+        <CompanyBrandColorsSection form={companyForm} canEdit={isAdmin} className="min-w-0" />
+      )}
 
       <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-stretch">
         <ChangePasswordSection className="min-w-0 h-full" />
