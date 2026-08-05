@@ -1,5 +1,4 @@
 export {
-  useUser,
   useTeamProfiles,
   useUpdateUserProfile,
   useUploadUserAvatar,

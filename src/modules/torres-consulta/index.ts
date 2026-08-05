@@ -3,9 +3,11 @@
  *
  * Outros módulos consomem apenas o que está exportado aqui; alcançar arquivos
  * internos é o que transforma módulos em um monólito acoplado.
+ *
+ * As rotas não entram no barrel: elas registram `import()` preguiçosos no topo
+ * do arquivo e arrastariam o módulo inteiro para o chunk de quem importar.
+ * O roteador usa `@/modules/torres-consulta/routes`.
  */
-
-export { torresConsultaRoutes } from "@/modules/torres-consulta/routes";
 
 export {
   consultaService,

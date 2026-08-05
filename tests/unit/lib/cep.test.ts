@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildCompanyAddress, buildCompanyLocation, normalizeCep } from "@/shared/lib/cep";
+import { normalizeCep } from "@/shared/lib/cep";
+import { buildCompanyAddress, buildCompanyLocation } from "@/core/tenant/company-address";
 import { maskCep } from "@/shared/lib/masks";
 
 describe("maskCep", () => {
