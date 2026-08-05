@@ -1,15 +1,10 @@
 import { Pencil, UserMinus, UserPlus } from "lucide-react";
 import { UserRole } from "@/lib/enums";
-import { getRoleLabel } from "@/lib/role-labels";
+import { RoleBadge } from "@/components/tenant/role-badge";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/formatters";
 import type { TeamProfile } from "@/services/user-service";
 import { Button } from "@/components/ui/button";
-
-const ROLE_LABELS: Record<string, string> = {
-  [UserRole.SUPER_ADMIN]: getRoleLabel(UserRole.SUPER_ADMIN),
-  [UserRole.INSPECTOR]: getRoleLabel(UserRole.INSPECTOR),
-};
 
 interface UserCardProps {
   user: TeamProfile;
@@ -34,16 +29,7 @@ export function UserCard({
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate text-base font-semibold text-foreground">{user.full_name}</h3>
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide",
-                isSuperAdmin
-                  ? "bg-primary/10 text-primary"
-                  : "bg-muted text-muted-foreground",
-              )}
-            >
-              {ROLE_LABELS[user.role] ?? user.role}
-            </span>
+            <RoleBadge role={user.role} />
             {!user.is_active && (
               <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-destructive">
                 Inativo

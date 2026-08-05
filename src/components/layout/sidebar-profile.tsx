@@ -1,5 +1,6 @@
 import { useUser } from "@/hooks/use-user";
 import { UserAvatar } from "@/components/shared/user-avatar";
+import { RoleBadge } from "@/components/tenant/role-badge";
 import { cn } from "@/lib/utils";
 
 export function SidebarProfile({
@@ -11,7 +12,6 @@ export function SidebarProfile({
 }) {
   const { fullName, avatarUrl, role, loading } = useUser();
   const name = fullName ?? (loading ? "Carregando…" : "Usuário");
-  const roleLabel = role?.replace(/_/g, " ") ?? (loading ? "…" : "Sem perfil");
 
   if (collapsed) {
     return (
@@ -24,9 +24,13 @@ export function SidebarProfile({
   return (
     <div className={cn("flex items-center gap-3 rounded-2xl bg-muted/60 p-3", className)}>
       <UserAvatar name={name} avatarUrl={avatarUrl} size="lg" />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 space-y-1">
         <p className="truncate text-sm font-bold text-foreground">{name}</p>
-        <p className="truncate text-xs capitalize text-muted-foreground">{roleLabel}</p>
+        {role ? (
+          <RoleBadge role={role} className="max-w-full truncate" />
+        ) : (
+          <p className="truncate text-xs text-muted-foreground">{loading ? "…" : "Sem perfil"}</p>
+        )}
       </div>
     </div>
   );
