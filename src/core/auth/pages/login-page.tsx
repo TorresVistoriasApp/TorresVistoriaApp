@@ -228,6 +228,15 @@ export function LoginPage() {
                       Privacidade
                     </Link>
                   </p>
+                  <p className="text-center text-xs text-muted-foreground">
+                    Procurando consulta veicular para pessoa física?{" "}
+                    <Link
+                      to={ROUTES.consultaLanding}
+                      className="font-semibold text-primary hover:underline"
+                    >
+                      Torres Consulta
+                    </Link>
+                  </p>
                 </form>
               </CardContent>
             </Card>

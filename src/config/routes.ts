@@ -33,6 +33,19 @@ export const ROUTE_SLUGS = {
   consultaNew: "nova",
   consultaHistory: "historico",
   consultaCredits: "creditos",
+  cliente: "cliente",
+  clienteLogin: "login",
+  clienteRegister: "cadastro",
+  clienteDashboard: "dashboard",
+  clienteProfile: "perfil",
+  clienteConsultas: "minhas-consultas",
+  clienteSettings: "configuracoes",
+  clienteForgotPassword: "recuperar-senha",
+  clienteResetPassword: "redefinir-senha",
+  vistoria: "vistoria",
+  termos: "termos",
+  lgpd: "lgpd",
+  faq: "faq",
 } as const;
 
 const route = (...segments: string[]) => `/${segments.join("/")}`;
@@ -41,6 +54,7 @@ const inspectionRoute = (id: string) => route(ROUTE_SLUGS.inspections, encodeURI
 const settingsRoute = (slug: string) => route(ROUTE_SLUGS.settings, slug);
 const financialRoute = (slug: string) => route(ROUTE_SLUGS.financial, slug);
 const consultaRoute = (slug: string) => route(ROUTE_SLUGS.consulta, slug);
+const clienteRoute = (slug: string) => route(ROUTE_SLUGS.cliente, slug);
 
 export const ROUTES = {
   login: route(ROUTE_SLUGS.login),
@@ -77,6 +91,20 @@ export const ROUTES = {
   consultaHistory: consultaRoute(ROUTE_SLUGS.consultaHistory),
   consultaCredits: consultaRoute(ROUTE_SLUGS.consultaCredits),
   consultaDetail: (id: string) => route(ROUTE_SLUGS.consulta, encodeURIComponent(id)),
+  consultaLanding: route(ROUTE_SLUGS.consulta),
+  cliente: route(ROUTE_SLUGS.cliente),
+  vistoriaLogin: route(ROUTE_SLUGS.vistoria, ROUTE_SLUGS.login),
+  clienteLogin: clienteRoute(ROUTE_SLUGS.clienteLogin),
+  clienteRegister: clienteRoute(ROUTE_SLUGS.clienteRegister),
+  clienteDashboard: clienteRoute(ROUTE_SLUGS.clienteDashboard),
+  clienteProfile: clienteRoute(ROUTE_SLUGS.clienteProfile),
+  clienteConsultas: clienteRoute(ROUTE_SLUGS.clienteConsultas),
+  clienteSettings: clienteRoute(ROUTE_SLUGS.clienteSettings),
+  clienteForgotPassword: clienteRoute(ROUTE_SLUGS.clienteForgotPassword),
+  clienteResetPassword: clienteRoute(ROUTE_SLUGS.clienteResetPassword),
+  termos: route(ROUTE_SLUGS.termos),
+  lgpd: route(ROUTE_SLUGS.lgpd),
+  faq: route(ROUTE_SLUGS.faq),
 } as const;
 
 export const ROUTE_PATTERNS = {
