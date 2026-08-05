@@ -9,6 +9,8 @@ interface EvaluationSectionProps {
   statusText?: string;
   statusTone?: "default" | "success" | "warning" | "muted";
   defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   optional?: boolean;
   dense?: boolean;
   children: ReactNode;
@@ -29,12 +31,21 @@ export function EvaluationSection({
   statusText,
   statusTone = "default",
   defaultOpen = false,
+  open: openProp,
+  onOpenChange,
   optional = false,
   dense = false,
   children,
   className,
 }: EvaluationSectionProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+
+  const setOpen = (value: boolean) => {
+    if (!isControlled) setInternalOpen(value);
+    onOpenChange?.(value);
+  };
 
   return (
     <section
@@ -48,7 +59,7 @@ export function EvaluationSection({
     >
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
         className={cn(
           "flex w-full items-center gap-2.5 text-left transition-colors hover:bg-muted/20",
           dense ? "px-3 py-2.5 sm:px-3.5" : "px-3.5 py-3.5 sm:px-4 sm:py-4",
