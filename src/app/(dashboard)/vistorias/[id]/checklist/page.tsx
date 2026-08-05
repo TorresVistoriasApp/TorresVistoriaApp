@@ -1,18 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, FileText } from "lucide-react";
-import { ChecklistForm, validateChecklistCompletion } from "@/components/forms/checklist-form";
-import {
-  ParecerTecnicoSection,
-  useParecerTecnicoDraft,
-  validateParecerTecnico,
-  type ParecerTecnicoValue,
-} from "@/components/forms/parecer-tecnico-section";
+import { ArrowLeft } from "lucide-react";
+import { AvaliacaoTecnicaPanel } from "@/components/vistoria/avaliacao-tecnica-panel";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import {
-  InspectionWizardShell,
-  WizardNavButtons,
-} from "@/components/vistoria/inspection-wizard-shell";
+import { InspectionWizardShell } from "@/components/vistoria/inspection-wizard-shell";
 import { useUpdateChecklistItem } from "@/hooks/use-checklist";
 import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { useUpdateInspection } from "@/hooks/use-inspections";
@@ -20,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { ChecklistStatus, InspectionStatus } from "@/lib/enums";
 import { useToast } from "@/hooks/use-toast";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
+import { rememberActiveDraftId } from "@/features/draft/services/draft-service";
+import { prepareVistoriaFormForSave } from "@/lib/vistoria-form-defaults";
 import type { VistoriaInput } from "@/schemas/vistoria";
 
 export function Page() {
@@ -31,41 +24,11 @@ export function Page() {
     inspection,
     checklist: items,
     isLoadingChecklist: isLoading,
+    isLoading: isLoadingInspection,
   } = useInspectionContext();
   const updateItem = useUpdateChecklistItem(inspectionId);
   const updateInspection = useUpdateInspection(inspectionId);
   const { toast } = useToast();
-  const [parecerErrors, setParecerErrors] = useState<
-    Partial<Record<keyof ParecerTecnicoValue, string>>
-  >({});
-
-  const initialParecer = useMemo<ParecerTecnicoValue | null>(() => {
-    if (!inspection) return null;
-    return {
-      opinion: inspection.opinion ?? "",
-      technical_notes: inspection.technical_notes ?? "",
-    };
-  }, [inspection]);
-
-  const persistParecer = useCallback(
-    (value: ParecerTecnicoValue) => {
-      if (!inspectionId) return;
-      updateInspection.mutate(
-        {
-          opinion: (value.opinion || null) as VistoriaInput["opinion"],
-          technical_notes: value.technical_notes,
-        },
-        {
-          onError: (err) => {
-            toast(err instanceof Error ? err.message : "Erro ao salvar parecer");
-          },
-        },
-      );
-    },
-    [inspectionId, toast, updateInspection],
-  );
-
-  const [parecer, setParecer] = useParecerTecnicoDraft(initialParecer, persistParecer);
 
   useEffect(() => {
     if (isLoading || items.length === 0) return;
@@ -78,123 +41,64 @@ export function Page() {
     });
   }, [isLoading, items.length]);
 
-  const handleParecerChange = (value: ParecerTecnicoValue) => {
-    setParecerErrors({});
-    setParecer(value);
-  };
+  const handleSaveInspection = useCallback(
+    async (data: VistoriaInput) => {
+      await updateInspection.mutateAsync(prepareVistoriaFormForSave(data) as VistoriaInput);
+      rememberActiveDraftId(inspectionId);
+    },
+    [inspectionId, updateInspection],
+  );
 
-  const goToLaudo = () => {
-    const { valid, pendingCount, missingNotesCount } = validateChecklistCompletion(items);
-    if (!valid) {
-      if (pendingCount > 0) {
-        toast(`Avalie todos os itens. Faltam ${pendingCount} pendente(s).`);
-        return;
-      }
-      if (missingNotesCount > 0) {
-        toast(`Preencha observações nos ${missingNotesCount} item(ns) com apontamentos.`);
-        return;
-      }
-    }
+  const handleContinue = useCallback(() => {
+    const path = ROUTES.inspectionReport(inspectionId);
+    navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
+  }, [inspectionId, isWizardFlow, navigate]);
 
-    const parecerResult = validateParecerTecnico(parecer);
-    if (!parecerResult.valid) {
-      setParecerErrors(parecerResult.errors);
-      toast(
-        parecerResult.errors.opinion ??
-          parecerResult.errors.technical_notes ??
-          "Preencha o parecer técnico antes de continuar.",
+  const handleUpdateChecklistItem = useCallback(
+    (itemId: string, status: string, notes?: string) => {
+      updateItem.mutate(
+        {
+          id: itemId,
+          patch: {
+            status: status as typeof ChecklistStatus.CONFORME,
+            notes: notes ?? null,
+          },
+        },
+        {
+          onError: (err) => {
+            toast(err instanceof Error ? err.message : "Erro ao salvar item");
+          },
+        },
       );
-      requestAnimationFrame(() => {
-        document.getElementById("checklist-parecer")?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      });
-      return;
-    }
+    },
+    [toast, updateItem],
+  );
 
-    if (!inspectionId) return;
-
-    updateInspection.mutate(
-      {
-        opinion: parecer.opinion as VistoriaInput["opinion"],
-        technical_notes: parecer.technical_notes.trim(),
-      },
-      {
-        onSuccess: () => {
-          const path = ROUTES.inspectionReport(inspectionId);
-          navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
-        },
-        onError: (err) => {
-          toast(err instanceof Error ? err.message : "Erro ao salvar parecer");
-        },
-      },
+  if (isLoadingInspection || !inspection) {
+    return (
+      <div className="flex justify-center py-12">
+        <LoadingSpinner label="Carregando avaliação técnica..." />
+      </div>
     );
-  };
+  }
 
-  const checklistContent = (
-    <div className="space-y-4 md:space-y-6">
-      {isLoading ? (
-        <LoadingSpinner label="Carregando checklist..." />
-      ) : items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-muted/20 p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Nenhum item de checklist encontrado. Tente recarregar a página.
-          </p>
-        </div>
-      ) : (
-        <ChecklistForm
-          items={items}
-          onUpdate={(itemId, status, notes) => {
-            updateItem.mutate(
-              {
-                id: itemId,
-                patch: {
-                  status: status as typeof ChecklistStatus.CONFORME,
-                  notes: notes ?? null,
-                },
-              },
-              {
-                onError: (err) => {
-                  toast(err instanceof Error ? err.message : "Erro ao salvar item");
-                },
-              },
-            );
-          }}
-          afterItems={
-            <ParecerTecnicoSection
-              value={parecer}
-              onChange={handleParecerChange}
-              errors={parecerErrors}
-              disabled={!inspection}
-            />
-          }
-        />
-      )}
-
-      {!isLoading && items.length > 0 && (
-        <div className="border-t border-border pt-4 md:pt-2">
-          {isWizardFlow ? (
-            <WizardNavButtons
-              onBack={() => navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId)))}
-              onNext={goToLaudo}
-              nextLabel="Revisar e gerar laudo"
-              nextDisabled={updateInspection.isPending}
-            />
-          ) : (
-            <Button
-              className="h-12 w-full touch-target"
-              size="lg"
-              onClick={goToLaudo}
-              disabled={updateInspection.isPending}
-            >
-              <FileText className="mr-2 h-5 w-5" />
-              Revisar e gerar laudo
-            </Button>
-          )}
-        </div>
-      )}
-    </div>
+  const panel = (
+    <AvaliacaoTecnicaPanel
+      inspection={inspection}
+      inspectionId={inspectionId}
+      checklistItems={items}
+      isLoadingChecklist={isLoading}
+      wizardMode={isWizardFlow}
+      isSaving={updateInspection.isPending}
+      onSaveInspection={handleSaveInspection}
+      onUpdateChecklistItem={handleUpdateChecklistItem}
+      onBack={
+        isWizardFlow
+          ? () => navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId)))
+          : () => navigate(ROUTES.inspection(inspectionId))
+      }
+      onContinue={handleContinue}
+    />
   );
 
   if (isWizardFlow) {
@@ -203,10 +107,10 @@ export function Page() {
         currentStep={2}
         inspectionId={inspectionId}
         title="Avaliação técnica"
-        showDraftBanner={inspection?.status === InspectionStatus.DRAFT}
-        draftExpiresAt={inspection?.draft_expires_at}
+        showDraftBanner={inspection.status === InspectionStatus.DRAFT}
+        draftExpiresAt={inspection.draft_expires_at}
       >
-        {checklistContent}
+        {panel}
       </InspectionWizardShell>
     );
   }
@@ -224,13 +128,13 @@ export function Page() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="min-w-0">
-          <h1 className="text-lg font-bold md:text-xl">Checklist</h1>
+          <h1 className="text-lg font-bold md:text-xl">Avaliação técnica</h1>
           <p className="text-xs text-muted-foreground">
-            Toque no status. Observações apenas em itens com apontamentos. Parecer ao final.
+            Dados, checklist e parecer em uma única tela.
           </p>
         </div>
       </div>
-      {checklistContent}
+      {panel}
     </div>
   );
 }

@@ -106,7 +106,7 @@ export function Page() {
           onClick={() => navigate(ROUTES.inspectionChecklist(inspection.id))}
         >
           <ClipboardList className="mb-1 h-5 w-5" />
-          <span className="text-xs">Checklist</span>
+          <span className="text-xs">Avaliação</span>
         </Button>
         <Button
           variant="outline"

@@ -34,17 +34,20 @@ export function VeiculoForm({
   register,
   errors,
   embedded = false,
+  compact = false,
 }: {
   control: Control<VistoriaInput>;
   register: ReturnType<typeof import("react-hook-form").useForm<VistoriaInput>>["register"];
   errors: FieldErrors<VistoriaInput>;
   embedded?: boolean;
+  compact?: boolean;
 }) {
   const fields = (
-    <div className="space-y-6 sm:space-y-8 lg:space-y-6">
+    <div className={compact ? "space-y-4" : "space-y-6 sm:space-y-8 lg:space-y-6"}>
       <FormFieldGroup
-        title="Identificação"
-        description="Conforme placa, chassi e documento do veículo"
+        title={compact ? "" : "Identificação"}
+        description={compact ? undefined : "Conforme placa, chassi e documento do veículo"}
+        bordered={!compact}
       >
         <MaskedField
           control={control}
@@ -81,7 +84,11 @@ export function VeiculoForm({
         </FormField>
       </FormFieldGroup>
 
-      <FormFieldGroup title="Emplacamento" description="UF e município de registro" bordered>
+      <FormFieldGroup
+        title={compact ? "" : "Emplacamento"}
+        description={compact ? undefined : "UF e município de registro"}
+        bordered={!compact}
+      >
         <FormField label="UF" error={errors.vehicle_uf?.message}>
           <Controller
             control={control}
@@ -108,7 +115,11 @@ export function VeiculoForm({
         </FormField>
       </FormFieldGroup>
 
-      <FormFieldGroup title="Características" description="Marca, modelo e acabamento" bordered>
+      <FormFieldGroup
+        title={compact ? "" : "Características"}
+        description={compact ? undefined : "Marca, modelo e acabamento"}
+        bordered={!compact}
+      >
         <FormField label="Marca" error={errors.brand?.message}>
           <Controller
             control={control}
@@ -185,9 +196,9 @@ export function VeiculoForm({
       </FormFieldGroup>
 
       <FormFieldGroup
-        title="Complementos"
-        description="Informações adicionais para o laudo"
-        bordered
+        title={compact ? "" : "Complementos"}
+        description={compact ? undefined : "Informações adicionais para o laudo"}
+        bordered={!compact}
       >
         <FormField label="Categoria" error={errors.vehicle_category?.message} optional>
           <Input {...register("vehicle_category")} placeholder="Ex.: Particular" />
