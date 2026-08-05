@@ -61,7 +61,8 @@ export function buildLaudoReadiness(
   const stats = summarizeLaudoChecklist(checklist);
   const photoProgress = computeCaptureProgress(photos);
   const hasOpinion = Boolean(inspection.opinion?.trim());
-  const hasTechnicalNotes = Boolean(inspection.technical_notes?.trim());
+  const technicalNotes = inspection.technical_notes?.trim() ?? "";
+  const hasTechnicalNotes = technicalNotes.length >= 10;
 
   const items: LaudoReadinessItem[] = [
     {
@@ -104,7 +105,9 @@ export function buildLaudoReadiness(
       title: "Observações técnicas",
       description: hasTechnicalNotes
         ? "Registradas e incluídas no laudo."
-        : "Descreva as observações na avaliação técnica.",
+        : technicalNotes.length > 0
+          ? "Descreva pelo menos 10 caracteres nas observações técnicas."
+          : "Descreva as observações na avaliação técnica.",
       ok: hasTechnicalNotes,
     },
   ];

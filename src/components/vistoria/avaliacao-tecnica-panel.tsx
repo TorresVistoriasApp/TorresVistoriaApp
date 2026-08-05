@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import type { ChecklistItem } from "@/services/checklist-service";
@@ -41,9 +41,160 @@ import {
 import { summarizeChecklist } from "@/components/checklist/checklist-summary";
 import { vistoriaDraftSchema, vistoriaWizardContinueSchema, type VistoriaInput } from "@/schemas/vistoria";
 import { cn } from "@/lib/utils";
-import { Camera, Car, FileText, MapPin, Save } from "lucide-react";
+import { Camera, Car, FileText, MapPin, Save, AlertCircle } from "lucide-react";
 
 const PLATE_PATTERN = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/;
+
+type EvaluationBlocker = {
+  id: string;
+  message: string;
+  sectionId: string;
+};
+
+function getFieldSectionId(field: string): string {
+  if (
+    ["inspection_date", "inspection_time", "location", "inspection_type_id", "requester_name"].includes(
+      field,
+    )
+  ) {
+    return "avaliacao-identificacao";
+  }
+  if (field.startsWith("client_")) return "avaliacao-contratante";
+  if (
+    [
+      "buyer_name",
+      "buyer_document",
+      "seller_name",
+      "seller_document",
+      "judicial_process",
+      "judicial_court",
+      "market_fipe_value",
+      "insurance_acceptance_percent",
+    ].includes(field)
+  ) {
+    return "avaliacao-complementares";
+  }
+  return "avaliacao-veiculo";
+}
+
+function buildEvaluationBlockers(
+  formValues: Partial<VistoriaInput>,
+  checklistItems: ChecklistItem[],
+  parecer: ParecerTecnicoValue,
+): EvaluationBlocker[] {
+  const blockers: EvaluationBlocker[] = [];
+  const { inspection_purpose: _p, opinion: _o, technical_notes: _t, ...rest } = formValues;
+
+  const parsed = vistoriaWizardContinueSchema.safeParse({
+    ...rest,
+    opinion: undefined,
+    technical_notes: "",
+  });
+
+  if (!parsed.success) {
+    const seenFields = new Set<string>();
+    for (const issue of parsed.error.issues) {
+      const field = String(issue.path[0] ?? "");
+      if (field && seenFields.has(field)) continue;
+      if (field) seenFields.add(field);
+      blockers.push({
+        id: `field-${field || issue.code}`,
+        message: issue.message,
+        sectionId: field ? getFieldSectionId(field) : "avaliacao-identificacao",
+      });
+    }
+  }
+
+  const checklist = validateChecklistCompletion(checklistItems);
+  if (checklist.pendingCount > 0) {
+    blockers.push({
+      id: "checklist-pending",
+      message: `${checklist.pendingCount} item(ns) do checklist sem avaliação`,
+      sectionId: "avaliacao-checklist",
+    });
+  }
+  if (checklist.missingNotesCount > 0) {
+    blockers.push({
+      id: "checklist-notes",
+      message: `${checklist.missingNotesCount} apontamento(s) sem observação obrigatória`,
+      sectionId: "avaliacao-checklist",
+    });
+  }
+
+  const parecerResult = validateParecerTecnico(parecer);
+  if (parecerResult.errors.opinion) {
+    blockers.push({
+      id: "parecer-opinion",
+      message: parecerResult.errors.opinion,
+      sectionId: "checklist-parecer",
+    });
+  }
+  if (parecerResult.errors.technical_notes) {
+    blockers.push({
+      id: "parecer-notes",
+      message: parecerResult.errors.technical_notes,
+      sectionId: "checklist-parecer",
+    });
+  }
+
+  return blockers;
+}
+
+function EvaluationBlockersBanner({
+  blockers,
+  onGoTo,
+}: {
+  blockers: EvaluationBlocker[];
+  onGoTo: (sectionId: string) => void;
+}) {
+  if (blockers.length === 0) return null;
+
+  return (
+    <div
+      className="rounded-lg border border-amber-200/80 bg-amber-50/60 px-3 py-2.5"
+      role="status"
+      aria-live="polite"
+    >
+      <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-900">
+        <AlertCircle className="size-3.5 shrink-0" />
+        Para continuar, complete:
+      </p>
+      <ul className="mt-1.5 space-y-1">
+        {blockers.map((blocker) => (
+          <li key={blocker.id}>
+            <button
+              type="button"
+              onClick={() => onGoTo(blocker.sectionId)}
+              className="text-left text-xs text-amber-900 underline-offset-2 hover:underline"
+            >
+              {blocker.message}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function sectionBlockerStatus(blockers: EvaluationBlocker[], sectionId: string) {
+  const count = blockers.filter((blocker) => blocker.sectionId === sectionId).length;
+  if (count === 0) {
+    return { statusText: "Ok", statusTone: "success" as const };
+  }
+  return { statusText: `${count} pendência(s)`, statusTone: "warning" as const };
+}
+
+function sectionOpenProps(
+  sectionId: string,
+  sectionOpen: Record<string, boolean>,
+  setSectionOpen: Dispatch<SetStateAction<Record<string, boolean>>>,
+  defaultOpen = false,
+) {
+  return {
+    open: sectionOpen[sectionId] ?? defaultOpen,
+    onOpenChange: (open: boolean) => setSectionOpen((prev) => ({ ...prev, [sectionId]: open })),
+  };
+}
 
 interface AvaliacaoTecnicaPanelProps {
   inspection: Inspection;
@@ -112,6 +263,10 @@ export function AvaliacaoTecnicaPanel({
   >({});
   const [plateLookupState, setPlateLookupState] = useState<PlateLookupState>("idle");
   const plateLookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [sectionOpen, setSectionOpen] = useState<Record<string, boolean>>({
+    "avaliacao-identificacao": true,
+  });
+  const [showValidationHints, setShowValidationHints] = useState(false);
 
   const {
     register,
@@ -190,7 +345,25 @@ export function AvaliacaoTecnicaPanel({
   );
 
   const [parecer, setParecer] = useParecerTecnicoDraft(initialParecer, persistParecer);
-  const parecerValid = useMemo(() => validateParecerTecnico(parecer).valid, [parecer]);
+  const parecerValidation = useMemo(() => validateParecerTecnico(parecer), [parecer]);
+  const parecerValid = parecerValidation.valid;
+
+  const blockers = useMemo(
+    () => buildEvaluationBlockers(formValues, checklistItems, parecer),
+    [formValues, checklistItems, parecer],
+  );
+
+  const parecerDisplayErrors = useMemo(() => {
+    if (!showValidationHints) return parecerErrors;
+    return { ...parecerValidation.errors, ...parecerErrors };
+  }, [parecerValidation.errors, parecerErrors, showValidationHints]);
+
+  const scrollToSection = useCallback((sectionId: string) => {
+    setSectionOpen((prev) => ({ ...prev, [sectionId]: true }));
+    requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
 
   const checklistPercent =
     checklistItems.length > 0
@@ -205,7 +378,8 @@ export function AvaliacaoTecnicaPanel({
       ? 100
       : 0;
 
-  const canContinue = dadosValid && checklistValid && parecerValid && !isSaving && !isSubmitting;
+  const canContinue = dadosValid && checklistValid && parecerValid;
+  const isBusy = isSaving || isSubmitting;
 
   useEffect(() => {
     const subscription = watch((values) => {
@@ -243,14 +417,15 @@ export function AvaliacaoTecnicaPanel({
   };
 
   const validateAndContinue = async () => {
-    if (!parecerValid) {
-      document.getElementById("checklist-parecer")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-
+    setShowValidationHints(true);
     clearErrors();
+
     const { inspection_purpose: _purpose, ...values } = getValues();
-    const parsed = vistoriaWizardContinueSchema.safeParse(values);
+    const parsed = vistoriaWizardContinueSchema.safeParse({
+      ...values,
+      opinion: undefined,
+      technical_notes: "",
+    });
 
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
@@ -258,6 +433,10 @@ export function AvaliacaoTecnicaPanel({
         if (typeof field === "string") {
           setError(field as keyof VistoriaInput, { message: issue.message });
         }
+      }
+      const firstField = parsed.error.issues[0]?.path[0];
+      if (typeof firstField === "string") {
+        scrollToSection(getFieldSectionId(firstField));
       }
       toast(parsed.error.issues[0]?.message ?? "Verifique os campos obrigatórios.");
       return;
@@ -270,14 +449,19 @@ export function AvaliacaoTecnicaPanel({
       } else if (checklistResult.missingNotesCount > 0) {
         toast(`Preencha observações nos ${checklistResult.missingNotesCount} item(ns) com apontamentos.`);
       }
-      document.getElementById("avaliacao-checklist")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToSection("avaliacao-checklist");
       return;
     }
 
     const parecerResult = validateParecerTecnico(parecer);
     if (!parecerResult.valid) {
       setParecerErrors(parecerResult.errors);
-      document.getElementById("checklist-parecer")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      scrollToSection("checklist-parecer");
+      toast(
+        parecerResult.errors.opinion ??
+          parecerResult.errors.technical_notes ??
+          "Complete o parecer técnico.",
+      );
       return;
     }
 
@@ -343,10 +527,16 @@ export function AvaliacaoTecnicaPanel({
             Rascunho salvo automaticamente
           </p>
         )}
+        {blockers.length > 0 && (
+          <p className="flex items-center gap-1 text-[10px] font-medium text-amber-800 sm:text-[11px]">
+            <AlertCircle className="size-3 shrink-0" />
+            {blockers.length} pendência(s) para continuar
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <EvaluationProgressBar label="Fotos" percent={photosPercent} />
           <EvaluationProgressBar label="Dados" percent={dadosValid ? 100 : 0} pending={!dadosValid} />
-          <EvaluationProgressBar label="Checklist" percent={checklistPercent} />
+          <EvaluationProgressBar label="Checklist" percent={checklistPercent} pending={!checklistValid} />
           <EvaluationProgressBar label="Parecer" percent={parecerValid ? 100 : 0} pending={!parecerValid} />
         </div>
       </div>
@@ -354,10 +544,9 @@ export function AvaliacaoTecnicaPanel({
       <EvaluationSection
         id="avaliacao-identificacao"
         title="Identificação"
-        defaultOpen
         dense
-        statusText={dadosValid ? "Ok" : "Pendente"}
-        statusTone={dadosValid ? "success" : "warning"}
+        {...sectionOpenProps("avaliacao-identificacao", sectionOpen, setSectionOpen, true)}
+        {...sectionBlockerStatus(blockers, "avaliacao-identificacao")}
       >
         <div className={evaluationGridClass}>
           <FormField label="Data" error={errors.inspection_date?.message}>
@@ -400,14 +589,20 @@ export function AvaliacaoTecnicaPanel({
         id="avaliacao-veiculo"
         title="Veículo"
         dense
-        statusText={dadosValid ? "Ok" : "Pendente"}
-        statusTone={dadosValid ? "success" : "warning"}
+        {...sectionOpenProps("avaliacao-veiculo", sectionOpen, setSectionOpen)}
+        {...sectionBlockerStatus(blockers, "avaliacao-veiculo")}
       >
         <PlateLookupHint state={plateLookupState} />
         <VeiculoForm control={control} register={register} errors={errors} embedded evaluation />
       </EvaluationSection>
 
-      <EvaluationSection id="avaliacao-contratante" title="Contratante" dense>
+      <EvaluationSection
+        id="avaliacao-contratante"
+        title="Contratante"
+        dense
+        {...sectionOpenProps("avaliacao-contratante", sectionOpen, setSectionOpen)}
+        {...sectionBlockerStatus(blockers, "avaliacao-contratante")}
+      >
         <ClienteForm control={control} register={register} errors={errors} embedded compact />
       </EvaluationSection>
 
@@ -465,10 +660,13 @@ export function AvaliacaoTecnicaPanel({
         id="avaliacao-checklist"
         title="Checklist técnico"
         dense
+        {...sectionOpenProps("avaliacao-checklist", sectionOpen, setSectionOpen)}
         statusText={
           checklistValid
             ? "Concluído"
-            : `${checklistSummary.pending} pendente(s)`
+            : blockers.some((blocker) => blocker.sectionId === "avaliacao-checklist")
+              ? sectionBlockerStatus(blockers, "avaliacao-checklist").statusText
+              : `${checklistSummary.pending} pendente(s)`
         }
         statusTone={checklistValid ? "success" : "warning"}
       >
@@ -488,25 +686,24 @@ export function AvaliacaoTecnicaPanel({
       <ParecerTecnicoSection
         value={parecer}
         onChange={handleParecerChange}
-        errors={parecerErrors}
+        errors={parecerDisplayErrors}
         disabled={isSaving}
         variant="compact"
+        className={cn(
+          !parecerValid && showValidationHints && "border-amber-300 ring-1 ring-amber-200/80",
+        )}
       />
 
-      {!parecerValid && (
-        <p className="text-center text-xs text-muted-foreground">
-          O parecer técnico é obrigatório para emissão do laudo.
-        </p>
-      )}
+      <EvaluationBlockersBanner blockers={blockers} onGoTo={scrollToSection} />
 
       <div className="border-t border-border/60 pt-3">
         {wizardMode ? (
           <WizardNavButtons
             onBack={onBack}
             onNext={() => void validateAndContinue()}
-            nextLabel="Revisar e gerar laudo"
-            nextDisabled={!canContinue}
-            nextLoading={isSaving || isSubmitting}
+            nextLabel={canContinue ? "Revisar e gerar laudo" : "Ver pendências e continuar"}
+            nextDisabled={isBusy}
+            nextLoading={isBusy}
           />
         ) : (
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
@@ -518,10 +715,14 @@ export function AvaliacaoTecnicaPanel({
             <Button
               type="submit"
               className="h-11 w-full touch-target sm:ml-auto sm:w-auto sm:min-w-[220px]"
-              disabled={!canContinue}
+              disabled={isBusy}
             >
               <FileText className="mr-2 h-4 w-4" />
-              {isSaving || isSubmitting ? "Salvando..." : "Revisar e gerar laudo"}
+              {isBusy
+                ? "Salvando..."
+                : canContinue
+                  ? "Revisar e gerar laudo"
+                  : "Ver pendências e continuar"}
             </Button>
           </div>
         )}
