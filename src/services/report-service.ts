@@ -42,6 +42,8 @@ export const dashboardService = {
         totalRevenue: Number(stats?.totalRevenue ?? 0),
         netProfit: Number(stats?.netProfit ?? 0),
         averageTicket: Number(stats?.averageTicket ?? 0),
+        pendingInspections: Number(stats?.pendingInspections ?? 0),
+        completedInspections: Number(stats?.completedInspections ?? 0),
       };
     } catch (error) {
       throw new AppError(getErrorMessage(error));

@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { ChevronRight, ClipboardList } from "lucide-react";
 import { useRecentInspections } from "@/hooks/use-dashboard";
+import { useDashboardScope } from "@/hooks/use-dashboard-scope";
 import { formatDate } from "@/lib/formatters";
 import { ROUTES } from "@/lib/constants";
 import { VistoriaStatusBadge } from "@/components/vistoria/vistoria-status-badge";
 
 export function RecentInspections() {
+  const { isCompanyView } = useDashboardScope();
   const { data: recent = [], isLoading } = useRecentInspections();
 
   return (
@@ -16,8 +18,14 @@ export function RecentInspections() {
             <ClipboardList className="h-5 w-5" strokeWidth={2} />
           </div>
           <div>
-            <h3 className="text-base font-bold">Últimas vistorias</h3>
-            <p className="text-xs text-muted-foreground">Acesso rápido aos laudos recentes</p>
+            <h3 className="text-base font-bold">
+              {isCompanyView ? "Últimas vistorias da empresa" : "Suas últimas vistorias"}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {isCompanyView
+                ? "Acesso rápido às vistorias mais recentes da equipe"
+                : "Acesso rápido aos seus laudos recentes"}
+            </p>
           </div>
         </div>
       </div>

@@ -1,0 +1,18 @@
+import { usePermission } from "@/hooks/use-permission";
+
+/** Escopo do dashboard: visão da empresa (admin) vs visão pessoal (vistoriador). */
+export function useDashboardScope() {
+  const { can, isSuperAdmin, isInspector } = usePermission();
+
+  const isCompanyView = can("inspections.read.all");
+  const isPersonalView = isInspector && !isCompanyView;
+
+  return {
+    isCompanyView,
+    isPersonalView,
+    isSuperAdmin,
+    canViewFinancial: can("financial.manage"),
+    canManageUsers: can("users.manage"),
+    canExportReports: can("reports.export"),
+  };
+}
