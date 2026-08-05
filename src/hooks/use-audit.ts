@@ -13,7 +13,7 @@ export function useAuditLogs(
   const { can } = usePermission();
   const offset = (page - 1) * pageSize;
   return useQuery({
-    queryKey: queryKeys.audit.list(filters, page, pageSize),
+    queryKey: queryKeys.audit.list(companyId ?? undefined, filters, page, pageSize),
     queryFn: () => auditService.list(companyId ?? undefined, filters, pageSize, offset),
     enabled: can("users.manage") && !!companyId,
   });

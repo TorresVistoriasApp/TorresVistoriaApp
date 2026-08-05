@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@/hooks/use-user";
+import { requireCompanyId } from "@/lib/tenant";
 import { inspectionTypeService } from "@/services/inspection-type-service";
 import type { InspectionTypeInput, InspectionTypeUpdateInput } from "@/schemas/inspection-type";
 import {
@@ -9,11 +10,12 @@ import {
 } from "@/lib/cache-invalidation";
 
 export function useInspectionTypes(activeOnly = false) {
-  const { profile } = useAuth();
+  const { companyId } = useUser();
+
   return useQuery({
-    queryKey: queryKeys.inspectionTypes.list(profile?.company_id, activeOnly),
-    queryFn: () => inspectionTypeService.list(profile!.company_id, activeOnly),
-    enabled: !!profile?.company_id,
+    queryKey: queryKeys.inspectionTypes.list(companyId ?? undefined, activeOnly),
+    queryFn: () => inspectionTypeService.list(requireCompanyId(companyId), activeOnly),
+    enabled: !!companyId,
   });
 }
 
@@ -25,13 +27,11 @@ function invalidateAll(qc: ReturnType<typeof useQueryClient>) {
 
 export function useCreateInspectionType() {
   const qc = useQueryClient();
-  const { profile } = useAuth();
+  const { companyId } = useUser();
 
   return useMutation({
-    mutationFn: (input: InspectionTypeInput) => {
-      if (!profile?.company_id) throw new Error("Empresa não encontrada");
-      return inspectionTypeService.create(input, profile.company_id);
-    },
+    mutationFn: (input: InspectionTypeInput) =>
+      inspectionTypeService.create(input, requireCompanyId(companyId)),
     onSuccess: () => invalidateAll(qc),
   });
 }

@@ -94,16 +94,19 @@ export function useDashboardMetrics() {
   useDashboardRealtime();
 
   return useQuery({
-    queryKey: queryKeys.dashboard.metrics,
+    queryKey: queryKeys.dashboard.metrics(companyId ?? undefined),
     queryFn: () => dashboardService.getMetrics(companyId!),
     enabled: !!companyId,
   });
 }
 
 export function useRecentInspections() {
+  const { companyId } = useUser();
+
   return useQuery({
-    queryKey: queryKeys.dashboard.recent,
-    queryFn: () => dashboardService.getRecentInspections(),
+    queryKey: queryKeys.dashboard.recent(companyId ?? undefined),
+    queryFn: () => dashboardService.getRecentInspections(companyId!),
+    enabled: !!companyId,
   });
 }
 
@@ -113,7 +116,7 @@ export function useMonthlyInspections(year?: number) {
   const selectedYear = year ?? currentYear;
 
   return useQuery({
-    queryKey: queryKeys.dashboard.monthly(selectedYear),
+    queryKey: queryKeys.dashboard.monthly(companyId ?? undefined, selectedYear),
     queryFn: () => dashboardService.getMonthlyInspections(companyId!, selectedYear),
     enabled: !!companyId,
   });
@@ -122,7 +125,7 @@ export function useMonthlyInspections(year?: number) {
 export function useInspectionsByBrand() {
   const { companyId } = useUser();
   return useQuery({
-    queryKey: queryKeys.dashboard.brands,
+    queryKey: queryKeys.dashboard.brands(companyId ?? undefined),
     queryFn: () => dashboardService.getInspectionsByBrand(companyId!),
     enabled: !!companyId,
   });

@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { draftService, rememberActiveDraftId } from "@/features/draft/services/draft-service";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@/hooks/use-user";
+import { requireCompanyId, requireUserId } from "@/lib/tenant";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 import { invalidateInspectionQueries } from "@/lib/cache-invalidation";
 import type { ActiveDraftSummary } from "@/features/draft/types";
@@ -12,36 +13,32 @@ export const draftQueryKeys = {
 };
 
 export function useActiveDraft() {
-  const { profile, user } = useAuth();
+  const { companyId, userId } = useUser();
 
   return useQuery({
-    queryKey: draftQueryKeys.active(profile?.company_id, user?.id),
+    queryKey: draftQueryKeys.active(companyId ?? undefined, userId ?? undefined),
     queryFn: () =>
-      draftService.findActiveDraft(profile!.company_id, user!.id),
-    enabled: Boolean(profile?.company_id && user?.id),
+      draftService.findActiveDraft(requireCompanyId(companyId), requireUserId(userId)),
+    enabled: Boolean(companyId && userId),
     staleTime: 30_000,
   });
 }
 
 export function useCreateDraftInspection() {
   const qc = useQueryClient();
-  const { profile, user } = useAuth();
+  const { companyId, userId } = useUser();
 
   return useMutation({
-    mutationFn: () => {
-      if (!profile?.company_id || !user?.id) {
-        throw new Error("Perfil não carregado");
-      }
-      return draftService.createEmptyDraft({
-        companyId: profile.company_id,
-        inspectorId: user.id,
-      });
-    },
+    mutationFn: () =>
+      draftService.createEmptyDraft({
+        companyId: requireCompanyId(companyId),
+        inspectorId: requireUserId(userId),
+      }),
     onSuccess: (inspection) => {
       rememberActiveDraftId(inspection.id);
       invalidateInspectionQueries(qc);
       void qc.invalidateQueries({
-        queryKey: draftQueryKeys.active(profile?.company_id, user?.id),
+        queryKey: draftQueryKeys.active(companyId ?? undefined, userId ?? undefined),
       });
     },
   });
@@ -49,14 +46,14 @@ export function useCreateDraftInspection() {
 
 export function useDeleteDraft() {
   const qc = useQueryClient();
-  const { profile, user } = useAuth();
+  const { companyId, userId } = useUser();
 
   return useMutation({
     mutationFn: (id: string) => draftService.deleteDraft(id),
     onSuccess: () => {
       invalidateInspectionQueries(qc);
       void qc.invalidateQueries({
-        queryKey: draftQueryKeys.active(profile?.company_id, user?.id),
+        queryKey: draftQueryKeys.active(companyId ?? undefined, userId ?? undefined),
       });
     },
   });
@@ -89,13 +86,13 @@ export function useDraftRecoveryActions() {
 
 export function useDraftCleanup() {
   const qc = useQueryClient();
-  const { profile, user } = useAuth();
+  const { companyId, userId } = useUser();
 
   return useMutation({
     mutationFn: () => draftService.cleanupExpiredDrafts(),
     onSuccess: () => {
       void qc.invalidateQueries({
-        queryKey: draftQueryKeys.active(profile?.company_id, user?.id),
+        queryKey: draftQueryKeys.active(companyId ?? undefined, userId ?? undefined),
       });
     },
   });
