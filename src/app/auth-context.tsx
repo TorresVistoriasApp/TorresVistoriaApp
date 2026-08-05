@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { db } from "@/lib/db-client";
+import { useSession } from "@/app/session-context";
 import { authService } from "@/services/auth-service";
 import { platformAdminService } from "@/services/platform-admin-service";
 import { useAuthStore } from "@/stores/auth-store";
@@ -26,6 +26,7 @@ interface AuthContextValue {
   /** Preenchido só quando a conta é um operador da plataforma (fora de qualquer empresa). */
   platformAdmin: PlatformAdmin | null;
   isPlatformAdmin: boolean;
+  /** Sessão + identidade (perfil / platform admin) resolvidos. */
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -65,12 +66,11 @@ function applyResult<T>(result: FetchResult<T>, apply: (data: T | null) => void)
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const { session, user, loading: sessionLoading } = useSession();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [platformAdmin, setPlatformAdmin] = useState<PlatformAdmin | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const [identityResolved, setIdentityResolved] = useState(false);
-  const loading = authLoading || (!!session?.user.id && !identityResolved);
+  const loading = sessionLoading || (!!session?.user.id && !identityResolved);
 
   const refreshProfile = useCallback(async () => {
     if (!session?.user.id) {
@@ -85,37 +85,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     applyResult(profileResult, setProfile);
     applyResult(platformAdminResult, setPlatformAdmin);
   }, [session?.user.id]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    db.auth.getSession().then(({ data }) => {
-      if (!isMounted) return;
-      setSession(data.session);
-      setAuthLoading(false);
-    });
-
-    const { data: { subscription } } = db.auth.onAuthStateChange((_event, nextSession) => {
-      setSession((currentSession) => {
-        const currentUserId = currentSession?.user.id;
-        const nextUserId = nextSession?.user.id;
-
-        if (currentUserId !== nextUserId) {
-          setProfile(null);
-          setPlatformAdmin(null);
-          setIdentityResolved(false);
-        }
-
-        return nextSession;
-      });
-      setAuthLoading(false);
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
 
   useEffect(() => {
     if (session?.user.id) {
@@ -134,11 +103,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return () => {
         isActive = false;
       };
-    } else {
-      setProfile(null);
-      setPlatformAdmin(null);
-      setIdentityResolved(true);
     }
+
+    setProfile(null);
+    setPlatformAdmin(null);
+    setIdentityResolved(true);
   }, [session?.user.id]);
 
   useEffect(() => {
@@ -167,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       session,
-      user: session?.user ?? null,
+      user,
       profile,
       platformAdmin,
       isPlatformAdmin: !!platformAdmin,
@@ -177,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       resetPassword,
       refreshProfile,
     }),
-    [session, profile, platformAdmin, loading, signIn, signOut, resetPassword, refreshProfile],
+    [session, user, profile, platformAdmin, loading, signIn, signOut, resetPassword, refreshProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
