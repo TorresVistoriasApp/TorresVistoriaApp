@@ -1,54 +1,54 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { RotateCcw, X } from "lucide-react";
-import { FormSectionCard } from "@/components/forms/form-section-card";
 import { PhotoGuideCard, PHOTO_SLOT_GRID_CLASS } from "@/components/photos/photo-guide-card";
-import { MultiPhotoGallery } from "@/components/photos/multi-photo-gallery";
-import {
-  PhotoCaptureProgressSummary,
-  PhotoSectionProgressBar,
-} from "@/components/photos/photo-section-progress";
+import { PhotoDamageGallery } from "@/components/photos/photo-damage-gallery";
 import { PhotoDamageCaptureSheet } from "@/components/photos/photo-damage-capture-sheet";
-import { PhotoFotosExtrasBanner } from "@/components/photos/photo-fotos-extras-banner";
 import { PhotoPaintTestActionSheet } from "@/components/photos/photo-paint-test-action-sheet";
+import { PhotoSectionCard } from "@/components/photos/photo-section-card";
 import { PhotoSubsectionPanel } from "@/components/photos/photo-subsection-panel";
+import { PhotoCaptureProgressSummary } from "@/components/photos/photo-section-progress";
 import { PhotoActionSheet } from "@/features/draft/components/photo-action-sheet";
 import { Button } from "@/components/ui/button";
 import { usePhotoCaptureFlow } from "@/hooks/use-photo-capture-flow";
 import { isPendingPhoto } from "@/hooks/use-photos";
 import { pickImageFiles } from "@/lib/pick-image-files";
-import { type PhotoCategoryDefinition, getPhotoCategoryLabel, photoMatchesCategory } from "@/lib/photos/photo-catalog";
-import type { PhotoCaptureInspectionContext } from "@/lib/photos/photo-capture-visibility";
-import { getVisibleSubsections } from "@/lib/photos/photo-capture-visibility";
 import {
-  getCategorySlotId,
-  getSectionContainerId,
-} from "@/lib/photos/photo-capture-sequence";
-import {
-  buildPaintTestDisplayName,
-  computeSubsectionPhotoProgress,
-  isQuadrosPortasTestCategory,
-  QDP_TESTE_PINTURA_CATEGORY_KEYS,
-  type PaintTestMethod,
-} from "@/lib/photos/quadros-portas";
-import {
+  AVARIA_CATEGORY_KEY,
   buildDamageCaptureMetadata,
   formatDamagePhotoCaption,
   formatDamagePhotoSummary,
   isDamageCategory,
   type DamageCaptureForm,
 } from "@/lib/photos/avarias";
+import { computePhotoCaptureStats } from "@/lib/photos/photo-capture-stats";
 import {
-  FOTOS_EXTRAS_BLINDAGEM_KEYS,
-  FOTOS_EXTRAS_SUBSECTION_KEYS,
-} from "@/lib/photos/fotos-extras";
-import { isPhotoRequirementActive } from "@/lib/photos/photo-requirements-flag";
-import type { PhotoCaptureMetadata, PhotoGuideCardStatus, PhotoSectionProgress } from "@/lib/photos/types";
+  getCategorySlotId,
+  getSectionContainerId,
+} from "@/lib/photos/photo-capture-sequence";
+import {
+  type PhotoCategoryDefinition,
+  photoMatchesCategory,
+} from "@/lib/photos/photo-catalog";
+import type { PhotoCaptureInspectionContext } from "@/lib/photos/photo-capture-visibility";
+import { getVisibleSubsections } from "@/lib/photos/photo-capture-visibility";
+import {
+  groupFotosExtrasCategories,
+  SECTION_UI_GUIDANCE,
+} from "@/lib/photos/fotos-extras-ui";
+import {
+  buildPaintTestDisplayName,
+  isQuadrosPortasTestCategory,
+  QDP_TESTE_PINTURA_CATEGORY_KEYS,
+  type PaintTestMethod,
+} from "@/lib/photos/quadros-portas";
+import { getVisibleSectionCategories } from "@/lib/photos/photo-capture-visibility";
+import type { PhotoCaptureMetadata, PhotoGuideCardStatus, PhotoSectionDefinition } from "@/lib/photos/types";
 import type { InspectionPhoto } from "@/services/photo-service";
+import { isPhotoCategoryComplete } from "@/lib/photos/photo-progress";
 
 interface PhotoSlotGridProps {
   photos: InspectionPhoto[];
   inspection?: PhotoCaptureInspectionContext | null;
-  inspectionEditHref?: string;
   onUpload: (file: File, category: string, metadata?: Partial<PhotoCaptureMetadata>) => void;
   onDelete?: (photo: InspectionPhoto) => void;
   onPickError?: (message: string) => void;
@@ -76,23 +76,6 @@ function getPhotosForCategory(
   return photos.filter((photo) => photoMatchesCategory(photo.category, categoryKey));
 }
 
-function isMultiCategory(category: PhotoCategoryDefinition): boolean {
-  return category.type === "MULTI" || category.type === "DAMAGE" || category.type === "COMPLEMENTARY";
-}
-
-function buildSectionStatusLabel(progress: PhotoSectionProgress): string {
-  if (progress.status === "COMPLETED") return "Concluído";
-  if (progress.requiredPhotos === 0) {
-    return progress.totalPhotos === 0
-      ? "Nenhuma foto"
-      : `${progress.totalPhotos} foto${progress.totalPhotos === 1 ? "" : "s"}`;
-  }
-  if (progress.remainingPhotos > 0) {
-    return `${progress.completedPhotos}/${progress.requiredPhotos} · ${progress.remainingPhotos} restante${progress.remainingPhotos === 1 ? "" : "s"}`;
-  }
-  return `${progress.completedPhotos}/${progress.requiredPhotos}`;
-}
-
 function resolveGuide(category: PhotoCategoryDefinition) {
   return category.technicalGuide ?? category.visualGuide!;
 }
@@ -109,10 +92,28 @@ function resolveDisplayPhoto(categoryPhotos: InspectionPhoto[]): InspectionPhoto
   return confirmed[confirmed.length - 1] ?? pending[pending.length - 1];
 }
 
+function resolveSectionGuidance(sectionKey: string, catalogGuidance?: string): string | undefined {
+  return SECTION_UI_GUIDANCE[sectionKey] ?? catalogGuidance;
+}
+
+function isSectionUiComplete(
+  section: PhotoSectionDefinition,
+  photos: InspectionPhoto[],
+  context: ReturnType<typeof usePhotoCaptureFlow>["captureContext"],
+): boolean {
+  if (section.key === "AVARIAS" || section.key === "FOTOS_EXTRAS") return false;
+
+  const categories = getVisibleSectionCategories(section, context).filter(
+    (category) => category.type === "SINGLE",
+  );
+  if (categories.length === 0) return false;
+
+  return categories.every((category) => isPhotoCategoryComplete(photos, category.key));
+}
+
 export function PhotoSlotGrid({
   photos,
   inspection,
-  inspectionEditHref,
   onUpload,
   onDelete,
   onPickError,
@@ -129,7 +130,26 @@ export function PhotoSlotGrid({
     setSectionOpen,
   } = usePhotoCaptureFlow({ photos, inspection });
 
-  const confirmedPhotoCount = photos.filter((photo) => !isPendingPhoto(photo)).length;
+  const captureStats = useMemo(
+    () => computePhotoCaptureStats(photos, captureContext),
+    [photos, captureContext],
+  );
+
+  const avariaCategory = useMemo(
+    () =>
+      visibleSections
+        .flatMap((section) => section.categories)
+        .find((category) => category.key === AVARIA_CATEGORY_KEY) ??
+      visibleSections
+        .flatMap((section) => section.subsections?.flatMap((s) => s.categories) ?? [])
+        .find((category) => category.key === AVARIA_CATEGORY_KEY),
+    [visibleSections],
+  );
+
+  const damagePhotos = useMemo(
+    () => getPhotosForCategory(photos, AVARIA_CATEGORY_KEY),
+    [photos],
+  );
 
   const uploadFiles = (
     result: { files: File[]; rejectedCount: number },
@@ -169,6 +189,11 @@ export function PhotoSlotGrid({
       isDamage,
       damageIndex: isDamage ? (options?.damageIndex ?? confirmedCount + 1) : undefined,
     });
+  };
+
+  const openDamageRegistration = () => {
+    if (!avariaCategory) return;
+    openPhotoActions(avariaCategory);
   };
 
   const handleTakePhoto = async () => {
@@ -225,12 +250,17 @@ export function PhotoSlotGrid({
     if (!preview || !onDelete) return;
     onDelete(preview.photo);
     setPreview(null);
-    openPhotoActions(preview.category);
+    if (isDamageCategory(preview.category.key)) {
+      openDamageRegistration();
+    } else {
+      openPhotoActions(preview.category);
+    }
   };
 
   const renderCategorySlot = (category: PhotoCategoryDefinition) => {
+    if (category.type === "DAMAGE") return null;
+
     const categoryPhotos = getPhotosForCategory(photos, category.key);
-    const confirmed = categoryPhotos.filter((p) => !isPendingPhoto(p));
     const displayPhoto = resolveDisplayPhoto(categoryPhotos);
     const guide = resolveGuide(category);
     const isRecommended = recommendedCategoryKey === category.key;
@@ -241,36 +271,19 @@ export function PhotoSlotGrid({
       </div>
     );
 
-    if (isMultiCategory(category)) {
-      const isDamage = category.type === "DAMAGE";
-
+    if (category.type === "COMPLEMENTARY" || category.type === "MULTI") {
       return slotWrapper(
-        <MultiPhotoGallery
-          label={category.name}
+        <PhotoGuideCard
+          categoryName={category.name}
           guide={guide}
-          photos={categoryPhotos}
-          required={isPhotoRequirementActive(category.required)}
-          resolvePhotoLabel={
-            isDamage
-              ? (photo, index) => formatDamagePhotoSummary(photo) || `Avaria ${index + 1}`
-              : undefined
+          status={resolveSlotStatus(displayPhoto)}
+          imageUrl={displayPhoto?.thumbnail_url || displayPhoto?.public_url}
+          isRecommended={isRecommended}
+          onCapture={() => openPhotoActions(category, { multiple: true })}
+          onView={() =>
+            displayPhoto?.public_url &&
+            setPreview({ url: displayPhoto.public_url, category, photo: displayPhoto })
           }
-          resolvePhotoSubtitle={isDamage ? formatDamagePhotoCaption : undefined}
-          onCapture={() => openPhotoActions(category, { multiple: !isDamage })}
-          onViewPhoto={(photo) =>
-            photo.public_url && setPreview({ url: photo.public_url, category, photo })
-          }
-          onRetakePhoto={(photo) => {
-            onDelete?.(photo);
-            const sorted = [...categoryPhotos].sort(
-              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-            );
-            const photoIndex = sorted.findIndex((item) => item.id === photo.id);
-            openPhotoActions(category, {
-              multiple: false,
-              damageIndex: photoIndex >= 0 ? photoIndex + 1 : undefined,
-            });
-          }}
         />,
       );
     }
@@ -288,9 +301,7 @@ export function PhotoSlotGrid({
         categoryName={category.name}
         guide={guide}
         status={resolveSlotStatus(displayPhoto)}
-        required={isPhotoRequirementActive(category.required)}
         imageUrl={displayPhoto?.thumbnail_url || displayPhoto?.public_url}
-        countBadge={confirmed.length > 1 ? confirmed.length : undefined}
         indexBadge={testIndexBadge}
         isRecommended={isRecommended}
         onCapture={() => openPhotoActions(category)}
@@ -298,11 +309,6 @@ export function PhotoSlotGrid({
           displayPhoto?.public_url &&
           setPreview({ url: displayPhoto.public_url, category, photo: displayPhoto })
         }
-        onRetake={() => {
-          const latestConfirmed = confirmed[confirmed.length - 1];
-          if (latestConfirmed && onDelete) onDelete(latestConfirmed);
-          openPhotoActions(category);
-        }}
       />,
     );
   };
@@ -311,34 +317,50 @@ export function PhotoSlotGrid({
     const section = visibleSections.find((item) => item.key === sectionKey);
     if (!section) return null;
 
+    if (sectionKey === "AVARIAS") {
+      return (
+        <PhotoDamageGallery
+          photos={damagePhotos}
+          onAdd={openDamageRegistration}
+          onView={(photo) => {
+            if (!avariaCategory || !photo.public_url) return;
+            setPreview({ url: photo.public_url, category: avariaCategory, photo });
+          }}
+        />
+      );
+    }
+
+    if (sectionKey === "FOTOS_EXTRAS") {
+      const subsections = getVisibleSubsections(section, captureContext);
+      const flatCategories = subsections.flatMap((subsection) => subsection.categories);
+      const groups = groupFotosExtrasCategories(flatCategories, captureContext.isArmored);
+
+      return (
+        <div className="space-y-4">
+          {groups.map(({ group, categories }) =>
+            categories.length > 0 ? (
+              <PhotoSubsectionPanel key={group.key} title={group.title}>
+                <div className={PHOTO_SLOT_GRID_CLASS}>
+                  {categories.map((category) => renderCategorySlot(category))}
+                </div>
+              </PhotoSubsectionPanel>
+            ) : null,
+          )}
+        </div>
+      );
+    }
+
     const subsections = getVisibleSubsections(section, captureContext);
     if (subsections.length > 0) {
       return (
-        <div className="space-y-6">
-          {subsections.map((subsection) => {
-            const categoryKeys = subsection.categories.map((category) => category.key);
-            const subsectionProgress = computeSubsectionPhotoProgress(photos, categoryKeys);
-            const isBlindagemSubsection =
-              sectionKey === "FOTOS_EXTRAS" &&
-              subsection.key === FOTOS_EXTRAS_SUBSECTION_KEYS.BLINDAGEM;
-
-            return (
-              <PhotoSubsectionPanel
-                key={subsection.key}
-                title={subsection.name}
-                description={subsection.description}
-                guidance={subsection.guidance}
-                completedCount={subsectionProgress.completed}
-                totalCount={isBlindagemSubsection
-                  ? FOTOS_EXTRAS_BLINDAGEM_KEYS.length
-                  : subsectionProgress.total}
-              >
-                <div className={PHOTO_SLOT_GRID_CLASS}>
-                  {subsection.categories.map((category) => renderCategorySlot(category))}
-                </div>
-              </PhotoSubsectionPanel>
-            );
-          })}
+        <div className="space-y-4">
+          {subsections.map((subsection) => (
+            <PhotoSubsectionPanel key={subsection.key} title={subsection.name}>
+              <div className={PHOTO_SLOT_GRID_CLASS}>
+                {subsection.categories.map((category) => renderCategorySlot(category))}
+              </div>
+            </PhotoSubsectionPanel>
+          ))}
         </div>
       );
     }
@@ -351,85 +373,27 @@ export function PhotoSlotGrid({
   };
 
   return (
-    <div className="w-full space-y-4 sm:space-y-5 lg:space-y-4">
-      <PhotoCaptureProgressSummary
-        percentComplete={captureProgress.percentComplete}
-        totalCompleted={captureProgress.totalCompleted}
-        totalRequired={captureProgress.totalRequired}
-        estimatedSecondsRemaining={captureProgress.estimatedSecondsRemaining}
-        totalPhotos={confirmedPhotoCount}
-      />
-
-      {recommendedCategoryKey && (
-        <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
-          Próxima fotografia recomendada:{" "}
-          <span className="font-semibold text-primary">
-            {getPhotoCategoryLabel(recommendedCategoryKey)}
-          </span>
-        </p>
-      )}
-
-      {!captureProgress.canProceed && captureProgress.missingRequiredLabels.length <= 6 && (
-        <p className="rounded-lg border border-amber-200/80 bg-amber-50/50 px-3 py-2 text-xs text-amber-900">
-          Pendências: {captureProgress.missingRequiredLabels.slice(0, 6).join(", ")}
-          {captureProgress.missingRequiredLabels.length > 6 &&
-            ` e mais ${captureProgress.missingRequiredLabels.length - 6}...`}
-        </p>
-      )}
+    <div className="w-full space-y-3 sm:space-y-3.5">
+      <PhotoCaptureProgressSummary stats={captureStats} />
 
       {visibleSections.map((section) => {
         const sectionProgress = captureProgress.sections.find((s) => s.sectionKey === section.key)!;
-        const visibleCategories = section.subsections?.length
-          ? getVisibleSubsections(section, captureContext).flatMap((group) => group.categories)
-          : section.categories;
-        const isOptionalSection = visibleCategories.every(
-          (c) => !isPhotoRequirementActive(c.required),
-        );
-        const SectionIcon = section.icon;
+        const isComplete = isSectionUiComplete(section, photos, captureContext);
 
         return (
-          <FormSectionCard
+          <PhotoSectionCard
             key={section.key}
             id={getSectionContainerId(section.key)}
             index={section.sortOrder}
             title={section.name}
-            description={section.description}
-            statusLabel={buildSectionStatusLabel(sectionProgress)}
-            optional={isOptionalSection}
-            collapsible={section.collapsible ?? false}
+            guidance={resolveSectionGuidance(section.key, section.guidance)}
+            isComplete={isComplete}
+            photoCount={sectionProgress.totalPhotos}
             open={isSectionOpen(section.key)}
             onOpenChange={(open) => setSectionOpen(section.key, open)}
           >
-            {section.guidance && (
-              <p className="rounded-lg border border-sky-200/80 bg-sky-50/60 px-3 py-2 text-xs leading-relaxed text-sky-900">
-                {section.guidance}
-              </p>
-            )}
-
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <SectionIcon className="size-4 shrink-0 text-primary" aria-hidden />
-              <span>
-                {sectionProgress.totalPhotos} foto{sectionProgress.totalPhotos === 1 ? "" : "s"}
-                {sectionProgress.requiredPhotos > 0 &&
-                  ` · ${sectionProgress.remainingPhotos} restante${sectionProgress.remainingPhotos === 1 ? "" : "s"}`}
-              </span>
-            </div>
-
-            <PhotoSectionProgressBar
-              progress={sectionProgress}
-              sectionName={section.name}
-              className="mb-3 sm:mb-4"
-            />
-
-            {section.key === "FOTOS_EXTRAS" && (
-              <PhotoFotosExtrasBanner
-                isArmored={captureContext.isArmored}
-                inspectionEditHref={inspectionEditHref}
-              />
-            )}
-
             {renderSectionCategories(section.key)}
-          </FormSectionCard>
+          </PhotoSectionCard>
         );
       })}
 
@@ -506,7 +470,7 @@ export function PhotoSlotGrid({
                 onClick={() => void handleRetakeFromPreview()}
               >
                 <RotateCcw className="mr-2 size-4" />
-                Refazer fotografia
+                Remover
               </Button>
             )}
           </figure>

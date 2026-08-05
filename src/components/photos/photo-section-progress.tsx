@@ -1,116 +1,44 @@
-import { CheckCircle2, Clock } from "lucide-react";
-import type { PhotoSectionProgress } from "@/lib/photos/types";
-import {
-  formatEstimatedTime,
-  getSectionStatusLabel,
-} from "@/lib/photos/photo-progress";
-import { PHOTO_REQUIREMENTS_ENABLED } from "@/lib/photos/photo-requirements-flag";
+import type { PhotoCaptureStats } from "@/lib/photos/photo-capture-stats";
 import { cn } from "@/lib/utils";
 
-interface PhotoSectionProgressBarProps {
-  progress: PhotoSectionProgress;
-  sectionName: string;
-  className?: string;
-}
-
-export function PhotoSectionProgressBar({
-  progress,
-  sectionName,
-  className,
-}: PhotoSectionProgressBarProps) {
-  const isComplete = progress.status === "COMPLETED";
-
-  return (
-    <div className={cn("space-y-2", className)}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {isComplete ? (
-            <CheckCircle2 className="size-4 text-emerald-600" strokeWidth={2.5} />
-          ) : (
-            <Clock className="size-4 text-muted-foreground" />
-          )}
-          <span className="text-xs font-semibold text-foreground">{sectionName}</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{getSectionStatusLabel(progress.status)}</span>
-          <span>·</span>
-          <span>{progress.percentComplete}%</span>
-        </div>
-      </div>
-
-      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn(
-            "h-full rounded-full transition-all duration-500",
-            isComplete ? "bg-emerald-500" : "gradient-primary",
-          )}
-          style={{ width: `${progress.percentComplete}%` }}
-        />
-      </div>
-
-      {PHOTO_REQUIREMENTS_ENABLED && (
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-          <span>
-            {progress.completedPhotos}/{progress.requiredPhotos} obrigatórias
-          </span>
-          {progress.remainingPhotos > 0 && <span>{progress.remainingPhotos} restante(s)</span>}
-          <span>{formatEstimatedTime(progress.estimatedSecondsRemaining)}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 interface PhotoCaptureProgressSummaryProps {
-  percentComplete: number;
-  totalCompleted: number;
-  totalRequired: number;
-  estimatedSecondsRemaining: number;
-  totalPhotos: number;
+  stats: PhotoCaptureStats;
   className?: string;
 }
 
-export function PhotoCaptureProgressSummary({
-  percentComplete,
-  totalCompleted,
-  totalRequired,
-  estimatedSecondsRemaining,
-  totalPhotos,
-  className,
-}: PhotoCaptureProgressSummaryProps) {
+export function PhotoCaptureProgressSummary({ stats, className }: PhotoCaptureProgressSummaryProps) {
+  const { completedSlots, totalSlots, remainingSlots, percentComplete, totalPhotos } = stats;
+
   return (
-    <div className={cn("rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5", className)}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 space-y-1">
-          <p className="text-sm font-semibold text-foreground">Progresso geral</p>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            {PHOTO_REQUIREMENTS_ENABLED ? (
-              <>
-                {totalCompleted} de {totalRequired} fotografias obrigatórias concluídas.
-                {totalRequired - totalCompleted > 0 &&
-                  ` Faltam ${totalRequired - totalCompleted} para continuar.`}
-              </>
-            ) : (
-              <>
-                {totalPhotos} foto{totalPhotos === 1 ? "" : "s"} registrada
-                {totalPhotos === 1 ? "" : "s"}.
-              </>
-            )}
+    <div className={cn("rounded-2xl border border-border/80 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-3.5", className)}>
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-xs font-medium text-muted-foreground">Progresso da vistoria</p>
+          <p className="text-base font-bold tabular-nums text-foreground sm:text-lg">
+            {completedSlots} / {totalSlots}{" "}
+            <span className="text-sm font-semibold text-muted-foreground sm:text-base">
+              fotografias
+            </span>
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-lg font-bold text-primary">{percentComplete}%</p>
-          <p className="text-xs text-muted-foreground">
-            {totalPhotos} foto{totalPhotos === 1 ? "" : "s"} · {formatEstimatedTime(estimatedSecondsRemaining)}
-          </p>
-        </div>
+        <p className="shrink-0 text-xl font-bold tabular-nums text-orange-600 sm:text-2xl">
+          {percentComplete}%
+        </p>
       </div>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+
+      <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full gradient-primary transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500"
           style={{ width: `${percentComplete}%` }}
         />
       </div>
+
+      <p className="mt-2 text-[11px] text-muted-foreground sm:text-xs">
+        {remainingSlots > 0
+          ? `${remainingSlots} restante${remainingSlots === 1 ? "" : "s"} na sequência`
+          : "Sequência principal concluída"}
+        {totalPhotos > completedSlots && ` · ${totalPhotos} fotos no total`}
+      </p>
     </div>
   );
 }
