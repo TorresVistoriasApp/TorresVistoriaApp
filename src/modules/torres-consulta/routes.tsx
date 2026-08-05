@@ -10,6 +10,7 @@ export const torresConsultaRoutes: ModuleRoutes = {
       path: ROUTES.consultaLanding,
       element: lazyRoute(() => import("@/modules/torres-consulta/pages/landing-page"), "LandingPage"),
     },
+    { path: ROUTES.consulta, element: <Navigate to={ROUTES.consultaLanding} replace /> },
   ],
 
   public: [
