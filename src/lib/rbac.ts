@@ -6,6 +6,7 @@ export const PERMISSIONS = {
   "inspections.read.all": ["SUPER_ADMIN"],
   "inspections.update.own": ["SUPER_ADMIN", "INSPECTOR"],
   "financial.manage": ["SUPER_ADMIN"],
+  "financial.read.own": ["SUPER_ADMIN", "INSPECTOR"],
   "reports.export": ["SUPER_ADMIN", "INSPECTOR"],
   "settings.manage": ["SUPER_ADMIN"],
   "users.manage": ["SUPER_ADMIN"],

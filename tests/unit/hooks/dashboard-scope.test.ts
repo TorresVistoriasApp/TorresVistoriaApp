@@ -15,6 +15,7 @@ describe("dashboard scope permissions", () => {
     expect(checker.has("inspections.read.all")).toBe(false);
     expect(checker.has("inspections.read.own")).toBe(true);
     expect(checker.has("financial.manage")).toBe(false);
+    expect(checker.has("financial.read.own")).toBe(true);
     expect(checker.has("users.manage")).toBe(false);
   });
 });

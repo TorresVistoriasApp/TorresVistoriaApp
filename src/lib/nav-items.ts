@@ -21,6 +21,8 @@ export interface NavLinkItem {
   end?: boolean;
   /** Quando definido, o link só aparece se o usuário tiver a permissão. */
   requiredPermission?: Permission;
+  /** Quando definido, o link aparece se o usuário tiver qualquer uma das permissões. */
+  requiredAnyOf?: Permission[];
 }
 
 export interface NavSection {
@@ -37,11 +39,15 @@ const SETTINGS_LINK: NavLinkItem = {
   end: true,
 };
 
-function filterNavItems(items: NavLinkItem[], access: Pick<PermissionChecker, "has">): NavLinkItem[] {
-  return items.filter((item) => !item.requiredPermission || access.has(item.requiredPermission));
+function filterNavItems(items: NavLinkItem[], access: Pick<PermissionChecker, "has" | "hasAny">): NavLinkItem[] {
+  return items.filter((item) => {
+    if (item.requiredAnyOf?.length) return access.hasAny(...item.requiredAnyOf);
+    if (item.requiredPermission) return access.has(item.requiredPermission);
+    return true;
+  });
 }
 
-export function getNavSections(access: Pick<PermissionChecker, "has">): NavSection[] {
+export function getNavSections(access: Pick<PermissionChecker, "has" | "hasAny">): NavSection[] {
   const sections: NavSection[] = [
     {
       title: "Visão geral",
@@ -84,7 +90,7 @@ export function getNavSections(access: Pick<PermissionChecker, "has">): NavSecti
         shortLabel: "Financeiro",
         icon: Wallet,
         end: true,
-        requiredPermission: "financial.manage",
+        requiredAnyOf: ["financial.manage", "financial.read.own"],
       },
     ],
     access,
@@ -127,6 +133,6 @@ export function getNavSections(access: Pick<PermissionChecker, "has">): NavSecti
 }
 
 /** Navegação plana para a barra inferior mobile (sem seções). */
-export const NAV_ITEMS = getNavSections({ has: () => true })
+export const NAV_ITEMS = getNavSections({ has: () => true, hasAny: () => true })
   .flatMap((section) => section.items)
   .map(({ type: _type, ...item }) => item);

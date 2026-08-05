@@ -11,6 +11,10 @@ describe("rbac", () => {
     expect(hasPermission(UserRole.INSPECTOR, "financial.manage")).toBe(false);
   });
 
+  it("INSPECTOR tem financial.read.own", () => {
+    expect(hasPermission(UserRole.INSPECTOR, "financial.read.own")).toBe(true);
+  });
+
   it("INSPECTOR pode criar vistorias", () => {
     expect(hasPermission(UserRole.INSPECTOR, "inspections.create")).toBe(true);
   });
