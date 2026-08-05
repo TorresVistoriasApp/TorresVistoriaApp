@@ -15,11 +15,11 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, onNavigate, embedded }: SidebarProps) {
-  const { has } = usePermission();
+  const { has, hasAny } = usePermission();
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebarCollapsed = useUiStore((s) => s.toggleSidebarCollapsed);
   const collapsed = !embedded && sidebarCollapsed;
-  const navSections = getNavSections({ has });
+  const navSections = getNavSections({ has, hasAny });
 
   return (
     <aside className={cn("flex h-full w-full flex-col", className)}>

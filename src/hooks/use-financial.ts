@@ -8,18 +8,20 @@ import { invalidateFinancialQueries } from "@/lib/cache-invalidation";
 
 export function useFinancialEntries(page = 1, pageSize = 50) {
   const { companyId } = useUser();
+  const { can } = usePermission();
+  const canRead = can("financial.manage") || can("financial.read.own");
   const offset = (page - 1) * pageSize;
   return useQuery({
     queryKey: queryKeys.financial.list(page, pageSize),
     queryFn: () => financialService.list(companyId!, pageSize, offset),
-    enabled: !!companyId,
+    enabled: !!companyId && canRead,
   });
 }
 
 export function useFinancialSummary(startDate?: string, endDate?: string) {
   const { companyId } = useUser();
   const { can } = usePermission();
-  const canRead = can("financial.manage");
+  const canRead = can("financial.manage") || can("financial.read.own");
 
   return useQuery({
     queryKey: queryKeys.financial.summary(startDate, endDate),

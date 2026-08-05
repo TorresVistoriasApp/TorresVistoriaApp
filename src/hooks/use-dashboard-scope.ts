@@ -11,7 +11,7 @@ export function useDashboardScope() {
     isCompanyView,
     isPersonalView,
     isSuperAdmin,
-    canViewFinancial: can("financial.manage"),
+    canViewFinancial: can("financial.manage") || can("financial.read.own"),
     canManageUsers: can("users.manage"),
     canExportReports: can("reports.export"),
   };

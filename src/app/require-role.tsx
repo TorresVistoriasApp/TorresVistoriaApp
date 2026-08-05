@@ -33,6 +33,32 @@ export function RequirePermission({
   );
 }
 
+export function RequireAnyPermission({
+  permissions,
+  children,
+  fallback,
+}: {
+  permissions: Permission[];
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
+  return (
+    <PermissionGuard
+      anyOf={permissions}
+      fallback={
+        fallback ?? (
+          <EmptyState
+            title="Acesso negado"
+            description="Você não tem permissão para acessar este recurso."
+          />
+        )
+      }
+    >
+      {children}
+    </PermissionGuard>
+  );
+}
+
 export function RequireRole({
   roles,
   children,

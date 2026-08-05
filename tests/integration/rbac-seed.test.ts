@@ -4,7 +4,7 @@ import { UserRole } from "@/lib/enums";
 import { PERMISSIONS } from "@/lib/rbac";
 
 /**
- * Garante que PERMISSIONS no frontend está alinhado ao seed do banco (8 códigos).
+ * Garante que PERMISSIONS no frontend está alinhado ao seed do banco (9 códigos).
  */
 describe("RBAC seed alignment", () => {
   const dbPermissionCodes = [
@@ -13,12 +13,13 @@ describe("RBAC seed alignment", () => {
     "inspections.read.all",
     "inspections.update.own",
     "financial.manage",
+    "financial.read.own",
     "reports.export",
     "settings.manage",
     "users.manage",
   ] as const;
 
-  it("mapeia os 8 códigos do seed", () => {
+  it("mapeia os 9 códigos do seed", () => {
     expect(Object.keys(PERMISSIONS).sort()).toEqual([...dbPermissionCodes].sort());
   });
 
@@ -30,6 +31,7 @@ describe("RBAC seed alignment", () => {
       "inspections.create",
       "inspections.read.own",
       "inspections.update.own",
+      "financial.read.own",
       "reports.export",
     ]);
   });
