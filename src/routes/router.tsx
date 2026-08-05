@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, type RouteObject } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { ROUTES } from "@/config/routes";
 import { RootLayout } from "@/layouts/root-layout";
 import { AuthLayout } from "@/layouts/auth-layout";
@@ -6,6 +6,7 @@ import { PublicLayout } from "@/layouts/public-layout";
 import { ClientLayout } from "@/layouts/client-layout";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { ProtectedRoute } from "@/routes/guards/protected-route";
+import { ConsumerProtectedRoute } from "@/routes/guards/consumer-protected-route";
 import { PlatformAdminRoute } from "@/routes/guards/platform-admin-route";
 import { RequirePasswordChanged } from "@/routes/guards/require-password-changed";
 import { TenantGuard } from "@/core/tenant/tenant-guard";
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { path: ROUTES.legacyDashboard, element: <Navigate to={ROUTES.dashboard} replace /> },
+      { path: ROUTES.vistoriaLogin, element: <Navigate to={ROUTES.login} replace /> },
+
+      // Marketing / landing B2C — layout próprio por página.
+      { element: <Outlet />, children: collect("marketing") },
 
       // Área pública — sem sessão.
       { element: <PublicLayout />, children: collect("public") },
@@ -49,6 +54,12 @@ export const router = createBrowserRouter([
       {
         element: <PlatformAdminRoute />,
         children: [{ element: <AdminLayout />, children: collect("platform") }],
+      },
+
+      // Área autenticada do consumidor (B2C) — sem tenant.
+      {
+        element: <ConsumerProtectedRoute />,
+        children: collect("consumer"),
       },
 
       // Área autenticada do tenant.

@@ -10,6 +10,8 @@ import type { Permission } from "@/core/rbac/permissions";
  * removido sem que nenhum layout precise ser alterado.
  */
 export interface ModuleRoutes {
+  /** Landing e páginas de marketing: layout próprio, sem shell do tenant. */
+  marketing?: RouteObject[];
   /** Área pública: sem sessão, dentro do `PublicLayout`. */
   public?: RouteObject[];
   /** Área de autenticação: sem sessão, dentro do `AuthLayout`. */
@@ -23,6 +25,8 @@ export interface ModuleRoutes {
    * troca de senha obrigatória, que roda antes do shell da aplicação.
    */
   standalone?: RouteObject[];
+  /** Área do consumidor final (B2C): autenticado, sem tenant, layout próprio. */
+  consumer?: RouteObject[];
 }
 
 /**
