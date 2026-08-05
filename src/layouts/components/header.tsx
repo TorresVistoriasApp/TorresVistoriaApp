@@ -1,4 +1,6 @@
 import { Car, ChevronDown, LogOut, Menu } from "lucide-react";
+import { ROUTES } from "@/config/routes";
+import { ProductCrossLink } from "@/modules/torres-consulta/components/landing/product-cross-link";
 import { useAuth } from "@/core/auth/use-auth";
 import { useUser } from "@/core/auth/user-context";
 import { Button } from "@/shared/ui/button";
@@ -43,6 +45,11 @@ export function Header() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            <ProductCrossLink
+              to={ROUTES.consultaLanding}
+              label="Conhecer Torres Consulta"
+              className="hidden rounded-xl border border-border/60 bg-muted/30 px-3 py-1.5 text-xs sm:inline-flex"
+            />
             <SyncStatusIndicator status={status} pendingCount={pendingCount} className="hidden sm:inline-flex" />
             <SyncStatusIndicator status={status} pendingCount={pendingCount} compact className="sm:hidden" />
             <NotificationBell />
