@@ -32,6 +32,7 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [flashCategory, setFlashCategory] = useState<string | null>(null);
   const prevCompleteRef = useRef<Record<string, boolean>>({});
+  const pendingScrollRef = useRef(false);
 
   const grouped = useMemo(() => {
     const map = items.reduce<Record<string, ChecklistItem[]>>((acc, item) => {
@@ -69,6 +70,7 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
       const timer = window.setTimeout(() => setFlashCategory(null), 2200);
       const idx = grouped.findIndex((g) => g.key === openCategory);
       const next = grouped.slice(idx + 1).find((g) => !isGroupComplete(g.items));
+      if (next?.key) pendingScrollRef.current = true;
       setOpenCategory(next?.key ?? null);
       prevCompleteRef.current[openCategory] = true;
       return () => window.clearTimeout(timer);
@@ -77,11 +79,30 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
     prevCompleteRef.current[openCategory] = complete;
   }, [grouped, items, openCategory]);
 
+  useEffect(() => {
+    if (!openCategory || !pendingScrollRef.current) return;
+    pendingScrollRef.current = false;
+
+    // Aguarda o DOM expandir o acordeão antes de rolar
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.getElementById(`checklist-group-${openCategory}`)?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    });
+  }, [openCategory]);
+
   const activeGroup = grouped.find((g) => g.key === openCategory);
   const activeProgress = activeGroup ? groupProgress(activeGroup.items) : null;
 
   const handleToggle = useCallback((key: string) => {
-    setOpenCategory((current) => (current === key ? null : key));
+    setOpenCategory((current) => {
+      const next = current === key ? null : key;
+      if (next) pendingScrollRef.current = true;
+      return next;
+    });
   }, []);
 
   return (
@@ -127,8 +148,9 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
         return (
           <div
             key={group.key}
+            id={`checklist-group-${group.key}`}
             className={cn(
-              "overflow-hidden rounded-lg border border-border/70 bg-card transition-colors",
+              "scroll-mt-36 overflow-hidden rounded-lg border border-border/70 bg-card transition-colors",
               isOpen && "border-primary/25 ring-1 ring-primary/10",
               complete && !isOpen && "border-emerald-200/60",
             )}
