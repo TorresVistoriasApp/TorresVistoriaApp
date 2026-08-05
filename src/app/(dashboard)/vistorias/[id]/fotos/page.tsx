@@ -19,6 +19,7 @@ import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 import { createPhotoCaptureContext } from "@/lib/photos/photo-capture-visibility";
 import { computeCaptureProgress } from "@/lib/photos/photo-progress";
 import { PHOTO_REQUIREMENTS_ENABLED } from "@/lib/photos/photo-requirements-flag";
+import type { PhotoCaptureMetadata } from "@/lib/photos/types";
 import { InspectionStatus } from "@/lib/enums";
 import type { InspectionPhoto } from "@/services/photo-service";
 
@@ -68,7 +69,7 @@ export function Page() {
   }, []);
 
   const handleUpload = useCallback(
-    (file: File, category: string) => {
+    (file: File, category: string, metadata?: Partial<PhotoCaptureMetadata>) => {
       const coords = geoRef.current;
 
       upload.mutate(
@@ -77,6 +78,7 @@ export function Page() {
           category,
           latitude: coords?.latitude ?? null,
           longitude: coords?.longitude ?? null,
+          metadata,
         },
         {
           onError: (err) => {

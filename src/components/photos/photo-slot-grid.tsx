@@ -7,6 +7,7 @@ import {
   PhotoCaptureProgressSummary,
   PhotoSectionProgressBar,
 } from "@/components/photos/photo-section-progress";
+import { PhotoPaintTestActionSheet } from "@/components/photos/photo-paint-test-action-sheet";
 import { PhotoSubsectionPanel } from "@/components/photos/photo-subsection-panel";
 import { PhotoActionSheet } from "@/features/draft/components/photo-action-sheet";
 import { Button } from "@/components/ui/button";
@@ -20,14 +21,21 @@ import {
   getCategorySlotId,
   getSectionContainerId,
 } from "@/lib/photos/photo-capture-sequence";
+import {
+  buildPaintTestDisplayName,
+  computeSubsectionPhotoProgress,
+  isQuadrosPortasTestCategory,
+  QDP_TESTE_PINTURA_CATEGORY_KEYS,
+  type PaintTestMethod,
+} from "@/lib/photos/quadros-portas";
 import { isPhotoRequirementActive } from "@/lib/photos/photo-requirements-flag";
-import type { PhotoGuideCardStatus, PhotoSectionProgress } from "@/lib/photos/types";
+import type { PhotoCaptureMetadata, PhotoGuideCardStatus, PhotoSectionProgress } from "@/lib/photos/types";
 import type { InspectionPhoto } from "@/services/photo-service";
 
 interface PhotoSlotGridProps {
   photos: InspectionPhoto[];
   inspection?: PhotoCaptureInspectionContext | null;
-  onUpload: (file: File, category: string, metadata?: Record<string, string>) => void;
+  onUpload: (file: File, category: string, metadata?: Partial<PhotoCaptureMetadata>) => void;
   onDelete?: (photo: InspectionPhoto) => void;
   onPickError?: (message: string) => void;
 }
@@ -42,6 +50,7 @@ type PhotoActionState = {
   categoryKey: string;
   categoryName: string;
   multiple: boolean;
+  isPaintTest: boolean;
 };
 
 function getPhotosForCategory(
@@ -105,34 +114,63 @@ export function PhotoSlotGrid({
 
   const confirmedPhotoCount = photos.filter((photo) => !isPendingPhoto(photo)).length;
 
-  const uploadFiles = (result: { files: File[]; rejectedCount: number }, categoryKey: string) => {
+  const uploadFiles = (
+    result: { files: File[]; rejectedCount: number },
+    categoryKey: string,
+    metadata?: Partial<PhotoCaptureMetadata>,
+  ) => {
     if (result.rejectedCount > 0) {
       onPickError?.("Formato de arquivo não suportado. Use JPEG, PNG ou WebP.");
     }
     if (result.files.length === 0) return;
-    result.files.forEach((file) => onUpload(file, categoryKey));
+    result.files.forEach((file) => onUpload(file, categoryKey, metadata));
   };
+
+  const buildPaintTestMetadata = (
+    categoryKey: string,
+    method: PaintTestMethod,
+  ): Partial<PhotoCaptureMetadata> => ({
+    sectionKey: "QUADROS_PORTAS",
+    subcategory: "QDP_TESTE_PINTURA",
+    displayName: buildPaintTestDisplayName(categoryKey, method),
+    complementaryCategory: method,
+  });
 
   const openPhotoActions = (category: PhotoCategoryDefinition, multiple = false) => {
     setPhotoAction({
       categoryKey: category.key,
       categoryName: category.name,
       multiple,
+      isPaintTest: isQuadrosPortasTestCategory(category.key),
     });
   };
 
   const handleTakePhoto = async () => {
     const action = photoAction;
-    if (!action) return;
+    if (!action || action.isPaintTest) return;
     const result = await pickImageFiles({ capture: true, multiple: action.multiple });
     uploadFiles(result, action.categoryKey);
   };
 
   const handlePickGallery = async () => {
     const action = photoAction;
-    if (!action) return;
+    if (!action || action.isPaintTest) return;
     const result = await pickImageFiles({ multiple: action.multiple });
     uploadFiles(result, action.categoryKey);
+  };
+
+  const handlePaintTestTakePhoto = async (method: PaintTestMethod) => {
+    const action = photoAction;
+    if (!action) return;
+    const result = await pickImageFiles({ capture: true, multiple: false });
+    uploadFiles(result, action.categoryKey, buildPaintTestMetadata(action.categoryKey, method));
+  };
+
+  const handlePaintTestPickGallery = async (method: PaintTestMethod) => {
+    const action = photoAction;
+    if (!action) return;
+    const result = await pickImageFiles({ multiple: false });
+    uploadFiles(result, action.categoryKey, buildPaintTestMetadata(action.categoryKey, method));
   };
 
   const handleRetakeFromPreview = async () => {
@@ -174,6 +212,14 @@ export function PhotoSlotGrid({
       );
     }
 
+    const isPaintTest = isQuadrosPortasTestCategory(category.key);
+    const testSlotIndex = isPaintTest
+      ? QDP_TESTE_PINTURA_CATEGORY_KEYS.findIndex((key) =>
+          photoMatchesCategory(category.key, key),
+        )
+      : -1;
+    const testIndexBadge = testSlotIndex >= 0 ? testSlotIndex + 1 : undefined;
+
     return slotWrapper(
       <PhotoGuideCard
         categoryName={category.name}
@@ -182,6 +228,7 @@ export function PhotoSlotGrid({
         required={isPhotoRequirementActive(category.required)}
         imageUrl={displayPhoto?.thumbnail_url || displayPhoto?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
+        indexBadge={testIndexBadge}
         isRecommended={isRecommended}
         onCapture={() => openPhotoActions(category)}
         onView={() =>
@@ -205,18 +252,27 @@ export function PhotoSlotGrid({
     if (subsections.length > 0) {
       return (
         <div className="space-y-6">
-          {subsections.map((subsection) => (
-            <PhotoSubsectionPanel
-              key={subsection.key}
-              title={subsection.name}
-              description={subsection.description}
-              guidance={subsection.guidance}
-            >
-              <div className={PHOTO_SLOT_GRID_CLASS}>
-                {subsection.categories.map((category) => renderCategorySlot(category))}
-              </div>
-            </PhotoSubsectionPanel>
-          ))}
+          {subsections.map((subsection) => {
+            const subsectionProgress = computeSubsectionPhotoProgress(
+              photos,
+              subsection.categories.map((category) => category.key),
+            );
+
+            return (
+              <PhotoSubsectionPanel
+                key={subsection.key}
+                title={subsection.name}
+                description={subsection.description}
+                guidance={subsection.guidance}
+                completedCount={subsectionProgress.completed}
+                totalCount={subsectionProgress.total}
+              >
+                <div className={PHOTO_SLOT_GRID_CLASS}>
+                  {subsection.categories.map((category) => renderCategorySlot(category))}
+                </div>
+              </PhotoSubsectionPanel>
+            );
+          })}
         </div>
       );
     }
@@ -305,13 +361,23 @@ export function PhotoSlotGrid({
       })}
 
       <PhotoActionSheet
-        open={Boolean(photoAction)}
+        open={Boolean(photoAction && !photoAction.isPaintTest)}
         onOpenChange={(open) => {
           if (!open) setPhotoAction(null);
         }}
         categoryName={photoAction?.categoryName}
         onTakePhoto={() => void handleTakePhoto()}
         onPickGallery={() => void handlePickGallery()}
+      />
+
+      <PhotoPaintTestActionSheet
+        open={Boolean(photoAction?.isPaintTest)}
+        onOpenChange={(open) => {
+          if (!open) setPhotoAction(null);
+        }}
+        categoryName={photoAction?.categoryName}
+        onTakePhoto={(method) => void handlePaintTestTakePhoto(method)}
+        onPickGallery={(method) => void handlePaintTestPickGallery(method)}
       />
 
       {preview && (
