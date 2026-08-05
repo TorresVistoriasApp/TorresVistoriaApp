@@ -75,6 +75,7 @@ export function buildEmptyDraftInput(): VistoriaInput {
     model_year: year,
     mileage: null,
     situation: InspectionSituation.PARTICULAR,
+    is_armored: false,
     opinion: undefined as unknown as VistoriaInput["opinion"],
     technical_notes: "",
     internal_notes: "",

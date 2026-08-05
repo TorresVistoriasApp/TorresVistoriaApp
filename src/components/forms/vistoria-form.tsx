@@ -71,6 +71,7 @@ export function VistoriaForm({
       inspection_date: new Date().toISOString().slice(0, 10),
       inspection_time: new Date().toTimeString().slice(0, 5),
       situation: InspectionSituation.PARTICULAR,
+      is_armored: false,
       status: InspectionStatus.DRAFT,
       client_phone: "",
       client_email: "",

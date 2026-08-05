@@ -1,4 +1,5 @@
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
+import { Shield } from "lucide-react";
 import type { VistoriaInput } from "@/schemas/vistoria";
 import { InspectionSituation } from "@/lib/enums";
 import { Input } from "@/components/ui/input";
@@ -243,6 +244,33 @@ export function VeiculoForm({
             ))}
           </select>
         </FormField>
+
+        <Controller
+          control={control}
+          name="is_armored"
+          render={({ field }) => (
+            <label
+              className={`${formGridFullWidthClass} flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/30`}
+            >
+              <input
+                type="checkbox"
+                className="mt-1 size-4 shrink-0 accent-primary"
+                checked={Boolean(field.value)}
+                onChange={(event) => field.onChange(event.target.checked)}
+              />
+              <span className="min-w-0 space-y-1">
+                <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <Shield className="size-4 text-primary" aria-hidden />
+                  Veículo blindado
+                </span>
+                <span className="block text-xs leading-relaxed text-muted-foreground">
+                  Marque se o veículo possui blindagem. Isso habilita a subseção de fotos de
+                  blindagem na etapa &quot;Fotos extras&quot; da vistoria.
+                </span>
+              </span>
+            </label>
+          )}
+        />
       </FormFieldGroup>
     </div>
   );

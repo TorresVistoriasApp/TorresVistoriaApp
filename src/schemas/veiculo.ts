@@ -56,6 +56,7 @@ export const veiculoSchema = z.object({
     .max(new Date().getFullYear() + 2),
   mileage: z.coerce.number().int().min(0).max(9_999_999).optional().nullable(),
   situation: situationEnum,
+  is_armored: z.boolean().default(false),
 });
 
 export type VeiculoInput = z.infer<typeof veiculoSchema>;

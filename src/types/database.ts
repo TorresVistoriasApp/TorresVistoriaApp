@@ -801,6 +801,7 @@ export type Database = {
           updated_by: string | null
           vehicle_category: string | null
           vehicle_condition: string | null
+          is_armored: boolean
           vehicle_species: string | null
           vehicle_uf: string | null
           version: string | null
@@ -862,6 +863,7 @@ export type Database = {
           updated_by?: string | null
           vehicle_category?: string | null
           vehicle_condition?: string | null
+          is_armored?: boolean
           vehicle_species?: string | null
           vehicle_uf?: string | null
           version?: string | null
@@ -923,6 +925,7 @@ export type Database = {
           updated_by?: string | null
           vehicle_category?: string | null
           vehicle_condition?: string | null
+          is_armored?: boolean
           vehicle_species?: string | null
           vehicle_uf?: string | null
           version?: string | null

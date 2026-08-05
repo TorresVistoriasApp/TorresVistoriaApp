@@ -75,6 +75,7 @@ export type Inspection = {
   market_average_value: number | null;
   insurance_acceptance_percent: number | null;
   vehicle_condition: string | null;
+  is_armored: boolean;
   status: string;
   completion_percent: number;
   draft_expires_at: string | null;
