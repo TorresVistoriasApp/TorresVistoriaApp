@@ -19,7 +19,7 @@ export type WebhookEvent = (typeof WebhookEvent)[keyof typeof WebhookEvent];
 
 export interface WebhookSubscription {
   id: string;
-  companyId: string;
+  tenantId: string;
   url: string;
   events: WebhookEvent[];
   /** Segredo usado para assinar o payload (HMAC). Nunca exposto na leitura. */

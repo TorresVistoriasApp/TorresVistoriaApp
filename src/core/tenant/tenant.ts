@@ -1,9 +1,9 @@
-/** Garante company_id da sessão antes de consultas/mutations tenant-scoped. */
-export function requireCompanyId(companyId: string | null | undefined): string {
-  if (!companyId) {
+/** Garante tenant_id da sessão antes de consultas/mutations tenant-scoped. */
+export function requireTenantId(tenantId: string | null | undefined): string {
+  if (!tenantId) {
     throw new Error("Sessão inválida: empresa não carregada");
   }
-  return companyId;
+  return tenantId;
 }
 
 /** Garante userId da sessão antes de mutations tenant-scoped. */

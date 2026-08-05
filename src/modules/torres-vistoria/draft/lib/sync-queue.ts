@@ -49,7 +49,7 @@ export async function flushOfflineQueue(options: {
     try {
       const file = new File([pending.blob], pending.fileName, { type: pending.mimeType });
       await photoService.upload(file, {
-        companyId: pending.companyId,
+        tenantId: pending.tenantId,
         inspectionId: pending.inspectionId,
         category: pending.category,
         latitude: pending.latitude,

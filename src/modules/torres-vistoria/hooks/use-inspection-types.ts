@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/infra/supabase/queries";
 import { useUser } from "@/core/auth/user-context";
-import { requireCompanyId } from "@/core/tenant/tenant";
+import { requireTenantId } from "@/core/tenant/tenant";
 import { inspectionTypeService } from "@/modules/torres-vistoria/services/inspection-type-service";
 import type { InspectionTypeInput, InspectionTypeUpdateInput } from "@/modules/torres-vistoria/schemas/inspection-type";
 import {
@@ -10,12 +10,12 @@ import {
 } from "@/infra/query/cache-invalidation";
 
 export function useInspectionTypes(activeOnly = false) {
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
 
   return useQuery({
-    queryKey: queryKeys.inspectionTypes.list(companyId ?? undefined, activeOnly),
-    queryFn: () => inspectionTypeService.list(requireCompanyId(companyId), activeOnly),
-    enabled: !!companyId,
+    queryKey: queryKeys.inspectionTypes.list(tenantId ?? undefined, activeOnly),
+    queryFn: () => inspectionTypeService.list(requireTenantId(tenantId), activeOnly),
+    enabled: !!tenantId,
   });
 }
 
@@ -27,11 +27,11 @@ function invalidateAll(qc: ReturnType<typeof useQueryClient>) {
 
 export function useCreateInspectionType() {
   const qc = useQueryClient();
-  const { companyId } = useUser();
+  const { tenantId } = useUser();
 
   return useMutation({
     mutationFn: (input: InspectionTypeInput) =>
-      inspectionTypeService.create(input, requireCompanyId(companyId)),
+      inspectionTypeService.create(input, requireTenantId(tenantId)),
     onSuccess: () => invalidateAll(qc),
   });
 }

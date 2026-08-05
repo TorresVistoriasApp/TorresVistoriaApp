@@ -8,7 +8,7 @@ import type { ChecklistItemInput } from "@/modules/torres-vistoria/schemas/check
 export type ChecklistItem = {
   id: string;
   inspection_id: string;
-  company_id: string;
+  tenant_id: string;
   category: string;
   item_name: string;
   status: string;
@@ -27,11 +27,11 @@ export const checklistService = {
   },
 
   /** Insere itens do catálogo atual que ainda não existem na vistoria. */
-  async syncWithCatalog(inspectionId: string, companyId: string): Promise<ChecklistItem[]> {
+  async syncWithCatalog(inspectionId: string, tenantId: string): Promise<ChecklistItem[]> {
     try {
       const existing = await this.listByInspection(inspectionId);
       const existingKeys = new Set(existing.map((i) => `${i.category}::${i.item_name}`));
-      const missing = buildChecklistSeedRows(companyId, inspectionId).filter(
+      const missing = buildChecklistSeedRows(tenantId, inspectionId).filter(
         (row) => !existingKeys.has(`${row.category}::${row.item_name}`),
       );
 
@@ -48,14 +48,14 @@ export const checklistService = {
 
   async upsertItems(
     inspectionId: string,
-    companyId: string,
+    tenantId: string,
     items: ChecklistItemInput[],
   ): Promise<void> {
     try {
       const rows = items.map(({ photo_ids: _photoIds, ...item }) => ({
         ...item,
         inspection_id: inspectionId,
-        company_id: companyId,
+        tenant_id: tenantId,
       }));
       const { error } = await db
         .from("inspection_checklists")

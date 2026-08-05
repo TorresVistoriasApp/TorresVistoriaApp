@@ -6,7 +6,7 @@ import {
 import type { VistoriaInput } from "@/modules/torres-vistoria/schemas/vistoria";
 import { useUser } from "@/core/auth/user-context";
 import { useTenantQuery } from "@/core/tenant/use-tenant-query";
-import { requireCompanyId, requireUserId } from "@/core/tenant/tenant";
+import { requireTenantId, requireUserId } from "@/core/tenant/tenant";
 import {
   invalidateDashboardQueries,
   invalidateFinancialQueries,
@@ -17,18 +17,18 @@ import { InspectionStatus } from "@/modules/torres-vistoria/domain/enums";
 export function useInspections(filters?: InspectionFilters) {
   return useTenantQuery({
     queryKey: ["inspections", "list", filters] as const,
-    queryFn: (companyId) => inspectionService.list(companyId, filters),
+    queryFn: (tenantId) => inspectionService.list(tenantId, filters),
   });
 }
 
 export function useCreateInspection() {
   const qc = useQueryClient();
-  const { companyId, userId } = useUser();
+  const { tenantId, userId } = useUser();
 
   return useMutation({
     mutationFn: (input: VistoriaInput) =>
       inspectionService.create(input, {
-        companyId: requireCompanyId(companyId),
+        tenantId: requireTenantId(tenantId),
         inspectorId: requireUserId(userId),
       }),
     onSuccess: () => {

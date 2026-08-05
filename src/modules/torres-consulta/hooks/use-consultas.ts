@@ -6,17 +6,17 @@ import type { ConsultaRequestInput } from "@/modules/torres-consulta/schemas/con
 
 export const consultaKeys = {
   all: ["consulta"] as const,
-  list: (companyId: string, filters?: ConsultaFilters) =>
-    [...consultaKeys.all, "list", companyId, filters ?? {}] as const,
-  detail: (companyId: string, id: string) =>
-    [...consultaKeys.all, "detail", companyId, id] as const,
+  list: (tenantId: string, filters?: ConsultaFilters) =>
+    [...consultaKeys.all, "list", tenantId, filters ?? {}] as const,
+  detail: (tenantId: string, id: string) =>
+    [...consultaKeys.all, "detail", tenantId, id] as const,
 };
 
 export function useConsultas(filters?: ConsultaFilters) {
   const context = useConsultaContext();
 
   return useQuery({
-    queryKey: consultaKeys.list(context?.companyId ?? "", filters),
+    queryKey: consultaKeys.list(context?.tenantId ?? "", filters),
     queryFn: () => consultaService.list(context!, filters),
     enabled: Boolean(context),
   });
@@ -26,7 +26,7 @@ export function useConsulta(id: string | undefined) {
   const context = useConsultaContext();
 
   return useQuery({
-    queryKey: consultaKeys.detail(context?.companyId ?? "", id ?? ""),
+    queryKey: consultaKeys.detail(context?.tenantId ?? "", id ?? ""),
     queryFn: () => consultaService.getById(context!, id!),
     enabled: Boolean(context && id),
   });

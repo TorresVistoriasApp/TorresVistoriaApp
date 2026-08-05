@@ -8,8 +8,8 @@ import type { Consulta, ConsultaFilters } from "@/modules/torres-consulta/types/
  * trocar o registro — nenhuma tela ou hook muda.
  */
 export interface ConsultaRepository {
-  list(companyId: string, filters?: ConsultaFilters): Promise<Consulta[]>;
-  findById(companyId: string, id: string): Promise<Consulta | null>;
+  list(tenantId: string, filters?: ConsultaFilters): Promise<Consulta[]>;
+  findById(tenantId: string, id: string): Promise<Consulta | null>;
   save(consulta: Consulta): Promise<Consulta>;
 }
 
@@ -23,14 +23,14 @@ export interface ConsultaRepository {
 export function createInMemoryConsultaRepository(): ConsultaRepository {
   const store = new Map<string, Consulta>();
 
-  const scopedTo = (companyId: string) =>
+  const scopedTo = (tenantId: string) =>
     [...store.values()]
-      .filter((item) => item.companyId === companyId)
+      .filter((item) => item.tenantId === tenantId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return {
-    async list(companyId, filters) {
-      let results = scopedTo(companyId);
+    async list(tenantId, filters) {
+      let results = scopedTo(tenantId);
 
       if (filters?.type) {
         results = results.filter((item) => item.type === filters.type);
@@ -48,10 +48,10 @@ export function createInMemoryConsultaRepository(): ConsultaRepository {
       return results;
     },
 
-    async findById(companyId, id) {
+    async findById(tenantId, id) {
       const found = store.get(id);
       // Checagem de tenant no adaptador espelha o que a RLS fará no banco.
-      return found && found.companyId === companyId ? found : null;
+      return found && found.tenantId === tenantId ? found : null;
     },
 
     async save(consulta) {

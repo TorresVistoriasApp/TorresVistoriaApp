@@ -8,6 +8,7 @@ import { AdminLayout } from "@/layouts/admin-layout";
 import { ProtectedRoute } from "@/routes/guards/protected-route";
 import { PlatformAdminRoute } from "@/routes/guards/platform-admin-route";
 import { RequirePasswordChanged } from "@/routes/guards/require-password-changed";
+import { TenantGuard } from "@/core/tenant/tenant-guard";
 import type { ModuleRoutes } from "@/routes/route-contract";
 import { authRoutes } from "@/core/auth/routes";
 import { complianceRoutes } from "@/core/compliance/routes";
@@ -51,13 +52,21 @@ export const router = createBrowserRouter([
       },
 
       // Área autenticada do tenant.
+      //
+      // `standalone` fica fora do TenantGuard de propósito: trocar senha precisa
+      // funcionar mesmo quando a empresa não carregou, senão o usuário fica preso.
       {
         element: <ProtectedRoute />,
         children: [
           ...collect("standalone"),
           {
             element: <RequirePasswordChanged />,
-            children: [{ element: <ClientLayout />, children: collect("client") }],
+            children: [
+              {
+                element: <TenantGuard />,
+                children: [{ element: <ClientLayout />, children: collect("client") }],
+              },
+            ],
           },
         ],
       },

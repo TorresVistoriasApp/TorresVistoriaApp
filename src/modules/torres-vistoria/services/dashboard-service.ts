@@ -32,9 +32,9 @@ function createYearlyMonthlySeries(
 }
 
 export const dashboardService = {
-  async getMetrics(companyId: string): Promise<DashboardMetrics> {
+  async getMetrics(tenantId: string): Promise<DashboardMetrics> {
     try {
-      const { data, error } = await queries.dashboard.stats(companyId);
+      const { data, error } = await queries.dashboard.stats(tenantId);
       if (error) throw error;
       const stats = data as Record<string, number> | null;
       return {
@@ -50,12 +50,12 @@ export const dashboardService = {
     }
   },
 
-  async getRecentInspections(companyId: string, limit = 5): Promise<RecentInspection[]> {
+  async getRecentInspections(tenantId: string, limit = 5): Promise<RecentInspection[]> {
     try {
       const { data, error } = await db
         .from("inspections")
         .select("id, inspection_number, plate, brand, model, status, inspection_date, client_name")
-        .eq("company_id", companyId)
+        .eq("tenant_id", tenantId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(limit);
@@ -66,9 +66,9 @@ export const dashboardService = {
     }
   },
 
-  async getMonthlyInspections(companyId: string, year = new Date().getFullYear()) {
+  async getMonthlyInspections(tenantId: string, year = new Date().getFullYear()) {
     try {
-      const { data, error } = await queries.dashboard.monthly(companyId, year);
+      const { data, error } = await queries.dashboard.monthly(tenantId, year);
       if (error) throw error;
       return createYearlyMonthlySeries((data ?? []) as MonthlyInspectionRow[], year);
     } catch (error) {
@@ -76,9 +76,9 @@ export const dashboardService = {
     }
   },
 
-  async getInspectionsByBrand(companyId: string) {
+  async getInspectionsByBrand(tenantId: string) {
     try {
-      const { data, error } = await queries.dashboard.byBrand(companyId);
+      const { data, error } = await queries.dashboard.byBrand(tenantId);
       if (error) throw error;
       return data ?? [];
     } catch (error) {

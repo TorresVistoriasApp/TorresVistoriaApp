@@ -29,9 +29,9 @@ export function invalidateUserQueries(qc: QueryClient) {
   void qc.invalidateQueries({ queryKey: ["users", "team"] });
 }
 
-export function invalidateCompanyQueries(qc: QueryClient, companyId?: string) {
-  if (companyId) {
-    void qc.invalidateQueries({ queryKey: queryKeys.company.detail(companyId) });
-    void qc.invalidateQueries({ queryKey: queryKeys.company.settings(companyId) });
+export function invalidateCompanyQueries(qc: QueryClient, tenantId?: string) {
+  if (tenantId) {
+    void qc.invalidateQueries({ queryKey: queryKeys.company.detail(tenantId) });
+    void qc.invalidateQueries({ queryKey: queryKeys.company.settings(tenantId) });
   }
 }

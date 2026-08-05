@@ -10,12 +10,12 @@ import type { FinancialEntryInput } from "@/modules/torres-vistoria/schemas/fina
  */
 export const mutations = {
   inspections: {
-    create(data: VistoriaInput, userId: string, companyId: string) {
+    create(data: VistoriaInput, userId: string, tenantId: string) {
       return db
         .from("inspections")
         .insert({
           ...data,
-          company_id: companyId,
+          tenant_id: tenantId,
           inspector_id: userId,
           client_email: data.client_email || null,
           client_phone: data.client_phone || null,
@@ -62,12 +62,12 @@ export const mutations = {
   },
 
   financial: {
-    create(data: FinancialEntryInput, userId: string, companyId: string) {
+    create(data: FinancialEntryInput, userId: string, tenantId: string) {
       return db
         .from("financial_entries")
         .insert({
           ...data,
-          company_id: companyId,
+          tenant_id: tenantId,
           created_by: userId,
         })
         .select("*")
@@ -88,7 +88,7 @@ export const mutations = {
 
   photos: {
     create(row: {
-      company_id: string;
+      tenant_id: string;
       inspection_id: string;
       category: string;
       storage_path: string;

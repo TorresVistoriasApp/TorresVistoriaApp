@@ -28,7 +28,7 @@ export type IntegrationStatus = (typeof IntegrationStatus)[keyof typeof Integrat
 
 export type IntegrationConnection = {
   id: string;
-  companyId: string;
+  tenantId: string;
   provider: IntegrationProvider;
   status: IntegrationStatus;
   config: Record<string, unknown>;
@@ -38,7 +38,7 @@ export type IntegrationConnection = {
 /** Convite por e-mail (fluxo futuro — hoje `invite-user` cria usuário direto). */
 export type TenantInvitation = {
   id: string;
-  companyId: string;
+  tenantId: string;
   email: string;
   role: string;
   status: "pending" | "accepted" | "expired" | "revoked";
@@ -48,7 +48,7 @@ export type TenantInvitation = {
 /** Filial do tenant (múltiplas unidades). */
 export type CompanyBranch = {
   id: string;
-  companyId: string;
+  tenantId: string;
   name: string;
   code: string | null;
   isHeadquarters: boolean;
@@ -57,7 +57,7 @@ export type CompanyBranch = {
 /** Time operacional dentro do tenant. */
 export type CompanyTeam = {
   id: string;
-  companyId: string;
+  tenantId: string;
   branchId: string | null;
   name: string;
 };
@@ -65,7 +65,7 @@ export type CompanyTeam = {
 /** Assinatura recorrente (Stripe / gateway futuro). */
 export type CompanySubscription = {
   id: string;
-  companyId: string;
+  tenantId: string;
   planCode: string;
   status: "trialing" | "active" | "past_due" | "canceled";
   externalProvider: string | null;

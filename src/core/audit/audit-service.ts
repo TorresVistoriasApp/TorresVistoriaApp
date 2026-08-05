@@ -4,7 +4,7 @@ import type { Json } from "@/infra/supabase/database.types";
 
 export type AuditLog = {
   id: string;
-  company_id: string | null;
+  tenant_id: string | null;
   user_id: string | null;
   action: string;
   entity_type: string;
@@ -37,7 +37,7 @@ export type AuditEventInput = {
 
 export const auditService = {
   async list(
-    companyId: string | undefined,
+    tenantId: string | undefined,
     filters: AuditFilters = {},
     limit = 50,
     offset = 0,
@@ -46,7 +46,7 @@ export const auditService = {
       .from("audit_logs")
       .select(
         `
-        id, company_id, user_id, action, entity_type, entity_id,
+        id, tenant_id, user_id, action, entity_type, entity_id,
         old_data, new_data, ip_address, user_agent, created_at,
         user:profiles!audit_logs_user_id_fkey(id, full_name)
       `,
@@ -56,8 +56,8 @@ export const auditService = {
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (companyId) {
-      query = query.eq("company_id", companyId);
+    if (tenantId) {
+      query = query.eq("tenant_id", tenantId);
     }
 
     if (filters.action) query = query.eq("action", filters.action);

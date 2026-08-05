@@ -11,7 +11,7 @@
 export const PrincipalType = {
   /** Opera o SaaS: enxerga todos os tenants, não pertence a nenhum. */
   PLATFORM_ADMIN: "PLATFORM_ADMIN",
-  /** Usuário de uma empresa cliente; sempre possui `company_id` e `UserRole`. */
+  /** Usuário de uma empresa cliente; sempre possui `tenant_id` e `UserRole`. */
   TENANT_MEMBER: "TENANT_MEMBER",
   /** Consumidor final (B2C do Torres Consulta). Reservado — ainda sem persistência. */
   CUSTOMER: "CUSTOMER",

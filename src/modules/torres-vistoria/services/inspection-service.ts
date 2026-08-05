@@ -27,7 +27,7 @@ async function withInspectionPurpose<T extends Partial<VistoriaInput>>(data: T):
 
 export type Inspection = {
   id: string;
-  company_id: string;
+  tenant_id: string;
   inspector_id: string;
   inspection_number: number;
   inspection_date: string;
@@ -120,13 +120,13 @@ export type InspectionSearchResult = {
   total_count: number;
 };
 
-function buildChecklistSeed(companyId: string, inspectionId: string) {
-  return buildChecklistSeedRows(companyId, inspectionId);
+function buildChecklistSeed(tenantId: string, inspectionId: string) {
+  return buildChecklistSeedRows(tenantId, inspectionId);
 }
 
 export const inspectionService = {
   async list(
-    companyId: string,
+    tenantId: string,
     filters?: InspectionFilters,
   ): Promise<{ data: Inspection[]; count: number }> {
     try {
@@ -134,7 +134,7 @@ export const inspectionService = {
       const offset = filters?.offset ?? 0;
 
       let query = queries.inspections
-        .byCompany(companyId, { count: "exact" })
+        .byCompany(tenantId, { count: "exact" })
         .order("inspection_date", { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -157,12 +157,12 @@ export const inspectionService = {
   },
 
   async search(
-    companyId: string,
+    tenantId: string,
     params: Omit<InspectionFilters, "plate"> = {},
   ): Promise<{ data: InspectionSearchResult[]; count: number }> {
     try {
       const { data, error } = await db.rpc("search_inspections", {
-        p_company_id: companyId,
+        p_tenant_id: tenantId,
         p_query: params.search ?? undefined,
         p_status: params.status ?? undefined,
         p_start_date: params.dateFrom ?? undefined,
@@ -191,16 +191,16 @@ export const inspectionService = {
 
   async create(
     input: VistoriaInput,
-    meta: { companyId: string; inspectorId: string },
+    meta: { tenantId: string; inspectorId: string },
   ): Promise<Inspection> {
     try {
       const payload = await withInspectionPurpose(input);
       const inspection = throwIfError(
-        await mutations.inspections.create(payload, meta.inspectorId, meta.companyId),
+        await mutations.inspections.create(payload, meta.inspectorId, meta.tenantId),
         "Erro ao criar vistoria",
       );
 
-      const checklistRows = buildChecklistSeed(meta.companyId, inspection.id);
+      const checklistRows = buildChecklistSeed(meta.tenantId, inspection.id);
       const { error: checklistError } = await db
         .from("inspection_checklists")
         .insert(checklistRows);

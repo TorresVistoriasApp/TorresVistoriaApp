@@ -32,7 +32,7 @@ export type Company = {
 
 export type CompanySettings = {
   id: string;
-  company_id: string;
+  tenant_id: string;
   theme_mode: string;
   legal_footer: string | null;
   signature_image_url: string | null;
@@ -40,10 +40,10 @@ export type CompanySettings = {
 };
 
 export const companyService = {
-  async getCompany(companyId: string): Promise<Company> {
+  async getCompany(tenantId: string): Promise<Company> {
     try {
       const company = throwIfError(
-        await queries.companies.byId(companyId),
+        await queries.companies.byId(tenantId),
         "Empresa não encontrada",
       ) as Company;
       company.logo_url = await resolveStorageUrl(COMPANY_ASSETS_BUCKET, company.logo_url);
@@ -53,7 +53,7 @@ export const companyService = {
     }
   },
 
-  async updateCompany(companyId: string, input: CompanyInput): Promise<Company> {
+  async updateCompany(tenantId: string, input: CompanyInput): Promise<Company> {
     try {
       const { data, error } = await db
         .from("companies")
@@ -73,7 +73,7 @@ export const companyService = {
           location: buildCompanyLocation(input),
           address: buildCompanyAddress(input),
         })
-        .eq("id", companyId)
+        .eq("id", tenantId)
         .select("*")
         .single();
       if (error) throw error;
@@ -83,9 +83,9 @@ export const companyService = {
     }
   },
 
-  async getSettings(companyId: string): Promise<CompanySettings | null> {
+  async getSettings(tenantId: string): Promise<CompanySettings | null> {
     try {
-      const { data, error } = await queries.companies.settings(companyId);
+      const { data, error } = await queries.companies.settings(tenantId);
       if (error) throw error;
       if (!data) return null;
       const settings = data as CompanySettings;
@@ -99,7 +99,7 @@ export const companyService = {
     }
   },
 
-  async updateSettings(companyId: string, input: SettingsInput): Promise<CompanySettings> {
+  async updateSettings(tenantId: string, input: SettingsInput): Promise<CompanySettings> {
     try {
       const signaturePath =
         extractStoragePath(input.signature_image_url || null, COMPANY_ASSETS_BUCKET) ??
@@ -112,12 +112,12 @@ export const companyService = {
         watermark_enabled: input.watermark_enabled,
       };
 
-      const existing = await companyService.getSettings(companyId);
+      const existing = await companyService.getSettings(tenantId);
       if (existing) {
         const { data, error } = await db
           .from("settings")
           .update(payload)
-          .eq("company_id", companyId)
+          .eq("tenant_id", tenantId)
           .select("*")
           .single();
         if (error) throw error;
@@ -126,7 +126,7 @@ export const companyService = {
 
       const { data, error } = await db
         .from("settings")
-        .insert({ company_id: companyId, ...payload })
+        .insert({ tenant_id: tenantId, ...payload })
         .select("*")
         .single();
       if (error) throw error;
@@ -137,30 +137,30 @@ export const companyService = {
   },
 
   async uploadAsset(
-    companyId: string,
+    tenantId: string,
     file: File,
     kind: "logo" | "signature",
   ): Promise<string> {
     try {
       const compressed = await compressToWebP(file);
-      const path = `${companyId}/${kind}.webp`;
+      const path = `${tenantId}/${kind}.webp`;
       const { error: uploadError } = await db.storage
         .from(COMPANY_ASSETS_BUCKET)
         .upload(path, compressed, { upsert: true, contentType: "image/webp" });
       if (uploadError) throw uploadError;
 
       if (kind === "logo") {
-        await db.from("companies").update({ logo_url: path }).eq("id", companyId);
+        await db.from("companies").update({ logo_url: path }).eq("id", tenantId);
       } else {
-        const settings = await companyService.getSettings(companyId);
+        const settings = await companyService.getSettings(tenantId);
         if (settings) {
           await db
             .from("settings")
             .update({ signature_image_url: path })
-            .eq("company_id", companyId);
+            .eq("tenant_id", tenantId);
         } else {
           await db.from("settings").insert({
-            company_id: companyId,
+            tenant_id: tenantId,
             signature_image_url: path,
           });
         }

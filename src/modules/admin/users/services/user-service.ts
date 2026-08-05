@@ -11,7 +11,7 @@ import type { UserProfileInput } from "@/modules/admin/users/schemas/user";
 
 export type TeamProfile = {
   id: string;
-  company_id: string;
+  tenant_id: string;
   full_name: string;
   role: string;
   avatar_url: string | null;
@@ -40,9 +40,9 @@ export const userService = {
     }
   },
 
-  async listTeam(companyId: string): Promise<TeamProfile[]> {
+  async listTeam(tenantId: string): Promise<TeamProfile[]> {
     try {
-      const { data, error } = await queries.profiles.team(companyId);
+      const { data, error } = await queries.profiles.team(tenantId);
       if (error) throw error;
       const rows = (data ?? []) as TeamProfile[];
       return Promise.all(rows.map((row) => withSignedAvatar(row)));

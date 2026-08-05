@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
         must_change_password: true,
       },
       app_metadata: {
-        company_id: company.id,
+        tenant_id: company.id,
         role: "SUPER_ADMIN",
       },
     });
@@ -106,16 +106,16 @@ Deno.serve(async (req) => {
 
     if (profileError) throw profileError;
 
-    await supabase.from("settings").insert({ company_id: company.id });
+    await supabase.from("settings").insert({ tenant_id: company.id });
 
     await supabase.from("inspection_types").insert(
-      DEFAULT_INSPECTION_TYPES.map((type) => ({ ...type, company_id: company.id })),
+      DEFAULT_INSPECTION_TYPES.map((type) => ({ ...type, tenant_id: company.id })),
     );
 
     return new Response(
       JSON.stringify({
         success: true,
-        companyId: company.id,
+        tenantId: company.id,
         adminUserId: created.user.id,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },

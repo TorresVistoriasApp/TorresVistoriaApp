@@ -39,14 +39,14 @@ export function getRememberedActiveDraftId(): string | null {
 
 export const draftService = {
   async findActiveDraft(
-    companyId: string,
+    tenantId: string,
     inspectorId: string,
   ): Promise<ActiveDraftSummary | null> {
     try {
       const { data, error } = await db
         .from("inspections")
         .select(draftSelectFields())
-        .eq("company_id", companyId)
+        .eq("tenant_id", tenantId)
         .eq("inspector_id", inspectorId)
         .eq("status", InspectionStatus.DRAFT)
         .is("deleted_at", null)
@@ -68,17 +68,17 @@ export const draftService = {
   },
 
   async createEmptyDraft(meta: {
-    companyId: string;
+    tenantId: string;
     inspectorId: string;
   }): Promise<Inspection> {
     try {
       const input = buildEmptyDraftInput();
       const inspection = throwIfError(
-        await mutations.inspections.create(input, meta.inspectorId, meta.companyId),
+        await mutations.inspections.create(input, meta.inspectorId, meta.tenantId),
         "Erro ao criar rascunho",
       );
 
-      const checklistRows = buildChecklistSeedRows(meta.companyId, inspection.id);
+      const checklistRows = buildChecklistSeedRows(meta.tenantId, inspection.id);
       const { error: checklistError } = await db.from("inspection_checklists").insert(checklistRows);
       if (checklistError) throw checklistError;
 

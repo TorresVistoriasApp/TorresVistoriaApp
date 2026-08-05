@@ -17,9 +17,10 @@ import {
   type Company,
   type CompanySettings,
 } from "@/core/tenant/company-service";
+import { resolveTenant, resolvedTenantId } from "@/core/tenant/tenant-resolver";
 
 interface CompanyContextValue {
-  companyId: string | null;
+  tenantId: string | null;
   company: Company | null;
   settings: CompanySettings | null;
   /** Plano SaaS da empresa (`companies.subscription_plan`). */
@@ -31,25 +32,31 @@ interface CompanyContextValue {
 
 const CompanyContext = createContext<CompanyContextValue | undefined>(undefined);
 
-async function loadTenantData(companyId: string): Promise<{
+async function loadTenantData(tenantId: string): Promise<{
   company: Company;
   settings: CompanySettings | null;
 }> {
   const [company, settings] = await Promise.all([
-    companyService.getCompany(companyId),
-    companyService.getSettings(companyId),
+    companyService.getCompany(tenantId),
+    companyService.getSettings(tenantId),
   ]);
 
-  queryClient.setQueryData(queryKeys.company.detail(companyId), company);
-  queryClient.setQueryData(queryKeys.company.settings(companyId), settings);
+  queryClient.setQueryData(queryKeys.company.detail(tenantId), company);
+  queryClient.setQueryData(queryKeys.company.settings(tenantId), settings);
 
   return { company, settings };
 }
 
 export function CompanyProvider({ children }: { children: ReactNode }) {
-  const { companyId, loading: userLoading, profile } = useUser();
+  const { tenantId, loading: userLoading, profile } = useUser();
   const { isPlatformAdmin, session } = useAuth();
-  const resolvedCompanyId = companyId ?? profile?.company_id ?? null;
+  const tenant = resolvedTenantId(
+    resolveTenant({
+      hasSession: Boolean(session),
+      isPlatformAdmin,
+      sessionTenantId: tenantId ?? profile?.tenant_id,
+    }),
+  );
 
   const [company, setCompany] = useState<Company | null>(null);
   const [settings, setSettings] = useState<CompanySettings | null>(null);
@@ -57,7 +64,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const refreshCompany = useCallback(async () => {
-    if (!resolvedCompanyId || isPlatformAdmin) {
+    // `tenant` já é null para operador da plataforma e para sessão sem empresa.
+    if (!tenant) {
       setCompany(null);
       setSettings(null);
       setError(null);
@@ -67,7 +75,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const data = await loadTenantData(resolvedCompanyId);
+      const data = await loadTenantData(tenant);
       setCompany(data.company);
       setSettings(data.settings);
     } catch (err) {
@@ -77,10 +85,10 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [resolvedCompanyId, isPlatformAdmin]);
+  }, [tenant]);
 
   useEffect(() => {
-    if (userLoading || !session || isPlatformAdmin || !resolvedCompanyId) {
+    if (userLoading || !tenant) {
       setCompany(null);
       setSettings(null);
       setError(null);
@@ -92,7 +100,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
 
-    void loadTenantData(resolvedCompanyId)
+    void loadTenantData(tenant)
       .then((data) => {
         if (!isActive) return;
         setCompany(data.company);
@@ -113,11 +121,11 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     return () => {
       isActive = false;
     };
-  }, [userLoading, session, isPlatformAdmin, resolvedCompanyId]);
+  }, [userLoading, tenant]);
 
   const value = useMemo(
     () => ({
-      companyId: resolvedCompanyId,
+      tenantId: tenant,
       company,
       settings,
       plan: company?.subscription_plan ?? null,
@@ -125,7 +133,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       error,
       refreshCompany,
     }),
-    [resolvedCompanyId, company, settings, loading, error, refreshCompany],
+    [tenant, company, settings, loading, error, refreshCompany],
   );
 
   return <CompanyContext.Provider value={value}>{children}</CompanyContext.Provider>;

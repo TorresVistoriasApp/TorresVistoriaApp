@@ -24,7 +24,7 @@ import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 export type InspectionPhoto = {
   id: string;
   inspection_id: string;
-  company_id: string;
+  tenant_id: string;
   category: string;
   section_key: string | null;
   subcategory: string | null;
@@ -60,7 +60,7 @@ export type InspectionPhoto = {
 };
 
 export type PhotoUploadParams = {
-  companyId: string;
+  tenantId: string;
   inspectionId: string;
   category: string;
   latitude?: number | null;
@@ -132,7 +132,7 @@ export const photoService = {
           const categoryMeta = resolveCategoryMeta(params.category);
           const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
           const storagePath = buildInspectionPhotoPath(
-            params.companyId,
+            params.tenantId,
             params.inspectionId,
             categoryMeta.normalizedCategory,
             fileName,
@@ -159,7 +159,7 @@ export const photoService = {
           const now = new Date().toISOString();
 
           const insertResult = await insertInspectionPhoto({
-            company_id: params.companyId,
+            tenant_id: params.tenantId,
             inspection_id: params.inspectionId,
             category: categoryMeta.normalizedCategory,
             section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,

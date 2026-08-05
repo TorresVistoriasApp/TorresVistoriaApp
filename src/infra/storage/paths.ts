@@ -1,18 +1,18 @@
 /**
  * Layout canônico do Supabase Storage (Etapa 6).
  *
- * Fotos:  {company_id}/{inspection_id}/{photo_category}/{arquivo}.webp
- * Thumb:  {company_id}/{inspection_id}/{photo_category}/thumbs/{arquivo}.webp
- * Laudos: {company_id}/{inspection_id}/{arquivo}.pdf
+ * Fotos:  {tenant_id}/{inspection_id}/{photo_category}/{arquivo}.webp
+ * Thumb:  {tenant_id}/{inspection_id}/{photo_category}/thumbs/{arquivo}.webp
+ * Laudos: {tenant_id}/{inspection_id}/{arquivo}.pdf
  */
 
 export function buildInspectionPhotoPath(
-  companyId: string,
+  tenantId: string,
   inspectionId: string,
   category: string,
   fileName: string,
 ): string {
-  return `${companyId}/${inspectionId}/${category}/${fileName}`;
+  return `${tenantId}/${inspectionId}/${category}/${fileName}`;
 }
 
 /** Path do thumbnail na subpasta thumbs/ dentro da categoria. */
@@ -24,11 +24,11 @@ export function buildInspectionPhotoThumbnailPath(storagePath: string): string {
 }
 
 export function buildReportStoragePath(
-  companyId: string,
+  tenantId: string,
   inspectionId: string,
   fileName: string,
 ): string {
-  return `${companyId}/${inspectionId}/${fileName}`;
+  return `${tenantId}/${inspectionId}/${fileName}`;
 }
 
 /** @deprecated use buildInspectionPhotoPath */

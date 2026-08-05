@@ -7,7 +7,7 @@ export type UserDataExport = {
   exportedAt: string;
   profile: Pick<
     Profile,
-    "id" | "full_name" | "role" | "created_at" | "company_id" | "email" | "is_active"
+    "id" | "full_name" | "role" | "created_at" | "tenant_id" | "email" | "is_active"
   >;
   email: string | null;
   inspections: Array<Record<string, unknown>>;
@@ -47,7 +47,7 @@ export const lgpdService = {
           full_name: profile.full_name,
           role: profile.role,
           created_at: profile.created_at,
-          company_id: profile.company_id,
+          tenant_id: profile.tenant_id,
           email: profile.email ?? null,
           is_active: profile.is_active ?? true,
         },
