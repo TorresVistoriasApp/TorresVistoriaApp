@@ -1,6 +1,11 @@
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { AUDIT_ACTIONS, ENTITY_LABELS } from "@/lib/audit-utils";
+import {
+  ACTION_LABELS,
+  AUDIT_APP_ACTIONS,
+  AUDIT_DML_ACTIONS,
+  ENTITY_LABELS,
+} from "@/lib/audit-utils";
 import type { AuditFilters } from "@/services/audit-service";
 import type { TeamProfile } from "@/services/user-service";
 
@@ -11,6 +16,12 @@ type AuditFiltersBarProps = {
   onFiltersChange: (filters: AuditFilters) => void;
   onSearchChange: (search: string) => void;
 };
+
+const ACTION_GROUPS = [
+  { label: "Todas ações", value: undefined },
+  ...AUDIT_DML_ACTIONS.map((action) => ({ label: ACTION_LABELS[action], value: action })),
+  ...AUDIT_APP_ACTIONS.map((action) => ({ label: ACTION_LABELS[action], value: action })),
+] as const;
 
 export function AuditFiltersBar({
   filters,
@@ -26,29 +37,18 @@ export function AuditFiltersBar({
   return (
     <div className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-soft sm:p-5">
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => onFiltersChange({ ...filters, action: undefined })}
-          className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-            !filters.action
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          Todas ações
-        </button>
-        {AUDIT_ACTIONS.map((action) => (
+        {ACTION_GROUPS.map((group) => (
           <button
-            key={action}
+            key={group.label}
             type="button"
-            onClick={() => onFiltersChange({ ...filters, action })}
+            onClick={() => onFiltersChange({ ...filters, action: group.value })}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-              filters.action === action
+              filters.action === group.value
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            {action === "INSERT" ? "Criações" : action === "UPDATE" ? "Alterações" : "Exclusões"}
+            {group.label}
           </button>
         ))}
       </div>

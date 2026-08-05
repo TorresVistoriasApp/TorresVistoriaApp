@@ -5,6 +5,7 @@ import { sanitizeEmail } from "@/lib/sanitize";
 import { resolveStorageUrl } from "@/lib/storage-url";
 import { AVATARS_BUCKET } from "@/lib/storage-buckets";
 import { platformAdminService } from "@/services/platform-admin-service";
+import { auditService } from "@/services/audit-service";
 import type { Profile } from "@/types";
 import type { ChangePasswordInput } from "@/schemas/auth";
 
@@ -27,9 +28,12 @@ export const authService = {
         throw new AppError(USER_MESSAGES.accountDisabled);
       }
     }
+
+    await auditService.recordEvent({ action: "LOGIN", entityType: "auth" }).catch(() => undefined);
   },
 
   async signOut(): Promise<void> {
+    await auditService.recordEvent({ action: "LOGOUT", entityType: "auth" }).catch(() => undefined);
     const { error } = await db.auth.signOut();
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },

@@ -1,4 +1,5 @@
 import { PUBLIC_IMAGES } from "@/lib/public-images";
+import { logAuditEvent } from "@/lib/audit-events";
 
 type ExportColumn<T> = {
   header: string;
@@ -142,4 +143,13 @@ export async function exportToExcel<T extends Record<string, unknown>>(
   anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(url);
+  logAuditEvent("EXPORT_EXCEL", {
+    entityType: "export",
+    metadata: {
+      filename,
+      title: options.title,
+      subtitle: options.subtitle,
+      rowCount: rows.length,
+    },
+  });
 }
