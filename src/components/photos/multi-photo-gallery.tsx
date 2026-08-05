@@ -14,6 +14,8 @@ interface MultiPhotoGalleryProps {
   onCapture: () => void;
   onViewPhoto?: (photo: InspectionPhoto) => void;
   onRetakePhoto?: (photo: InspectionPhoto) => void;
+  resolvePhotoLabel?: (photo: InspectionPhoto, index: number) => string;
+  resolvePhotoSubtitle?: (photo: InspectionPhoto) => string | null;
   className?: string;
 }
 
@@ -25,6 +27,8 @@ export function MultiPhotoGallery({
   onCapture,
   onViewPhoto,
   onRetakePhoto,
+  resolvePhotoLabel,
+  resolvePhotoSubtitle,
   className,
 }: MultiPhotoGalleryProps) {
   const sortedPhotos = [...photos].sort(
@@ -42,11 +46,19 @@ export function MultiPhotoGallery({
       ? "uploading"
       : "captured";
 
+  const latestIndex = latest ? sortedPhotos.findIndex((photo) => photo.id === latest.id) : -1;
+  const latestLabel =
+    latest && resolvePhotoLabel
+      ? resolvePhotoLabel(latest, Math.max(latestIndex, 0))
+      : label;
+  const latestSubtitle = latest && resolvePhotoSubtitle ? resolvePhotoSubtitle(latest) : null;
+
   return (
     <>
       <PhotoGuideCard
         className={className}
-        categoryName={label}
+        categoryName={latestLabel}
+        subtitle={latestSubtitle ?? undefined}
         guide={guide}
         status={mainStatus}
         required={required}
@@ -66,7 +78,8 @@ export function MultiPhotoGallery({
       {olderConfirmed.map((photo, index) => (
         <PhotoGuideCard
           key={photo.id}
-          categoryName={`${label} ${index + 1}`}
+          categoryName={resolvePhotoLabel?.(photo, index) ?? `${label} ${index + 1}`}
+          subtitle={resolvePhotoSubtitle?.(photo) ?? undefined}
           guide={guide}
           status="captured"
           imageUrl={photo.thumbnail_url || photo.public_url}
@@ -80,7 +93,11 @@ export function MultiPhotoGallery({
       {otherPending.map((photo, index) => (
         <PhotoGuideCard
           key={photo.id}
-          categoryName={`${label} ${olderConfirmed.length + index + 1}`}
+          categoryName={
+            resolvePhotoLabel?.(photo, olderConfirmed.length + index) ??
+            `${label} ${olderConfirmed.length + index + 1}`
+          }
+          subtitle={resolvePhotoSubtitle?.(photo) ?? undefined}
           guide={guide}
           status="uploading"
           imageUrl={photo.thumbnail_url || photo.public_url}
