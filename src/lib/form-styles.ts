@@ -9,6 +9,16 @@ export const formGridClass = cn(
 
 export const formGridFullWidthClass = "sm:col-span-2";
 
+/** Grid denso para Avaliação Técnica — mobile 1 col, desktop 2–3 cols */
+export const evaluationGridClass = cn(
+  "grid grid-cols-1 gap-3",
+  "sm:grid-cols-2 sm:gap-x-4",
+  "lg:grid-cols-3 lg:gap-x-4 lg:gap-y-3",
+);
+
+export const evaluationSpan2 = "sm:col-span-2";
+export const evaluationSpan3 = "lg:col-span-3 sm:col-span-2";
+
 export const selectInputClass = cn(
   "flex h-11 w-full min-h-[44px] rounded-xl border border-border bg-card px-4 text-sm shadow-soft touch-target",
   "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",

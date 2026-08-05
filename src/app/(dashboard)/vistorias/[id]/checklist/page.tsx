@@ -23,6 +23,7 @@ export function Page() {
     inspectionId,
     inspection,
     checklist: items,
+    photos,
     isLoadingChecklist: isLoading,
     isLoading: isLoadingInspection,
   } = useInspectionContext();
@@ -88,6 +89,7 @@ export function Page() {
       inspection={inspection}
       inspectionId={inspectionId}
       checklistItems={items}
+      photos={photos}
       isLoadingChecklist={isLoading}
       wizardMode={isWizardFlow}
       isSaving={updateInspection.isPending}

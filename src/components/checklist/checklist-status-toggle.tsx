@@ -1,7 +1,6 @@
 import { ChecklistStatus } from "@/lib/enums";
 import { getChecklistStatusMeta } from "@/lib/checklist-status";
 import { cn } from "@/lib/utils";
-import { Circle } from "lucide-react";
 
 const EVALUATION_STATUSES = [
   ChecklistStatus.CONFORME,
@@ -9,16 +8,13 @@ const EVALUATION_STATUSES = [
   ChecklistStatus.NA,
 ] as const;
 
-const STATUS_ICONS: Partial<Record<(typeof EVALUATION_STATUSES)[number], typeof Circle>> = {
-  [ChecklistStatus.NA]: Circle,
-};
-
 type ChecklistStatusToggleProps = {
   value: string;
   disabled?: boolean;
   onChange: (status: string) => void;
   compact?: boolean;
   fullWidth?: boolean;
+  variant?: "default" | "segmented";
   className?: string;
 };
 
@@ -28,8 +24,51 @@ export function ChecklistStatusToggle({
   onChange,
   compact = false,
   fullWidth = false,
+  variant = "default",
   className,
 }: ChecklistStatusToggleProps) {
+  const isSegmented = variant === "segmented" || (compact && fullWidth);
+
+  if (isSegmented) {
+    return (
+      <div
+        className={cn(
+          "flex w-full gap-1.5 rounded-lg bg-muted/50 p-1",
+          className,
+        )}
+        role="group"
+        aria-label="Status do item"
+      >
+        {EVALUATION_STATUSES.map((status) => {
+          const meta = getChecklistStatusMeta(status);
+          const isActive = value === status;
+
+          return (
+            <button
+              key={status}
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange(status)}
+              title={meta.label}
+              aria-label={meta.label}
+              aria-pressed={isActive}
+              className={cn(
+                "min-h-[40px] flex-1 rounded-md px-1.5 py-2 text-center text-[10px] font-semibold leading-tight transition-all duration-150 sm:min-h-[36px] sm:text-xs",
+                "disabled:opacity-50",
+                isActive
+                  ? cn(meta.badgeActive, "shadow-sm")
+                  : "bg-transparent text-muted-foreground hover:bg-background/80",
+              )}
+            >
+              <span className="hidden sm:inline">{meta.label}</span>
+              <span className="sm:hidden">{meta.mobileLabel}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   const stackedMobile = (compact || fullWidth) && fullWidth;
 
   return (
@@ -44,7 +83,6 @@ export function ChecklistStatusToggle({
     >
       {EVALUATION_STATUSES.map((status) => {
         const meta = getChecklistStatusMeta(status);
-        const Icon = STATUS_ICONS[status];
         const isActive = value === status;
 
         return (
@@ -63,7 +101,6 @@ export function ChecklistStatusToggle({
               isActive ? meta.badgeActive : meta.badgeIdle,
             )}
           >
-            {Icon ? <Icon className="size-4 shrink-0" /> : null}
             {stackedMobile ? (
               <>
                 <span className="text-center text-[10px] font-bold leading-tight sm:hidden">
