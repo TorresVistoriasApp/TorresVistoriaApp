@@ -17,7 +17,13 @@ import {
   Wrench,
 } from "lucide-react";
 import { resolveTechnicalGuide } from "@/lib/photos/visual-guides";
-import type { PhotoCategoryDefinition, PhotoCategoryType, PhotoSectionDefinition } from "@/lib/photos/types";
+import type {
+  PhotoCategoryDefinition,
+  PhotoCategoryType,
+  PhotoSectionDefinition,
+  PhotoSubsectionDefinition,
+  PhotoVisibilityCondition,
+} from "@/lib/photos/types";
 import {
   LEGACY_TO_NEW_CATEGORY,
   normalizePhotoCategory,
@@ -33,6 +39,8 @@ type CategoryInput = {
   minCount?: number;
   maxCount?: number;
   type?: PhotoCategoryType;
+  subsectionKey?: string;
+  visibleWhen?: PhotoVisibilityCondition;
 };
 
 function category(
@@ -44,6 +52,7 @@ function category(
   return {
     key: input.key,
     sectionKey,
+    subsectionKey: input.subsectionKey,
     name: input.name,
     description: input.description,
     icon: input.icon ?? Camera,
@@ -57,8 +66,39 @@ function category(
     technicalGuide: resolveTechnicalGuide(input.key, input.name),
     visualGuide: resolveTechnicalGuide(input.key, input.name),
     estimatedCaptureSeconds: 25,
+    visibleWhen: input.visibleWhen,
   };
 }
+
+function subsection(
+  key: string,
+  sortOrder: number,
+  name: string,
+  categories: PhotoCategoryDefinition[],
+  options?: {
+    description?: string;
+    guidance?: string;
+    visibleWhen?: PhotoVisibilityCondition;
+  },
+): PhotoSubsectionDefinition {
+  return {
+    key,
+    name,
+    sortOrder,
+    description: options?.description,
+    guidance: options?.guidance,
+    visibleWhen: options?.visibleWhen,
+    categories,
+  };
+}
+
+type SectionOptions = {
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+  guidance?: string;
+  subsections?: PhotoSubsectionDefinition[];
+  visibleWhen?: PhotoVisibilityCondition;
+};
 
 function section(
   key: string,
@@ -67,20 +107,28 @@ function section(
   description: string,
   icon: LucideIcon,
   categories: PhotoCategoryDefinition[],
-  options?: { collapsible?: boolean; defaultOpen?: boolean },
+  options?: SectionOptions,
 ): PhotoSectionDefinition {
-  const requiredCategories = categories.filter((c) => c.required && c.type === "SINGLE");
+  const subsections = options?.subsections;
+  const resolvedCategories = subsections
+    ? subsections.flatMap((group) => group.categories)
+    : categories;
+
+  const requiredCategories = resolvedCategories.filter((c) => c.required && c.type === "SINGLE");
   return {
     key,
     name,
     description,
+    guidance: options?.guidance,
     icon,
     sortOrder,
     minRequiredCount: requiredCategories.length,
-    maxAllowedCount: categories.reduce((sum, c) => sum + c.maxCount, 0),
-    categories,
+    maxAllowedCount: resolvedCategories.reduce((sum, c) => sum + c.maxCount, 0),
+    categories: resolvedCategories,
+    subsections,
     collapsible: options?.collapsible,
     defaultOpen: options?.defaultOpen ?? true,
+    visibleWhen: options?.visibleWhen,
   };
 }
 
@@ -418,62 +466,83 @@ const TETO_PINTURA_CATEGORIES = [
 
 // ─── Etapa 11 — Quadros das portas ────────────────────────────────────────────
 
-const QUADROS_PORTAS_CATEGORIES = [
+const QDP_PORTAS_CATEGORIES = [
   category("QUADROS_PORTAS", 1, {
     key: "QDP_PORTA_DIANT_ESQ",
+    subsectionKey: "QDP_PORTAS",
     name: "Porta dianteira esquerda",
     description: "Quadro da porta dianteira esquerda sem borracha de vedação.",
     icon: Layers,
   }),
   category("QUADROS_PORTAS", 2, {
     key: "QDP_PORTA_TRASEIRA_ESQ",
+    subsectionKey: "QDP_PORTAS",
     name: "Porta traseira esquerda",
     description: "Quadro da porta traseira esquerda sem borracha de vedação.",
     icon: Layers,
   }),
   category("QUADROS_PORTAS", 3, {
     key: "QDP_PORTA_DIANT_DIR",
+    subsectionKey: "QDP_PORTAS",
     name: "Porta dianteira direita",
     description: "Quadro da porta dianteira direita sem borracha de vedação.",
     icon: Layers,
   }),
   category("QUADROS_PORTAS", 4, {
     key: "QDP_PORTA_TRASEIRA_DIR",
+    subsectionKey: "QDP_PORTAS",
     name: "Porta traseira direita",
     description: "Quadro da porta traseira direita sem borracha de vedação.",
     icon: Layers,
   }),
+];
+
+const QDP_TESTE_PINTURA_CATEGORIES = [
   category("QUADROS_PORTAS", 5, {
     key: "QDP_TESTE_PINTURA_1",
+    subsectionKey: "QDP_TESTE_PINTURA",
     name: "Teste de pintura 1",
     description: "Foto com caneta teste ou medidor de espessura.",
     icon: Paintbrush,
   }),
   category("QUADROS_PORTAS", 6, {
     key: "QDP_TESTE_PINTURA_2",
+    subsectionKey: "QDP_TESTE_PINTURA",
     name: "Teste de pintura 2",
     description: "Foto com caneta teste ou medidor de espessura.",
     icon: Paintbrush,
   }),
   category("QUADROS_PORTAS", 7, {
     key: "QDP_TESTE_PINTURA_3",
+    subsectionKey: "QDP_TESTE_PINTURA",
     name: "Teste de pintura 3",
     description: "Foto com caneta teste ou medidor de espessura.",
     icon: Paintbrush,
   }),
   category("QUADROS_PORTAS", 8, {
     key: "QDP_TESTE_PINTURA_4",
+    subsectionKey: "QDP_TESTE_PINTURA",
     name: "Teste de pintura 4",
     description: "Foto com caneta teste ou medidor de espessura.",
     icon: Paintbrush,
   }),
 ];
 
+const QUADROS_PORTAS_SUBSECTIONS = [
+  subsection("QDP_PORTAS", 1, "Quadros das portas", QDP_PORTAS_CATEGORIES, {
+    guidance: "Fotografar os quadros das portas sem a borracha de vedação.",
+  }),
+  subsection("QDP_TESTE_PINTURA", 2, "Teste de pintura", QDP_TESTE_PINTURA_CATEGORIES, {
+    guidance: "Utilize caneta teste ou medidor de espessura. São 4 fotografias obrigatórias.",
+  }),
+];
+
 // ─── Etapa 12 — Fotos extras ──────────────────────────────────────────────────
 
-const FOTOS_EXTRAS_CATEGORIES = [
+const EXTRAS_ITENS_CATEGORIES = [
   category("FOTOS_EXTRAS", 1, {
     key: "EXTRA_CHAVE_PRINCIPAL",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Chave principal",
     description: "Chave principal do veículo.",
     icon: Key,
@@ -481,6 +550,7 @@ const FOTOS_EXTRAS_CATEGORIES = [
   }),
   category("FOTOS_EXTRAS", 2, {
     key: "EXTRA_CHAVE_RESERVA",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Chave reserva",
     description: "Chave reserva do veículo.",
     icon: Key,
@@ -488,6 +558,7 @@ const FOTOS_EXTRAS_CATEGORIES = [
   }),
   category("FOTOS_EXTRAS", 3, {
     key: "EXTRA_MANUAL_PROPRIETARIO",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Manual do proprietário",
     description: "Manual do proprietário.",
     icon: BookOpen,
@@ -495,6 +566,7 @@ const FOTOS_EXTRAS_CATEGORIES = [
   }),
   category("FOTOS_EXTRAS", 4, {
     key: "EXTRA_ESTEPE",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Estepe",
     description: "Estepe e estado de conservação.",
     icon: Car,
@@ -502,6 +574,7 @@ const FOTOS_EXTRAS_CATEGORIES = [
   }),
   category("FOTOS_EXTRAS", 5, {
     key: "EXTRA_RODAS",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Rodas",
     description: "Rodas do veículo.",
     icon: Car,
@@ -509,6 +582,7 @@ const FOTOS_EXTRAS_CATEGORIES = [
   }),
   category("FOTOS_EXTRAS", 6, {
     key: "EXTRA_PNEUS_ESTADO",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Pneus (estado de conservação)",
     description: "Estado geral de conservação dos pneus.",
     icon: Car,
@@ -516,6 +590,7 @@ const FOTOS_EXTRAS_CATEGORIES = [
   }),
   category("FOTOS_EXTRAS", 7, {
     key: "EXTRA_CHAVE_RODA",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Chave de roda",
     description: "Chave de roda.",
     icon: Wrench,
@@ -523,6 +598,7 @@ const FOTOS_EXTRAS_CATEGORIES = [
   }),
   category("FOTOS_EXTRAS", 8, {
     key: "EXTRA_MACACO",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Macaco",
     description: "Macaco hidráulico ou manual.",
     icon: Wrench,
@@ -530,48 +606,15 @@ const FOTOS_EXTRAS_CATEGORIES = [
   }),
   category("FOTOS_EXTRAS", 9, {
     key: "EXTRA_TRIANGULO",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Triângulo",
     description: "Triângulo de sinalização.",
     icon: AlertTriangle,
     required: false,
   }),
   category("FOTOS_EXTRAS", 10, {
-    key: "BLIND_VIDRO_DIANT_ESQ",
-    name: "Vidro dianteiro esquerdo",
-    description: "Vidro dianteiro esquerdo (blindagem).",
-    icon: Shield,
-    required: false,
-  }),
-  category("FOTOS_EXTRAS", 11, {
-    key: "BLIND_VIDRO_DIANT_DIR",
-    name: "Vidro dianteiro direito",
-    description: "Vidro dianteiro direito (blindagem).",
-    icon: Shield,
-    required: false,
-  }),
-  category("FOTOS_EXTRAS", 12, {
-    key: "BLIND_ESPESSURA_VIDRO",
-    name: "Espessura do vidro",
-    description: "Medição ou evidência da espessura do vidro blindado.",
-    icon: Shield,
-    required: false,
-  }),
-  category("FOTOS_EXTRAS", 13, {
-    key: "BLIND_MARCA_VIDRO",
-    name: "Marca gravada no vidro",
-    description: "Marca gravada no vidro blindado.",
-    icon: Shield,
-    required: false,
-  }),
-  category("FOTOS_EXTRAS", 14, {
-    key: "BLIND_DOC_AUTORIZACAO",
-    name: "Documento de autorização da blindagem",
-    description: "Documento de autorização da blindagem.",
-    icon: FileText,
-    required: false,
-  }),
-  category("FOTOS_EXTRAS", 15, {
     key: "COMPLEMENTAR",
+    subsectionKey: "EXTRAS_ITENS",
     name: "Foto complementar",
     description: "Fotos adicionais não listadas acima.",
     icon: Plus,
@@ -579,6 +622,59 @@ const FOTOS_EXTRAS_CATEGORIES = [
     required: false,
     minCount: 0,
     maxCount: 999,
+  }),
+];
+
+const EXTRAS_BLINDAGEM_CATEGORIES = [
+  category("FOTOS_EXTRAS", 11, {
+    key: "BLIND_VIDRO_DIANT_ESQ",
+    subsectionKey: "EXTRAS_BLINDAGEM",
+    name: "Vidro dianteiro esquerdo",
+    description: "Vidro dianteiro esquerdo (blindagem).",
+    icon: Shield,
+    required: false,
+  }),
+  category("FOTOS_EXTRAS", 12, {
+    key: "BLIND_VIDRO_DIANT_DIR",
+    subsectionKey: "EXTRAS_BLINDAGEM",
+    name: "Vidro dianteiro direito",
+    description: "Vidro dianteiro direito (blindagem).",
+    icon: Shield,
+    required: false,
+  }),
+  category("FOTOS_EXTRAS", 13, {
+    key: "BLIND_ESPESSURA_VIDRO",
+    subsectionKey: "EXTRAS_BLINDAGEM",
+    name: "Espessura do vidro",
+    description: "Medição ou evidência da espessura do vidro blindado.",
+    icon: Shield,
+    required: false,
+  }),
+  category("FOTOS_EXTRAS", 14, {
+    key: "BLIND_MARCA_VIDRO",
+    subsectionKey: "EXTRAS_BLINDAGEM",
+    name: "Marca gravada no vidro",
+    description: "Marca gravada no vidro blindado.",
+    icon: Shield,
+    required: false,
+  }),
+  category("FOTOS_EXTRAS", 15, {
+    key: "BLIND_DOC_AUTORIZACAO",
+    subsectionKey: "EXTRAS_BLINDAGEM",
+    name: "Documento de autorização da blindagem",
+    description: "Documento de autorização da blindagem.",
+    icon: FileText,
+    required: false,
+  }),
+];
+
+const FOTOS_EXTRAS_SUBSECTIONS = [
+  subsection("EXTRAS_ITENS", 1, "Itens opcionais", EXTRAS_ITENS_CATEGORIES, {
+    description: "Fotografias opcionais de acessórios e itens do veículo.",
+  }),
+  subsection("EXTRAS_BLINDAGEM", 2, "Blindagem", EXTRAS_BLINDAGEM_CATEGORIES, {
+    description: "Evidências de blindagem — exibida apenas para veículos blindados.",
+    visibleWhen: "armored",
   }),
 ];
 
@@ -755,10 +851,15 @@ export const PHOTO_CAPTURE_SECTIONS: PhotoSectionDefinition[] = [
     "QUADROS_PORTAS",
     11,
     "Quadros das portas",
-    "Fotografar os quadros das portas sem a borracha de vedação. Utilize caneta teste ou medidor de espessura nas 4 fotos obrigatórias de teste de pintura.",
+    "Registre os quadros das portas e os testes de pintura obrigatórios.",
     Layers,
-    QUADROS_PORTAS_CATEGORIES,
-    { collapsible: true, defaultOpen: false },
+    [],
+    {
+      collapsible: true,
+      defaultOpen: false,
+      guidance: "Fotografar os quadros das portas sem a borracha de vedação.",
+      subsections: QUADROS_PORTAS_SUBSECTIONS,
+    },
   ),
   section(
     "FOTOS_EXTRAS",
@@ -766,8 +867,12 @@ export const PHOTO_CAPTURE_SECTIONS: PhotoSectionDefinition[] = [
     "Fotos extras",
     "Itens opcionais e complementares do veículo.",
     Plus,
-    FOTOS_EXTRAS_CATEGORIES,
-    { collapsible: true, defaultOpen: false },
+    [],
+    {
+      collapsible: true,
+      defaultOpen: false,
+      subsections: FOTOS_EXTRAS_SUBSECTIONS,
+    },
   ),
   section(
     "AVARIAS",
@@ -856,5 +961,5 @@ export const PHOTO_CATEGORIES = [
   ...Object.keys(LEGACY_TO_NEW_CATEGORY),
 ] as const;
 
-export type { PhotoCategoryDefinition, PhotoSectionDefinition } from "@/lib/photos/types";
+export type { PhotoCategoryDefinition, PhotoSectionDefinition, PhotoSubsectionDefinition } from "@/lib/photos/types";
 export { photoMatchesCategory, normalizePhotoCategory };

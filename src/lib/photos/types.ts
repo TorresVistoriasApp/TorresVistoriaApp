@@ -83,10 +83,35 @@ export type PhotoVisualGuide = PhotoTechnicalGuide;
 /** Status do card de guia na UI. */
 export type PhotoGuideCardStatus = "pending" | "uploading" | "captured";
 
+/**
+ * Condição de visibilidade de seção/subseção/categoria.
+ * - `armored`: exibido apenas quando o veículo é blindado.
+ */
+export type PhotoVisibilityCondition = "armored";
+
+/** Contexto da vistoria usado para resolver visibilidade condicional. */
+export type PhotoCaptureContext = {
+  isArmored: boolean;
+};
+
+/** Subseção dentro de uma etapa — agrupa categorias com orientação própria. */
+export type PhotoSubsectionDefinition = {
+  key: string;
+  name: string;
+  description?: string;
+  /** Orientação operacional exibida ao vistoriador. */
+  guidance?: string;
+  sortOrder: number;
+  categories: PhotoCategoryDefinition[];
+  visibleWhen?: PhotoVisibilityCondition;
+};
+
 /** Categoria configurável — futuramente carregada do banco (SaaS). */
 export type PhotoCategoryDefinition = {
   key: string;
   sectionKey: string;
+  /** Subseção à qual pertence, quando a etapa usa agrupamento interno. */
+  subsectionKey?: string;
   name: string;
   description: string;
   icon: LucideIcon;
@@ -100,6 +125,7 @@ export type PhotoCategoryDefinition = {
   visualGuide?: PhotoTechnicalGuide;
   /** Segundos estimados para captura — usado no cálculo de tempo restante. */
   estimatedCaptureSeconds?: number;
+  visibleWhen?: PhotoVisibilityCondition;
 };
 
 /** Seção de evidências — agrupa categorias na UI e no PDF. */
@@ -107,13 +133,19 @@ export type PhotoSectionDefinition = {
   key: string;
   name: string;
   description: string;
+  /** Orientação operacional destacada na etapa (ex.: quadros sem borracha). */
+  guidance?: string;
   icon: LucideIcon;
   sortOrder: number;
   minRequiredCount: number;
   maxAllowedCount: number;
+  /** Lista achatada — inclui todas as categorias para PDF e retrocompatibilidade. */
   categories: PhotoCategoryDefinition[];
+  /** Agrupamento visual interno; quando presente, a UI prioriza subseções. */
+  subsections?: PhotoSubsectionDefinition[];
   collapsible?: boolean;
   defaultOpen?: boolean;
+  visibleWhen?: PhotoVisibilityCondition;
 };
 
 /** Progresso calculado de uma seção. */
