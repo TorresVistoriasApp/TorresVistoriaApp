@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { LaudoReviewPanel } from "@/modules/torres-vistoria/components/laudo/laudo-review-panel";
 import { getLaudoBlockerMessages, buildLaudoReadiness } from "@/modules/torres-vistoria/components/laudo/laudo-readiness";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
-import { useCompanyContext } from "@/core/tenant/company-context";
+import { useTenantContext } from "@/core/tenant";
 import { useInspectionContext } from "@/modules/torres-vistoria/hooks/use-inspection-context";
 import { useToast } from "@/shared/hooks/use-toast";
 import { Button } from "@/shared/ui/button";
@@ -35,7 +35,7 @@ export function InspectionReportPage() {
     photos,
     isLoadingAny: isLoading,
   } = useInspectionContext();
-  const { company, settings } = useCompanyContext();
+  const { company, settings } = useTenantContext();
   const { toast } = useToast();
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);

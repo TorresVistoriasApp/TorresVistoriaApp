@@ -11,6 +11,7 @@ import { useCreditBalance } from "@/modules/torres-consulta/hooks/use-credit-bal
 import { useRequestConsulta } from "@/modules/torres-consulta/hooks/use-consultas";
 import { isConsultaAvailable } from "@/modules/torres-consulta/services/consulta-service";
 import type { ConsultaRequestInput } from "@/modules/torres-consulta/schemas/consulta";
+import { ConsultaFeatureGate } from "@/modules/torres-consulta/components/consulta-feature-gate";
 
 export function ConsultaNewPage() {
   const navigate = useNavigate();
@@ -30,34 +31,36 @@ export function ConsultaNewPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        badge="Torres Consulta"
-        title="Nova consulta"
-        description="Consulte a situação de um veículo por placa ou chassi."
-      />
+    <ConsultaFeatureGate>
+      <div className="space-y-6">
+        <PageHeader
+          badge="Torres Consulta"
+          title="Nova consulta"
+          description="Consulte a situação de um veículo por placa ou chassi."
+        />
 
-      {available ? (
-        <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
-          <Card>
-            <CardContent>
-              <ConsultaForm
-                onSubmit={handleSubmit}
-                submitting={requestConsulta.isPending}
-                availableCredits={balance?.available ?? null}
-              />
-              {error && (
-                <p className="mt-4 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
-                  {error}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-          <CreditBalanceCard />
-        </div>
-      ) : (
-        <IntegrationPendingNotice />
-      )}
-    </div>
+        {available ? (
+          <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+            <Card>
+              <CardContent>
+                <ConsultaForm
+                  onSubmit={handleSubmit}
+                  submitting={requestConsulta.isPending}
+                  availableCredits={balance?.available ?? null}
+                />
+                {error && (
+                  <p className="mt-4 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
+                    {error}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+            <CreditBalanceCard />
+          </div>
+        ) : (
+          <IntegrationPendingNotice />
+        )}
+      </div>
+    </ConsultaFeatureGate>
   );
 }

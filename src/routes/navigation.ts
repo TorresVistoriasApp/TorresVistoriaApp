@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { ROUTES } from "@/config/routes";
+import { isEnabled } from "@/core/feature-flags";
 import type { Permission } from "@/core/rbac/permissions";
 import type { PermissionChecker } from "@/core/rbac/permission-service";
 
@@ -82,21 +83,23 @@ export function getNavSections(access: Pick<PermissionChecker, "has" | "hasAny">
     },
   ];
 
-  const consultaItems = filterNavItems(
-    [
-      {
-        type: "link",
-        to: ROUTES.consultaNew,
-        label: "Consulta veicular",
-        shortLabel: "Consulta",
-        icon: ScanSearch,
-        requiredAnyOf: ["consulta.create", "consulta.read.own"],
-      },
-    ],
-    access,
-  );
-  if (consultaItems.length > 0) {
-    sections.push({ title: "Torres Consulta", items: consultaItems });
+  if (isEnabled("torres-consulta")) {
+    const consultaItems = filterNavItems(
+      [
+        {
+          type: "link",
+          to: ROUTES.consultaNew,
+          label: "Consulta veicular",
+          shortLabel: "Consulta",
+          icon: ScanSearch,
+          requiredAnyOf: ["consulta.create", "consulta.read.own"],
+        },
+      ],
+      access,
+    );
+    if (consultaItems.length > 0) {
+      sections.push({ title: "Torres Consulta", items: consultaItems });
+    }
   }
 
   const financialItems = filterNavItems(

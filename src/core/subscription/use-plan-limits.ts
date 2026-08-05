@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCompanyContext } from "@/core/tenant/company-context";
+import { useTenantContext } from "@/core/tenant";
 import { getPlanLimits, planHasFeature } from "@/core/subscription/plan-catalog";
 import { canAddUser, canCreateInspection, canUseFeature } from "@/core/subscription/plan-limit-service";
 import type { PlanUsageSnapshot, SaasFeature } from "@/core/subscription/types";
@@ -9,7 +9,7 @@ import type { PlanUsageSnapshot, SaasFeature } from "@/core/subscription/types";
  * Uso opcional em UI/guards — enforcement definitivo ficará no backend.
  */
 export function usePlanLimits(usage?: Partial<PlanUsageSnapshot>) {
-  const { plan } = useCompanyContext();
+  const { plan } = useTenantContext();
   const limits = useMemo(() => getPlanLimits(plan), [plan]);
 
   const snapshot: PlanUsageSnapshot = {

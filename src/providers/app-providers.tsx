@@ -4,12 +4,15 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SessionProvider } from "@/core/auth/session-context";
 import { AuthProvider } from "@/core/auth/auth-context";
 import { UserProvider } from "@/core/auth/user-context";
-import { CompanyProvider } from "@/core/tenant/company-context";
+import { TenantProvider } from "@/core/tenant";
+import { bindCacheClient } from "@/core/cache";
 import { PermissionProvider } from "@/core/rbac/permission-context";
 import { ErrorBoundary } from "@/core/errors/error-boundary";
 import { ToastViewport } from "@/shared/components/toast-viewport";
 import { LgpdConsentBanner } from "@/core/compliance/components/lgpd-consent-banner";
 import { queryClient } from "@/infra/query/query-client";
+
+bindCacheClient(queryClient);
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
@@ -17,7 +20,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <SessionProvider>
         <AuthProvider>
           <UserProvider>
-            <CompanyProvider>
+            <TenantProvider>
               <PermissionProvider>
                 <ErrorBoundary>
                   {children}
@@ -26,7 +29,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
                   {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
                 </ErrorBoundary>
               </PermissionProvider>
-            </CompanyProvider>
+            </TenantProvider>
           </UserProvider>
         </AuthProvider>
       </SessionProvider>

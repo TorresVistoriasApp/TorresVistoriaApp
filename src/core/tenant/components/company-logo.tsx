@@ -1,4 +1,4 @@
-import { useCompanyContext } from "@/core/tenant/company-context";
+import { useTenantContext } from "@/core/tenant/tenant-context";
 import { getCompanyInitials } from "@/core/tenant/company-display";
 import { cn } from "@/shared/lib/utils";
 
@@ -15,7 +15,7 @@ type CompanyLogoProps = {
   logoUrl?: string | null;
   size?: CompanyLogoSize;
   className?: string;
-  /** Quando true (padrão), usa dados do CompanyProvider se props não forem passadas. */
+  /** Quando true (padrão), usa dados do TenantProvider se props não forem passadas. */
   fromContext?: boolean;
 };
 
@@ -27,7 +27,7 @@ export function CompanyLogo({
   className,
   fromContext = true,
 }: CompanyLogoProps) {
-  const { company } = useCompanyContext();
+  const { company } = useTenantContext();
   const tradeName = tradeNameProp ?? (fromContext ? company?.trade_name : null);
   const logoUrl = logoUrlProp ?? (fromContext ? company?.logo_url : null);
   const label = tradeName?.trim() || "Empresa";

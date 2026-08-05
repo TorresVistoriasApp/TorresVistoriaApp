@@ -1,15 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { consultaService } from "@/modules/torres-consulta/services/consulta-service";
+import { cacheKeys } from "@/core/cache";
+import {
+  getConsulta,
+  listConsultas,
+  requestConsulta,
+} from "@/modules/torres-consulta/application/use-cases";
 import { useConsultaContext } from "@/modules/torres-consulta/hooks/use-consulta-context";
-import type { ConsultaFilters } from "@/modules/torres-consulta/types/consulta";
+import type { ConsultaFilters } from "@/modules/torres-consulta/domain/entities/consulta";
 import type { ConsultaRequestInput } from "@/modules/torres-consulta/schemas/consulta";
+import { invalidateConsultaQueries } from "@/infra/query/cache-invalidation";
 
 export const consultaKeys = {
-  all: ["consulta"] as const,
+  all: (tenantId: string) => cacheKeys.consulta.all(tenantId),
   list: (tenantId: string, filters?: ConsultaFilters) =>
-    [...consultaKeys.all, "list", tenantId, filters ?? {}] as const,
-  detail: (tenantId: string, id: string) =>
-    [...consultaKeys.all, "detail", tenantId, id] as const,
+    [...cacheKeys.consulta.all(tenantId), "list", filters ?? {}] as const,
+  detail: (tenantId: string, id: string) => cacheKeys.consulta.detail(tenantId, id),
 };
 
 export function useConsultas(filters?: ConsultaFilters) {
@@ -17,7 +22,7 @@ export function useConsultas(filters?: ConsultaFilters) {
 
   return useQuery({
     queryKey: consultaKeys.list(context?.tenantId ?? "", filters),
-    queryFn: () => consultaService.list(context!, filters),
+    queryFn: () => listConsultas(context!, filters),
     enabled: Boolean(context),
   });
 }
@@ -27,7 +32,7 @@ export function useConsulta(id: string | undefined) {
 
   return useQuery({
     queryKey: consultaKeys.detail(context?.tenantId ?? "", id ?? ""),
-    queryFn: () => consultaService.getById(context!, id!),
+    queryFn: () => getConsulta(context!, id!),
     enabled: Boolean(context && id),
   });
 }
@@ -37,9 +42,11 @@ export function useRequestConsulta() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: ConsultaRequestInput) => consultaService.request(context!, input),
+    mutationFn: (input: ConsultaRequestInput) => requestConsulta(context!, input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: consultaKeys.all });
+      if (context?.tenantId) {
+        invalidateConsultaQueries(queryClient, context.tenantId);
+      }
     },
   });
 }

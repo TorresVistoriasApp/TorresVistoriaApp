@@ -1,5 +1,14 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { cacheKeys } from "@/core/cache/cache-keys";
+import { createCacheService } from "@/core/cache/cache-service";
 import { queryKeys } from "@/infra/supabase/queries";
+
+/**
+ * Invalidadores de domínio.
+ *
+ * Preferem as chaves canônicas de `core/cache` quando o dado já migrou; as
+ * chaves legadas de `queryKeys` ainda existem porque Vistoria não foi reescrita.
+ */
 
 export function invalidateInspectionQueries(qc: QueryClient, id?: string) {
   if (id) {
@@ -29,9 +38,24 @@ export function invalidateUserQueries(qc: QueryClient) {
   void qc.invalidateQueries({ queryKey: ["users", "team"] });
 }
 
-export function invalidateCompanyQueries(qc: QueryClient, tenantId?: string) {
-  if (tenantId) {
-    void qc.invalidateQueries({ queryKey: queryKeys.company.detail(tenantId) });
-    void qc.invalidateQueries({ queryKey: queryKeys.company.settings(tenantId) });
+export function invalidateTenantQueries(qc: QueryClient, tenantId?: string) {
+  if (!tenantId) return;
+  const cache = createCacheService(qc);
+  void cache.invalidate(cacheKeys.tenant.company(tenantId));
+  void cache.invalidate(cacheKeys.tenant.settings(tenantId));
+  // Chaves legadas ainda usadas por company-service / use-tenant.
+  void qc.invalidateQueries({ queryKey: queryKeys.company.detail(tenantId) });
+  void qc.invalidateQueries({ queryKey: queryKeys.company.settings(tenantId) });
+}
+
+/** @deprecated Use `invalidateTenantQueries`. */
+export const invalidateCompanyQueries = invalidateTenantQueries;
+
+export function invalidateConsultaQueries(qc: QueryClient, tenantId: string, id?: string) {
+  const cache = createCacheService(qc);
+  if (id) {
+    void cache.invalidate(cacheKeys.consulta.detail(tenantId, id));
   }
+  void cache.invalidate(cacheKeys.consulta.all(tenantId));
+  void cache.invalidate(cacheKeys.consulta.credits(tenantId));
 }
