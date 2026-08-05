@@ -16,6 +16,14 @@ import { companyToLaudoCompany, inspectorToLaudoInspector } from "@/lib/laudo/la
 import { ArrowLeft } from "lucide-react";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 
+const FIX_ROUTES: Record<string, (id: string) => string> = {
+  dados: (id) => `${ROUTES.inspectionChecklist(id)}#avaliacao-identificacao`,
+  photos: (id) => ROUTES.inspectionPhotos(id),
+  checklist: (id) => `${ROUTES.inspectionChecklist(id)}#avaliacao-checklist`,
+  opinion: (id) => `${ROUTES.inspectionChecklist(id)}#checklist-parecer`,
+  notes: (id) => `${ROUTES.inspectionChecklist(id)}#checklist-parecer`,
+};
+
 export function Page() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -66,14 +74,9 @@ export function Page() {
   };
 
   const handleFixItem = (itemId: string) => {
-    const routes: Record<string, string> = {
-      checklist: ROUTES.inspectionChecklist(inspectionId),
-      photos: ROUTES.inspectionPhotos(inspectionId),
-      opinion: `${ROUTES.inspectionChecklist(inspectionId)}#checklist-parecer`,
-      notes: `${ROUTES.inspectionChecklist(inspectionId)}#checklist-parecer`,
-    };
-    const path = routes[itemId];
-    if (!path) return;
+    const buildPath = FIX_ROUTES[itemId];
+    if (!buildPath) return;
+    const path = buildPath(inspectionId);
     navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
   };
 
@@ -102,14 +105,19 @@ export function Page() {
 
   if (isWizardFlow) {
     return (
-      <InspectionWizardShell currentStep={3} inspectionId={inspectionId} title="Revisão e laudo">
-        <div className="space-y-4 md:space-y-6">
+      <InspectionWizardShell
+        currentStep={3}
+        inspectionId={inspectionId}
+        title="Revisão e emissão do laudo"
+        showDraftBanner={false}
+      >
+        <div className="space-y-3">
           {reviewPanel}
           <WizardNavButtons
             onBack={() => navigate(withNewInspectionFlow(ROUTES.inspectionChecklist(inspectionId)))}
             onNext={handleFinish}
             nextLabel={verificationCode ? "Concluir vistoria" : "Salvar e sair"}
-            nextDisabled={false}
+            showBack
           />
         </div>
       </InspectionWizardShell>
@@ -117,20 +125,21 @@ export function Page() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-center gap-3">
+    <div className="space-y-3 md:space-y-4">
+      <div className="flex items-center gap-2 md:gap-3">
         <Button
           variant="ghost"
           size="icon"
-          className="touch-target"
+          className="touch-target shrink-0"
           onClick={() => navigate(ROUTES.inspection(inspectionId))}
+          aria-label="Voltar para vistoria"
         >
           <ArrowLeft className="size-5" />
         </Button>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">Laudo profissional</h1>
-          <p className="text-sm text-muted-foreground">
-            Revise, emita e baixe o laudo da vistoria
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold md:text-xl">Revisão e emissão do laudo</h1>
+          <p className="text-xs text-muted-foreground">
+            Confira os dados e gere o PDF profissional.
           </p>
         </div>
       </div>

@@ -32,9 +32,10 @@ export function Page() {
 
   useEffect(() => {
     if (isLoading || items.length === 0) return;
-    if (window.location.hash !== "#checklist-parecer") return;
+    const hash = window.location.hash.replace("#", "");
+    if (!hash) return;
     requestAnimationFrame(() => {
-      document.getElementById("checklist-parecer")?.scrollIntoView({
+      document.getElementById(hash)?.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
