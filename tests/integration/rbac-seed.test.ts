@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { hasPermission } from "@/lib/rbac";
-import { UserRole } from "@/lib/enums";
-import { PERMISSIONS } from "@/lib/rbac";
+import { hasPermission } from "@/core/rbac/permissions";
+import { UserRole } from "@/core/rbac/roles";
+import { PERMISSIONS } from "@/core/rbac/permissions";
 
 /**
  * Garante que PERMISSIONS no frontend está alinhado ao seed do banco (9 códigos).

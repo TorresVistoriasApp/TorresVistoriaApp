@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { computeInspectionCompletionPercent } from "@/features/draft/lib/completion-percent";
-import { InspectionSituation, InspectionStatus } from "@/lib/enums";
+import { computeInspectionCompletionPercent } from "@/modules/torres-vistoria/draft/lib/completion-percent";
+import { InspectionSituation, InspectionStatus } from "@/modules/torres-vistoria/domain/enums";
 
 describe("computeInspectionCompletionPercent", () => {
   it("retorna 0 para rascunho vazio", () => {

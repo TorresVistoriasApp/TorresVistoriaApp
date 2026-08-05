@@ -4,8 +4,8 @@ import {
   getAuditMetadataEntries,
   getAuditSummary,
   isAppAuditAction,
-} from "@/lib/audit-utils";
-import type { AuditLog } from "@/services/audit-service";
+} from "@/core/audit/audit-utils";
+import type { AuditLog } from "@/core/audit/audit-service";
 
 function makeLog(overrides: Partial<AuditLog>): AuditLog {
   return {

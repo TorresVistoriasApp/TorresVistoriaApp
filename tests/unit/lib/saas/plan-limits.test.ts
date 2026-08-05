@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { SaasFeature, SubscriptionPlan } from "@/lib/saas/types";
+import { SaasFeature, SubscriptionPlan } from "@/core/subscription/types";
 import {
   getPlanLimits,
   planHasFeature,
   resolveSubscriptionPlan,
-} from "@/lib/saas/plan-catalog";
+} from "@/core/subscription/plan-catalog";
 import {
   canAddUser,
   canCreateInspection,
   canUseFeature,
   mergeCustomPermissions,
-} from "@/lib/saas/plan-limit-service";
+} from "@/core/subscription/plan-limit-service";
 
 describe("saas plan catalog", () => {
   it("resolve plano desconhecido como starter", () => {

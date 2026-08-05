@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkRateLimit, resetRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, resetRateLimit } from "@/core/auth/rate-limit";
 
 describe("rate-limit", () => {
   it("bloqueia após max tentativas", () => {

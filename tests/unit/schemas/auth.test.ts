@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loginSchema, resetPasswordSchema } from "@/schemas/auth";
+import { loginSchema, resetPasswordSchema } from "@/core/auth/schemas/auth";
 
 /** Senha forte só para validar o schema — não é credencial de ambiente. */
 const SAMPLE_STRONG_PASSWORD = "Str0ngTestPass!";

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { PHOTO_CAPTURE_SECTIONS } from "@/lib/photos/photo-catalog";
+import { PHOTO_CAPTURE_SECTIONS } from "@/modules/torres-vistoria/domain/photos/photo-catalog";
 import {
   createPhotoCaptureContext,
   getVisibleSectionCategories,
   getVisibleSubsections,
   resolveIsArmoredFromInspection,
-} from "@/lib/photos/photo-capture-visibility";
+} from "@/modules/torres-vistoria/domain/photos/photo-capture-visibility";
 
 describe("resolveIsArmoredFromInspection", () => {
   it("retorna true quando is_armored está marcado", () => {

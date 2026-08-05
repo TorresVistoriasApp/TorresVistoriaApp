@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildVerificationCode, formatLaudoNumber } from "@/lib/laudo/verification-code";
+import { buildVerificationCode, formatLaudoNumber } from "@/modules/torres-vistoria/domain/laudo/verification-code";
 
 describe("verification-code", () => {
   it("formata número do laudo com ano e sequência", () => {

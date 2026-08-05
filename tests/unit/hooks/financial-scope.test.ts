@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { PermissionService } from "@/services/permission-service";
-import { UserRole } from "@/lib/enums";
-import { getNavSections } from "@/lib/nav-items";
+import { PermissionService } from "@/core/rbac/permission-service";
+import { UserRole } from "@/core/rbac/roles";
+import { getNavSections } from "@/routes/navigation";
 
 describe("financial scope permissions", () => {
   it("SUPER_ADMIN gerencia financeiro da empresa", () => {

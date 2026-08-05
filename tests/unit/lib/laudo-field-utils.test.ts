@@ -5,9 +5,9 @@ import {
   buildVehicleInfoRows,
   hasLaudoValue,
   hasSaleMarketSectionData,
-} from "@/lib/laudo/laudo-field-utils";
-import { formatDocument } from "@/lib/formatters";
-import type { LaudoPayload } from "@/lib/laudo/laudo-model";
+} from "@/modules/torres-vistoria/domain/laudo/laudo-field-utils";
+import { formatDocument } from "@/shared/lib/formatters";
+import type { LaudoPayload } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
 
 function makeInspection(
   overrides: Record<string, unknown> = {},

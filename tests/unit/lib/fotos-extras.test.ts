@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { PHOTO_CAPTURE_SECTIONS } from "@/lib/photos/photo-catalog";
+import { PHOTO_CAPTURE_SECTIONS } from "@/modules/torres-vistoria/domain/photos/photo-catalog";
 import {
   FOTOS_EXTRAS_BLINDAGEM_KEYS,
   FOTOS_EXTRAS_COMPLEMENTAR_KEY,
   FOTOS_EXTRAS_ITEM_KEYS,
   FOTOS_EXTRAS_SUBSECTION_KEYS,
-} from "@/lib/photos/fotos-extras";
+} from "@/modules/torres-vistoria/domain/photos/fotos-extras";
 
 describe("fotos-extras", () => {
   const fotosExtrasSection = PHOTO_CAPTURE_SECTIONS.find(

@@ -5,7 +5,7 @@ import {
   formatDamagePhotoCaption,
   isDamageCaptureFormValid,
   validateDamageCaptureForm,
-} from "@/lib/photos/avarias";
+} from "@/modules/torres-vistoria/domain/photos/avarias";
 
 describe("avarias", () => {
   const validForm = {

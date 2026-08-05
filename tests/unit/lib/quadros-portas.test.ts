@@ -6,7 +6,7 @@ import {
   isQuadrosPortasTestCategory,
   QDP_PORTA_CATEGORY_KEYS,
   QDP_TESTE_PINTURA_CATEGORY_KEYS,
-} from "@/lib/photos/quadros-portas";
+} from "@/modules/torres-vistoria/domain/photos/quadros-portas";
 
 describe("quadros-portas", () => {
   it("identifica categorias de teste de pintura", () => {

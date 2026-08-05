@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DRAFT_PLACEHOLDER_VALUES } from "@/features/draft/lib/draft-defaults";
+import { DRAFT_PLACEHOLDER_VALUES } from "@/modules/torres-vistoria/draft/lib/draft-defaults";
 import {
   formatVistoriaFormDefaults,
   prepareVistoriaFormForSave,
-} from "@/lib/vistoria-form-defaults";
+} from "@/modules/torres-vistoria/domain/vistoria-form-defaults";
 
 describe("vistoria-form-defaults", () => {
   it("converte valores sentinela do rascunho em campos vazios para o formulário", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createPhotoCaptureContext } from "@/lib/photos/photo-capture-visibility";
-import { computePhotoCaptureStats } from "@/lib/photos/photo-capture-stats";
+import { createPhotoCaptureContext } from "@/modules/torres-vistoria/domain/photos/photo-capture-visibility";
+import { computePhotoCaptureStats } from "@/modules/torres-vistoria/domain/photos/photo-capture-stats";
 
 describe("computePhotoCaptureStats", () => {
   it("calcula slots concluídos na sequência principal", () => {

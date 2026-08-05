@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { vistoriaSchema, vistoriaWizardContinueSchema } from "@/schemas/vistoria";
-import { InspectionSituation, InspectionStatus } from "@/lib/enums";
-import { FIELD_NA_VALUE } from "@/lib/field-na";
+import { vistoriaSchema, vistoriaWizardContinueSchema } from "@/modules/torres-vistoria/schemas/vistoria";
+import { InspectionSituation, InspectionStatus } from "@/modules/torres-vistoria/domain/enums";
+import { FIELD_NA_VALUE } from "@/shared/lib/field-na";
 
 const basePayload = {
   inspection_date: "2026-06-23",

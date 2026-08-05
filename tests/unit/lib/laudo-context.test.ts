@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { companyToLaudoCompany, inspectorToLaudoInspector } from "@/lib/laudo/laudo-context";
-import type { Company } from "@/services/company-service";
+import { companyToLaudoCompany, inspectorToLaudoInspector } from "@/modules/torres-vistoria/domain/laudo/laudo-context";
+import type { Company } from "@/core/tenant/company-service";
 
 describe("companyToLaudoCompany", () => {
   it("monta dados da empresa a partir das configurações", () => {

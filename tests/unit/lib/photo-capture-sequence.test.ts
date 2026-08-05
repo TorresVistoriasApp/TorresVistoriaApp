@@ -3,8 +3,8 @@ import {
   buildCaptureSequence,
   findNextRecommendedCategory,
   findNewlyCompletedCategories,
-} from "@/lib/photos/photo-capture-sequence";
-import { createPhotoCaptureContext } from "@/lib/photos/photo-capture-visibility";
+} from "@/modules/torres-vistoria/domain/photos/photo-capture-sequence";
+import { createPhotoCaptureContext } from "@/modules/torres-vistoria/domain/photos/photo-capture-visibility";
 
 describe("buildCaptureSequence", () => {
   it("segue a ordem das 13 etapas do fluxo", () => {

@@ -4,7 +4,7 @@ import {
   isSupportedImageFile,
   pickWebpQuality,
   scaleDimensions,
-} from "@/lib/compress-image";
+} from "@/shared/lib/compress-image";
 
 describe("compress-image helpers", () => {
   it("detecta HEIC pelo tipo ou extensão", () => {

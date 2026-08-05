@@ -1,0 +1,84 @@
+import {
+  canViewInspection as rbacCanViewInspection,
+  hasPermission,
+  isInspector,
+  isSuperAdmin,
+  PERMISSIONS,
+  type Permission,
+} from "@/core/rbac/permissions";
+import {
+  mergeCustomPermissions,
+  type CustomPermissionGrant,
+} from "@/core/subscription/plan-limit-service";
+import type { UserRole } from "@/core/rbac/roles";
+
+export function resolvePermissionsForRole(role: UserRole | undefined): Permission[] {
+  if (!role) return [];
+  return (Object.keys(PERMISSIONS) as Permission[]).filter((permission) =>
+    hasPermission(role, permission),
+  );
+}
+
+/**
+ * Contrato de autorização exposto à aplicação.
+ *
+ * Só oferece consultas por permissão. Não há `hasRole`: comparar papéis na UI
+ * foi removido de propósito, para que ativar um novo perfil signifique editar a
+ * matriz em `@/core/rbac/permissions` e nada mais.
+ */
+export interface PermissionChecker {
+  role: UserRole | null;
+  permissions: ReadonlySet<Permission>;
+  has: (permission: Permission) => boolean;
+  hasAny: (...permissions: Permission[]) => boolean;
+  isSuperAdmin: boolean;
+  isInspector: boolean;
+  canViewInspection: (inspectorId: string, userId: string | undefined) => boolean;
+}
+
+/** Instancia o verificador de permissões para um papel (fonte única de verdade). */
+export function createPermissionChecker(role: UserRole | null | undefined): PermissionChecker {
+  const resolvedRole = role ?? null;
+  const permissions = new Set(resolvePermissionsForRole(resolvedRole ?? undefined));
+
+  return {
+    role: resolvedRole,
+    permissions,
+    has: (permission) => hasPermission(resolvedRole ?? undefined, permission),
+    hasAny: (...permissionList) =>
+      permissionList.some((permission) => hasPermission(resolvedRole ?? undefined, permission)),
+    isSuperAdmin: isSuperAdmin(resolvedRole ?? undefined),
+    isInspector: isInspector(resolvedRole ?? undefined),
+    canViewInspection: (inspectorId, userId) =>
+      rbacCanViewInspection(resolvedRole ?? undefined, inspectorId, userId),
+  };
+}
+
+/**
+ * Extensão futura: checker com overrides de `company_custom_permissions`.
+ * Quando implementado, carregar grants do banco e mesclar via `mergeCustomPermissions`.
+ */
+export function createPermissionCheckerWithGrants(
+  role: UserRole | null | undefined,
+  customGrants: CustomPermissionGrant[],
+): PermissionChecker {
+  const base = createPermissionChecker(role);
+  if (customGrants.length === 0) {
+    return base;
+  }
+
+  const merged = mergeCustomPermissions(base.permissions, customGrants);
+
+  return {
+    ...base,
+    permissions: merged,
+    has: (permission) => merged.has(permission),
+    hasAny: (...permissionList) => permissionList.some((permission) => merged.has(permission)),
+  };
+}
+
+/** API estável para uso fora de React (services, testes, scripts). */
+export const PermissionService = {
+  forRole: createPermissionChecker,
+  resolvePermissionsForRole,
+};

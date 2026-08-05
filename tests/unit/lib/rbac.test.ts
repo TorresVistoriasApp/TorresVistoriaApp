@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { hasPermission, canViewInspection, isSuperAdmin } from "@/lib/rbac";
-import { UserRole } from "@/lib/enums";
+import { hasPermission, canViewInspection, isSuperAdmin } from "@/core/rbac/permissions";
+import { UserRole } from "@/core/rbac/roles";
 
 describe("rbac", () => {
   it("SUPER_ADMIN tem financial.manage", () => {
