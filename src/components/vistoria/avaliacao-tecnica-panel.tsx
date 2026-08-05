@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import type { ChecklistItem } from "@/services/checklist-service";
 import type { Inspection } from "@/services/inspection-service";
+import type { InspectionPhoto } from "@/services/photo-service";
 import { ClienteForm } from "@/components/forms/cliente-form";
 import { VeiculoForm } from "@/components/forms/veiculo-form";
 import { FormField } from "@/components/forms/form-field";
@@ -25,13 +26,14 @@ import { useAutoSaveInspection } from "@/features/draft/hooks/use-auto-save-insp
 import { useInspectionTypes } from "@/hooks/use-inspection-types";
 import { useToast } from "@/hooks/use-toast";
 import { InspectionSituation, InspectionStatus } from "@/lib/enums";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency, formatPlate } from "@/lib/formatters";
 import {
-  formGridClass,
-  formGridFullWidthClass,
+  evaluationGridClass,
   selectInputClass,
 } from "@/lib/form-styles";
 import { maskCurrency } from "@/lib/masks";
+import { computeCaptureProgress } from "@/lib/photos/photo-progress";
+import { PHOTO_REQUIREMENTS_ENABLED } from "@/lib/photos/photo-requirements-flag";
 import {
   formatVistoriaFormDefaults,
   prepareVistoriaFormForSave,
@@ -39,7 +41,7 @@ import {
 import { summarizeChecklist } from "@/components/checklist/checklist-summary";
 import { vistoriaDraftSchema, vistoriaWizardContinueSchema, type VistoriaInput } from "@/schemas/vistoria";
 import { cn } from "@/lib/utils";
-import { FileText } from "lucide-react";
+import { Camera, Car, FileText, MapPin, Save } from "lucide-react";
 
 const PLATE_PATTERN = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/;
 
@@ -47,6 +49,7 @@ interface AvaliacaoTecnicaPanelProps {
   inspection: Inspection;
   inspectionId: string;
   checklistItems: ChecklistItem[];
+  photos: InspectionPhoto[];
   isLoadingChecklist: boolean;
   wizardMode?: boolean;
   isSaving?: boolean;
@@ -56,10 +59,41 @@ interface AvaliacaoTecnicaPanelProps {
   onContinue: () => void;
 }
 
+function EvaluationProgressBar({
+  label,
+  percent,
+  pending,
+}: {
+  label: string;
+  percent: number;
+  pending?: boolean;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-[11px]">
+        <span className="font-medium text-foreground">{label}</span>
+        <span className={cn("tabular-nums", pending ? "text-amber-700" : "text-muted-foreground")}>
+          {pending ? "Pendente" : `${percent}%`}
+        </span>
+      </div>
+      <div className="h-1 overflow-hidden rounded-full bg-muted">
+        <div
+          className={cn(
+            "h-full rounded-full transition-all duration-300",
+            pending ? "w-0" : percent === 100 ? "bg-emerald-500" : "bg-primary",
+          )}
+          style={{ width: pending ? "0%" : `${percent}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function AvaliacaoTecnicaPanel({
   inspection,
   inspectionId,
   checklistItems,
+  photos,
   isLoadingChecklist,
   wizardMode = false,
   isSaving = false,
@@ -108,12 +142,32 @@ export function AvaliacaoTecnicaPanel({
     enabled: isDraft,
   });
 
-  const plateValue = watch("plate");
+  const formValues = watch();
   const selectedTypeId = watch("inspection_type_id");
+  const plateValue = watch("plate");
   const selectedType = inspectionTypes.find((type) => type.id === selectedTypeId);
 
   const checklistSummary = useMemo(
     () => summarizeChecklist(checklistItems),
+    [checklistItems],
+  );
+
+  const photoProgress = useMemo(
+    () => computeCaptureProgress(photos),
+    [photos],
+  );
+
+  const dadosValid = useMemo(() => {
+    const { inspection_purpose: _p, opinion: _o, technical_notes: _t, ...rest } = formValues;
+    return vistoriaWizardContinueSchema.safeParse({
+      ...rest,
+      opinion: undefined,
+      technical_notes: "",
+    }).success;
+  }, [formValues]);
+
+  const checklistValid = useMemo(
+    () => validateChecklistCompletion(checklistItems).valid,
     [checklistItems],
   );
 
@@ -136,6 +190,22 @@ export function AvaliacaoTecnicaPanel({
   );
 
   const [parecer, setParecer] = useParecerTecnicoDraft(initialParecer, persistParecer);
+  const parecerValid = useMemo(() => validateParecerTecnico(parecer).valid, [parecer]);
+
+  const checklistPercent =
+    checklistItems.length > 0
+      ? Math.round((checklistSummary.evaluated / checklistItems.length) * 100)
+      : 0;
+
+  const photosPercent = PHOTO_REQUIREMENTS_ENABLED
+    ? photoProgress.totalRequired > 0
+      ? Math.round((photoProgress.totalCompleted / photoProgress.totalRequired) * 100)
+      : 100
+    : photos.length > 0
+      ? 100
+      : 0;
+
+  const canContinue = dadosValid && checklistValid && parecerValid && !isSaving && !isSubmitting;
 
   useEffect(() => {
     const subscription = watch((values) => {
@@ -154,22 +224,14 @@ export function AvaliacaoTecnicaPanel({
   }, [submitCount, errors]);
 
   useEffect(() => {
-    if (plateLookupTimer.current) {
-      clearTimeout(plateLookupTimer.current);
-    }
-
+    if (plateLookupTimer.current) clearTimeout(plateLookupTimer.current);
     const normalized = (plateValue ?? "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
     if (!PLATE_PATTERN.test(normalized)) {
       setPlateLookupState("idle");
       return;
     }
-
-    // Placeholder: estrutura pronta para integração futura com API de placa.
     setPlateLookupState("loading");
-    plateLookupTimer.current = setTimeout(() => {
-      setPlateLookupState("idle");
-    }, 1200);
-
+    plateLookupTimer.current = setTimeout(() => setPlateLookupState("idle"), 1200);
     return () => {
       if (plateLookupTimer.current) clearTimeout(plateLookupTimer.current);
     };
@@ -181,6 +243,11 @@ export function AvaliacaoTecnicaPanel({
   };
 
   const validateAndContinue = async () => {
+    if (!parecerValid) {
+      document.getElementById("checklist-parecer")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     clearErrors();
     const { inspection_purpose: _purpose, ...values } = getValues();
     const parsed = vistoriaWizardContinueSchema.safeParse(values);
@@ -193,12 +260,6 @@ export function AvaliacaoTecnicaPanel({
         }
       }
       toast(parsed.error.issues[0]?.message ?? "Verifique os campos obrigatórios.");
-      requestAnimationFrame(() => {
-        formRef.current?.querySelector("[role='alert'], .text-destructive")?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      });
       return;
     }
 
@@ -207,29 +268,16 @@ export function AvaliacaoTecnicaPanel({
       if (checklistResult.pendingCount > 0) {
         toast(`Avalie todos os itens. Faltam ${checklistResult.pendingCount} pendente(s).`);
       } else if (checklistResult.missingNotesCount > 0) {
-        toast(
-          `Preencha observações nos ${checklistResult.missingNotesCount} item(ns) com apontamentos.`,
-        );
+        toast(`Preencha observações nos ${checklistResult.missingNotesCount} item(ns) com apontamentos.`);
       }
-      document.getElementById("avaliacao-checklist")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+      document.getElementById("avaliacao-checklist")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
 
     const parecerResult = validateParecerTecnico(parecer);
     if (!parecerResult.valid) {
       setParecerErrors(parecerResult.errors);
-      toast(
-        parecerResult.errors.opinion ??
-          parecerResult.errors.technical_notes ??
-          "Preencha o parecer técnico antes de continuar.",
-      );
-      document.getElementById("checklist-parecer")?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      document.getElementById("checklist-parecer")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -248,35 +296,9 @@ export function AvaliacaoTecnicaPanel({
     }
   };
 
-  const identificacaoComplete =
-    Boolean(watch("inspection_date")) &&
-    Boolean(watch("inspection_time")) &&
-    Boolean(watch("location")?.trim()) &&
-    Boolean(watch("inspection_type_id"));
-
-  const veiculoComplete =
-    Boolean(watch("plate")?.trim()) &&
-    Boolean(watch("chassis")?.trim()) &&
-    Boolean(watch("brand")?.trim()) &&
-    Boolean(watch("model")?.trim());
-
-  const clienteComplete = Boolean(watch("client_name")?.trim());
-
-  const checklistStatusText =
-    checklistItems.length === 0
-      ? undefined
-      : checklistSummary.pending > 0
-        ? `${checklistSummary.pending} pendente(s)`
-        : checklistSummary.naoConforme > 0
-          ? `${checklistSummary.naoConforme} apontamento(s)`
-          : "Concluído";
-
-  const checklistStatusTone =
-    checklistSummary.pending > 0
-      ? "warning"
-      : checklistSummary.evaluated === checklistItems.length
-        ? "success"
-        : "muted";
+  const vehicleLabel = [formValues.brand, formValues.model, formValues.model_year]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <form
@@ -285,54 +307,91 @@ export function AvaliacaoTecnicaPanel({
         e.preventDefault();
         void validateAndContinue();
       }}
-      className="w-full space-y-3 sm:space-y-4"
+      className="w-full space-y-2.5 sm:space-y-3"
     >
+      <div className="sticky top-14 z-20 -mx-1 space-y-2 rounded-lg border border-border/80 bg-card/95 px-2.5 py-2 shadow-sm backdrop-blur-md sm:top-[3.75rem] sm:px-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground sm:text-xs">
+          <span className="inline-flex items-center gap-1">
+            <Camera className="size-3 shrink-0" />
+            {PHOTO_REQUIREMENTS_ENABLED
+              ? `${photoProgress.totalCompleted}/${photoProgress.totalRequired} fotos`
+              : `${photos.length} fotos`}
+          </span>
+          {vehicleLabel && (
+            <span className="inline-flex items-center gap-1">
+              <Car className="size-3 shrink-0" />
+              <span className="max-w-[10rem] truncate font-medium text-foreground sm:max-w-none">
+                {vehicleLabel}
+              </span>
+            </span>
+          )}
+          {formValues.plate && (
+            <span className="font-mono font-semibold text-foreground">
+              {formatPlate(formValues.plate)}
+            </span>
+          )}
+          {formValues.location && (
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <MapPin className="size-3 shrink-0" />
+              <span className="truncate">{formValues.location}</span>
+            </span>
+          )}
+        </div>
+        {isDraft && (
+          <p className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700">
+            <Save className="size-3" />
+            Rascunho salvo automaticamente
+          </p>
+        )}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <EvaluationProgressBar label="Fotos" percent={photosPercent} />
+          <EvaluationProgressBar label="Dados" percent={dadosValid ? 100 : 0} pending={!dadosValid} />
+          <EvaluationProgressBar label="Checklist" percent={checklistPercent} />
+          <EvaluationProgressBar label="Parecer" percent={parecerValid ? 100 : 0} pending={!parecerValid} />
+        </div>
+      </div>
+
       <EvaluationSection
         id="avaliacao-identificacao"
         title="Identificação"
-        subtitle="Data, hora, local e tipo"
         defaultOpen
-        statusText={identificacaoComplete ? "Preenchido" : "Pendente"}
-        statusTone={identificacaoComplete ? "success" : "warning"}
+        dense
+        statusText={dadosValid ? "Ok" : "Pendente"}
+        statusTone={dadosValid ? "success" : "warning"}
       >
-        <div className={cn(formGridClass, "gap-y-4")}>
+        <div className={evaluationGridClass}>
           <FormField label="Data" error={errors.inspection_date?.message}>
             <Input type="date" {...register("inspection_date")} />
           </FormField>
           <FormField label="Hora" error={errors.inspection_time?.message}>
             <Input type="time" {...register("inspection_time")} />
           </FormField>
-          <FormField
-            label="Local"
-            error={errors.location?.message}
-            className={formGridFullWidthClass}
-          >
+          <FormField label="Local" error={errors.location?.message}>
             <Input {...register("location")} placeholder="Endereço ou referência" />
           </FormField>
-          <FormField
-            label="Tipo de vistoria"
-            error={errors.inspection_type_id?.message}
-            className={formGridFullWidthClass}
-          >
+          <FormField label="Tipo de vistoria" error={errors.inspection_type_id?.message}>
             <select
               {...register("inspection_type_id")}
               disabled={typesLoading || inspectionTypes.length === 0}
               className={selectInputClass}
             >
-              <option value="">
-                {typesLoading ? "Carregando..." : "Selecione o tipo"}
-              </option>
+              <option value="">{typesLoading ? "Carregando..." : "Selecione"}</option>
               {inspectionTypes.map((type) => (
                 <option key={type.id} value={type.id}>
-                  {type.name} · {formatCurrency(type.amount)}
+                  {type.name}
                 </option>
               ))}
             </select>
-            {selectedType && (
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                Referência: {formatCurrency(selectedType.amount)}
-              </p>
-            )}
+          </FormField>
+          <FormField label="Valor da vistoria" optional>
+            <Input
+              readOnly
+              value={selectedType ? formatCurrency(selectedType.amount) : "—"}
+              className="bg-muted/30"
+            />
+          </FormField>
+          <FormField label="Indicado por" error={errors.requester_name?.message} optional>
+            <Input {...register("requester_name")} placeholder="Opcional" />
           </FormField>
         </div>
       </EvaluationSection>
@@ -340,46 +399,39 @@ export function AvaliacaoTecnicaPanel({
       <EvaluationSection
         id="avaliacao-veiculo"
         title="Veículo"
-        subtitle="Placa, chassi e características"
-        defaultOpen
-        statusText={veiculoComplete ? "Preenchido" : "Pendente"}
-        statusTone={veiculoComplete ? "success" : "warning"}
+        dense
+        statusText={dadosValid ? "Ok" : "Pendente"}
+        statusTone={dadosValid ? "success" : "warning"}
       >
-        <PlateLookupHint state={plateLookupState} className="mb-1" />
-        <VeiculoForm control={control} register={register} errors={errors} embedded compact />
+        <PlateLookupHint state={plateLookupState} />
+        <VeiculoForm control={control} register={register} errors={errors} embedded evaluation />
       </EvaluationSection>
 
-      <EvaluationSection
-        id="avaliacao-contratante"
-        title="Contratante"
-        subtitle="Dados para o laudo"
-        statusText={clienteComplete ? "Preenchido" : undefined}
-        statusTone={clienteComplete ? "success" : "muted"}
-      >
+      <EvaluationSection id="avaliacao-contratante" title="Contratante" dense>
         <ClienteForm control={control} register={register} errors={errors} embedded compact />
       </EvaluationSection>
 
       <EvaluationSection
         id="avaliacao-complementares"
         title="Informações complementares"
-        subtitle="Venda, justiça e mercado"
         optional
+        dense
       >
-        <div className={cn(formGridClass, "gap-y-4")}>
+        <div className={evaluationGridClass}>
           <FormField label="Comprador" error={errors.buyer_name?.message} optional>
-            <Input {...register("buyer_name")} placeholder="Nome ou razão social" />
+            <Input {...register("buyer_name")} />
           </FormField>
           <FormField label="CPF/CNPJ comprador" error={errors.buyer_document?.message} optional>
             <Input {...register("buyer_document")} />
           </FormField>
           <FormField label="Vendedor" error={errors.seller_name?.message} optional>
-            <Input {...register("seller_name")} placeholder="Nome ou razão social" />
+            <Input {...register("seller_name")} />
           </FormField>
           <FormField label="CPF/CNPJ vendedor" error={errors.seller_document?.message} optional>
             <Input {...register("seller_document")} />
           </FormField>
           <FormField label="Processo judicial" error={errors.judicial_process?.message} optional>
-            <Input {...register("judicial_process")} placeholder="Número do processo" />
+            <Input {...register("judicial_process")} />
           </FormField>
           <FormField label="Vara ou órgão" error={errors.judicial_court?.message} optional>
             <Input {...register("judicial_court")} />
@@ -403,18 +455,8 @@ export function AvaliacaoTecnicaPanel({
               )}
             />
           </FormField>
-          <FormField
-            label="Aceitação seguro (%)"
-            error={errors.insurance_acceptance_percent?.message}
-            optional
-          >
-            <Input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              max={100}
-              {...register("insurance_acceptance_percent")}
-            />
+          <FormField label="Aceitação seguro (%)" error={errors.insurance_acceptance_percent?.message} optional>
+            <Input type="number" inputMode="decimal" min={0} max={100} {...register("insurance_acceptance_percent")} />
           </FormField>
         </div>
       </EvaluationSection>
@@ -422,17 +464,18 @@ export function AvaliacaoTecnicaPanel({
       <EvaluationSection
         id="avaliacao-checklist"
         title="Checklist técnico"
-        subtitle="Avalie cada item do veículo"
-        defaultOpen
-        statusText={checklistStatusText}
-        statusTone={checklistStatusTone}
+        dense
+        statusText={
+          checklistValid
+            ? "Concluído"
+            : `${checklistSummary.pending} pendente(s)`
+        }
+        statusTone={checklistValid ? "success" : "warning"}
       >
         {isLoadingChecklist ? (
           <LoadingSpinner label="Carregando checklist..." />
         ) : checklistItems.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            Nenhum item encontrado. Recarregue a página.
-          </p>
+          <p className="py-4 text-center text-sm text-muted-foreground">Nenhum item encontrado.</p>
         ) : (
           <CompactChecklistForm
             items={checklistItems}
@@ -450,17 +493,23 @@ export function AvaliacaoTecnicaPanel({
         variant="compact"
       />
 
-      <div className="border-t border-border pt-4">
+      {!parecerValid && (
+        <p className="text-center text-xs text-muted-foreground">
+          O parecer técnico é obrigatório para emissão do laudo.
+        </p>
+      )}
+
+      <div className="border-t border-border/60 pt-3">
         {wizardMode ? (
           <WizardNavButtons
             onBack={onBack}
             onNext={() => void validateAndContinue()}
             nextLabel="Revisar e gerar laudo"
-            nextDisabled={isSaving || isSubmitting}
+            nextDisabled={!canContinue}
             nextLoading={isSaving || isSubmitting}
           />
         ) : (
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
             {onBack && (
               <Button type="button" variant="outline" className="touch-target" onClick={onBack}>
                 Voltar
@@ -468,10 +517,10 @@ export function AvaliacaoTecnicaPanel({
             )}
             <Button
               type="submit"
-              className="h-12 w-full touch-target sm:ml-auto sm:w-auto sm:min-w-[220px]"
-              disabled={isSaving || isSubmitting}
+              className="h-11 w-full touch-target sm:ml-auto sm:w-auto sm:min-w-[220px]"
+              disabled={!canContinue}
             >
-              <FileText className="mr-2 h-5 w-5" />
+              <FileText className="mr-2 h-4 w-4" />
               {isSaving || isSubmitting ? "Salvando..." : "Revisar e gerar laudo"}
             </Button>
           </div>

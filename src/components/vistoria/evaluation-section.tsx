@@ -10,6 +10,7 @@ interface EvaluationSectionProps {
   statusTone?: "default" | "success" | "warning" | "muted";
   defaultOpen?: boolean;
   optional?: boolean;
+  dense?: boolean;
   children: ReactNode;
   className?: string;
 }
@@ -29,6 +30,7 @@ export function EvaluationSection({
   statusTone = "default",
   defaultOpen = false,
   optional = false,
+  dense = false,
   children,
   className,
 }: EvaluationSectionProps) {
@@ -38,7 +40,8 @@ export function EvaluationSection({
     <section
       id={id}
       className={cn(
-        "scroll-mt-24 overflow-hidden rounded-xl border border-border bg-card shadow-soft transition-shadow",
+        "scroll-mt-24 overflow-hidden rounded-lg border border-border/80 bg-card transition-shadow",
+        !dense && "shadow-soft",
         open && "ring-1 ring-primary/10",
         className,
       )}
@@ -46,12 +49,17 @@ export function EvaluationSection({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-3 px-3.5 py-3.5 text-left transition-colors hover:bg-muted/30 sm:px-4 sm:py-4"
+        className={cn(
+          "flex w-full items-center gap-2.5 text-left transition-colors hover:bg-muted/20",
+          dense ? "px-3 py-2.5 sm:px-3.5" : "px-3.5 py-3.5 sm:px-4 sm:py-4",
+        )}
         aria-expanded={open}
       >
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-sm font-semibold text-foreground sm:text-base">{title}</h2>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h2 className={cn("font-semibold text-foreground", dense ? "text-sm" : "text-sm sm:text-base")}>
+              {title}
+            </h2>
             {optional && (
               <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                 Opcional
@@ -88,7 +96,7 @@ export function EvaluationSection({
         )}
       >
         <div className="overflow-hidden">
-          <div className="space-y-4 border-t border-border/60 px-3.5 pb-4 pt-3 sm:px-4 sm:pb-5 sm:pt-4">
+          <div className="space-y-3 border-t border-border/50 px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3">
             {children}
           </div>
         </div>
