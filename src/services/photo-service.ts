@@ -3,13 +3,15 @@ import { queries } from "@/lib/queries";
 import { mutations } from "@/lib/mutations";
 import { STORAGE_BUCKET } from "@/lib/storage-buckets";
 import {
-  buildPhotoPath,
-  buildThumbnailPath,
   createThumbnailWebP,
   extractImageMetadata,
   getDeviceInfo,
   preparePhotoForUpload,
 } from "@/lib/compress-image";
+import {
+  buildInspectionPhotoPath,
+  buildInspectionPhotoThumbnailPath,
+} from "@/lib/storage-paths";
 import { runPhotoUpload } from "@/lib/photos/upload-queue";
 import { getPhotoCategory, normalizePhotoCategory } from "@/lib/photos/photo-catalog";
 import { insertInspectionPhoto } from "@/lib/photos/photo-insert";
@@ -92,7 +94,7 @@ export async function withSignedPhotoUrls<T extends Pick<InspectionPhoto, "stora
   const thumbPaths = photos.map(
     (photo) =>
       extractStoragePath(photo.thumbnail_url, STORAGE_BUCKET) ??
-      buildThumbnailPath(photo.storage_path),
+      buildInspectionPhotoThumbnailPath(photo.storage_path),
   );
 
   const signed = await getSignedUrls(STORAGE_BUCKET, [
@@ -129,14 +131,14 @@ export const photoService = {
           const device = getDeviceInfo();
           const categoryMeta = resolveCategoryMeta(params.category);
           const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
-          const storagePath = buildPhotoPath(
+          const storagePath = buildInspectionPhotoPath(
             params.companyId,
             params.inspectionId,
             categoryMeta.normalizedCategory,
             fileName,
           );
 
-          const thumbPath = buildThumbnailPath(storagePath);
+          const thumbPath = buildInspectionPhotoThumbnailPath(storagePath);
           const thumbnail = await createThumbnailWebP(webp);
 
           const { error: uploadError } = await db.storage
@@ -206,7 +208,7 @@ export const photoService = {
   async remove(id: string, storagePath: string): Promise<void> {
     try {
       await withFreshSession(async () => {
-        const paths = [storagePath, buildThumbnailPath(storagePath)];
+        const paths = [storagePath, buildInspectionPhotoThumbnailPath(storagePath)];
         const { error: storageError } = await db.storage.from(STORAGE_BUCKET).remove(paths);
         if (storageError) throw storageError;
 
