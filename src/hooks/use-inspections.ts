@@ -1,44 +1,36 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queries";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   inspectionService,
   type InspectionFilters,
 } from "@/services/inspection-service";
 import type { VistoriaInput } from "@/schemas/vistoria";
-import { useAuth } from "@/hooks/use-auth";
-import { invalidateDashboardQueries, invalidateFinancialQueries, invalidateInspectionQueries } from "@/lib/cache-invalidation";
+import { useUser } from "@/hooks/use-user";
+import { useTenantQuery } from "@/hooks/use-tenant-query";
+import { requireCompanyId, requireUserId } from "@/lib/tenant";
+import {
+  invalidateDashboardQueries,
+  invalidateFinancialQueries,
+  invalidateInspectionQueries,
+} from "@/lib/cache-invalidation";
 import { InspectionStatus } from "@/lib/enums";
 
 export function useInspections(filters?: InspectionFilters) {
-  return useQuery({
-    queryKey: queryKeys.inspections.list(filters),
-    queryFn: () => inspectionService.list(filters),
-  });
-}
-
-export function useSearchInspections(params?: InspectionFilters) {
-  const { profile } = useAuth();
-  return useQuery({
-    queryKey: queryKeys.inspections.search(params),
-    queryFn: () => inspectionService.search(profile!.company_id, params),
-    enabled: !!profile?.company_id,
+  return useTenantQuery({
+    queryKey: ["inspections", "list", filters] as const,
+    queryFn: (companyId) => inspectionService.list(companyId, filters),
   });
 }
 
 export function useCreateInspection() {
   const qc = useQueryClient();
-  const { profile, user } = useAuth();
+  const { companyId, userId } = useUser();
 
   return useMutation({
-    mutationFn: (input: VistoriaInput) => {
-      if (!profile?.company_id || !user?.id) {
-        throw new Error("Perfil não carregado");
-      }
-      return inspectionService.create(input, {
-        companyId: profile.company_id,
-        inspectorId: user.id,
-      });
-    },
+    mutationFn: (input: VistoriaInput) =>
+      inspectionService.create(input, {
+        companyId: requireCompanyId(companyId),
+        inspectorId: requireUserId(userId),
+      }),
     onSuccess: () => {
       invalidateInspectionQueries(qc);
       invalidateDashboardQueries(qc);

@@ -14,7 +14,7 @@ export function useTeamProfiles() {
   const { can } = usePermission();
 
   return useQuery({
-    queryKey: queryKeys.users.team,
+    queryKey: queryKeys.users.team(companyId ?? undefined),
     queryFn: () => userService.listTeam(companyId!),
     enabled: can("users.manage") && !!companyId,
   });

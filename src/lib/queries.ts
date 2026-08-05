@@ -3,23 +3,27 @@ import { db } from "./db-client";
 export const queryKeys = {
   inspections: {
     all: ["inspections"] as const,
-    list: (filters?: Record<string, unknown>) => ["inspections", "list", filters] as const,
+    list: (companyId: string | undefined, filters?: Record<string, unknown>) =>
+      ["inspections", "list", companyId, filters] as const,
     detail: (id: string) => ["inspections", id] as const,
-    search: (params?: Record<string, unknown>) => ["inspections", "search", params] as const,
+    search: (companyId: string | undefined, params?: Record<string, unknown>) =>
+      ["inspections", "search", companyId, params] as const,
   },
   checklist: (inspectionId: string) => ["checklist", inspectionId] as const,
   photos: (inspectionId: string) => ["photos", inspectionId] as const,
   dashboard: {
-    metrics: ["dashboard", "metrics"] as const,
-    recent: ["dashboard", "recent"] as const,
-    monthly: (year?: number) => ["dashboard", "monthly", year] as const,
-    brands: ["dashboard", "brands"] as const,
+    metrics: (companyId?: string) => ["dashboard", "metrics", companyId] as const,
+    recent: (companyId?: string) => ["dashboard", "recent", companyId] as const,
+    monthly: (companyId?: string, year?: number) =>
+      ["dashboard", "monthly", companyId, year] as const,
+    brands: (companyId?: string) => ["dashboard", "brands", companyId] as const,
   },
   financial: {
     all: ["financial"] as const,
-    list: (page: number, pageSize: number) => ["financial", "list", page, pageSize] as const,
-    summary: (startDate?: string, endDate?: string) =>
-      ["financial", "summary", startDate, endDate] as const,
+    list: (companyId: string | undefined, page: number, pageSize: number) =>
+      ["financial", "list", companyId, page, pageSize] as const,
+    summary: (companyId: string | undefined, startDate?: string, endDate?: string) =>
+      ["financial", "summary", companyId, startDate, endDate] as const,
   },
   profile: ["profile"] as const,
   company: {
@@ -32,15 +36,19 @@ export const queryKeys = {
       ["inspection-types", companyId, activeOnly] as const,
   },
   users: {
-    team: ["users", "team"] as const,
+    team: (companyId?: string) => ["users", "team", companyId] as const,
   },
   platformCompanies: {
     all: ["platform-companies"] as const,
   },
   audit: {
     all: ["audit"] as const,
-    list: (filters?: Record<string, unknown>, page?: number, pageSize?: number) =>
-      ["audit", "list", filters, page, pageSize] as const,
+    list: (
+      companyId: string | undefined,
+      filters?: Record<string, unknown>,
+      page?: number,
+      pageSize?: number,
+    ) => ["audit", "list", companyId, filters, page, pageSize] as const,
   },
   notifications: {
     all: ["notifications"] as const,
@@ -79,8 +87,8 @@ export const queries = {
       `);
     },
 
-    byCompany(companyId: string) {
-      return this.base().eq("company_id", companyId).is("deleted_at", null);
+    byCompany(companyId: string, options?: { count?: "exact" }) {
+      return this.base(options).eq("company_id", companyId).is("deleted_at", null);
     },
 
     byId(id: string) {

@@ -12,7 +12,7 @@ export function useFinancialEntries(page = 1, pageSize = 50) {
   const canRead = can("financial.manage") || can("financial.read.own");
   const offset = (page - 1) * pageSize;
   return useQuery({
-    queryKey: queryKeys.financial.list(page, pageSize),
+    queryKey: queryKeys.financial.list(companyId ?? undefined, page, pageSize),
     queryFn: () => financialService.list(companyId!, pageSize, offset),
     enabled: !!companyId && canRead,
   });
@@ -24,7 +24,7 @@ export function useFinancialSummary(startDate?: string, endDate?: string) {
   const canRead = can("financial.manage") || can("financial.read.own");
 
   return useQuery({
-    queryKey: queryKeys.financial.summary(startDate, endDate),
+    queryKey: queryKeys.financial.summary(companyId ?? undefined, startDate, endDate),
     queryFn: () => financialService.getSummary(companyId!, startDate, endDate),
     enabled: !!companyId && canRead,
   });

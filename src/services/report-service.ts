@@ -50,11 +50,12 @@ export const dashboardService = {
     }
   },
 
-  async getRecentInspections(limit = 5): Promise<RecentInspection[]> {
+  async getRecentInspections(companyId: string, limit = 5): Promise<RecentInspection[]> {
     try {
       const { data, error } = await db
         .from("inspections")
         .select("id, inspection_number, plate, brand, model, status, inspection_date, client_name")
+        .eq("company_id", companyId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(limit);

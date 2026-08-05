@@ -124,14 +124,16 @@ function buildChecklistSeed(companyId: string, inspectionId: string) {
 }
 
 export const inspectionService = {
-  async list(filters?: InspectionFilters): Promise<{ data: Inspection[]; count: number }> {
+  async list(
+    companyId: string,
+    filters?: InspectionFilters,
+  ): Promise<{ data: Inspection[]; count: number }> {
     try {
       const limit = filters?.limit ?? 25;
       const offset = filters?.offset ?? 0;
 
       let query = queries.inspections
-        .base({ count: "exact" })
-        .is("deleted_at", null)
+        .byCompany(companyId, { count: "exact" })
         .order("inspection_date", { ascending: false })
         .range(offset, offset + limit - 1);
 
