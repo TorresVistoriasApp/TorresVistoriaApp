@@ -252,7 +252,8 @@ CREATE POLICY storage_photos_update ON storage.objects
     AND (storage.foldername(name))[1] = public.get_user_company_id()::text
   );
 
-DROP POLICY IF EXISTS storage_photos_delete ON storage.objects
+DROP POLICY IF EXISTS storage_photos_delete ON storage.objects;
+CREATE POLICY storage_photos_delete ON storage.objects
   FOR DELETE TO authenticated
   USING (
     bucket_id = 'inspection-photos'
