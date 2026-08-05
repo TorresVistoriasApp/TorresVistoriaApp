@@ -24,7 +24,9 @@ export type Database = {
           action: string
           company_id: string | null
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           entity_id: string | null
           entity_type: string
           id: string
@@ -32,6 +34,7 @@ export type Database = {
           new_data: Json | null
           old_data: Json | null
           updated_at: string
+          updated_by: string | null
           user_agent: string | null
           user_id: string | null
         }
@@ -39,7 +42,9 @@ export type Database = {
           action: string
           company_id?: string | null
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           entity_id?: string | null
           entity_type: string
           id?: string
@@ -47,6 +52,7 @@ export type Database = {
           new_data?: Json | null
           old_data?: Json | null
           updated_at?: string
+          updated_by?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -54,7 +60,9 @@ export type Database = {
           action?: string
           company_id?: string | null
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           entity_id?: string | null
           entity_type?: string
           id?: string
@@ -62,6 +70,7 @@ export type Database = {
           new_data?: Json | null
           old_data?: Json | null
           updated_at?: string
+          updated_by?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -93,7 +102,9 @@ export type Database = {
           address_state: string | null
           address_street: string | null
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           document: string | null
           email: string | null
           id: string
@@ -107,6 +118,7 @@ export type Database = {
           subscription_plan: string
           trade_name: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           address?: string | null
@@ -118,7 +130,9 @@ export type Database = {
           address_state?: string | null
           address_street?: string | null
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           document?: string | null
           email?: string | null
           id?: string
@@ -132,6 +146,7 @@ export type Database = {
           subscription_plan?: string
           trade_name: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           address?: string | null
@@ -143,7 +158,9 @@ export type Database = {
           address_state?: string | null
           address_street?: string | null
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           document?: string | null
           email?: string | null
           id?: string
@@ -167,6 +184,7 @@ export type Database = {
           created_at: string
           created_by: string
           deleted_at: string | null
+          deleted_by: string | null
           description: string
           entry_date: string
           entry_type: string
@@ -174,6 +192,7 @@ export type Database = {
           inspection_id: string | null
           source: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           amount: number
@@ -181,6 +200,7 @@ export type Database = {
           created_at?: string
           created_by: string
           deleted_at?: string | null
+          deleted_by?: string | null
           description: string
           entry_date?: string
           entry_type: string
@@ -188,6 +208,7 @@ export type Database = {
           inspection_id?: string | null
           source?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           amount?: number
@@ -195,6 +216,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           deleted_at?: string | null
+          deleted_by?: string | null
           description?: string
           entry_date?: string
           entry_type?: string
@@ -202,6 +224,7 @@ export type Database = {
           inspection_id?: string | null
           source?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -232,37 +255,46 @@ export type Database = {
           category: string
           company_id: string
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           id: string
           inspection_id: string
           item_name: string
           notes: string | null
           status: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           category: string
           company_id: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           inspection_id: string
           item_name: string
           notes?: string | null
           status?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           category?: string
           company_id?: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           inspection_id?: string
           item_name?: string
           notes?: string | null
           status?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -287,30 +319,39 @@ export type Database = {
           company_id: string
           content: string
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           id: string
           inspection_id: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           author_id: string
           company_id: string
           content: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           inspection_id: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           author_id?: string
           company_id?: string
           content?: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           inspection_id?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -346,10 +387,12 @@ export type Database = {
           complementary_name: string | null
           content_hash: string | null
           created_at: string
+          created_by: string | null
           damage_category: string | null
           damage_location: string | null
           damage_severity: string | null
           deleted_at: string | null
+          deleted_by: string | null
           device_model: string | null
           device_os: string | null
           display_name: string | null
@@ -372,6 +415,7 @@ export type Database = {
           subcategory: string | null
           thumbnail_url: string | null
           updated_at: string
+          updated_by: string | null
           uploaded_by: string | null
           watermark_applied: boolean
           width: number | null
@@ -385,10 +429,12 @@ export type Database = {
           complementary_name?: string | null
           content_hash?: string | null
           created_at?: string
+          created_by?: string | null
           damage_category?: string | null
           damage_location?: string | null
           damage_severity?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           device_model?: string | null
           device_os?: string | null
           display_name?: string | null
@@ -411,6 +457,7 @@ export type Database = {
           subcategory?: string | null
           thumbnail_url?: string | null
           updated_at?: string
+          updated_by?: string | null
           uploaded_by?: string | null
           watermark_applied?: boolean
           width?: number | null
@@ -424,10 +471,12 @@ export type Database = {
           complementary_name?: string | null
           content_hash?: string | null
           created_at?: string
+          created_by?: string | null
           damage_category?: string | null
           damage_location?: string | null
           damage_severity?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           device_model?: string | null
           device_os?: string | null
           display_name?: string | null
@@ -450,6 +499,7 @@ export type Database = {
           subcategory?: string | null
           thumbnail_url?: string | null
           updated_at?: string
+          updated_by?: string | null
           uploaded_by?: string | null
           watermark_applied?: boolean
           width?: number | null
@@ -475,35 +525,44 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           id: string
           inspection_id: string
           notes: string | null
           part_code: string
           status: string
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           company_id: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           inspection_id: string
           notes?: string | null
           part_code: string
           status?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           company_id?: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           inspection_id?: string
           notes?: string | null
           part_code?: string
           status?: string
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -526,7 +585,9 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           generated_by: string
           id: string
           inspection_id: string
@@ -535,13 +596,16 @@ export type Database = {
           qr_code_data: string | null
           storage_path: string
           updated_at: string
+          updated_by: string | null
           verification_code: string
           version: number
         }
         Insert: {
           company_id: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           generated_by: string
           id?: string
           inspection_id: string
@@ -550,13 +614,16 @@ export type Database = {
           qr_code_data?: string | null
           storage_path: string
           updated_at?: string
+          updated_by?: string | null
           verification_code: string
           version?: number
         }
         Update: {
           company_id?: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           generated_by?: string
           id?: string
           inspection_id?: string
@@ -565,6 +632,7 @@ export type Database = {
           qr_code_data?: string | null
           storage_path?: string
           updated_at?: string
+          updated_by?: string | null
           verification_code?: string
           version?: number
         }
@@ -597,34 +665,43 @@ export type Database = {
           amount: number
           company_id: string
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           id: string
           is_active: boolean
           name: string
           sort_order: number
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           amount?: number
           company_id: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           is_active?: boolean
           name: string
           sort_order?: number
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           amount?: number
           company_id?: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           is_active?: boolean
           name?: string
           sort_order?: number
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -650,7 +727,9 @@ export type Database = {
           company_id: string
           completion_percent: number
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           draft_expires_at: string | null
           engine_displacement: number | null
           fuel: string
@@ -689,6 +768,7 @@ export type Database = {
           status: string
           technical_notes: string | null
           updated_at: string
+          updated_by: string | null
           vehicle_category: string | null
           vehicle_condition: string | null
           vehicle_species: string | null
@@ -708,7 +788,9 @@ export type Database = {
           company_id: string
           completion_percent?: number
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           draft_expires_at?: string | null
           engine_displacement?: number | null
           fuel: string
@@ -747,6 +829,7 @@ export type Database = {
           status?: string
           technical_notes?: string | null
           updated_at?: string
+          updated_by?: string | null
           vehicle_category?: string | null
           vehicle_condition?: string | null
           vehicle_species?: string | null
@@ -766,7 +849,9 @@ export type Database = {
           company_id?: string
           completion_percent?: number
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           draft_expires_at?: string | null
           engine_displacement?: number | null
           fuel?: string
@@ -805,6 +890,7 @@ export type Database = {
           status?: string
           technical_notes?: string | null
           updated_at?: string
+          updated_by?: string | null
           vehicle_category?: string | null
           vehicle_condition?: string | null
           vehicle_species?: string | null
@@ -833,36 +919,45 @@ export type Database = {
           body: string
           company_id: string
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           id: string
           metadata: Json | null
           read_at: string | null
           title: string
           updated_at: string
+          updated_by: string | null
           user_id: string
         }
         Insert: {
           body: string
           company_id: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           metadata?: Json | null
           read_at?: string | null
           title: string
           updated_at?: string
+          updated_by?: string | null
           user_id: string
         }
         Update: {
           body?: string
           company_id?: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           metadata?: Json | null
           read_at?: string | null
           title?: string
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: [
@@ -910,7 +1005,165 @@ export type Database = {
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [        ]
+      }
+      photo_categories: {
+        Row: {
+          category_type: string
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean
+          is_system: boolean
+          key: string
+          max_count: number
+          min_count: number
+          name: string
+          required: boolean
+          section_id: string | null
+          section_key: string
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+          visual_guide: Json | null
+        }
+        Insert: {
+          category_type?: string
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          key: string
+          max_count?: number
+          min_count?: number
+          name: string
+          required?: boolean
+          section_id?: string | null
+          section_key: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+          visual_guide?: Json | null
+        }
+        Update: {
+          category_type?: string
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          key?: string
+          max_count?: number
+          min_count?: number
+          name?: string
+          required?: boolean
+          section_id?: string | null
+          section_key?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+          visual_guide?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_categories_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_categories_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "photo_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photo_sections: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean
+          is_system: boolean
+          key: string
+          max_allowed_count: number
+          min_required_count: number
+          name: string
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          key: string
+          max_allowed_count?: number
+          min_required_count?: number
+          name: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          key?: string
+          max_allowed_count?: number
+          min_required_count?: number
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_sections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       platform_admins: {
         Row: {
@@ -1075,34 +1328,43 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          created_by: string | null
           deleted_at: string | null
+          deleted_by: string | null
           id: string
           legal_footer: string | null
           signature_image_url: string | null
           theme_mode: string
           updated_at: string
+          updated_by: string | null
           watermark_enabled: boolean
         }
         Insert: {
           company_id: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           legal_footer?: string | null
           signature_image_url?: string | null
           theme_mode?: string
           updated_at?: string
+          updated_by?: string | null
           watermark_enabled?: boolean
         }
         Update: {
           company_id?: string
           created_at?: string
+          created_by?: string | null
           deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           legal_footer?: string | null
           signature_image_url?: string | null
           theme_mode?: string
           updated_at?: string
+          updated_by?: string | null
           watermark_enabled?: boolean
         }
         Relationships: [
