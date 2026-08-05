@@ -11,21 +11,70 @@ export const torresConsultaRoutes: ModuleRoutes = {
       element: lazyRoute(() => import("@/modules/torres-consulta/pages/landing-page"), "LandingPage"),
     },
     { path: ROUTES.consulta, element: <Navigate to={ROUTES.consultaLanding} replace /> },
-  ],
-
-  public: [
+    {
+      path: ROUTES.relatorioExemplo,
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/sample-report-page"),
+        "SampleReportPage",
+      ),
+    },
+    {
+      path: ROUTES.sobre,
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/about-page"),
+        "AboutPage",
+      ),
+    },
+    {
+      path: ROUTES.ajuda,
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/help-page"),
+        "HelpPage",
+      ),
+    },
+    {
+      path: ROUTES.contato,
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/contact-page"),
+        "ContactPage",
+      ),
+    },
+    {
+      path: ROUTES.comoFunciona,
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/how-it-works-page"),
+        "HowItWorksPage",
+      ),
+    },
+    {
+      path: ROUTES.privacy,
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/privacy-page"),
+        "PrivacyPage",
+      ),
+    },
     {
       path: ROUTES.termos,
-      element: lazyRoute(() => import("@/modules/torres-consulta/pages/legal/termos-page"), "TermosPage"),
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/terms-page"),
+        "TermsPage",
+      ),
     },
     {
       path: ROUTES.lgpd,
-      element: lazyRoute(() => import("@/modules/torres-consulta/pages/legal/lgpd-page"), "LgpdPage"),
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/lgpd-page"),
+        "LgpdPage",
+      ),
     },
     {
-      path: ROUTES.faq,
-      element: lazyRoute(() => import("@/modules/torres-consulta/pages/legal/faq-page"), "FaqPage"),
+      path: ROUTES.cookies,
+      element: lazyRoute(
+        () => import("@/modules/torres-consulta/pages/marketing/cookies-page"),
+        "CookiesPage",
+      ),
     },
+    { path: ROUTES.faq, element: <Navigate to={ROUTES.ajuda} replace /> },
   ],
 
   auth: [

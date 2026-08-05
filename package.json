@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:architecture": "node scripts/check-boundaries.mjs",
     "typecheck": "tsc -b --noEmit",
-    "preview": "vite preview",
+    "preview": "vite preview --port 3000",
     "test": "vitest",
     "test:isolation": "vitest run tests/unit/lib/tenant-isolation.test.ts tests/integration/tenant-rls-contract.test.ts",
     "test:db": "supabase test db --local supabase/tests",

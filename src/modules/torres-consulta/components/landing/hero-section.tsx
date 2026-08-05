@@ -1,4 +1,7 @@
-import { Car, ShieldCheck, Sparkles } from "lucide-react";
+import { Car, FileSearch, ShieldCheck, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ROUTES } from "@/config/routes";
+import { Button } from "@/shared/ui/button";
 import { HeroConsultaForm } from "./hero-consulta-form";
 
 function HeroIllustration() {
@@ -82,6 +85,12 @@ export function HeroSection() {
               Descubra informações importantes utilizando apenas a placa ou o chassi em poucos
               minutos.
             </p>
+            <Button variant="outline" size="lg" className="mt-6" asChild>
+              <Link to={ROUTES.relatorioExemplo}>
+                <FileSearch className="h-4 w-4" />
+                Ver Exemplo de Relatório
+              </Link>
+            </Button>
             <div className="mt-8 lg:hidden">
               <HeroConsultaForm />
             </div>

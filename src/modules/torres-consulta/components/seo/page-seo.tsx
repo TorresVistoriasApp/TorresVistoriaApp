@@ -4,6 +4,7 @@ export interface PageSeoProps {
   title: string;
   description: string;
   canonical?: string;
+  canonicalPath?: string;
   ogImage?: string;
   ogType?: string;
   schema?: Record<string, unknown>;
@@ -15,6 +16,7 @@ export function PageSeo({
   title,
   description,
   canonical,
+  canonicalPath,
   ogImage = "/images/brand/official-trim.webp",
   ogType = "website",
   schema,
@@ -22,6 +24,12 @@ export function PageSeo({
   useEffect(() => {
     const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
     document.title = fullTitle;
+
+    const resolvedCanonical =
+      canonical ??
+      (canonicalPath && typeof window !== "undefined"
+        ? `${window.location.origin}${canonicalPath}`
+        : undefined);
 
     const setMeta = (name: string, content: string, property = false) => {
       const attr = property ? "property" : "name";
@@ -39,18 +47,19 @@ export function PageSeo({
     setMeta("og:description", description, true);
     setMeta("og:type", ogType, true);
     setMeta("og:image", ogImage, true);
+    if (resolvedCanonical) setMeta("og:url", resolvedCanonical, true);
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", fullTitle);
     setMeta("twitter:description", description);
 
-    if (canonical) {
+    if (resolvedCanonical) {
       let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
       if (!link) {
         link = document.createElement("link");
         link.rel = "canonical";
         document.head.appendChild(link);
       }
-      link.href = canonical;
+      link.href = resolvedCanonical;
     }
 
     let schemaScript: HTMLScriptElement | null = null;
@@ -64,7 +73,7 @@ export function PageSeo({
     return () => {
       schemaScript?.remove();
     };
-  }, [title, description, canonical, ogImage, ogType, schema]);
+  }, [title, description, canonical, canonicalPath, ogImage, ogType, schema]);
 
   return null;
 }

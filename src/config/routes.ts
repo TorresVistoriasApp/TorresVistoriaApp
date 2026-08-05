@@ -46,6 +46,12 @@ export const ROUTE_SLUGS = {
   termos: "termos",
   lgpd: "lgpd",
   faq: "faq",
+  relatorioExemplo: "relatorio-exemplo",
+  sobre: "sobre",
+  ajuda: "ajuda",
+  contato: "contato",
+  comoFunciona: "como-funciona",
+  cookies: "cookies",
 } as const;
 
 const route = (...segments: string[]) => `/${segments.join("/")}`;
@@ -106,6 +112,14 @@ export const ROUTES = {
   termos: route(ROUTE_SLUGS.termos),
   lgpd: route(ROUTE_SLUGS.lgpd),
   faq: route(ROUTE_SLUGS.faq),
+  relatorioExemplo: route(ROUTE_SLUGS.relatorioExemplo),
+  sobre: route(ROUTE_SLUGS.sobre),
+  ajuda: route(ROUTE_SLUGS.ajuda),
+  contato: route(ROUTE_SLUGS.contato),
+  comoFunciona: route(ROUTE_SLUGS.comoFunciona),
+  cookies: route(ROUTE_SLUGS.cookies),
+  planos: "/#planos",
+  consultar: "/#consultar",
 } as const;
 
 export const ROUTE_PATTERNS = {
