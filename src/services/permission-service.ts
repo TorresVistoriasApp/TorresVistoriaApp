@@ -6,6 +6,10 @@ import {
   PERMISSIONS,
   type Permission,
 } from "@/lib/rbac";
+import {
+  mergeCustomPermissions,
+  type CustomPermissionGrant,
+} from "@/lib/saas/plan-limit-service";
 import type { UserRole } from "@/lib/enums";
 
 export function resolvePermissionsForRole(role: UserRole | undefined): Permission[] {
@@ -44,6 +48,29 @@ export function createPermissionChecker(role: UserRole | null | undefined): Perm
     isInspector: isInspector(resolvedRole ?? undefined),
     canViewInspection: (inspectorId, userId) =>
       rbacCanViewInspection(resolvedRole ?? undefined, inspectorId, userId),
+  };
+}
+
+/**
+ * Extensão futura: checker com overrides de `company_custom_permissions`.
+ * Quando implementado, carregar grants do banco e mesclar via `mergeCustomPermissions`.
+ */
+export function createPermissionCheckerWithGrants(
+  role: UserRole | null | undefined,
+  customGrants: CustomPermissionGrant[],
+): PermissionChecker {
+  const base = createPermissionChecker(role);
+  if (customGrants.length === 0) {
+    return base;
+  }
+
+  const merged = mergeCustomPermissions(base.permissions, customGrants);
+
+  return {
+    ...base,
+    permissions: merged,
+    has: (permission) => merged.has(permission),
+    hasAny: (...permissionList) => permissionList.some((permission) => merged.has(permission)),
   };
 }
 

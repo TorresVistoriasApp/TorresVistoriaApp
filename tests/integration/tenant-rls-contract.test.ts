@@ -64,4 +64,21 @@ describe("tenant RLS contract (migrations)", () => {
       expect(sql).toContain("get_user_company_id()");
     }
   });
+
+  it("migration SaaS futura define tabelas reservadas com RLS", () => {
+    const sql = readMigration("20260805210000_saas_future_foundation.sql");
+    const futureTables = [
+      "company_subscriptions",
+      "tenant_invitations",
+      "company_branches",
+      "company_teams",
+      "integration_connections",
+      "company_custom_permissions",
+    ];
+    for (const table of futureTables) {
+      expect(sql).toContain(`public.${table}`);
+      expect(sql).toContain(`ENABLE ROW LEVEL SECURITY`);
+    }
+    expect(sql).toContain("feature_flags");
+  });
 });

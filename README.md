@@ -18,6 +18,8 @@ npm run dev
 | `npm run dev` | Servidor de desenvolvimento |
 | `npm run build` | Build de produção |
 | `npm run test` | Testes unitários (Vitest) |
+| `npm run test:isolation` | Testes de isolamento multi-tenant |
+| `npm run test:db` | Testes pgTAP (Supabase local) |
 | `npm run test:e2e` | Testes E2E (Playwright) |
 | `npm run db:types` | Gera tipos TypeScript do schema |
 | `npm run scaffold` | Regenera arquivos scaffold |
