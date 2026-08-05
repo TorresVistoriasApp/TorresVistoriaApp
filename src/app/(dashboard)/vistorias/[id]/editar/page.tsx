@@ -9,9 +9,8 @@ import { useAutoSaveInspection } from "@/features/draft/hooks/use-auto-save-insp
 import { rememberActiveDraftId } from "@/features/draft/services/draft-service";
 import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { useUpdateInspection } from "@/hooks/use-inspections";
-import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
-import { isSuperAdmin } from "@/lib/rbac";
+import { usePermission } from "@/hooks/use-permission";
 import {
   formatVistoriaFormDefaults,
   prepareVistoriaFormForSave,
@@ -28,7 +27,7 @@ export function Page() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
-  const { profile } = useUser();
+  const { can } = usePermission();
   const { inspectionId, inspection, isLoading } = useInspectionContext();
   const { toast } = useToast();
   const update = useUpdateInspection(inspectionId);
@@ -93,7 +92,7 @@ export function Page() {
               : "Continuar para fotos"
             : "Salvar"
         }
-        showInternalNotes={isSuperAdmin(profile?.role)}
+        showInternalNotes={can("inspections.read.all")}
         wizardMode={isWizardFlow}
         stickyActions={!isWizardFlow}
         enableAutoSave={isDraft}

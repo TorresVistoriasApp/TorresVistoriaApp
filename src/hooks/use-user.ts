@@ -2,6 +2,7 @@ export { useUser, useUserContext } from "@/app/user-context";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserContext } from "@/app/user-context";
+import { usePermission } from "@/hooks/use-permission";
 import { queryKeys } from "@/lib/queries";
 import { userService } from "@/services/user-service";
 import type { UserRole } from "@/lib/enums";
@@ -9,12 +10,13 @@ import type { UserProfileInput } from "@/schemas/user";
 import { invalidateUserQueries } from "@/lib/cache-invalidation";
 
 export function useTeamProfiles() {
-  const { companyId, role } = useUserContext();
+  const { companyId } = useUserContext();
+  const { can } = usePermission();
 
   return useQuery({
     queryKey: queryKeys.users.team,
     queryFn: () => userService.listTeam(companyId!),
-    enabled: role === "SUPER_ADMIN" && !!companyId,
+    enabled: can("users.manage") && !!companyId,
   });
 }
 

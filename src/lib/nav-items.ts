@@ -9,6 +9,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
+import type { Permission } from "@/lib/rbac";
+import type { PermissionChecker } from "@/services/permission-service";
 
 export interface NavLinkItem {
   type: "link";
@@ -17,6 +19,8 @@ export interface NavLinkItem {
   shortLabel: string;
   icon: LucideIcon;
   end?: boolean;
+  /** Quando definido, o link só aparece se o usuário tiver a permissão. */
+  requiredPermission?: Permission;
 }
 
 export interface NavSection {
@@ -33,7 +37,11 @@ const SETTINGS_LINK: NavLinkItem = {
   end: true,
 };
 
-export function getNavSections(isSuperAdmin: boolean): NavSection[] {
+function filterNavItems(items: NavLinkItem[], access: Pick<PermissionChecker, "has">): NavLinkItem[] {
+  return items.filter((item) => !item.requiredPermission || access.has(item.requiredPermission));
+}
+
+export function getNavSections(access: Pick<PermissionChecker, "has">): NavSection[] {
   const sections: NavSection[] = [
     {
       title: "Visão geral",
@@ -50,28 +58,64 @@ export function getNavSections(isSuperAdmin: boolean): NavSection[] {
     },
     {
       title: "Operação",
-      items: [
-        { type: "link", to: ROUTES.inspections, label: "Vistorias", shortLabel: "Vistorias", icon: Car },
-        { type: "link", to: ROUTES.reports, label: "Relatórios", shortLabel: "Relatórios", icon: BarChart3 },
-      ],
+      items: filterNavItems(
+        [
+          { type: "link", to: ROUTES.inspections, label: "Vistorias", shortLabel: "Vistorias", icon: Car },
+          {
+            type: "link",
+            to: ROUTES.reports,
+            label: "Relatórios",
+            shortLabel: "Relatórios",
+            icon: BarChart3,
+            requiredPermission: "reports.export",
+          },
+        ],
+        access,
+      ),
     },
   ];
 
-  if (isSuperAdmin) {
-    sections.push({
-      title: "Financeiro",
-      items: [
-        { type: "link", to: ROUTES.financial, label: "Financeiro", shortLabel: "Financeiro", icon: Wallet, end: true },
-      ],
-    });
+  const financialItems = filterNavItems(
+    [
+      {
+        type: "link",
+        to: ROUTES.financial,
+        label: "Financeiro",
+        shortLabel: "Financeiro",
+        icon: Wallet,
+        end: true,
+        requiredPermission: "financial.manage",
+      },
+    ],
+    access,
+  );
+  if (financialItems.length > 0) {
+    sections.push({ title: "Financeiro", items: financialItems });
+  }
 
-    sections.push({
-      title: "Gestão",
-      items: [
-        { type: "link", to: ROUTES.users, label: "Usuários", shortLabel: "Usuários", icon: Users },
-        { type: "link", to: ROUTES.audit, label: "Auditoria", shortLabel: "Auditoria", icon: ClipboardList },
-      ],
-    });
+  const managementItems = filterNavItems(
+    [
+      {
+        type: "link",
+        to: ROUTES.users,
+        label: "Usuários",
+        shortLabel: "Usuários",
+        icon: Users,
+        requiredPermission: "users.manage",
+      },
+      {
+        type: "link",
+        to: ROUTES.audit,
+        label: "Auditoria",
+        shortLabel: "Auditoria",
+        icon: ClipboardList,
+        requiredPermission: "users.manage",
+      },
+    ],
+    access,
+  );
+  if (managementItems.length > 0) {
+    sections.push({ title: "Gestão", items: managementItems });
   }
 
   sections.push({
@@ -83,6 +127,6 @@ export function getNavSections(isSuperAdmin: boolean): NavSection[] {
 }
 
 /** Navegação plana para a barra inferior mobile (sem seções). */
-export const NAV_ITEMS = getNavSections(false)
+export const NAV_ITEMS = getNavSections({ has: () => true })
   .flatMap((section) => section.items)
   .map(({ type: _type, ...item }) => item);

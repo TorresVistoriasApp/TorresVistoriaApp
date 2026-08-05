@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { VistoriaStatusBadge } from "@/components/vistoria/vistoria-status-badge";
-import { RoleGuard } from "@/components/shared/role-guard";
+import { PermissionGuard } from "@/components/shared/permission-guard";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,6 @@ import {
   formatPlate,
 } from "@/lib/formatters";
 import { hasLaudoValue } from "@/lib/laudo/laudo-field-utils";
-import { UserRole } from "@/lib/enums";
 import { ROUTES } from "@/lib/constants";
 import { Camera, ClipboardList, Edit, FileText, ArrowLeft } from "lucide-react";
 import { VistoriaActionsMenu } from "@/components/vistoria/vistoria-actions-menu";
@@ -223,7 +222,7 @@ export function Page() {
         </Card>
       )}
 
-      <RoleGuard allowedRoles={[UserRole.SUPER_ADMIN]}>
+      <PermissionGuard permission="inspections.read.all">
         {inspection.internal_notes && (
           <Card className="border-amber-200 bg-amber-50">
             <CardHeader className="pb-3">
@@ -236,7 +235,7 @@ export function Page() {
             </CardContent>
           </Card>
         )}
-      </RoleGuard>
+      </PermissionGuard>
     </div>
   );
 }

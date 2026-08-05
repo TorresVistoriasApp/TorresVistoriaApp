@@ -1,1 +1,1 @@
-export { usePermission, usePermissionContext } from "@/app/permission-context";
+export { usePermission, usePermissionContext, useRole } from "@/app/permission-context";

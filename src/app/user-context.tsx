@@ -7,7 +7,7 @@ import {
 import type { User } from "@supabase/supabase-js";
 import { useAuth } from "@/app/auth-context";
 import type { UserRole } from "@/lib/enums";
-import { isInspector, isSuperAdmin } from "@/lib/rbac";
+import { createPermissionChecker } from "@/services/permission-service";
 import type { Profile } from "@/types";
 
 export interface UserContextValue {
@@ -31,8 +31,9 @@ const UserContext = createContext<UserContextValue | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const { user, profile, loading, refreshProfile } = useAuth();
 
-  const value = useMemo<UserContextValue>(
-    () => ({
+  const value = useMemo<UserContextValue>(() => {
+    const checker = createPermissionChecker(profile?.role);
+    return {
       user,
       profile,
       userId: profile?.id ?? user?.id ?? null,
@@ -43,11 +44,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       avatarUrl: profile?.avatar_url ?? null,
       loading,
       refreshProfile,
-      isSuperAdmin: isSuperAdmin(profile?.role),
-      isInspector: isInspector(profile?.role),
-    }),
-    [user, profile, loading, refreshProfile],
-  );
+      isSuperAdmin: checker.isSuperAdmin,
+      isInspector: checker.isInspector,
+    };
+  }, [user, profile, loading, refreshProfile]);
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }

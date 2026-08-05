@@ -1,8 +1,7 @@
 import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/constants";
 import { getNavSections } from "@/lib/nav-items";
-import { isSuperAdmin } from "@/lib/rbac";
-import { useAuth } from "@/hooks/use-auth";
+import { usePermission } from "@/hooks/use-permission";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { SidebarProfile } from "@/components/layout/sidebar-profile";
 import { SidebarCollapseToggle } from "@/components/layout/sidebar-collapse-toggle";
@@ -16,11 +15,11 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, onNavigate, embedded }: SidebarProps) {
-  const { profile } = useAuth();
+  const { has } = usePermission();
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebarCollapsed = useUiStore((s) => s.toggleSidebarCollapsed);
   const collapsed = !embedded && sidebarCollapsed;
-  const navSections = getNavSections(isSuperAdmin(profile?.role));
+  const navSections = getNavSections({ has });
 
   return (
     <aside className={cn("flex h-full w-full flex-col", className)}>
