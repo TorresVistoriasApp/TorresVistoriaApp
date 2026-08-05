@@ -74,8 +74,8 @@ export const vistoriaSchema = z
 export const vistoriaUpdateSchema = vistoriaSchema.partial();
 
 /**
- * Validação do passo 1 do wizard: dados para seguir às fotos.
- * Parecer e observações técnicas são preenchidos ao final do checklist.
+ * Validação dos dados da vistoria antes de avançar no fluxo.
+ * Parecer e observações técnicas são validados na avaliação técnica.
  */
 export const vistoriaWizardContinueSchema = vistoriaSchema
   .omit({ opinion: true, technical_notes: true })

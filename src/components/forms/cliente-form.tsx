@@ -11,14 +11,16 @@ export function ClienteForm({
   register,
   errors,
   embedded = false,
+  compact = false,
 }: {
   control: Control<VistoriaInput>;
   register: ReturnType<typeof import("react-hook-form").useForm<VistoriaInput>>["register"];
   errors: FieldErrors<VistoriaInput>;
   embedded?: boolean;
+  compact?: boolean;
 }) {
   const fields = (
-    <div className={formGridClass}>
+    <div className={compact ? formGridClass : formGridClass}>
       <FormField
         label="Nome ou razão social"
         error={errors.client_name?.message}

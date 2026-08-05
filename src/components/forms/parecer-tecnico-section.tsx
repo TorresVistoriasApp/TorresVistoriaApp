@@ -19,7 +19,7 @@ interface ParecerTecnicoSectionProps {
   disabled?: boolean;
   className?: string;
   /** Destaque visual alinhado às seções do wizard */
-  variant?: "card" | "section";
+  variant?: "card" | "section" | "compact";
 }
 
 /** Bloco de parecer técnico para o final do checklist. */
@@ -42,6 +42,24 @@ export function ParecerTecnicoSection({
       disabled={disabled}
     />
   );
+
+  if (variant === "compact") {
+    return (
+      <section
+        id="checklist-parecer"
+        className={cn(
+          "scroll-mt-24 rounded-xl border border-border bg-card p-3.5 shadow-soft sm:p-4",
+          className,
+        )}
+        aria-labelledby="checklist-parecer-title"
+      >
+        <h2 id="checklist-parecer-title" className="mb-3 text-sm font-semibold sm:text-base">
+          Parecer técnico
+        </h2>
+        {fields}
+      </section>
+    );
+  }
 
   if (variant === "card") {
     return (
