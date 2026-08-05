@@ -14,6 +14,10 @@ export {
   isConsultaAvailable,
   missingIntegrations,
   ConsultaUnavailableReason,
+  requestConsulta,
+  listConsultas,
+  getConsulta,
+  getCreditBalance,
 } from "@/modules/torres-consulta/services/consulta-service";
 
 export {
@@ -28,7 +32,7 @@ export {
   ConsultaStatus,
   type Consulta,
   type ConsultaFilters,
-} from "@/modules/torres-consulta/types/consulta";
+} from "@/modules/torres-consulta/domain/entities/consulta";
 
 export {
   type ConsultaRepository,
@@ -42,4 +46,6 @@ export {
   formatPlate,
   normalizePlate,
   normalizeChassis,
-} from "@/modules/torres-consulta/utils/vehicle-identifier";
+} from "@/modules/torres-consulta/domain/value-objects";
+
+export { ConsultaDomainEvents } from "@/modules/torres-consulta/domain/events/consulta-events";

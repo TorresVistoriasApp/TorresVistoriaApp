@@ -1,17 +1,7 @@
-import type { Consulta, ConsultaFilters } from "@/modules/torres-consulta/types/consulta";
+import type { ConsultaRepository } from "@/modules/torres-consulta/domain/repositories/consulta-repository";
+import type { Consulta, ConsultaFilters } from "@/modules/torres-consulta/domain/entities/consulta";
 
-/**
- * Contrato de persistência das consultas.
- *
- * O service depende desta interface, nunca de um cliente de banco. Quando a
- * migration criar `vehicle_queries`, basta acrescentar um adaptador Supabase e
- * trocar o registro — nenhuma tela ou hook muda.
- */
-export interface ConsultaRepository {
-  list(tenantId: string, filters?: ConsultaFilters): Promise<Consulta[]>;
-  findById(tenantId: string, id: string): Promise<Consulta | null>;
-  save(consulta: Consulta): Promise<Consulta>;
-}
+export type { ConsultaRepository };
 
 /**
  * Adaptador em memória, escopo da aba do navegador.
@@ -29,7 +19,7 @@ export function createInMemoryConsultaRepository(): ConsultaRepository {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return {
-    async list(tenantId, filters) {
+    async list(tenantId, filters?: ConsultaFilters) {
       let results = scopedTo(tenantId);
 
       if (filters?.type) {
@@ -50,7 +40,6 @@ export function createInMemoryConsultaRepository(): ConsultaRepository {
 
     async findById(tenantId, id) {
       const found = store.get(id);
-      // Checagem de tenant no adaptador espelha o que a RLS fará no banco.
       return found && found.tenantId === tenantId ? found : null;
     },
 
@@ -61,7 +50,6 @@ export function createInMemoryConsultaRepository(): ConsultaRepository {
   };
 }
 
-/** Instância ativa do repositório. Trocável no bootstrap ou em testes. */
 let repository: ConsultaRepository = createInMemoryConsultaRepository();
 
 export function setConsultaRepository(next: ConsultaRepository): void {

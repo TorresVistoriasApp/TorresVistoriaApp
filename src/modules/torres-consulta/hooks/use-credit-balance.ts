@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { getIntegration, isIntegrationAvailable } from "@/core/integrations/registry";
+import { isIntegrationAvailable } from "@/core/integrations/registry";
+import { cacheKeys } from "@/core/cache";
+import { getCreditBalance } from "@/modules/torres-consulta/application/use-cases";
 import { useConsultaContext } from "@/modules/torres-consulta/hooks/use-consulta-context";
 import type { CreditBalance } from "@/core/integrations/ports/credit-ledger";
 
@@ -14,11 +16,8 @@ export function useCreditBalance() {
   const available = isIntegrationAvailable("credits");
 
   return useQuery<CreditBalance | null>({
-    queryKey: ["consulta", "credits", context?.tenantId ?? ""],
-    queryFn: async () => {
-      const result = await getIntegration("credits").getBalance(context!);
-      return result.ok ? result.data : null;
-    },
+    queryKey: cacheKeys.consulta.credits(context?.tenantId ?? ""),
+    queryFn: () => getCreditBalance(context!),
     enabled: Boolean(context) && available,
   });
 }

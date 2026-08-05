@@ -8,7 +8,7 @@ import { UserAvatar } from "@/shared/components/user-avatar";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
-import { useCompany, useUpdateCompany } from "@/core/tenant/use-company";
+import { useTenant, useUpdateTenant } from "@/core/tenant";
 import { useUpdateUserProfile, useUploadUserAvatar } from "@/modules/admin/users/hooks/use-users";
 import { useToast } from "@/shared/hooks/use-toast";
 import { userProfileSchema, type UserProfileInput } from "@/modules/admin/users/schemas/user";
@@ -349,9 +349,9 @@ export function SettingsPage() {
   const { profile, refreshProfile } = useAuth();
   const { can } = usePermission();
   const isAdmin = can("settings.manage");
-  const { data: company, isLoading: isCompanyLoading } = useCompany();
+  const { data: company, isLoading: isCompanyLoading } = useTenant();
   const updateProfile = useUpdateUserProfile();
-  const updateCompany = useUpdateCompany();
+  const updateCompany = useUpdateTenant();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 

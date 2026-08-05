@@ -7,6 +7,7 @@ import { ROUTES } from "@/config/routes";
 import { ConsultaResult } from "@/modules/torres-consulta/components/consulta-result";
 import { useConsulta } from "@/modules/torres-consulta/hooks/use-consultas";
 import { ConsultaStatus } from "@/modules/torres-consulta/types/consulta";
+import { ConsultaFeatureGate } from "@/modules/torres-consulta/components/consulta-feature-gate";
 
 export function ConsultaDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,34 +15,40 @@ export function ConsultaDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <LoadingSpinner />
-      </div>
+      <ConsultaFeatureGate>
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      </ConsultaFeatureGate>
     );
   }
 
   if (!consulta) {
     return (
-      <EmptyState
-        title="Consulta não encontrada"
-        description="Ela pode ter sido removida ou pertencer a outra empresa."
-      />
+      <ConsultaFeatureGate>
+        <EmptyState
+          title="Consulta não encontrada"
+          description="Ela pode ter sido removida ou pertencer a outra empresa."
+        />
+      </ConsultaFeatureGate>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <MobileBackButton to={ROUTES.consultaHistory} label="Histórico" />
-      <PageHeader badge="Torres Consulta" title="Resultado da consulta" />
+    <ConsultaFeatureGate>
+      <div className="space-y-6">
+        <MobileBackButton to={ROUTES.consultaHistory} label="Histórico" />
+        <PageHeader badge="Torres Consulta" title="Resultado da consulta" />
 
-      {consulta.status === ConsultaStatus.FAILED ? (
-        <EmptyState
-          title="A consulta não foi concluída"
-          description={consulta.failureReason ?? "O provedor não retornou resultado."}
-        />
-      ) : (
-        <ConsultaResult consulta={consulta} />
-      )}
-    </div>
+        {consulta.status === ConsultaStatus.FAILED ? (
+          <EmptyState
+            title="A consulta não foi concluída"
+            description={consulta.failureReason ?? "O provedor não retornou resultado."}
+          />
+        ) : (
+          <ConsultaResult consulta={consulta} />
+        )}
+      </div>
+    </ConsultaFeatureGate>
   );
 }

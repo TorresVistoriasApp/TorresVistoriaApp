@@ -1,5 +1,5 @@
 import { useAuth } from "@/core/auth/use-auth";
-import { useCompanyContext } from "@/core/tenant/company-context";
+import { useTenantContext } from "@/core/tenant/tenant-context";
 import { useUser } from "@/core/auth/user-context";
 import { usePermission } from "@/core/rbac/use-permission";
 
@@ -10,7 +10,7 @@ export function useTenantBoot() {
   const { session, isPlatformAdmin, loading: authLoading } = useAuth();
   const { profile, tenantId } = useUser();
   const { company, settings, plan, loading: companyLoading, error: companyError } =
-    useCompanyContext();
+    useTenantContext();
   const { permissions, loading: permissionLoading } = usePermission();
 
   const needsTenant = !!session && !isPlatformAdmin && !!tenantId;

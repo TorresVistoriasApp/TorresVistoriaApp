@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/core/auth/auth-context";
 import { useUser } from "@/core/auth/user-context";
-import { useCompanyContext } from "@/core/tenant/company-context";
+import { useTenantContext } from "@/core/tenant/tenant-context";
 import { resolveTenant } from "@/core/tenant/tenant-resolver";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { Button } from "@/shared/ui/button";
@@ -19,7 +19,7 @@ import { ROUTES } from "@/config/routes";
 export function TenantGuard() {
   const { session, isPlatformAdmin } = useAuth();
   const { tenantId } = useUser();
-  const { company, loading, error, refreshCompany } = useCompanyContext();
+  const { company, loading, error, refreshTenant } = useTenantContext();
   const location = useLocation();
 
   const resolution = resolveTenant({
@@ -58,7 +58,7 @@ export function TenantGuard() {
       <TenantUnavailable
         title="Não foi possível carregar a empresa"
         description={error ?? "Os dados da empresa não retornaram. Tente novamente."}
-        onRetry={refreshCompany}
+        onRetry={refreshTenant}
       />
     );
   }
