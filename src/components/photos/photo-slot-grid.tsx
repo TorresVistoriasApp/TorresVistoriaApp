@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState, type ReactNode } from "react";
 import { RotateCcw, X } from "lucide-react";
 import { FormSectionCard } from "@/components/forms/form-section-card";
 import { PhotoGuideCard, PHOTO_SLOT_GRID_CLASS } from "@/components/photos/photo-guide-card";
@@ -7,22 +7,26 @@ import {
   PhotoCaptureProgressSummary,
   PhotoSectionProgressBar,
 } from "@/components/photos/photo-section-progress";
+import { PhotoSubsectionPanel } from "@/components/photos/photo-subsection-panel";
 import { PhotoActionSheet } from "@/features/draft/components/photo-action-sheet";
 import { Button } from "@/components/ui/button";
+import { usePhotoCaptureFlow } from "@/hooks/use-photo-capture-flow";
 import { isPendingPhoto } from "@/hooks/use-photos";
 import { pickImageFiles } from "@/lib/pick-image-files";
+import { type PhotoCategoryDefinition, getPhotoCategoryLabel, photoMatchesCategory } from "@/lib/photos/photo-catalog";
+import type { PhotoCaptureInspectionContext } from "@/lib/photos/photo-capture-visibility";
+import { getVisibleSubsections } from "@/lib/photos/photo-capture-visibility";
 import {
-  PHOTO_CAPTURE_SECTIONS,
-  type PhotoCategoryDefinition,
-  photoMatchesCategory,
-} from "@/lib/photos/photo-catalog";
-import { computeCaptureProgress, computeSectionProgress } from "@/lib/photos/photo-progress";
+  getCategorySlotId,
+  getSectionContainerId,
+} from "@/lib/photos/photo-capture-sequence";
 import { isPhotoRequirementActive } from "@/lib/photos/photo-requirements-flag";
-import type { PhotoGuideCardStatus } from "@/lib/photos/types";
+import type { PhotoGuideCardStatus, PhotoSectionProgress } from "@/lib/photos/types";
 import type { InspectionPhoto } from "@/services/photo-service";
 
 interface PhotoSlotGridProps {
   photos: InspectionPhoto[];
+  inspection?: PhotoCaptureInspectionContext | null;
   onUpload: (file: File, category: string, metadata?: Record<string, string>) => void;
   onDelete?: (photo: InspectionPhoto) => void;
   onPickError?: (message: string) => void;
@@ -51,13 +55,15 @@ function isMultiCategory(category: PhotoCategoryDefinition): boolean {
   return category.type === "MULTI" || category.type === "DAMAGE" || category.type === "COMPLEMENTARY";
 }
 
-function buildSectionStatusLabel(sectionKey: string, photos: InspectionPhoto[]): string {
-  const progress = computeSectionProgress(sectionKey, photos);
+function buildSectionStatusLabel(progress: PhotoSectionProgress): string {
   if (progress.status === "COMPLETED") return "Concluído";
   if (progress.requiredPhotos === 0) {
     return progress.totalPhotos === 0
       ? "Nenhuma foto"
       : `${progress.totalPhotos} foto${progress.totalPhotos === 1 ? "" : "s"}`;
+  }
+  if (progress.remainingPhotos > 0) {
+    return `${progress.completedPhotos}/${progress.requiredPhotos} · ${progress.remainingPhotos} restante${progress.remainingPhotos === 1 ? "" : "s"}`;
   }
   return `${progress.completedPhotos}/${progress.requiredPhotos}`;
 }
@@ -78,11 +84,25 @@ function resolveDisplayPhoto(categoryPhotos: InspectionPhoto[]): InspectionPhoto
   return confirmed[confirmed.length - 1] ?? pending[pending.length - 1];
 }
 
-export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: PhotoSlotGridProps) {
+export function PhotoSlotGrid({
+  photos,
+  inspection,
+  onUpload,
+  onDelete,
+  onPickError,
+}: PhotoSlotGridProps) {
   const [preview, setPreview] = useState<PhotoPreviewState | null>(null);
   const [photoAction, setPhotoAction] = useState<PhotoActionState | null>(null);
 
-  const captureProgress = useMemo(() => computeCaptureProgress(photos), [photos]);
+  const {
+    captureContext,
+    captureProgress,
+    visibleSections,
+    recommendedCategoryKey,
+    isSectionOpen,
+    setSectionOpen,
+  } = usePhotoCaptureFlow({ photos, inspection });
+
   const confirmedPhotoCount = photos.filter((photo) => !isPendingPhoto(photo)).length;
 
   const uploadFiles = (result: { files: File[]; rejectedCount: number }, categoryKey: string) => {
@@ -127,11 +147,17 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: Photo
     const confirmed = categoryPhotos.filter((p) => !isPendingPhoto(p));
     const displayPhoto = resolveDisplayPhoto(categoryPhotos);
     const guide = resolveGuide(category);
+    const isRecommended = recommendedCategoryKey === category.key;
+
+    const slotWrapper = (content: ReactNode) => (
+      <div key={category.key} id={getCategorySlotId(category.key)} className="scroll-mt-28">
+        {content}
+      </div>
+    );
 
     if (isMultiCategory(category)) {
-      return (
+      return slotWrapper(
         <MultiPhotoGallery
-          key={category.key}
           label={category.name}
           guide={guide}
           photos={categoryPhotos}
@@ -144,19 +170,19 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: Photo
             onDelete?.(photo);
             openPhotoActions(category, true);
           }}
-        />
+        />,
       );
     }
 
-    return (
+    return slotWrapper(
       <PhotoGuideCard
-        key={category.key}
         categoryName={category.name}
         guide={guide}
         status={resolveSlotStatus(displayPhoto)}
         required={isPhotoRequirementActive(category.required)}
         imageUrl={displayPhoto?.thumbnail_url || displayPhoto?.public_url}
         countBadge={confirmed.length > 1 ? confirmed.length : undefined}
+        isRecommended={isRecommended}
         onCapture={() => openPhotoActions(category)}
         onView={() =>
           displayPhoto?.public_url &&
@@ -167,7 +193,38 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: Photo
           if (latestConfirmed && onDelete) onDelete(latestConfirmed);
           openPhotoActions(category);
         }}
-      />
+      />,
+    );
+  };
+
+  const renderSectionCategories = (sectionKey: string) => {
+    const section = visibleSections.find((item) => item.key === sectionKey);
+    if (!section) return null;
+
+    const subsections = getVisibleSubsections(section, captureContext);
+    if (subsections.length > 0) {
+      return (
+        <div className="space-y-6">
+          {subsections.map((subsection) => (
+            <PhotoSubsectionPanel
+              key={subsection.key}
+              title={subsection.name}
+              description={subsection.description}
+              guidance={subsection.guidance}
+            >
+              <div className={PHOTO_SLOT_GRID_CLASS}>
+                {subsection.categories.map((category) => renderCategorySlot(category))}
+              </div>
+            </PhotoSubsectionPanel>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className={PHOTO_SLOT_GRID_CLASS}>
+        {section.categories.map((category) => renderCategorySlot(category))}
+      </div>
     );
   };
 
@@ -181,6 +238,15 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: Photo
         totalPhotos={confirmedPhotoCount}
       />
 
+      {recommendedCategoryKey && (
+        <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
+          Próxima fotografia recomendada:{" "}
+          <span className="font-semibold text-primary">
+            {getPhotoCategoryLabel(recommendedCategoryKey)}
+          </span>
+        </p>
+      )}
+
       {!captureProgress.canProceed && captureProgress.missingRequiredLabels.length <= 6 && (
         <p className="rounded-lg border border-amber-200/80 bg-amber-50/50 px-3 py-2 text-xs text-amber-900">
           Pendências: {captureProgress.missingRequiredLabels.slice(0, 6).join(", ")}
@@ -189,33 +255,51 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: Photo
         </p>
       )}
 
-      {PHOTO_CAPTURE_SECTIONS.map((section) => {
+      {visibleSections.map((section) => {
         const sectionProgress = captureProgress.sections.find((s) => s.sectionKey === section.key)!;
-        const isOptionalSection = section.categories.every(
+        const visibleCategories = section.subsections?.length
+          ? getVisibleSubsections(section, captureContext).flatMap((group) => group.categories)
+          : section.categories;
+        const isOptionalSection = visibleCategories.every(
           (c) => !isPhotoRequirementActive(c.required),
         );
+        const SectionIcon = section.icon;
 
         return (
           <FormSectionCard
             key={section.key}
-            id={`fotos-${section.key.toLowerCase()}`}
+            id={getSectionContainerId(section.key)}
             index={section.sortOrder}
             title={section.name}
             description={section.description}
-            statusLabel={buildSectionStatusLabel(section.key, photos)}
+            statusLabel={buildSectionStatusLabel(sectionProgress)}
             optional={isOptionalSection}
             collapsible={section.collapsible ?? false}
-            defaultOpen={section.defaultOpen ?? true}
+            open={isSectionOpen(section.key)}
+            onOpenChange={(open) => setSectionOpen(section.key, open)}
           >
+            {section.guidance && (
+              <p className="rounded-lg border border-sky-200/80 bg-sky-50/60 px-3 py-2 text-xs leading-relaxed text-sky-900">
+                {section.guidance}
+              </p>
+            )}
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <SectionIcon className="size-4 shrink-0 text-primary" aria-hidden />
+              <span>
+                {sectionProgress.totalPhotos} foto{sectionProgress.totalPhotos === 1 ? "" : "s"}
+                {sectionProgress.requiredPhotos > 0 &&
+                  ` · ${sectionProgress.remainingPhotos} restante${sectionProgress.remainingPhotos === 1 ? "" : "s"}`}
+              </span>
+            </div>
+
             <PhotoSectionProgressBar
               progress={sectionProgress}
               sectionName={section.name}
               className="mb-3 sm:mb-4"
             />
 
-            <div className={PHOTO_SLOT_GRID_CLASS}>
-              {section.categories.map((category) => renderCategorySlot(category))}
-            </div>
+            {renderSectionCategories(section.key)}
           </FormSectionCard>
         );
       })}
@@ -272,5 +356,3 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: Photo
     </div>
   );
 }
-
-export { computeCaptureProgress };

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ClipboardList } from "lucide-react";
-import { computeCaptureProgress, PhotoSlotGrid } from "@/components/photos/photo-slot-grid";
+import { PhotoSlotGrid } from "@/components/photos/photo-slot-grid";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import {
@@ -16,6 +16,8 @@ import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
+import { createPhotoCaptureContext } from "@/lib/photos/photo-capture-visibility";
+import { computeCaptureProgress } from "@/lib/photos/photo-progress";
 import { PHOTO_REQUIREMENTS_ENABLED } from "@/lib/photos/photo-requirements-flag";
 import { InspectionStatus } from "@/lib/enums";
 import type { InspectionPhoto } from "@/services/photo-service";
@@ -50,7 +52,14 @@ export function Page() {
   const { toast } = useToast();
   const geoRef = useRef<GeoCoords | null>(null);
 
-  const captureProgress = useMemo(() => computeCaptureProgress(photos), [photos]);
+  const captureContext = useMemo(
+    () => createPhotoCaptureContext(inspection),
+    [inspection],
+  );
+  const captureProgress = useMemo(
+    () => computeCaptureProgress(photos, captureContext),
+    [photos, captureContext],
+  );
 
   useEffect(() => {
     prefetchGeoCoords((coords) => {
@@ -120,6 +129,7 @@ export function Page() {
       ) : (
         <PhotoSlotGrid
           photos={photos}
+          inspection={inspection}
           onUpload={handleUpload}
           onDelete={handleDelete}
           onPickError={(message) => toast(message)}
