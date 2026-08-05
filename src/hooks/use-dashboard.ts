@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 import { dashboardService } from "@/services/report-service";
 import { db } from "@/lib/db-client";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@/hooks/use-user";
 import { invalidateDashboardQueries } from "@/lib/cache-invalidation";
 
 const MAX_TIMEOUT_DELAY = 2_147_483_647;
@@ -44,20 +44,20 @@ function useCurrentYear() {
 
 function useDashboardRealtime() {
   const qc = useQueryClient();
-  const { profile } = useAuth();
+  const { companyId } = useUser();
 
   useEffect(() => {
-    if (!profile?.company_id) return;
+    if (!companyId) return;
 
     const channel = db
-      .channel(`dashboard:${profile.company_id}`)
+      .channel(`dashboard:${companyId}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "inspections",
-          filter: `company_id=eq.${profile.company_id}`,
+          filter: `company_id=eq.${companyId}`,
         },
         () => invalidateDashboardQueries(qc),
       )
@@ -67,7 +67,7 @@ function useDashboardRealtime() {
           event: "*",
           schema: "public",
           table: "financial_entries",
-          filter: `company_id=eq.${profile.company_id}`,
+          filter: `company_id=eq.${companyId}`,
         },
         () => invalidateDashboardQueries(qc),
       )
@@ -77,7 +77,7 @@ function useDashboardRealtime() {
           event: "*",
           schema: "public",
           table: "inspection_types",
-          filter: `company_id=eq.${profile.company_id}`,
+          filter: `company_id=eq.${companyId}`,
         },
         () => invalidateDashboardQueries(qc),
       )
@@ -86,17 +86,17 @@ function useDashboardRealtime() {
     return () => {
       void db.removeChannel(channel);
     };
-  }, [profile?.company_id, qc]);
+  }, [companyId, qc]);
 }
 
 export function useDashboardMetrics() {
-  const { profile } = useAuth();
+  const { companyId } = useUser();
   useDashboardRealtime();
 
   return useQuery({
     queryKey: queryKeys.dashboard.metrics,
-    queryFn: () => dashboardService.getMetrics(profile!.company_id),
-    enabled: !!profile?.company_id,
+    queryFn: () => dashboardService.getMetrics(companyId!),
+    enabled: !!companyId,
   });
 }
 
@@ -108,23 +108,23 @@ export function useRecentInspections() {
 }
 
 export function useMonthlyInspections(year?: number) {
-  const { profile } = useAuth();
+  const { companyId } = useUser();
   const currentYear = useCurrentYear();
   const selectedYear = year ?? currentYear;
 
   return useQuery({
     queryKey: queryKeys.dashboard.monthly(selectedYear),
-    queryFn: () => dashboardService.getMonthlyInspections(profile!.company_id, selectedYear),
-    enabled: !!profile?.company_id,
+    queryFn: () => dashboardService.getMonthlyInspections(companyId!, selectedYear),
+    enabled: !!companyId,
   });
 }
 
 export function useInspectionsByBrand() {
-  const { profile } = useAuth();
+  const { companyId } = useUser();
   return useQuery({
     queryKey: queryKeys.dashboard.brands,
-    queryFn: () => dashboardService.getInspectionsByBrand(profile!.company_id),
-    enabled: !!profile?.company_id,
+    queryFn: () => dashboardService.getInspectionsByBrand(companyId!),
+    enabled: !!companyId,
   });
 }
 

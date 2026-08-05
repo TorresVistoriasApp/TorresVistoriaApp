@@ -43,4 +43,6 @@ export interface DashboardMetrics {
   totalRevenue: number;
   netProfit: number;
   averageTicket: number;
+  pendingInspections: number;
+  completedInspections: number;
 }

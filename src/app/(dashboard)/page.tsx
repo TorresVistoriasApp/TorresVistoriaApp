@@ -1,28 +1,33 @@
 import { lazy, Suspense, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   BarChart3,
+  CheckCircle2,
   ClipboardList,
+  Clock3,
   DollarSign,
   PieChart,
   Plus,
   TrendingUp,
   Users,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   useDashboardMetrics,
   useMonthlyInspections,
   useInspectionsByBrand,
 } from "@/hooks/use-dashboard";
-import { StatsGrid } from "@/components/dashboard/stats-grid";
+import { useDashboardScope } from "@/hooks/use-dashboard-scope";
+import { StatsGrid, type StatItem } from "@/components/dashboard/stats-grid";
 import { ChartWrapper } from "@/components/charts/chart-wrapper";
 import { RecentInspections } from "@/components/dashboard/recent-inspections";
+import { DashboardAdminShortcuts } from "@/components/dashboard/dashboard-admin-shortcuts";
+import { DashboardScopeBanner } from "@/components/dashboard/dashboard-scope-banner";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { ROUTES } from "@/lib/constants";
-import { usePermission } from "@/hooks/use-permission";
+import type { DashboardMetrics } from "@/types";
 
 const MonthlyOverview = lazy(() =>
   import("@/components/dashboard/monthly-overview").then((m) => ({ default: m.MonthlyOverview })),
@@ -50,57 +55,187 @@ function getDefaultMonthlyWindowStart() {
   return new Date().getMonth() >= MONTHLY_CHART_WINDOW_SIZE ? MONTHLY_CHART_WINDOW_SIZE : 0;
 }
 
+function buildStatItems(
+  stats: DashboardMetrics | undefined,
+  isLoading: boolean,
+  isCompanyView: boolean,
+  canViewFinancial: boolean,
+): StatItem[] {
+  const marginPct =
+    stats?.totalRevenue && stats.totalRevenue > 0
+      ? ((stats.netProfit / stats.totalRevenue) * 100).toFixed(1) + "%"
+      : undefined;
+
+  const items: StatItem[] = [
+    {
+      title: isCompanyView ? "Total vistorias" : "Suas vistorias",
+      value: formatNumber(stats?.totalInspections ?? 0),
+      icon: ClipboardList,
+      isLoading,
+    },
+    {
+      title: isCompanyView ? "Em andamento" : "Suas em andamento",
+      value: formatNumber(stats?.pendingInspections ?? 0),
+      icon: Clock3,
+      isLoading,
+    },
+    {
+      title: isCompanyView ? "Concluídas" : "Suas concluídas",
+      value: formatNumber(stats?.completedInspections ?? 0),
+      icon: CheckCircle2,
+      isLoading,
+    },
+    {
+      title: isCompanyView ? "Faturamento (ano)" : "Seu faturamento (ano)",
+      value: formatCurrency(stats?.totalRevenue ?? 0),
+      icon: DollarSign,
+      isLoading,
+    },
+  ];
+
+  if (canViewFinancial && isCompanyView) {
+    items.push({
+      title: "Lucro líquido",
+      value: formatCurrency(stats?.netProfit ?? 0),
+      icon: TrendingUp,
+      isLoading,
+      trend: marginPct,
+      trendUp: (stats?.netProfit ?? 0) >= 0,
+    });
+  }
+
+  items.push({
+    title: "Ticket médio",
+    value: formatCurrency(stats?.averageTicket ?? 0),
+    icon: Users,
+    isLoading,
+  });
+
+  return items;
+}
+
+function DashboardCharts({
+  monthly,
+  brands,
+  isCompanyView,
+  inspectionMonthStart,
+  revenueMonthStart,
+  onInspectionMonthChange,
+  onRevenueMonthChange,
+}: {
+  monthly: Array<{ month: string; count: number; revenue: number }>;
+  brands: Array<{ brand: string; count: number }>;
+  isCompanyView: boolean;
+  inspectionMonthStart: number;
+  revenueMonthStart: number;
+  onInspectionMonthChange: (direction: "prev" | "next") => void;
+  onRevenueMonthChange: (direction: "prev" | "next") => void;
+}) {
+  const maxVisibleMonthStart = Math.max(monthly.length - MONTHLY_CHART_WINDOW_SIZE, 0);
+  const currentInspectionMonthStart = Math.min(inspectionMonthStart, maxVisibleMonthStart);
+  const currentRevenueMonthStart = Math.min(revenueMonthStart, maxVisibleMonthStart);
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-12 xl:gap-5">
+      <ChartWrapper
+        className="xl:col-span-6"
+        title="Visão mensal"
+        description={
+          isCompanyView
+            ? "Evolução de todas as vistorias da empresa"
+            : "Evolução das suas vistorias por mês"
+        }
+        icon={BarChart3}
+      >
+        <Suspense fallback={<ChartFallback />}>
+          <MonthlyOverview
+            data={monthly}
+            visibleStart={currentInspectionMonthStart}
+            visibleSize={MONTHLY_CHART_WINDOW_SIZE}
+            canPrevious={currentInspectionMonthStart > 0}
+            canNext={currentInspectionMonthStart < maxVisibleMonthStart}
+            onPrevious={() => onInspectionMonthChange("prev")}
+            onNext={() => onInspectionMonthChange("next")}
+          />
+        </Suspense>
+      </ChartWrapper>
+
+      <ChartWrapper
+        className="xl:col-span-6"
+        title="Receita"
+        description={
+          isCompanyView
+            ? "Valores reais das vistorias e lançamentos da empresa"
+            : "Valores das suas vistorias conforme tipos cadastrados"
+        }
+        icon={TrendingUp}
+      >
+        <Suspense fallback={<ChartFallback />}>
+          <RevenueChart
+            data={monthly}
+            visibleStart={currentRevenueMonthStart}
+            visibleSize={MONTHLY_CHART_WINDOW_SIZE}
+            canPrevious={currentRevenueMonthStart > 0}
+            canNext={currentRevenueMonthStart < maxVisibleMonthStart}
+            onPrevious={() => onRevenueMonthChange("prev")}
+            onNext={() => onRevenueMonthChange("next")}
+          />
+        </Suspense>
+      </ChartWrapper>
+
+      <ChartWrapper
+        className="xl:col-span-5"
+        title="Vistorias por marca"
+        description={
+          isCompanyView ? "Participação por fabricante na empresa" : "Marcas das suas vistorias"
+        }
+        icon={PieChart}
+      >
+        <Suspense fallback={<ChartFallback />}>
+          <InspectionsPieChart data={brands} />
+        </Suspense>
+      </ChartWrapper>
+
+      <div className="xl:col-span-7">
+        <RecentInspections />
+      </div>
+    </div>
+  );
+}
+
 export function Page() {
-  const { can } = usePermission();
-  const isAdmin = can("financial.manage");
+  const { isCompanyView, canViewFinancial } = useDashboardScope();
   const { data: stats, isLoading: statsLoading } = useDashboardMetrics();
   const { data: monthly = [] } = useMonthlyInspections();
   const { data: brands = [] } = useInspectionsByBrand();
   const [inspectionMonthStart, setInspectionMonthStart] = useState(getDefaultMonthlyWindowStart);
   const [revenueMonthStart, setRevenueMonthStart] = useState(getDefaultMonthlyWindowStart);
 
-  const marginPct =
-    stats?.totalRevenue && stats.totalRevenue > 0
-      ? ((stats.netProfit / stats.totalRevenue) * 100).toFixed(1) + "%"
-      : undefined;
+  const headerDescription = isCompanyView
+    ? "Visão completa da empresa: vistorias, financeiro, equipe e indicadores"
+    : "Suas vistorias, estatísticas pessoais e histórico recente";
+
+  const shiftWindow = (
+    setter: React.Dispatch<React.SetStateAction<number>>,
+    direction: "prev" | "next",
+    maxStart: number,
+  ) => {
+    setter((current) => {
+      if (direction === "prev") {
+        return Math.max(current - MONTHLY_CHART_WINDOW_SIZE, 0);
+      }
+      return Math.min(current + MONTHLY_CHART_WINDOW_SIZE, maxStart);
+    });
+  };
+
   const maxVisibleMonthStart = Math.max(monthly.length - MONTHLY_CHART_WINDOW_SIZE, 0);
-  const currentInspectionMonthStart = Math.min(inspectionMonthStart, maxVisibleMonthStart);
-  const currentRevenueMonthStart = Math.min(revenueMonthStart, maxVisibleMonthStart);
-  const canPreviousInspectionWindow = currentInspectionMonthStart > 0;
-  const canNextInspectionWindow = currentInspectionMonthStart < maxVisibleMonthStart;
-  const canPreviousRevenueWindow = currentRevenueMonthStart > 0;
-  const canNextRevenueWindow = currentRevenueMonthStart < maxVisibleMonthStart;
-
-  function showPreviousInspectionWindow() {
-    setInspectionMonthStart((current) => Math.max(current - MONTHLY_CHART_WINDOW_SIZE, 0));
-  }
-
-  function showNextInspectionWindow() {
-    setInspectionMonthStart((current) =>
-      Math.min(current + MONTHLY_CHART_WINDOW_SIZE, maxVisibleMonthStart),
-    );
-  }
-
-  function showPreviousRevenueWindow() {
-    setRevenueMonthStart((current) => Math.max(current - MONTHLY_CHART_WINDOW_SIZE, 0));
-  }
-
-  function showNextRevenueWindow() {
-    setRevenueMonthStart((current) =>
-      Math.min(current + MONTHLY_CHART_WINDOW_SIZE, maxVisibleMonthStart),
-    );
-  }
 
   return (
     <div className="min-w-0 space-y-6">
       <PageHeader
         title="Dashboard"
-        badge="Visão geral"
-        description={
-          isAdmin
-            ? "Indicadores em tempo real com base nos valores configurados e vistorias registradas"
-            : "Seus indicadores com base nos tipos de vistoria e valores cadastrados pela empresa"
-        }
+        badge={isCompanyView ? "Empresa" : "Pessoal"}
+        description={headerDescription}
         actions={
           <Button asChild className="touch-target w-full sm:w-auto" size="lg">
             <Link to={ROUTES.inspectionNew}>
@@ -111,95 +246,28 @@ export function Page() {
         }
       />
 
+      <DashboardScopeBanner />
+
+      {isCompanyView ? <DashboardAdminShortcuts /> : null}
+
       <StatsGrid
-        items={[
-          {
-            title: isAdmin ? "Total vistorias" : "Suas vistorias",
-            value: formatNumber(stats?.totalInspections ?? 0),
-            icon: ClipboardList,
-            isLoading: statsLoading,
-          },
-          {
-            title: isAdmin ? "Faturamento" : "Seu faturamento",
-            value: formatCurrency(stats?.totalRevenue ?? 0),
-            icon: DollarSign,
-            isLoading: statsLoading,
-          },
-          ...(isAdmin
-            ? [
-                {
-                  title: "Lucro líquido",
-                  value: formatCurrency(stats?.netProfit ?? 0),
-                  icon: TrendingUp,
-                  isLoading: statsLoading,
-                  trend: marginPct,
-                  trendUp: (stats?.netProfit ?? 0) >= 0,
-                },
-              ]
-            : []),
-          {
-            title: "Ticket médio",
-            value: formatCurrency(stats?.averageTicket ?? 0),
-            icon: Users,
-            isLoading: statsLoading,
-          },
-        ]}
+        items={buildStatItems(stats, statsLoading, isCompanyView, canViewFinancial)}
+        className={isCompanyView ? "xl:grid-cols-3 2xl:grid-cols-6" : undefined}
       />
 
-      <div className="grid gap-4 xl:grid-cols-12 xl:gap-5">
-        <ChartWrapper
-          className="xl:col-span-6"
-          title="Visão mensal"
-          description="Evolução de vistorias realizadas"
-          icon={BarChart3}
-        >
-          <Suspense fallback={<ChartFallback />}>
-            <MonthlyOverview
-              data={monthly}
-              visibleStart={currentInspectionMonthStart}
-              visibleSize={MONTHLY_CHART_WINDOW_SIZE}
-              canPrevious={canPreviousInspectionWindow}
-              canNext={canNextInspectionWindow}
-              onPrevious={showPreviousInspectionWindow}
-              onNext={showNextInspectionWindow}
-            />
-          </Suspense>
-        </ChartWrapper>
-
-        <ChartWrapper
-          className="xl:col-span-6"
-          title="Receita"
-          description="Valores reais das vistorias conforme tipos cadastrados"
-          icon={TrendingUp}
-        >
-          <Suspense fallback={<ChartFallback />}>
-            <RevenueChart
-              data={monthly}
-              visibleStart={currentRevenueMonthStart}
-              visibleSize={MONTHLY_CHART_WINDOW_SIZE}
-              canPrevious={canPreviousRevenueWindow}
-              canNext={canNextRevenueWindow}
-              onPrevious={showPreviousRevenueWindow}
-              onNext={showNextRevenueWindow}
-            />
-          </Suspense>
-        </ChartWrapper>
-
-        <ChartWrapper
-          className="xl:col-span-5"
-          title="Vistorias por marca"
-          description="Participação por fabricante"
-          icon={PieChart}
-        >
-          <Suspense fallback={<ChartFallback />}>
-            <InspectionsPieChart data={brands} />
-          </Suspense>
-        </ChartWrapper>
-
-        <div className="xl:col-span-7">
-          <RecentInspections />
-        </div>
-      </div>
+      <DashboardCharts
+        monthly={monthly}
+        brands={brands}
+        isCompanyView={isCompanyView}
+        inspectionMonthStart={inspectionMonthStart}
+        revenueMonthStart={revenueMonthStart}
+        onInspectionMonthChange={(direction) =>
+          shiftWindow(setInspectionMonthStart, direction, maxVisibleMonthStart)
+        }
+        onRevenueMonthChange={(direction) =>
+          shiftWindow(setRevenueMonthStart, direction, maxVisibleMonthStart)
+        }
+      />
     </div>
   );
 }
