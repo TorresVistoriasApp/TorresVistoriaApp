@@ -6,16 +6,20 @@ import {
 } from "react";
 import { useAuth } from "@/app/auth-context";
 import { useUser } from "@/app/user-context";
-import { hasPermission as checkPermission, type Permission } from "@/lib/rbac";
+import type { Permission } from "@/lib/rbac";
 import type { UserRole } from "@/lib/enums";
-import { resolvePermissionsForRole } from "@/services/permission-service";
+import {
+  createPermissionChecker,
+  type PermissionChecker,
+} from "@/services/permission-service";
 
-interface PermissionContextValue {
-  role: UserRole | null;
-  permissions: ReadonlySet<Permission>;
+export type PermissionContextValue = PermissionChecker & {
   loading: boolean;
+  /** Alias de `has` — compatibilidade com consumidores anteriores. */
   hasPermission: (permission: Permission) => boolean;
-}
+  /** Alias de `has` — API fluente da Etapa 9. */
+  can: (permission: Permission) => boolean;
+};
 
 const PermissionContext = createContext<PermissionContextValue | undefined>(undefined);
 
@@ -23,21 +27,19 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   const { role, loading: userLoading } = useUser();
   const { isPlatformAdmin } = useAuth();
 
-  const permissions = useMemo(() => {
-    if (isPlatformAdmin || !role) {
-      return new Set<Permission>();
-    }
-    return new Set(resolvePermissionsForRole(role));
-  }, [role, isPlatformAdmin]);
+  const checker = useMemo(
+    () => createPermissionChecker(isPlatformAdmin ? null : role),
+    [role, isPlatformAdmin],
+  );
 
-  const value = useMemo(
+  const value = useMemo<PermissionContextValue>(
     () => ({
-      role,
-      permissions,
+      ...checker,
       loading: userLoading,
-      hasPermission: (permission: Permission) => checkPermission(role ?? undefined, permission),
+      hasPermission: checker.has,
+      can: checker.has,
     }),
-    [role, permissions, userLoading],
+    [checker, userLoading],
   );
 
   return <PermissionContext.Provider value={value}>{children}</PermissionContext.Provider>;
@@ -52,3 +54,8 @@ export function usePermissionContext() {
 }
 
 export const usePermission = usePermissionContext;
+
+/** Hook auxiliar quando só o papel importa. */
+export function useRole(): UserRole | null {
+  return usePermission().role;
+}

@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Activity, CalendarDays, Eye, Pencil, PlusCircle } from "lucide-react";
-import { RequireRole } from "@/app/require-role";
-import { UserRole } from "@/lib/enums";
+import { RequirePermission } from "@/app/require-role";
 import { PageHeader } from "@/components/shared/page-header";
 import { ExportButton } from "@/components/shared/export-button";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
@@ -118,7 +117,7 @@ export function AuditPage() {
   };
 
   return (
-    <RequireRole roles={[UserRole.SUPER_ADMIN]}>
+    <RequirePermission permission="users.manage">
       <div className="min-w-0 space-y-8">
         <PageHeader
           title="Auditoria"
@@ -316,7 +315,7 @@ export function AuditPage() {
           }}
         />
       </div>
-    </RequireRole>
+    </RequirePermission>
   );
 }
 

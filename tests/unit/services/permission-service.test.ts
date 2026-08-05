@@ -1,16 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { resolvePermissionsForRole } from "@/services/permission-service";
+import {
+  createPermissionChecker,
+  PermissionService,
+  resolvePermissionsForRole,
+} from "@/services/permission-service";
+import { UserRole } from "@/lib/enums";
 
 describe("permission-service", () => {
   it("SUPER_ADMIN recebe permissões administrativas", () => {
-    const permissions = resolvePermissionsForRole("SUPER_ADMIN");
+    const permissions = resolvePermissionsForRole(UserRole.SUPER_ADMIN);
     expect(permissions).toContain("users.manage");
     expect(permissions).toContain("financial.manage");
     expect(permissions).toContain("inspections.read.all");
   });
 
   it("INSPECTOR não recebe permissões administrativas", () => {
-    const permissions = resolvePermissionsForRole("INSPECTOR");
+    const permissions = resolvePermissionsForRole(UserRole.INSPECTOR);
     expect(permissions).toContain("inspections.create");
     expect(permissions).not.toContain("users.manage");
     expect(permissions).not.toContain("financial.manage");
@@ -18,5 +23,23 @@ describe("permission-service", () => {
 
   it("papel indefinido retorna lista vazia", () => {
     expect(resolvePermissionsForRole(undefined)).toEqual([]);
+  });
+
+  it("createPermissionChecker expõe API unificada", () => {
+    const checker = createPermissionChecker(UserRole.INSPECTOR);
+    expect(checker.has("inspections.create")).toBe(true);
+    expect(checker.has("financial.manage")).toBe(false);
+    expect(checker.hasAny("inspections.create", "financial.manage")).toBe(true);
+    expect(checker.hasRole(UserRole.INSPECTOR)).toBe(true);
+    expect(checker.hasAnyRole([UserRole.SUPER_ADMIN, UserRole.INSPECTOR])).toBe(true);
+    expect(checker.isInspector).toBe(true);
+    expect(checker.isSuperAdmin).toBe(false);
+    expect(checker.canViewInspection("inspector-1", "inspector-1")).toBe(true);
+    expect(checker.canViewInspection("inspector-1", "other")).toBe(false);
+  });
+
+  it("PermissionService.forRole delega para createPermissionChecker", () => {
+    const checker = PermissionService.forRole(UserRole.SUPER_ADMIN);
+    expect(checker.has("settings.manage")).toBe(true);
   });
 });

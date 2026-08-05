@@ -1,7 +1,8 @@
 import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
-import { useAuth } from "@/hooks/use-auth";
-import { hasPermission, type Permission } from "@/lib/rbac";
+import { PermissionGuard } from "@/components/shared/permission-guard";
+import { RoleGuard } from "@/components/shared/role-guard";
+import type { Permission } from "@/lib/rbac";
 import type { UserRole } from "@/lib/enums";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ROUTES } from "@/lib/constants";
@@ -15,18 +16,21 @@ export function RequirePermission({
   children: ReactNode;
   fallback?: ReactNode;
 }) {
-  const { profile } = useAuth();
-  if (!hasPermission(profile?.role, permission)) {
-    return (
-      fallback ?? (
-        <EmptyState
-          title="Acesso negado"
-          description="Você não tem permissão para acessar este recurso."
-        />
-      )
-    );
-  }
-  return <>{children}</>;
+  return (
+    <PermissionGuard
+      permission={permission}
+      fallback={
+        fallback ?? (
+          <EmptyState
+            title="Acesso negado"
+            description="Você não tem permissão para acessar este recurso."
+          />
+        )
+      }
+    >
+      {children}
+    </PermissionGuard>
+  );
 }
 
 export function RequireRole({
@@ -36,9 +40,9 @@ export function RequireRole({
   roles: UserRole[];
   children: ReactNode;
 }) {
-  const { profile } = useAuth();
-  if (!profile?.role || !roles.includes(profile.role)) {
-    return <Navigate to={ROUTES.dashboard} replace />;
-  }
-  return <>{children}</>;
+  return (
+    <RoleGuard allowedRoles={roles} fallback={<Navigate to={ROUTES.dashboard} replace />}>
+      {children}
+    </RoleGuard>
+  );
 }

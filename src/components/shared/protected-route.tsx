@@ -3,6 +3,7 @@ import { useTenantBoot } from "@/hooks/use-tenant-boot";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ROUTES } from "@/lib/constants";
 import type { UserRole } from "@/lib/enums";
+import { usePermission } from "@/hooks/use-permission";
 
 interface ProtectedRouteProps {
   requiredRole?: UserRole;
@@ -10,7 +11,8 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ requiredRole, fallback }: ProtectedRouteProps = {}) {
-  const { session, profile, isPlatformAdmin, loading } = useTenantBoot();
+  const { session, isPlatformAdmin, loading } = useTenantBoot();
+  const { hasAnyRole } = usePermission();
   const location = useLocation();
 
   if (loading) {
@@ -31,7 +33,7 @@ export function ProtectedRoute({ requiredRole, fallback }: ProtectedRouteProps =
     return <Navigate to={ROUTES.adminCompanies} replace />;
   }
 
-  if (requiredRole && profile?.role !== requiredRole) {
+  if (requiredRole && !hasAnyRole([requiredRole])) {
     if (fallback) return <>{fallback}</>;
     return <Navigate to={ROUTES.dashboard} replace />;
   }

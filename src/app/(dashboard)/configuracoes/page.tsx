@@ -13,7 +13,7 @@ import { useUpdateUserProfile, useUploadUserAvatar } from "@/hooks/use-users";
 import { useToast } from "@/hooks/use-toast";
 import { userProfileSchema, type UserProfileInput } from "@/schemas/user";
 import { companySchema, type CompanyInput } from "@/schemas/settings";
-import { UserRole } from "@/lib/enums";
+import { usePermission } from "@/hooks/use-permission";
 import { MaskedField } from "@/components/forms/masked-fields";
 import { FormField } from "@/components/forms/form-field";
 import { companyToAddressInput } from "@/lib/cep";
@@ -347,7 +347,8 @@ function SaveSettingsButton({
 
 export function Page() {
   const { profile, refreshProfile } = useAuth();
-  const isAdmin = profile?.role === UserRole.SUPER_ADMIN;
+  const { can } = usePermission();
+  const isAdmin = can("settings.manage");
   const { data: company, isLoading: isCompanyLoading } = useCompany();
   const updateProfile = useUpdateUserProfile();
   const updateCompany = useUpdateCompany();

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { usePermission } from "@/hooks/use-permission";
 import type { UserRole } from "@/lib/enums";
 
 interface RoleGuardProps {
@@ -8,10 +8,13 @@ interface RoleGuardProps {
   fallback?: ReactNode;
 }
 
+/** Renderiza filhos apenas quando o usuário tem um dos papéis permitidos. */
 export function RoleGuard({ children, allowedRoles, fallback = null }: RoleGuardProps) {
-  const { profile } = useAuth();
+  const { hasAnyRole, loading } = usePermission();
 
-  if (!profile?.role || !allowedRoles.includes(profile.role)) {
+  if (loading) return null;
+
+  if (!hasAnyRole(allowedRoles)) {
     return <>{fallback}</>;
   }
 

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Search } from "lucide-react";
-import { RequireRole } from "@/app/require-role";
+import { RequirePermission } from "@/app/require-role";
 import { UserRole } from "@/lib/enums";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -122,7 +122,7 @@ export function UsersPage() {
   };
 
   return (
-    <RequireRole roles={[UserRole.SUPER_ADMIN]}>
+    <RequirePermission permission="users.manage">
       <div className="space-y-6 pb-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
@@ -270,6 +270,6 @@ export function UsersPage() {
         onSubmit={handleUpdate}
         isSubmitting={updateUser.isPending}
       />
-    </RequireRole>
+    </RequirePermission>
   );
 }

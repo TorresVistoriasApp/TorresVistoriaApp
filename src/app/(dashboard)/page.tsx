@@ -22,8 +22,7 @@ import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { ROUTES } from "@/lib/constants";
-import { useAuth } from "@/hooks/use-auth";
-import { UserRole } from "@/lib/enums";
+import { usePermission } from "@/hooks/use-permission";
 
 const MonthlyOverview = lazy(() =>
   import("@/components/dashboard/monthly-overview").then((m) => ({ default: m.MonthlyOverview })),
@@ -52,8 +51,8 @@ function getDefaultMonthlyWindowStart() {
 }
 
 export function Page() {
-  const { profile } = useAuth();
-  const isAdmin = profile?.role === UserRole.SUPER_ADMIN;
+  const { can } = usePermission();
+  const isAdmin = can("financial.manage");
   const { data: stats, isLoading: statsLoading } = useDashboardMetrics();
   const { data: monthly = [] } = useMonthlyInspections();
   const { data: brands = [] } = useInspectionsByBrand();
