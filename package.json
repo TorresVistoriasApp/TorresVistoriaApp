@@ -15,6 +15,7 @@
     "db:migrate": "supabase migration up",
     "db:reset": "supabase db reset",
     "db:seed": "supabase db seed",
+    "db:migrate-legacy-storage": "node scripts/migrate-legacy-storage.mjs",
     "scaffold": "node scripts/scaffold-step2.mjs"
   },
   "dependencies": {
