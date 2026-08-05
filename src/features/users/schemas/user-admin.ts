@@ -10,14 +10,14 @@ const strongPasswordSchema = z
 export const createUserSchema = z.object({
   email: z.string().email("E-mail inválido"),
   fullName: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
-  role: z.enum([UserRole.SUPER_ADMIN, UserRole.VISTORIADOR]),
+  role: z.enum([UserRole.SUPER_ADMIN, UserRole.INSPECTOR]),
   password: strongPasswordSchema,
 });
 
 export const updateUserSchema = z.object({
   email: z.string().email("E-mail inválido"),
   fullName: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
-  role: z.enum([UserRole.SUPER_ADMIN, UserRole.VISTORIADOR]),
+  role: z.enum([UserRole.SUPER_ADMIN, UserRole.INSPECTOR]),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;

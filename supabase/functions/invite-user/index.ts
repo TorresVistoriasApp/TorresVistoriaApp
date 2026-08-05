@@ -3,7 +3,7 @@ import { jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { validatePassword } from "../_shared/password-policy.ts";
 import { requireSuperAdmin } from "../_shared/require-super-admin.ts";
 
-const ALLOWED_ROLES = ["SUPER_ADMIN", "VISTORIADOR"] as const;
+const ALLOWED_ROLES = ["SUPER_ADMIN", "INSPECTOR"] as const;
 
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
 

@@ -87,7 +87,7 @@ export function EditUserDialog({
               {...register("role")}
             >
               <option value={UserRole.SUPER_ADMIN}>Super Admin</option>
-              <option value={UserRole.VISTORIADOR}>Vistoriador</option>
+              <option value={UserRole.INSPECTOR}>Vistoriador</option>
             </select>
             {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
           </div>

@@ -105,7 +105,7 @@ function ProfileSection({
             />
           </div>
 
-          <div className="w-full min-w-0 flex-1">
+          <div className="grid w-full min-w-0 flex-1 gap-4 sm:grid-cols-2">
             <FormField
               label="Nome completo"
               labelClassName={SETTINGS_FIELD_LABEL_CLASS}
@@ -118,6 +118,21 @@ function ProfileSection({
                 placeholder="Ex.: João Silva"
                 autoComplete="name"
                 {...form.register("full_name")}
+              />
+            </FormField>
+
+            <FormField
+              label="Telefone"
+              labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+              hint="Usado para contato interno. Opcional."
+              error={form.formState.errors.phone?.message}
+            >
+              <Input
+                id="profile-phone"
+                className="touch-target"
+                placeholder="Ex.: (11) 91234-5678"
+                autoComplete="tel"
+                {...form.register("phone")}
               />
             </FormField>
           </div>
@@ -343,7 +358,7 @@ export function Page() {
     resolver: zodResolver(userProfileSchema),
     values: {
       full_name: profile?.full_name ?? "",
-      phone: "",
+      phone: profile?.phone ?? "",
       avatar_url: profile?.avatar_url ?? "",
     },
   });

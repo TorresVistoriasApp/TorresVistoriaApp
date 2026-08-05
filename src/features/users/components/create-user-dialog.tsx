@@ -39,7 +39,7 @@ export function CreateUserDialog({ open, onOpenChange, onSubmit }: CreateUserDia
     defaultValues: {
       email: "",
       fullName: "",
-      role: UserRole.VISTORIADOR,
+      role: UserRole.INSPECTOR,
       password: "",
     },
   });
@@ -49,7 +49,7 @@ export function CreateUserDialog({ open, onOpenChange, onSubmit }: CreateUserDia
       reset({
         email: "",
         fullName: "",
-        role: UserRole.VISTORIADOR,
+        role: UserRole.INSPECTOR,
         password: "",
       });
       setSubmitError(null);
@@ -118,7 +118,7 @@ export function CreateUserDialog({ open, onOpenChange, onSubmit }: CreateUserDia
               {...register("role")}
             >
               <option value={UserRole.SUPER_ADMIN}>Super Admin</option>
-              <option value={UserRole.VISTORIADOR}>Vistoriador</option>
+              <option value={UserRole.INSPECTOR}>Vistoriador</option>
             </select>
             {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
           </div>

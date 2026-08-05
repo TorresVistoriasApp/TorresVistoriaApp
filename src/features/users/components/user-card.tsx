@@ -1,13 +1,14 @@
 import { Pencil, UserMinus, UserPlus } from "lucide-react";
 import { UserRole } from "@/lib/enums";
+import { getRoleLabel } from "@/lib/role-labels";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/formatters";
 import type { TeamProfile } from "@/services/user-service";
 import { Button } from "@/components/ui/button";
 
 const ROLE_LABELS: Record<string, string> = {
-  [UserRole.SUPER_ADMIN]: "Super Admin",
-  [UserRole.VISTORIADOR]: "Vistoriador",
+  [UserRole.SUPER_ADMIN]: getRoleLabel(UserRole.SUPER_ADMIN),
+  [UserRole.INSPECTOR]: getRoleLabel(UserRole.INSPECTOR),
 };
 
 interface UserCardProps {
@@ -50,6 +51,7 @@ export function UserCard({
             )}
           </div>
           <p className="truncate text-sm text-muted-foreground">{user.email ?? "—"}</p>
+          {user.phone && <p className="truncate text-sm text-muted-foreground">{user.phone}</p>}
           <p className="text-xs text-muted-foreground">{formatDate(user.created_at)}</p>
         </div>
 

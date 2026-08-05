@@ -16,7 +16,9 @@ export type TeamProfile = {
   role: string;
   avatar_url: string | null;
   email: string | null;
+  phone: string | null;
   is_active: boolean;
+  status: string;
   must_change_password: boolean;
   created_at: string;
 };
@@ -55,6 +57,7 @@ export const userService = {
         await mutations.profiles.update(profileId, {
           full_name: input.full_name,
           avatar_url: input.avatar_url || null,
+          phone: input.phone || null,
         }),
         "Erro ao atualizar perfil",
       ) as TeamProfile;

@@ -30,7 +30,7 @@ const PAGE_SIZE = 10;
 const ROLE_TABS: Array<{ id: RoleFilter; label: string }> = [
   { id: "all", label: "Todos" },
   { id: UserRole.SUPER_ADMIN, label: "Super Admins" },
-  { id: UserRole.VISTORIADOR, label: "Vistoriadores" },
+  { id: UserRole.INSPECTOR, label: "Vistoriadores" },
 ];
 
 export function UsersPage() {

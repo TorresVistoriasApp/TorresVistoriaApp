@@ -16,7 +16,7 @@ export const userSettingsSchema = z.object({
 export const userSchema = z.object({
   full_name: z.string().min(2),
   email: z.string().email(),
-  role: z.enum([UserRole.SUPER_ADMIN, UserRole.VISTORIADOR]),
+  role: z.enum([UserRole.SUPER_ADMIN, UserRole.INSPECTOR]),
 });
 
 export type UserProfileInput = z.infer<typeof userProfileSchema>;
