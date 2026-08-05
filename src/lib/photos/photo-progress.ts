@@ -1,15 +1,22 @@
 import {
   ALL_PHOTO_CATEGORIES,
   MANDATORY_PHOTO_CATEGORY_KEYS,
+  PHOTO_CAPTURE_SECTIONS,
   PHOTO_CATALOG,
   getPhotoCategoryLabel,
   photoMatchesCategory,
 } from "@/lib/photos/photo-catalog";
 import {
+  DEFAULT_PHOTO_CAPTURE_CONTEXT,
+  getVisibleCaptureSections,
+  getVisibleSectionCategories,
+} from "@/lib/photos/photo-capture-visibility";
+import {
   PHOTO_REQUIREMENTS_ENABLED,
   isPhotoRequirementActive,
 } from "@/lib/photos/photo-requirements-flag";
 import type {
+  PhotoCaptureContext,
   PhotoCaptureProgress,
   PhotoSectionProgress,
   PhotoSectionStatus,
@@ -58,6 +65,7 @@ function resolveSectionStatus(
 export function computeSectionProgress(
   sectionKey: string,
   photos: PhotoLike[],
+  context: PhotoCaptureContext = DEFAULT_PHOTO_CAPTURE_CONTEXT,
 ): PhotoSectionProgress {
   const section = PHOTO_CATALOG.find((s) => s.key === sectionKey);
   if (!section) {
@@ -75,14 +83,15 @@ export function computeSectionProgress(
     };
   }
 
-  const requiredCategories = section.categories.filter(
+  const visibleCategories = getVisibleSectionCategories(section, context);
+  const requiredCategories = visibleCategories.filter(
     (c) => isPhotoRequirementActive(c.required) && c.type === "SINGLE",
   );
   const completedCategories = requiredCategories.filter((c) =>
     isCategoryComplete(photos, c.key),
   ).length;
 
-  const totalPhotos = section.categories.reduce(
+  const totalPhotos = visibleCategories.reduce(
     (sum, c) => sum + countPhotosForCategory(photos, c.key),
     0,
   );
@@ -93,7 +102,7 @@ export function computeSectionProgress(
   const percentComplete =
     requiredPhotos > 0 ? Math.round((completedPhotos / requiredPhotos) * 100) : totalPhotos > 0 ? 100 : 0;
 
-  const estimatedSecondsRemaining = section.categories
+  const estimatedSecondsRemaining = visibleCategories
     .filter(
       (c) =>
         isPhotoRequirementActive(c.required) &&
@@ -105,7 +114,7 @@ export function computeSectionProgress(
   return {
     sectionKey: section.key,
     status: resolveSectionStatus(completedPhotos, requiredPhotos, totalPhotos > 0),
-    totalCategories: section.categories.length,
+    totalCategories: visibleCategories.length,
     completedCategories,
     totalPhotos,
     requiredPhotos,
@@ -116,8 +125,14 @@ export function computeSectionProgress(
   };
 }
 
-export function computeCaptureProgress(photos: PhotoLike[]): PhotoCaptureProgress {
-  const sections = PHOTO_CATALOG.map((section) => computeSectionProgress(section.key, photos));
+export function computeCaptureProgress(
+  photos: PhotoLike[],
+  context: PhotoCaptureContext = DEFAULT_PHOTO_CAPTURE_CONTEXT,
+): PhotoCaptureProgress {
+  const visibleSections = getVisibleCaptureSections(PHOTO_CAPTURE_SECTIONS, context);
+  const sections = visibleSections.map((section) =>
+    computeSectionProgress(section.key, photos, context),
+  );
 
   const mandatoryKeys = PHOTO_REQUIREMENTS_ENABLED ? MANDATORY_PHOTO_CATEGORY_KEYS : [];
   const totalRequired = mandatoryKeys.length;
