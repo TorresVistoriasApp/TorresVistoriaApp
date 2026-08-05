@@ -6,11 +6,16 @@ describe("companyToLaudoCompany", () => {
   it("monta dados da empresa a partir das configurações", () => {
     const company: Company = {
       id: "1",
-      name: "Torres Vistorias LTDA",
+      trade_name: "Torres Vistorias LTDA",
+      legal_name: null,
       document: "12345678000199",
       email: null,
       phone: null,
       logo_url: null,
+      primary_color: "#1e40af",
+      secondary_color: "#0f172a",
+      subscription_plan: "starter",
+      status: "active",
       location: null,
       address: null,
       address_cep: "04717-003",

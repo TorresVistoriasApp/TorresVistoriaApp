@@ -34,6 +34,9 @@ verify_jwt = true
 [functions.invite-user]
 verify_jwt = true
 
+[functions.onboard-company]
+verify_jwt = true
+
 [functions.compress-image]
 verify_jwt = true
 

@@ -34,6 +34,9 @@ export const queryKeys = {
   users: {
     team: ["users", "team"] as const,
   },
+  platformCompanies: {
+    all: ["platform-companies"] as const,
+  },
   audit: {
     all: ["audit"] as const,
     list: (filters?: Record<string, unknown>, page?: number, pageSize?: number) =>

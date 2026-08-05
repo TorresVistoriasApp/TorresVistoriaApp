@@ -9,11 +9,16 @@ import type { CompanyInput, SettingsInput } from "@/schemas/settings";
 
 export type Company = {
   id: string;
-  name: string;
+  trade_name: string;
+  legal_name: string | null;
   document: string | null;
   email: string | null;
   phone: string | null;
   logo_url: string | null;
+  primary_color: string;
+  secondary_color: string;
+  subscription_plan: string;
+  status: string;
   location: string | null;
   address: string | null;
   address_cep: string | null;
@@ -28,7 +33,6 @@ export type Company = {
 export type CompanySettings = {
   id: string;
   company_id: string;
-  primary_color: string;
   theme_mode: string;
   legal_footer: string | null;
   signature_image_url: string | null;
@@ -54,8 +58,11 @@ export const companyService = {
       const { data, error } = await db
         .from("companies")
         .update({
-          name: input.name,
+          trade_name: input.trade_name,
+          legal_name: input.legal_name || null,
           document: input.document || null,
+          primary_color: input.primary_color,
+          secondary_color: input.secondary_color,
           address_cep: input.address_cep || null,
           address_street: input.address_street || null,
           address_number: input.address_number || null,
@@ -99,7 +106,6 @@ export const companyService = {
         (input.signature_image_url?.startsWith("http") ? null : input.signature_image_url || null);
 
       const payload = {
-        primary_color: input.primary_color,
         theme_mode: input.theme_mode,
         legal_footer: input.legal_footer ?? null,
         signature_image_url: signaturePath,

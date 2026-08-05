@@ -26,15 +26,19 @@ export const companyAddressSchema = z.object({
   address_state: optionalText(2),
 });
 
+const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Cor inválida");
+
 export const companySchema = z
   .object({
-    name: z.string().min(2, "Nome ou razão social obrigatório").max(200),
+    trade_name: z.string().min(2, "Nome fantasia obrigatório").max(200),
+    legal_name: optionalText(200),
     document: optionalCpfCnpj,
+    primary_color: hexColor,
+    secondary_color: hexColor,
   })
   .merge(companyAddressSchema);
 
 export const settingsSchema = z.object({
-  primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Cor inválida"),
   theme_mode: z.literal("light"),
   legal_footer: z.string().max(2000).optional().nullable().or(z.literal("")),
   signature_image_url: z.string().url().optional().nullable().or(z.literal("")),

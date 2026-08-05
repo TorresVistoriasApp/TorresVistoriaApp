@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ requiredRole, fallback }: ProtectedRouteProps = {}) {
-  const { session, profile, loading } = useAuth();
+  const { session, profile, isPlatformAdmin, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -23,6 +23,12 @@ export function ProtectedRoute({ requiredRole, fallback }: ProtectedRouteProps =
 
   if (!session) {
     return <Navigate to={ROUTES.login} state={{ from: location }} replace />;
+  }
+
+  // Operador da plataforma não pertence a nenhuma empresa: nunca deve entrar
+  // na área do tenant (que assume `profile` preenchido em toda a UI).
+  if (isPlatformAdmin) {
+    return <Navigate to={ROUTES.adminCompanies} replace />;
   }
 
   if (requiredRole && profile?.role !== requiredRole) {

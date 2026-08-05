@@ -538,7 +538,7 @@ function buildTechnicalOpinionSection(inspection: LaudoPayload["inspection"]): P
 }
 
 export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, unknown> {
-  const color = getPrimaryColor(payload.settings);
+  const color = getPrimaryColor(payload.company);
   const stats = summarizeLaudoChecklist(payload.checklist);
   const inspection = payload.inspection;
   const company = payload.company;
