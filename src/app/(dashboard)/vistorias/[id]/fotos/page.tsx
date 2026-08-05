@@ -124,6 +124,10 @@ export function Page() {
     navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
   };
 
+  const inspectionEditHref = isWizardFlow
+    ? withNewInspectionFlow(ROUTES.inspectionEdit(inspectionId))
+    : ROUTES.inspectionEdit(inspectionId);
+
   const content = (
     <div className="w-full space-y-5 sm:space-y-6">
       {isLoading ? (
@@ -132,6 +136,7 @@ export function Page() {
         <PhotoSlotGrid
           photos={photos}
           inspection={inspection}
+          inspectionEditHref={inspectionEditHref}
           onUpload={handleUpload}
           onDelete={handleDelete}
           onPickError={(message) => toast(message)}

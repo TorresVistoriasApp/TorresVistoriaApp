@@ -69,7 +69,7 @@ export const queries = {
         motor_number, vehicle_uf, registration_city_uf, vehicle_category, vehicle_species,
         passenger_capacity, power_cv, engine_displacement,
         fuel, manufacture_year, model_year, mileage,
-        market_fipe_value, market_average_value, insurance_acceptance_percent, vehicle_condition,
+        market_fipe_value, market_average_value, insurance_acceptance_percent, vehicle_condition, is_armored,
         situation, opinion, status, technical_notes, internal_notes,
         completion_percent, draft_expires_at, last_auto_saved_at,
         company_id, inspector_id, created_at, updated_at,

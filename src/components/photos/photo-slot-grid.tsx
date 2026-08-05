@@ -7,6 +7,7 @@ import {
   PhotoCaptureProgressSummary,
   PhotoSectionProgressBar,
 } from "@/components/photos/photo-section-progress";
+import { PhotoFotosExtrasBanner } from "@/components/photos/photo-fotos-extras-banner";
 import { PhotoPaintTestActionSheet } from "@/components/photos/photo-paint-test-action-sheet";
 import { PhotoSubsectionPanel } from "@/components/photos/photo-subsection-panel";
 import { PhotoActionSheet } from "@/features/draft/components/photo-action-sheet";
@@ -28,6 +29,10 @@ import {
   QDP_TESTE_PINTURA_CATEGORY_KEYS,
   type PaintTestMethod,
 } from "@/lib/photos/quadros-portas";
+import {
+  FOTOS_EXTRAS_BLINDAGEM_KEYS,
+  FOTOS_EXTRAS_SUBSECTION_KEYS,
+} from "@/lib/photos/fotos-extras";
 import { isPhotoRequirementActive } from "@/lib/photos/photo-requirements-flag";
 import type { PhotoCaptureMetadata, PhotoGuideCardStatus, PhotoSectionProgress } from "@/lib/photos/types";
 import type { InspectionPhoto } from "@/services/photo-service";
@@ -35,6 +40,7 @@ import type { InspectionPhoto } from "@/services/photo-service";
 interface PhotoSlotGridProps {
   photos: InspectionPhoto[];
   inspection?: PhotoCaptureInspectionContext | null;
+  inspectionEditHref?: string;
   onUpload: (file: File, category: string, metadata?: Partial<PhotoCaptureMetadata>) => void;
   onDelete?: (photo: InspectionPhoto) => void;
   onPickError?: (message: string) => void;
@@ -96,6 +102,7 @@ function resolveDisplayPhoto(categoryPhotos: InspectionPhoto[]): InspectionPhoto
 export function PhotoSlotGrid({
   photos,
   inspection,
+  inspectionEditHref,
   onUpload,
   onDelete,
   onPickError,
@@ -253,10 +260,11 @@ export function PhotoSlotGrid({
       return (
         <div className="space-y-6">
           {subsections.map((subsection) => {
-            const subsectionProgress = computeSubsectionPhotoProgress(
-              photos,
-              subsection.categories.map((category) => category.key),
-            );
+            const categoryKeys = subsection.categories.map((category) => category.key);
+            const subsectionProgress = computeSubsectionPhotoProgress(photos, categoryKeys);
+            const isBlindagemSubsection =
+              sectionKey === "FOTOS_EXTRAS" &&
+              subsection.key === FOTOS_EXTRAS_SUBSECTION_KEYS.BLINDAGEM;
 
             return (
               <PhotoSubsectionPanel
@@ -265,7 +273,9 @@ export function PhotoSlotGrid({
                 description={subsection.description}
                 guidance={subsection.guidance}
                 completedCount={subsectionProgress.completed}
-                totalCount={subsectionProgress.total}
+                totalCount={isBlindagemSubsection
+                  ? FOTOS_EXTRAS_BLINDAGEM_KEYS.length
+                  : subsectionProgress.total}
               >
                 <div className={PHOTO_SLOT_GRID_CLASS}>
                   {subsection.categories.map((category) => renderCategorySlot(category))}
@@ -354,6 +364,13 @@ export function PhotoSlotGrid({
               sectionName={section.name}
               className="mb-3 sm:mb-4"
             />
+
+            {section.key === "FOTOS_EXTRAS" && (
+              <PhotoFotosExtrasBanner
+                isArmored={captureContext.isArmored}
+                inspectionEditHref={inspectionEditHref}
+              />
+            )}
 
             {renderSectionCategories(section.key)}
           </FormSectionCard>
