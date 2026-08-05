@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { ROUTES } from "@/config/routes";
 import { consumerAuthService } from "@/modules/torres-consulta/auth/consumer-auth-service";
+import { ProductCrossLink } from "@/modules/torres-consulta/components/landing/product-cross-link";
 import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
@@ -35,6 +36,9 @@ export function ClienteLayout() {
   return (
     <div className="min-h-dvh bg-canvas">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-white/90 backdrop-blur-xl">
+        <div className="border-b border-border/40 bg-slate-50/80 px-4 py-2 sm:px-6">
+          <ProductCrossLink to={ROUTES.consultaLanding} label="Voltar para Página Inicial" />
+        </div>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link to={ROUTES.clienteDashboard}>
             <ConsultaBrandLogo size="sm" showSubtitle={false} />

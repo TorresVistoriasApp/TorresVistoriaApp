@@ -4,7 +4,9 @@ import { HeroSection } from "@/modules/torres-consulta/components/landing/hero-s
 import { BenefitsSection } from "@/modules/torres-consulta/components/landing/benefits-section";
 import { HowItWorksSection } from "@/modules/torres-consulta/components/landing/how-it-works-section";
 import { PricingSection } from "@/modules/torres-consulta/components/landing/pricing-section";
+import { ReportPreviewSection } from "@/modules/torres-consulta/components/landing/report-preview-section";
 import { FaqSection } from "@/modules/torres-consulta/components/landing/faq-section";
+import { ScrollToTopButton } from "@/modules/torres-consulta/components/landing/scroll-to-top-button";
 import { LANDING_SEO, PageSeo } from "@/modules/torres-consulta/components/seo/page-seo";
 import { ROUTES } from "@/config/routes";
 
@@ -24,9 +26,11 @@ export function LandingPage() {
           <BenefitsSection />
           <HowItWorksSection />
           <PricingSection />
+          <ReportPreviewSection />
           <FaqSection />
         </main>
         <LandingFooter />
+        <ScrollToTopButton />
       </div>
     </>
   );

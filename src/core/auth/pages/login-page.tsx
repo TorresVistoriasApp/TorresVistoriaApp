@@ -16,6 +16,7 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { LoadingScreen } from "@/shared/components/loading-spinner";
 import { ROUTES } from "@/config/routes";
+import { ProductCrossLink } from "@/modules/torres-consulta/components/landing/product-cross-link";
 
 export function LoginPage() {
   const { signIn, session, loading } = useAuth();
@@ -77,8 +78,11 @@ export function LoginPage() {
 
       <div className="relative z-10 flex w-full flex-col">
         <header className="flex items-center justify-between px-5 py-5 sm:px-8 lg:px-12 lg:py-7">
-          <BrandLogo size="lg" className="hidden lg:flex" />
-          <BrandLogo size="md" className="lg:hidden" />
+          <div className="flex flex-col gap-3">
+            <ProductCrossLink to={ROUTES.consultaLanding} label="Voltar para Torres Consulta" />
+            <BrandLogo size="lg" className="hidden lg:flex" />
+            <BrandLogo size="md" className="lg:hidden" />
+          </div>
           <div className="hidden items-center gap-2 rounded-full border border-white/80 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 shadow-soft backdrop-blur-xl sm:flex">
             <ShieldCheck className="h-3.5 w-3.5 text-primary" />
             Acesso seguro

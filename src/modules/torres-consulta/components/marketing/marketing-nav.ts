@@ -2,8 +2,8 @@ import { ROUTES } from "@/config/routes";
 
 export const MARKETING_HEADER_NAV = [
   { label: "Como Funciona", to: ROUTES.comoFunciona },
-  { label: "Preços", to: ROUTES.planos },
-  { label: "Exemplo de Relatório", to: ROUTES.relatorioExemplo },
+  { label: "Planos", to: ROUTES.planos },
+  { label: "Exemplo", to: ROUTES.relatorioExemplo },
 ] as const;
 
 export const MARKETING_FOOTER = {

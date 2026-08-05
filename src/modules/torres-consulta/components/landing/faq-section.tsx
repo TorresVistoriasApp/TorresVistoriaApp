@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { ScrollReveal } from "./scroll-reveal";
 import { cn } from "@/shared/lib/utils";
 
 const FAQ_ITEMS = [
@@ -41,7 +42,8 @@ export function FaqSection() {
   return (
     <section id="faq" className="bg-canvas py-16 sm:py-20" aria-labelledby="faq-title">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+        <ScrollReveal>
+          <div className="text-center">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">FAQ</p>
           <h2
             id="faq-title"
@@ -49,9 +51,11 @@ export function FaqSection() {
           >
             Perguntas frequentes
           </h2>
-        </div>
+          </div>
+        </ScrollReveal>
 
-        <div className="mt-10 space-y-3">
+        <ScrollReveal delayMs={100}>
+          <div className="mt-10 space-y-3">
           {FAQ_ITEMS.map((item, index) => {
             const isOpen = openIndex === index;
             return (
@@ -88,7 +92,8 @@ export function FaqSection() {
               </div>
             );
           })}
-        </div>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );
