@@ -102,7 +102,7 @@ export function Page() {
 
   if (isWizardFlow) {
     return (
-      <InspectionWizardShell currentStep={4} inspectionId={inspectionId} title="Revisão e laudo">
+      <InspectionWizardShell currentStep={3} inspectionId={inspectionId} title="Revisão e laudo">
         <div className="space-y-4 md:space-y-6">
           {reviewPanel}
           <WizardNavButtons

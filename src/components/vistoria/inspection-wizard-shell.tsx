@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   InspectionWizardStepper,
+  WIZARD_STEP_COUNT,
   type WizardStep,
 } from "@/components/vistoria/inspection-wizard-stepper";
 import { cn } from "@/lib/utils";
@@ -27,12 +28,10 @@ interface InspectionWizardShellProps {
 function getStepPath(step: WizardStep, inspectionId: string): string {
   switch (step) {
     case 1:
-      return withNewInspectionFlow(ROUTES.inspectionEdit(inspectionId));
-    case 2:
       return withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId));
-    case 3:
+    case 2:
       return withNewInspectionFlow(ROUTES.inspectionChecklist(inspectionId));
-    case 4:
+    case 3:
       return withNewInspectionFlow(ROUTES.inspectionReport(inspectionId));
   }
 }
@@ -69,26 +68,21 @@ export function InspectionWizardShell({
     }
     if (!inspectionId) return;
     if (currentStep === 2) {
-      navigate(withNewInspectionFlow(ROUTES.inspectionEdit(inspectionId)));
-      return;
-    }
-    if (currentStep === 3) {
       navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId)));
       return;
     }
-    if (currentStep === 4) {
+    if (currentStep === 3) {
       navigate(withNewInspectionFlow(ROUTES.inspectionChecklist(inspectionId)));
     }
   };
 
   const stepLabels: Record<WizardStep, string> = {
-    1: "Dados do contratante e do veículo",
-    2: "Fotos da vistoria",
-    3: "Checklist técnico",
-    4: "Revisão e laudo profissional",
+    1: "Captura das fotografias",
+    2: "Avaliação técnica",
+    3: "Revisão e emissão do laudo",
   };
 
-  const showHeaderActions = currentStep === 1 && formId;
+  const showHeaderActions = false;
 
   return (
     <div className={cn("min-w-0 w-full space-y-4 lg:space-y-5", className)}>
@@ -107,7 +101,7 @@ export function InspectionWizardShell({
             <div className="min-w-0">
               <h1 className="text-lg font-bold tracking-tight sm:text-xl md:text-2xl">{title}</h1>
               <p className="mt-0.5 hidden text-sm text-muted-foreground sm:block">
-                Passo {currentStep} de 4: {stepLabels[currentStep]}
+                Passo {currentStep} de {WIZARD_STEP_COUNT}: {stepLabels[currentStep]}
               </p>
             </div>
           </div>
@@ -136,7 +130,7 @@ export function InspectionWizardShell({
 
       <div className="rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5 lg:p-4">
         <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:text-xs lg:sr-only">
-          Fluxo em 4 etapas
+          Fluxo em {WIZARD_STEP_COUNT} etapas
         </p>
         <InspectionWizardStepper
           currentStep={currentStep}

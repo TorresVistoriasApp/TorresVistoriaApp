@@ -30,7 +30,7 @@ export function Page() {
     if (activeDraft) {
       if (redirectedRef.current === activeDraft.id) return;
       redirectedRef.current = activeDraft.id;
-      navigate(withNewInspectionFlow(ROUTES.inspectionEdit(activeDraft.id)), { replace: true });
+      navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(activeDraft.id)), { replace: true });
       return;
     }
 
@@ -39,7 +39,7 @@ export function Page() {
 
     createDraft(undefined, {
       onSuccess: (inspection) => {
-        navigate(withNewInspectionFlow(ROUTES.inspectionEdit(inspection.id)), { replace: true });
+        navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspection.id)), { replace: true });
       },
       onError: (err) => {
         startedRef.current = false;

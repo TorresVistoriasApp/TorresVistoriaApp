@@ -66,13 +66,13 @@ export function useDraftRecoveryActions() {
 
   const continueDraft = (draft: ActiveDraftSummary) => {
     rememberActiveDraftId(draft.id);
-    navigate(withNewInspectionFlow(ROUTES.inspectionEdit(draft.id)));
+    navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(draft.id)));
   };
 
   const discardAndStartNew = async (draft: ActiveDraftSummary) => {
     await deleteDraft.mutateAsync(draft.id);
     const inspection = await createDraft.mutateAsync();
-    navigate(withNewInspectionFlow(ROUTES.inspectionEdit(inspection.id)), { replace: true });
+    navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspection.id)), { replace: true });
   };
 
   return {

@@ -1,11 +1,12 @@
-import { Check, ClipboardList, Camera, FileCheck2, FileText, Lock } from "lucide-react";
+import { Check, ClipboardList, Camera, FileCheck2, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+export const WIZARD_STEP_COUNT = 3;
+
 export const WIZARD_STEPS = [
-  { step: 1, label: "Dados", description: "Contratante e veículo", icon: FileText },
-  { step: 2, label: "Fotos", description: "Evidências", icon: Camera },
-  { step: 3, label: "Checklist", description: "Avaliação técnica", icon: ClipboardList },
-  { step: 4, label: "Laudo", description: "Revisão e PDF", icon: FileCheck2 },
+  { step: 1, label: "Fotos", description: "Captura das evidências", icon: Camera },
+  { step: 2, label: "Avaliação", description: "Dados e checklist", icon: ClipboardList },
+  { step: 3, label: "Laudo", description: "Revisão e PDF", icon: FileCheck2 },
 ] as const;
 
 export type WizardStep = (typeof WIZARD_STEPS)[number]["step"];
@@ -16,17 +17,13 @@ interface InspectionWizardStepperProps {
   onStepClick?: (step: WizardStep) => void;
 }
 
-function getStepHint(step: WizardStep, inspectionId?: string): string {
+function getStepHint(step: WizardStep): string {
   switch (step) {
     case 1:
-      return inspectionId
-        ? "Revise e salve para ir ao passo 2 (Fotos)."
-        : "Preencha e salve para liberar o passo 2 (Fotos).";
+      return "Capture as fotografias obrigatórias para liberar a avaliação técnica.";
     case 2:
-      return "Envie as fotos para liberar o passo 3 (Checklist).";
+      return "Preencha os dados, checklist e parecer para liberar o laudo.";
     case 3:
-      return "Avalie o checklist para liberar o passo 4 (Laudo).";
-    case 4:
       return "Revise tudo e gere o laudo em PDF.";
   }
 }
@@ -53,7 +50,7 @@ export function InspectionWizardStepper({
           step={currentStep}
           label={currentMeta.label}
           description={currentMeta.description}
-          hint={getStepHint(currentStep, inspectionId)}
+          hint={getStepHint(currentStep)}
           icon={currentMeta.icon}
         />
       </div>
@@ -65,7 +62,7 @@ export function InspectionWizardStepper({
           const isCurrent = step === currentStep;
           const isLocked = step > currentStep;
           const isClickable = Boolean(inspectionId && isCompleted && onStepClick);
-          const hint = isCurrent ? getStepHint(step, inspectionId) : "";
+          const hint = isCurrent ? getStepHint(step) : "";
 
           const node = (
             <div
@@ -149,7 +146,7 @@ function ProgressBar({ currentStep }: { currentStep: WizardStep }) {
   return (
     <div className="flex items-center gap-3">
       <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        Passo {currentStep} de 4
+        Passo {currentStep} de {WIZARD_STEP_COUNT}
       </span>
       <div className="flex min-w-0 flex-1 gap-1" aria-hidden>
         {WIZARD_STEPS.map(({ step }) => (
@@ -256,7 +253,7 @@ function CurrentStepCard({
   label: string;
   description: string;
   hint: string;
-  icon: typeof FileText;
+  icon: typeof Camera;
 }) {
   return (
     <div
@@ -292,7 +289,7 @@ function StepCircle({
   isCompleted: boolean;
   isCurrent: boolean;
   isLocked: boolean;
-  icon: typeof FileText;
+  icon: typeof Camera;
   step: WizardStep;
   interactive?: boolean;
   size?: "md" | "lg";

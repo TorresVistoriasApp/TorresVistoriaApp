@@ -115,7 +115,7 @@ export function Page() {
     [deletePhoto, toast],
   );
 
-  const goToChecklist = () => {
+  const goToAvaliacao = () => {
     if (!captureProgress.canProceed) {
       toast("Conclua todas as fotografias obrigatórias antes de continuar.");
       return;
@@ -140,20 +140,21 @@ export function Page() {
 
       {isWizardFlow ? (
         <WizardNavButtons
-          onBack={() => navigate(withNewInspectionFlow(ROUTES.inspectionEdit(inspectionId)))}
-          onNext={goToChecklist}
-          nextLabel="Continuar para checklist"
+          onBack={() => navigate(ROUTES.inspections)}
+          onNext={goToAvaliacao}
+          nextLabel="Continuar para avaliação técnica"
           nextDisabled={!captureProgress.canProceed}
+          showBack
         />
       ) : (
         <Button
           className="w-full touch-target"
           size="lg"
-          onClick={goToChecklist}
+          onClick={goToAvaliacao}
           disabled={!captureProgress.canProceed}
         >
           <ClipboardList className="mr-2 h-4 w-4" />
-          Continuar para checklist
+          Continuar para avaliação técnica
         </Button>
       )}
     </div>
@@ -162,8 +163,9 @@ export function Page() {
   if (isWizardFlow) {
     return (
       <InspectionWizardShell
-        currentStep={2}
+        currentStep={1}
         inspectionId={inspectionId}
+        title="Captura das fotografias"
         showDraftBanner={inspection?.status === InspectionStatus.DRAFT}
         draftExpiresAt={inspection?.draft_expires_at}
       >
@@ -187,8 +189,8 @@ export function Page() {
           title="Fotos e evidências"
           description={
             PHOTO_REQUIREMENTS_ENABLED
-              ? "Passo 2 de 4. Capture cada fotografia seguindo o guia visual. Todas as obrigatórias devem ser concluídas."
-              : "Passo 2 de 4. Capture cada fotografia seguindo o guia visual."
+              ? "Passo 1 de 3. Capture cada fotografia seguindo o guia visual. Todas as obrigatórias devem ser concluídas."
+              : "Passo 1 de 3. Capture cada fotografia seguindo o guia visual."
           }
         />
       </div>
