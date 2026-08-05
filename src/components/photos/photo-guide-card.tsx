@@ -19,6 +19,7 @@ export type PhotoGuideCardProps = {
   onView?: () => void;
   onRetake?: () => void;
   isRecommended?: boolean;
+  subtitle?: string;
   className?: string;
 };
 
@@ -37,6 +38,7 @@ export function PhotoGuideCard({
   onView,
   onRetake,
   isRecommended = false,
+  subtitle,
   className,
 }: PhotoGuideCardProps) {
   const hasPreview = Boolean(imageUrl);
@@ -142,6 +144,11 @@ export function PhotoGuideCard({
         <p className="line-clamp-2 text-[11px] font-bold leading-tight text-foreground sm:text-xs">
           {categoryName}
         </p>
+        {subtitle && (
+          <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-muted-foreground">
+            {subtitle}
+          </p>
+        )}
         {!hasPreview && (
           <p className="mt-0.5 hidden line-clamp-2 text-[10px] leading-snug text-muted-foreground sm:block">
             {guide.instruction}

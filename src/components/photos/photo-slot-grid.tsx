@@ -7,6 +7,7 @@ import {
   PhotoCaptureProgressSummary,
   PhotoSectionProgressBar,
 } from "@/components/photos/photo-section-progress";
+import { PhotoDamageCaptureSheet } from "@/components/photos/photo-damage-capture-sheet";
 import { PhotoFotosExtrasBanner } from "@/components/photos/photo-fotos-extras-banner";
 import { PhotoPaintTestActionSheet } from "@/components/photos/photo-paint-test-action-sheet";
 import { PhotoSubsectionPanel } from "@/components/photos/photo-subsection-panel";
@@ -29,6 +30,13 @@ import {
   QDP_TESTE_PINTURA_CATEGORY_KEYS,
   type PaintTestMethod,
 } from "@/lib/photos/quadros-portas";
+import {
+  buildDamageCaptureMetadata,
+  formatDamagePhotoCaption,
+  formatDamagePhotoSummary,
+  isDamageCategory,
+  type DamageCaptureForm,
+} from "@/lib/photos/avarias";
 import {
   FOTOS_EXTRAS_BLINDAGEM_KEYS,
   FOTOS_EXTRAS_SUBSECTION_KEYS,
@@ -57,6 +65,8 @@ type PhotoActionState = {
   categoryName: string;
   multiple: boolean;
   isPaintTest: boolean;
+  isDamage: boolean;
+  damageIndex?: number;
 };
 
 function getPhotosForCategory(
@@ -143,27 +153,58 @@ export function PhotoSlotGrid({
     complementaryCategory: method,
   });
 
-  const openPhotoActions = (category: PhotoCategoryDefinition, multiple = false) => {
+  const openPhotoActions = (
+    category: PhotoCategoryDefinition,
+    options?: { multiple?: boolean; damageIndex?: number },
+  ) => {
+    const categoryPhotos = getPhotosForCategory(photos, category.key);
+    const confirmedCount = categoryPhotos.filter((photo) => !isPendingPhoto(photo)).length;
+    const isDamage = category.type === "DAMAGE";
+
     setPhotoAction({
       categoryKey: category.key,
       categoryName: category.name,
-      multiple,
+      multiple: isDamage ? false : (options?.multiple ?? false),
       isPaintTest: isQuadrosPortasTestCategory(category.key),
+      isDamage,
+      damageIndex: isDamage ? (options?.damageIndex ?? confirmedCount + 1) : undefined,
     });
   };
 
   const handleTakePhoto = async () => {
     const action = photoAction;
-    if (!action || action.isPaintTest) return;
+    if (!action || action.isPaintTest || action.isDamage) return;
     const result = await pickImageFiles({ capture: true, multiple: action.multiple });
     uploadFiles(result, action.categoryKey);
   };
 
   const handlePickGallery = async () => {
     const action = photoAction;
-    if (!action || action.isPaintTest) return;
+    if (!action || action.isPaintTest || action.isDamage) return;
     const result = await pickImageFiles({ multiple: action.multiple });
     uploadFiles(result, action.categoryKey);
+  };
+
+  const handleDamageTakePhoto = async (form: DamageCaptureForm) => {
+    const action = photoAction;
+    if (!action) return;
+    const result = await pickImageFiles({ capture: true, multiple: false });
+    uploadFiles(
+      result,
+      action.categoryKey,
+      buildDamageCaptureMetadata(form, action.damageIndex),
+    );
+  };
+
+  const handleDamagePickGallery = async (form: DamageCaptureForm) => {
+    const action = photoAction;
+    if (!action) return;
+    const result = await pickImageFiles({ multiple: false });
+    uploadFiles(
+      result,
+      action.categoryKey,
+      buildDamageCaptureMetadata(form, action.damageIndex),
+    );
   };
 
   const handlePaintTestTakePhoto = async (method: PaintTestMethod) => {
@@ -201,19 +242,34 @@ export function PhotoSlotGrid({
     );
 
     if (isMultiCategory(category)) {
+      const isDamage = category.type === "DAMAGE";
+
       return slotWrapper(
         <MultiPhotoGallery
           label={category.name}
           guide={guide}
           photos={categoryPhotos}
           required={isPhotoRequirementActive(category.required)}
-          onCapture={() => openPhotoActions(category, true)}
+          resolvePhotoLabel={
+            isDamage
+              ? (photo, index) => formatDamagePhotoSummary(photo) || `Avaria ${index + 1}`
+              : undefined
+          }
+          resolvePhotoSubtitle={isDamage ? formatDamagePhotoCaption : undefined}
+          onCapture={() => openPhotoActions(category, { multiple: !isDamage })}
           onViewPhoto={(photo) =>
             photo.public_url && setPreview({ url: photo.public_url, category, photo })
           }
           onRetakePhoto={(photo) => {
             onDelete?.(photo);
-            openPhotoActions(category, true);
+            const sorted = [...categoryPhotos].sort(
+              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+            );
+            const photoIndex = sorted.findIndex((item) => item.id === photo.id);
+            openPhotoActions(category, {
+              multiple: false,
+              damageIndex: photoIndex >= 0 ? photoIndex + 1 : undefined,
+            });
           }}
         />,
       );
@@ -378,13 +434,24 @@ export function PhotoSlotGrid({
       })}
 
       <PhotoActionSheet
-        open={Boolean(photoAction && !photoAction.isPaintTest)}
+        open={Boolean(photoAction && !photoAction.isPaintTest && !photoAction.isDamage)}
         onOpenChange={(open) => {
           if (!open) setPhotoAction(null);
         }}
         categoryName={photoAction?.categoryName}
         onTakePhoto={() => void handleTakePhoto()}
         onPickGallery={() => void handlePickGallery()}
+      />
+
+      <PhotoDamageCaptureSheet
+        open={Boolean(photoAction?.isDamage)}
+        onOpenChange={(open) => {
+          if (!open) setPhotoAction(null);
+        }}
+        categoryName={photoAction?.categoryName}
+        damageIndex={photoAction?.damageIndex}
+        onTakePhoto={(form) => void handleDamageTakePhoto(form)}
+        onPickGallery={(form) => void handleDamagePickGallery(form)}
       />
 
       <PhotoPaintTestActionSheet
@@ -419,8 +486,17 @@ export function PhotoSlotGrid({
               alt={preview.category.name}
               className="max-h-[65vh] w-full rounded-lg object-contain"
             />
-            <figcaption className="mt-3 text-center text-sm font-semibold text-white">
-              {preview.category.name}
+            <figcaption className="mt-3 space-y-1 text-center text-sm text-white">
+              <p className="font-semibold">
+                {isDamageCategory(preview.category.key)
+                  ? formatDamagePhotoSummary(preview.photo)
+                  : preview.category.name}
+              </p>
+              {isDamageCategory(preview.category.key) && (
+                <p className="text-xs text-white/80">
+                  {formatDamagePhotoCaption(preview.photo) ?? "Sem metadados adicionais"}
+                </p>
+              )}
             </figcaption>
             {onDelete && (
               <Button
