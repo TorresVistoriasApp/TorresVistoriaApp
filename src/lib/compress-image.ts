@@ -248,22 +248,12 @@ export function getDeviceInfo(): { deviceModel: string; deviceOs: string } {
   return { deviceModel: ua.slice(0, 200), deviceOs };
 }
 
-export function buildPhotoPath(
-  companyId: string,
-  inspectionId: string,
-  category: string,
-  fileName: string,
-): string {
-  return `${companyId}/${inspectionId}/${category}/${fileName}`;
-}
-
-/** Path do thumbnail ao lado da foto full: .../file.webp → .../thumbs/file.webp */
-export function buildThumbnailPath(storagePath: string): string {
-  const parts = storagePath.split("/");
-  const fileName = parts.pop();
-  if (!fileName) return storagePath;
-  return [...parts, "thumbs", fileName].join("/");
-}
+export {
+  buildInspectionPhotoPath,
+  buildInspectionPhotoThumbnailPath,
+  buildPhotoPath,
+  buildThumbnailPath,
+} from "@/lib/storage-paths";
 
 /** WebP leve (~320px) para grade/lista — reduz bytes nas telas de fotos. */
 export async function createThumbnailWebP(file: File): Promise<File> {

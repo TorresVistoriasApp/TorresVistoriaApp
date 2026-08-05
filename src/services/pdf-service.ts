@@ -10,8 +10,8 @@ import { imageUrlToPdfDataUrl } from "@/lib/pdf-embed-image";
 import { optimizePdfBlob } from "@/lib/optimize-pdf";
 import { getBrandLogoPath } from "@/lib/vehicle-brand-logos";
 import { buildVerificationCode, formatLaudoNumber } from "@/lib/laudo/verification-code";
-
-const REPORTS_BUCKET = "reports";
+import { REPORTS_BUCKET } from "@/lib/storage-buckets";
+import { buildReportStoragePath } from "@/lib/storage-paths";
 
 async function sha256Bytes(data: Blob | string): Promise<string> {
   const buffer = typeof data === "string" ? new TextEncoder().encode(data) : await data.arrayBuffer();
@@ -249,7 +249,11 @@ export const pdfService = {
         validationUrl,
       });
       const finalBlob = await this.createPdfBlob(finalPass.docDefinition);
-      const storagePath = `${params.inspection.company_id}/${params.inspection.id}/${Date.now()}-${reportFileName(params.inspection)}`;
+      const storagePath = buildReportStoragePath(
+        params.inspection.company_id,
+        params.inspection.id,
+        `${Date.now()}-${reportFileName(params.inspection)}`,
+      );
 
       const { error: uploadError } = await db.storage
         .from(REPORTS_BUCKET)
