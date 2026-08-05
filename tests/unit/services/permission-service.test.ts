@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createPermissionChecker,
+  createPermissionCheckerWithGrants,
   PermissionService,
   resolvePermissionsForRole,
 } from "@/services/permission-service";
@@ -41,5 +42,13 @@ describe("permission-service", () => {
   it("PermissionService.forRole delega para createPermissionChecker", () => {
     const checker = PermissionService.forRole(UserRole.SUPER_ADMIN);
     expect(checker.has("settings.manage")).toBe(true);
+  });
+
+  it("createPermissionCheckerWithGrants mescla overrides customizados", () => {
+    const checker = createPermissionCheckerWithGrants(UserRole.INSPECTOR, [
+      { permission: "users.manage", granted: true },
+    ]);
+    expect(checker.has("users.manage")).toBe(true);
+    expect(checker.has("inspections.create")).toBe(true);
   });
 });
