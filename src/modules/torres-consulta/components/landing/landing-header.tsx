@@ -2,16 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { ROUTES } from "@/config/routes";
+import { MARKETING_HEADER_NAV } from "@/modules/torres-consulta/components/marketing/marketing-nav";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { ConsultaBrandLogo } from "./consulta-brand-logo";
-
-const NAV_ITEMS = [
-  { label: "Início", href: "#inicio" },
-  { label: "Como Funciona", href: "#como-funciona" },
-  { label: "Planos", href: "#planos" },
-  { label: "Perguntas Frequentes", href: "#faq" },
-] as const;
 
 export function LandingHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -40,35 +34,32 @@ export function LandingHeader() {
           : "bg-transparent",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
         <Link to={ROUTES.consultaLanding} aria-label="Torres Consulta — Início">
           <ConsultaBrandLogo size="sm" showSubtitle={false} />
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegação principal">
-          {NAV_ITEMS.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="rounded-lg px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+        <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navegação principal">
+          {MARKETING_HEADER_NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
             >
               {item.label}
-            </a>
+            </Link>
           ))}
-          <Link
-            to={ROUTES.clienteLogin}
-            className="rounded-lg px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-          >
-            Área do Cliente
-          </Link>
         </nav>
 
-        <div className="hidden items-center gap-2 sm:flex">
+        <div className="hidden items-center gap-2 md:flex">
           <Button variant="ghost" size="sm" asChild className="text-muted-foreground">
-            <Link to={ROUTES.vistoriaLogin}>Sou Empresa</Link>
+            <Link to={ROUTES.vistoriaLogin}>Área do Vistoriador</Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={ROUTES.clienteLogin}>Entrar</Link>
           </Button>
           <Button size="sm" asChild>
-            <a href="#consultar">Consultar Veículo</a>
+            <Link to={ROUTES.consultar}>Consultar Veículo</Link>
           </Button>
         </div>
 
@@ -86,31 +77,31 @@ export function LandingHeader() {
       {mobileOpen && (
         <div className="border-t border-border/60 bg-white/95 px-4 py-4 backdrop-blur-xl lg:hidden">
           <nav className="flex flex-col gap-1" aria-label="Navegação mobile">
-            {NAV_ITEMS.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
+            {MARKETING_HEADER_NAV.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
                 className="rounded-xl px-4 py-3 text-sm font-medium text-foreground"
                 onClick={() => setMobileOpen(false)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
-            <Link
-              to={ROUTES.clienteLogin}
-              className="rounded-xl px-4 py-3 text-sm font-medium text-foreground"
-              onClick={() => setMobileOpen(false)}
-            >
-              Área do Cliente
-            </Link>
             <div className="mt-3 flex flex-col gap-2 border-t border-border/60 pt-3">
               <Button variant="outline" asChild>
-                <Link to={ROUTES.vistoriaLogin}>Sou Empresa</Link>
+                <Link to={ROUTES.clienteLogin} onClick={() => setMobileOpen(false)}>
+                  Entrar
+                </Link>
+              </Button>
+              <Button variant="ghost" asChild>
+                <Link to={ROUTES.vistoriaLogin} onClick={() => setMobileOpen(false)}>
+                  Área do Vistoriador
+                </Link>
               </Button>
               <Button asChild>
-                <a href="#consultar" onClick={() => setMobileOpen(false)}>
+                <Link to={ROUTES.consultar} onClick={() => setMobileOpen(false)}>
                   Consultar Veículo
-                </a>
+                </Link>
               </Button>
             </div>
           </nav>

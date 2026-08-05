@@ -6,6 +6,7 @@ import { HowItWorksSection } from "@/modules/torres-consulta/components/landing/
 import { PricingSection } from "@/modules/torres-consulta/components/landing/pricing-section";
 import { FaqSection } from "@/modules/torres-consulta/components/landing/faq-section";
 import { LANDING_SEO, PageSeo } from "@/modules/torres-consulta/components/seo/page-seo";
+import { ROUTES } from "@/config/routes";
 
 export function LandingPage() {
   return (
@@ -13,6 +14,7 @@ export function LandingPage() {
       <PageSeo
         title={LANDING_SEO.title}
         description={LANDING_SEO.description}
+        canonicalPath={ROUTES.consultaLanding}
         schema={LANDING_SEO.schema}
       />
       <div className="min-h-dvh bg-canvas">
