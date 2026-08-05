@@ -15,6 +15,7 @@
     "test:e2e:ui": "playwright test --ui",
     "db:types": "node scripts/generate-types.mjs",
     "db:migrate": "supabase migration up",
+    "db:push": "supabase db push",
     "db:reset": "supabase db reset",
     "db:seed": "supabase db seed",
     "db:migrate-legacy-storage": "node scripts/migrate-legacy-storage.mjs",
