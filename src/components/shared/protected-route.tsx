@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/use-auth";
+import { useTenantBoot } from "@/hooks/use-tenant-boot";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { ROUTES } from "@/lib/constants";
 import type { UserRole } from "@/lib/enums";
@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ requiredRole, fallback }: ProtectedRouteProps = {}) {
-  const { session, profile, isPlatformAdmin, loading } = useAuth();
+  const { session, profile, isPlatformAdmin, loading } = useTenantBoot();
   const location = useLocation();
 
   if (loading) {
