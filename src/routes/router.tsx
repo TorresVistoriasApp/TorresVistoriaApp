@@ -38,7 +38,6 @@ export const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
-      { path: ROUTES.legacyDashboard, element: <Navigate to={ROUTES.dashboard} replace /> },
       { path: ROUTES.vistoriaLogin, element: <Navigate to={ROUTES.login} replace /> },
 
       // Marketing / landing B2C — layout próprio por página.
@@ -82,7 +81,7 @@ export const router = createBrowserRouter([
         ],
       },
 
-      { path: "*", element: <Navigate to={ROUTES.dashboard} replace /> },
+      { path: "*", element: <Navigate to={ROUTES.consultaLanding} replace /> },
     ],
   },
 ]);

@@ -15,7 +15,7 @@ export const torresVistoriaRoutes: ModuleRoutes = {
   ],
   client: [
     {
-      index: true,
+      path: ROUTES.dashboard,
       element: lazyRoute(() => import("@/modules/torres-vistoria/pages/dashboard-page"), "DashboardPage"),
     },
     {
