@@ -18,6 +18,7 @@ export type PhotoGuideCardProps = {
   onCapture: () => void;
   onView?: () => void;
   onRetake?: () => void;
+  isRecommended?: boolean;
   className?: string;
 };
 
@@ -35,6 +36,7 @@ export function PhotoGuideCard({
   onCapture,
   onView,
   onRetake,
+  isRecommended = false,
   className,
 }: PhotoGuideCardProps) {
   const hasPreview = Boolean(imageUrl);
@@ -47,10 +49,17 @@ export function PhotoGuideCard({
         "group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl border-2 text-left transition-all duration-200",
         isCaptured
           ? "border-primary/30 bg-card shadow-soft"
-          : "border-dashed border-primary/20 bg-white hover:border-primary/40 hover:shadow-sm",
+          : isRecommended
+            ? "border-primary bg-white ring-2 ring-primary/25 ring-offset-2 ring-offset-background shadow-md"
+            : "border-dashed border-primary/20 bg-white hover:border-primary/40 hover:shadow-sm",
         className,
       )}
     >
+      {isRecommended && !isCaptured && (
+        <span className="absolute left-1.5 top-1.5 z-10 rounded-full bg-primary px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-primary-foreground shadow-sm sm:text-[9px]">
+          Próxima
+        </span>
+      )}
       {required && !isCaptured && (
         <span className="absolute right-1.5 top-1.5 z-10 rounded bg-amber-100 px-1 py-0.5 text-[8px] font-bold uppercase leading-none text-amber-800 sm:text-[9px]">
           Obrig.

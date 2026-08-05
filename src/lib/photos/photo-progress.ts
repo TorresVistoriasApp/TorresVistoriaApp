@@ -37,7 +37,7 @@ function countPhotosForCategory(photos: PhotoLike[], categoryKey: string): numbe
   ).length;
 }
 
-function isCategoryComplete(photos: PhotoLike[], categoryKey: string): boolean {
+export function isPhotoCategoryComplete(photos: PhotoLike[], categoryKey: string): boolean {
   const def = ALL_PHOTO_CATEGORIES.find((c) => c.key === categoryKey);
   if (!def) return false;
 
@@ -88,7 +88,7 @@ export function computeSectionProgress(
     (c) => isPhotoRequirementActive(c.required) && c.type === "SINGLE",
   );
   const completedCategories = requiredCategories.filter((c) =>
-    isCategoryComplete(photos, c.key),
+    isPhotoCategoryComplete(photos, c.key),
   ).length;
 
   const totalPhotos = visibleCategories.reduce(
@@ -107,7 +107,7 @@ export function computeSectionProgress(
       (c) =>
         isPhotoRequirementActive(c.required) &&
         c.type === "SINGLE" &&
-        !isCategoryComplete(photos, c.key),
+        !isPhotoCategoryComplete(photos, c.key),
     )
     .reduce((sum, c) => sum + (c.estimatedCaptureSeconds ?? 25), 0);
 
@@ -136,13 +136,13 @@ export function computeCaptureProgress(
 
   const mandatoryKeys = PHOTO_REQUIREMENTS_ENABLED ? MANDATORY_PHOTO_CATEGORY_KEYS : [];
   const totalRequired = mandatoryKeys.length;
-  const totalCompleted = mandatoryKeys.filter((key) => isCategoryComplete(photos, key)).length;
+  const totalCompleted = mandatoryKeys.filter((key) => isPhotoCategoryComplete(photos, key)).length;
   const percentComplete =
     totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : 100;
 
   const missingRequiredLabels = PHOTO_REQUIREMENTS_ENABLED
     ? mandatoryKeys
-        .filter((key) => !isCategoryComplete(photos, key))
+        .filter((key) => !isPhotoCategoryComplete(photos, key))
         .map((key) => getPhotoCategoryLabel(key))
     : [];
 

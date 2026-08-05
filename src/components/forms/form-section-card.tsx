@@ -18,6 +18,8 @@ interface FormSectionCardProps {
   optional?: boolean;
   collapsible?: boolean;
   defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   className?: string;
 }
 
@@ -31,28 +33,39 @@ export function FormSectionCard({
   optional = false,
   collapsible = false,
   defaultOpen = true,
+  open,
+  onOpenChange,
   className,
 }: FormSectionCardProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const isControlled = open !== undefined;
+  const resolvedOpen = isControlled ? open : internalOpen;
   const isCollapsible = collapsible || optional;
+
+  const setOpen = (value: boolean) => {
+    if (!isControlled) {
+      setInternalOpen(value);
+    }
+    onOpenChange?.(value);
+  };
 
   return (
     <div id={id} className={cn("scroll-mt-24", className)}>
       <Card
         className={cn(
           "overflow-hidden shadow-soft",
-          optional && !open && "border-dashed border-sky-200/80 bg-sky-50/20",
+          optional && !resolvedOpen && "border-dashed border-sky-200/80 bg-sky-50/20",
         )}
       >
         {isCollapsible ? (
           <button
             type="button"
-            onClick={() => setOpen((value) => !value)}
+            onClick={() => setOpen(!resolvedOpen)}
             className={cn(
               "flex w-full items-start gap-3 px-4 py-4 text-left transition-colors sm:gap-4 sm:px-6 sm:py-5",
               optional ? "hover:bg-sky-50/50" : "hover:bg-muted/30",
             )}
-            aria-expanded={open}
+            aria-expanded={resolvedOpen}
           >
             <SectionBadge index={index} optional={optional} />
             <div className="min-w-0 flex-1">
@@ -73,13 +86,13 @@ export function FormSectionCard({
                   <ChevronDown
                     className={cn(
                       "mt-0.5 size-5 shrink-0 text-muted-foreground transition-transform",
-                      open && "rotate-180",
+                      resolvedOpen && "rotate-180",
                     )}
                     aria-hidden
                   />
                 </div>
               </div>
-              {optional && !open && (
+              {optional && !resolvedOpen && (
                 <p className="mt-2.5 text-xs leading-relaxed text-sky-800/80">
                   {OPTIONAL_SECTION_COLLAPSED_HINT}
                 </p>
@@ -103,7 +116,7 @@ export function FormSectionCard({
           </CardHeader>
         )}
 
-        {(!isCollapsible || open) && (
+        {(!isCollapsible || resolvedOpen) && (
           <CardContent
             className={cn(
               "space-y-5 px-4 pb-5 pt-0 sm:px-6 sm:pb-6 lg:space-y-4 lg:px-5 lg:pb-5",
