@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { isPendingPhoto } from "@/hooks/use-photos";
 import { pickImageFiles } from "@/lib/pick-image-files";
 import {
-  PHOTO_CATALOG,
+  PHOTO_CAPTURE_SECTIONS,
   type PhotoCategoryDefinition,
   photoMatchesCategory,
 } from "@/lib/photos/photo-catalog";
@@ -189,7 +189,7 @@ export function PhotoSlotGrid({ photos, onUpload, onDelete, onPickError }: Photo
         </p>
       )}
 
-      {PHOTO_CATALOG.map((section) => {
+      {PHOTO_CAPTURE_SECTIONS.map((section) => {
         const sectionProgress = captureProgress.sections.find((s) => s.sectionKey === section.key)!;
         const isOptionalSection = section.categories.every(
           (c) => !isPhotoRequirementActive(c.required),

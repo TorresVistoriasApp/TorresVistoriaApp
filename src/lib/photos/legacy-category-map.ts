@@ -1,8 +1,9 @@
 /**
- * Mapeamento de categorias legadas (v1) para o novo catálogo modular (v2).
+ * Mapeamento de categorias legadas (v1/v2) para o catálogo reorganizado (v3).
  * Garante retrocompatibilidade com fotos já capturadas.
  */
 export const LEGACY_TO_NEW_CATEGORY: Record<string, string> = {
+  // v1 — categorias originais
   FRENTE_45_ESQUERDA: "EXT_FRENTE_45_ESQ",
   FRENTE_45_DIREITA: "EXT_FRENTE_45_DIR",
   TRASEIRA_45_ESQUERDA: "EXT_TRASEIRA_45_ESQ",
@@ -21,7 +22,7 @@ export const LEGACY_TO_NEW_CATEGORY: Record<string, string> = {
   CAIXA_AR: "LAT_CAIXA_AR_ESQ",
   ASSOALHO_PORTA_MALAS: "TRS_ASSOALHO_PORTA_MALAS",
   VIDROS: "IDV_GRAVACAO_VIDRO_LATERAL",
-  ETIQUETAS: "IDV_ETIQUETA_COLUNA_DIR",
+  ETIQUETAS: "IDV_ETIQUETA_ETA_PASSAGEIRO",
   INTERIOR: "INT_BANCOS_DIANTEIROS",
   CINTOS_AIRBAGS: "SEG_CINTO_DATA",
   DOCUMENTOS: "DOC_VEICULO",
@@ -40,11 +41,31 @@ export const LEGACY_TO_NEW_CATEGORY: Record<string, string> = {
   PINTURA_PARALAMA_DIANTEIRO_DIREITO: "PINT_PARALAMA_DIANT_DIR",
   PINTURA_PARACHOQUE_DIANTEIRO: "PINT_PARACHOQUE_DIANTEIRO",
   PINTURA_PARACHOQUE_TRASEIRO: "PINT_PARACHOQUE_TRASEIRO",
+
+  // v2 → v3 — categorias renomeadas ou realocadas
+  IDV_ETIQUETA_COLUNA_DIR: "IDV_ETIQUETA_ETA_PASSAGEIRO",
+  MOT_TORRE_AMORT_ESQ: "MOT_PARALAMA_TORRE_ESQ",
+  MOT_TORRE_AMORT_DIR: "MOT_PARALAMA_TORRE_DIR",
+  MOT_PAINEL_FRONTAL: "MOT_PAINEL_FRONTAL_SUPERIOR",
+  MOT_PAINEL_CORTA_FOGO: "MOT_PAINEL_FRONTAL_INFERIOR",
+  SEG_MACACO: "EXTRA_MACACO",
+  SEG_TRIANGULO: "EXTRA_TRIANGULO",
+  SEG_CHAVE_RODA: "EXTRA_CHAVE_RODA",
+  SEG_ESTEPE: "EXTRA_ESTEPE",
+  ROD_ESTADO_PNEUS: "EXTRA_PNEUS_ESTADO",
 };
 
-/** Normaliza categoria legada ou nova para a chave canônica v2. */
+/** Normaliza categoria legada ou nova para a chave canônica v3. */
 export function normalizePhotoCategory(category: string): string {
-  return LEGACY_TO_NEW_CATEGORY[category] ?? category;
+  let current = category;
+  const visited = new Set<string>();
+
+  while (LEGACY_TO_NEW_CATEGORY[current] && !visited.has(current)) {
+    visited.add(current);
+    current = LEGACY_TO_NEW_CATEGORY[current];
+  }
+
+  return current;
 }
 
 /** Verifica se uma foto satisfaz uma categoria (considerando aliases legados). */
