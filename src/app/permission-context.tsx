@@ -5,10 +5,13 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/app/auth-context";
-import { hasPermission, type Permission } from "@/lib/rbac";
+import { useUser } from "@/app/user-context";
+import { hasPermission as checkPermission, type Permission } from "@/lib/rbac";
+import type { UserRole } from "@/lib/enums";
 import { resolvePermissionsForRole } from "@/services/permission-service";
 
 interface PermissionContextValue {
+  role: UserRole | null;
   permissions: ReadonlySet<Permission>;
   loading: boolean;
   hasPermission: (permission: Permission) => boolean;
@@ -17,22 +20,24 @@ interface PermissionContextValue {
 const PermissionContext = createContext<PermissionContextValue | undefined>(undefined);
 
 export function PermissionProvider({ children }: { children: ReactNode }) {
-  const { profile, isPlatformAdmin, loading: authLoading } = useAuth();
+  const { role, loading: userLoading } = useUser();
+  const { isPlatformAdmin } = useAuth();
 
   const permissions = useMemo(() => {
-    if (isPlatformAdmin || !profile?.role) {
+    if (isPlatformAdmin || !role) {
       return new Set<Permission>();
     }
-    return new Set(resolvePermissionsForRole(profile.role));
-  }, [profile?.role, isPlatformAdmin]);
+    return new Set(resolvePermissionsForRole(role));
+  }, [role, isPlatformAdmin]);
 
   const value = useMemo(
     () => ({
+      role,
       permissions,
-      loading: authLoading,
-      hasPermission: (permission: Permission) => hasPermission(profile?.role, permission),
+      loading: userLoading,
+      hasPermission: (permission: Permission) => checkPermission(role ?? undefined, permission),
     }),
-    [permissions, authLoading, profile?.role],
+    [role, permissions, userLoading],
   );
 
   return <PermissionContext.Provider value={value}>{children}</PermissionContext.Provider>;

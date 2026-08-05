@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { LaudoReviewPanel } from "@/components/laudo/laudo-review-panel";
 import { getLaudoBlockerMessages, buildLaudoReadiness } from "@/components/laudo/laudo-readiness";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { useInspection, useInspectionChecklist } from "@/hooks/use-inspection";
-import { useCompany, useCompanySettings } from "@/hooks/use-company";
-import { useInspectionPhotos } from "@/hooks/use-photos";
+import { useCompanyContext } from "@/app/company-context";
+import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,15 +17,17 @@ import { ArrowLeft } from "lucide-react";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 
 export function Page() {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
-  const { data: inspection, isLoading: loadingInspection } = useInspection(id);
-  const { data: checklist = [], isLoading: loadingChecklist } = useInspectionChecklist(id);
-  const { data: photos = [], isLoading: loadingPhotos } = useInspectionPhotos(id);
-  const { data: company, isLoading: loadingCompany } = useCompany(inspection?.company_id);
-  const { data: settings, isLoading: loadingSettings } = useCompanySettings(inspection?.company_id);
+  const {
+    inspectionId,
+    inspection,
+    checklist,
+    photos,
+    isLoadingAny: isLoading,
+  } = useInspectionContext();
+  const { company, settings } = useCompanyContext();
   const { toast } = useToast();
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -37,11 +38,8 @@ export function Page() {
     [inspection?.inspector],
   );
 
-  const isLoading =
-    loadingInspection || loadingChecklist || loadingPhotos || loadingCompany || loadingSettings;
-
   const handleGenerate = async () => {
-    if (!id || !inspection) return;
+    if (!inspection) return;
     const blockers = getLaudoBlockerMessages(buildLaudoReadiness(inspection, checklist, photos));
     if (blockers.length > 0) {
       toast(blockers[0]);
@@ -68,12 +66,11 @@ export function Page() {
   };
 
   const handleFixItem = (itemId: string) => {
-    if (!id) return;
     const routes: Record<string, string> = {
-      checklist: ROUTES.inspectionChecklist(id),
-      photos: ROUTES.inspectionPhotos(id),
-      opinion: `${ROUTES.inspectionChecklist(id)}#checklist-parecer`,
-      notes: `${ROUTES.inspectionChecklist(id)}#checklist-parecer`,
+      checklist: ROUTES.inspectionChecklist(inspectionId),
+      photos: ROUTES.inspectionPhotos(inspectionId),
+      opinion: `${ROUTES.inspectionChecklist(inspectionId)}#checklist-parecer`,
+      notes: `${ROUTES.inspectionChecklist(inspectionId)}#checklist-parecer`,
     };
     const path = routes[itemId];
     if (!path) return;
@@ -105,11 +102,11 @@ export function Page() {
 
   if (isWizardFlow) {
     return (
-      <InspectionWizardShell currentStep={4} inspectionId={id} title="Revisão e laudo">
+      <InspectionWizardShell currentStep={4} inspectionId={inspectionId} title="Revisão e laudo">
         <div className="space-y-4 md:space-y-6">
           {reviewPanel}
           <WizardNavButtons
-            onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionChecklist(id)))}
+            onBack={() => navigate(withNewInspectionFlow(ROUTES.inspectionChecklist(inspectionId)))}
             onNext={handleFinish}
             nextLabel={verificationCode ? "Concluir vistoria" : "Salvar e sair"}
             nextDisabled={false}
@@ -126,7 +123,7 @@ export function Page() {
           variant="ghost"
           size="icon"
           className="touch-target"
-          onClick={() => id && navigate(ROUTES.inspection(id))}
+          onClick={() => navigate(ROUTES.inspection(inspectionId))}
         >
           <ArrowLeft className="size-5" />
         </Button>

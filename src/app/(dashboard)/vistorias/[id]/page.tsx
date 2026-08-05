@@ -1,7 +1,5 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { useInspection } from "@/hooks/use-inspection";
-import { useInspectionPhotos } from "@/hooks/use-photos";
-import { useInspectionChecklist } from "@/hooks/use-checklist";
+import { Link, useNavigate } from "react-router-dom";
+import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { VistoriaStatusBadge } from "@/components/vistoria/vistoria-status-badge";
 import { RoleGuard } from "@/components/shared/role-guard";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
@@ -21,11 +19,8 @@ import { Camera, ClipboardList, Edit, FileText, ArrowLeft } from "lucide-react";
 import { VistoriaActionsMenu } from "@/components/vistoria/vistoria-actions-menu";
 
 export function Page() {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: inspection, isLoading, error } = useInspection(id);
-  const { data: photos = [] } = useInspectionPhotos(id);
-  const { data: checklist = [] } = useInspectionChecklist(id);
+  const { inspection, photos, checklist, isLoading, error } = useInspectionContext();
 
   if (isLoading) {
     return (

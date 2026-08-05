@@ -8,8 +8,9 @@ import { AdminLayout } from "@/app/(admin)/layout";
 import { ProtectedRoute } from "@/components/shared/protected-route";
 import { PlatformAdminRoute } from "@/components/shared/platform-admin-route";
 import { RequirePasswordChanged } from "@/components/shared/require-password-changed";
+import { InspectionLayout } from "@/app/(dashboard)/vistorias/inspection-layout";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { ROUTE_PATTERNS, ROUTES } from "@/lib/constants";
+import { ROUTE_PATTERNS, ROUTE_SLUGS, ROUTES } from "@/lib/constants";
 import { reloadOnceOnChunkLoadError } from "@/lib/chunk-load-recovery";
 
 function lazyPage(loader: () => Promise<{ Page: ComponentType }>) {
@@ -110,24 +111,30 @@ export const router = createBrowserRouter([
                 element: lazyPage(() => import("@/app/(dashboard)/vistorias/nova/page")),
               },
               {
-                path: ROUTE_PATTERNS.inspection,
-                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/page")),
-              },
-              {
-                path: ROUTE_PATTERNS.inspectionEdit,
-                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/editar/page")),
-              },
-              {
-                path: ROUTE_PATTERNS.inspectionPhotos,
-                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/fotos/page")),
-              },
-              {
-                path: ROUTE_PATTERNS.inspectionChecklist,
-                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/checklist/page")),
-              },
-              {
-                path: ROUTE_PATTERNS.inspectionReport,
-                element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/laudo/page")),
+                path: `${ROUTE_SLUGS.inspections}/:id`,
+                element: <InspectionLayout />,
+                children: [
+                  {
+                    index: true,
+                    element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/page")),
+                  },
+                  {
+                    path: ROUTE_SLUGS.edit,
+                    element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/editar/page")),
+                  },
+                  {
+                    path: ROUTE_SLUGS.photos,
+                    element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/fotos/page")),
+                  },
+                  {
+                    path: ROUTE_SLUGS.checklist,
+                    element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/checklist/page")),
+                  },
+                  {
+                    path: ROUTE_SLUGS.report,
+                    element: lazyPage(() => import("@/app/(dashboard)/vistorias/[id]/laudo/page")),
+                  },
+                ],
               },
               {
                 path: ROUTES.financial,

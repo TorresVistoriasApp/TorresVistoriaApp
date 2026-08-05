@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, FileText } from "lucide-react";
 import { ChecklistForm, validateChecklistCompletion } from "@/components/forms/checklist-form";
 import {
@@ -13,8 +13,8 @@ import {
   InspectionWizardShell,
   WizardNavButtons,
 } from "@/components/vistoria/inspection-wizard-shell";
-import { useInspectionChecklist, useUpdateChecklistItem } from "@/hooks/use-checklist";
-import { useInspection } from "@/hooks/use-inspection";
+import { useUpdateChecklistItem } from "@/hooks/use-checklist";
+import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { useUpdateInspection } from "@/hooks/use-inspections";
 import { Button } from "@/components/ui/button";
 import { ChecklistStatus, InspectionStatus } from "@/lib/enums";
@@ -23,14 +23,17 @@ import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
 import type { VistoriaInput } from "@/schemas/vistoria";
 
 export function Page() {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
-  const { data: inspection } = useInspection(id);
-  const { data: items = [], isLoading } = useInspectionChecklist(id);
-  const updateItem = useUpdateChecklistItem(id!);
-  const updateInspection = useUpdateInspection(id!);
+  const {
+    inspectionId,
+    inspection,
+    checklist: items,
+    isLoadingChecklist: isLoading,
+  } = useInspectionContext();
+  const updateItem = useUpdateChecklistItem(inspectionId);
+  const updateInspection = useUpdateInspection(inspectionId);
   const { toast } = useToast();
   const [parecerErrors, setParecerErrors] = useState<
     Partial<Record<keyof ParecerTecnicoValue, string>>
@@ -46,7 +49,7 @@ export function Page() {
 
   const persistParecer = useCallback(
     (value: ParecerTecnicoValue) => {
-      if (!id) return;
+      if (!inspectionId) return;
       updateInspection.mutate(
         {
           opinion: (value.opinion || null) as VistoriaInput["opinion"],
@@ -59,7 +62,7 @@ export function Page() {
         },
       );
     },
-    [id, toast, updateInspection],
+    [inspectionId, toast, updateInspection],
   );
 
   const [parecer, setParecer] = useParecerTecnicoDraft(initialParecer, persistParecer);
@@ -110,7 +113,7 @@ export function Page() {
       return;
     }
 
-    if (!id) return;
+    if (!inspectionId) return;
 
     updateInspection.mutate(
       {
@@ -119,7 +122,7 @@ export function Page() {
       },
       {
         onSuccess: () => {
-          const path = ROUTES.inspectionReport(id);
+          const path = ROUTES.inspectionReport(inspectionId);
           navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
         },
         onError: (err) => {
@@ -173,7 +176,7 @@ export function Page() {
         <div className="border-t border-border pt-4 md:pt-2">
           {isWizardFlow ? (
             <WizardNavButtons
-              onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)))}
+              onBack={() => navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId)))}
               onNext={goToLaudo}
               nextLabel="Revisar e gerar laudo"
               nextDisabled={updateInspection.isPending}
@@ -198,7 +201,7 @@ export function Page() {
     return (
       <InspectionWizardShell
         currentStep={3}
-        inspectionId={id}
+        inspectionId={inspectionId}
         showDraftBanner={inspection?.status === InspectionStatus.DRAFT}
         draftExpiresAt={inspection?.draft_expires_at}
       >
@@ -214,7 +217,7 @@ export function Page() {
           variant="ghost"
           size="icon"
           className="touch-target shrink-0"
-          onClick={() => id && navigate(ROUTES.inspection(id))}
+          onClick={() => navigate(ROUTES.inspection(inspectionId))}
           aria-label="Voltar para vistoria"
         >
           <ArrowLeft className="h-5 w-5" />
