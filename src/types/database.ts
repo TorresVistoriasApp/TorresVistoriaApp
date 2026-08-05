@@ -250,6 +250,36 @@ export type Database = {
           },
         ]
       }
+      legacy_storage_path_map: {
+        Row: {
+          bucket_id: string
+          old_path: string
+          new_path: string
+          entity_table: string | null
+          entity_id: string | null
+          migrated_at: string | null
+          created_at: string
+        }
+        Insert: {
+          bucket_id: string
+          old_path: string
+          new_path: string
+          entity_table?: string | null
+          entity_id?: string | null
+          migrated_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          bucket_id?: string
+          old_path?: string
+          new_path?: string
+          entity_table?: string | null
+          entity_id?: string | null
+          migrated_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       inspection_checklists: {
         Row: {
           category: string
@@ -1384,6 +1414,14 @@ export type Database = {
     Functions: {
       cleanup_expired_inspection_drafts: { Args: never; Returns: number }
       get_dashboard_stats: { Args: { p_company_id: string }; Returns: Json }
+      get_migration_health_report: {
+        Args: { p_company_id?: string }
+        Returns: Json
+      }
+      mark_storage_path_migrated: {
+        Args: { p_bucket_id: string; p_old_path: string }
+        Returns: undefined
+      }
       get_financial_summary: {
         Args: { p_company_id: string; p_end_date: string; p_start_date: string }
         Returns: Json
