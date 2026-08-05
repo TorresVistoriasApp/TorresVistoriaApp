@@ -1,9 +1,8 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VistoriaForm } from "@/components/forms/vistoria-form";
-import { InspectionWizardShell } from "@/components/vistoria/inspection-wizard-shell";
 import { DraftAutoSaveBanner } from "@/features/draft/components/draft-auto-save-banner";
 import { useAutoSaveInspection } from "@/features/draft/hooks/use-auto-save-inspection";
 import { rememberActiveDraftId } from "@/features/draft/services/draft-service";
@@ -21,7 +20,6 @@ import { InspectionStatus } from "@/lib/enums";
 import type { VistoriaInput } from "@/schemas/vistoria";
 
 const EDIT_FORM_ID = "edit-vistoria-form";
-const WIZARD_FORM_ID = "wizard-vistoria-form";
 
 export function Page() {
   const navigate = useNavigate();
@@ -38,6 +36,11 @@ export function Page() {
 
   const isDraft = inspection?.status === InspectionStatus.DRAFT;
 
+  useEffect(() => {
+    if (!isWizardFlow || !inspectionId) return;
+    navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId)), { replace: true });
+  }, [inspectionId, isWizardFlow, navigate]);
+
   const handleAutoSave = useCallback(
     (data: Partial<VistoriaInput>) => {
       if (!inspectionId || !isDraft) return;
@@ -46,7 +49,7 @@ export function Page() {
     [inspectionId, isDraft, scheduleSave],
   );
 
-  if (isLoading || !inspection) {
+  if (isLoading || !inspection || isWizardFlow) {
     return (
       <div className="flex justify-center py-12">
         <LoadingSpinner />
@@ -59,10 +62,6 @@ export function Page() {
       await update.mutateAsync(prepareVistoriaFormForSave(data) as VistoriaInput);
       if (!inspectionId) return;
       rememberActiveDraftId(inspectionId);
-      if (isWizardFlow) {
-        navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId)));
-        return;
-      }
       navigate(ROUTES.inspection(inspectionId));
     } catch (err) {
       toast(err instanceof Error ? err.message : "Erro ao salvar vistoria");
@@ -82,44 +81,19 @@ export function Page() {
         />
       )}
       <VistoriaForm
-        formId={isWizardFlow ? WIZARD_FORM_ID : EDIT_FORM_ID}
+        formId={EDIT_FORM_ID}
         defaultValues={formatVistoriaFormDefaults(inspection)}
         onSubmit={handleSubmit}
-        submitLabel={
-          isWizardFlow
-            ? update.isPending
-              ? "Salvando..."
-              : "Continuar para fotos"
-            : "Salvar"
-        }
+        submitLabel={update.isPending ? "Salvando..." : "Salvar"}
         showInternalNotes={can("inspections.read.all")}
-        wizardMode={isWizardFlow}
-        stickyActions={!isWizardFlow}
+        stickyActions
         enableAutoSave={isDraft}
         onAutoSave={handleAutoSave}
-        onBack={isWizardFlow ? () => navigate(ROUTES.inspections) : handleCancelEdit}
-        backLabel={isWizardFlow ? "Voltar" : "Descartar"}
+        onBack={handleCancelEdit}
+        backLabel="Descartar"
       />
     </>
   );
-
-  if (isWizardFlow) {
-    return (
-      <InspectionWizardShell
-        currentStep={1}
-        inspectionId={inspectionId}
-        title={`Vistoria #${inspection.inspection_number}`}
-        formId={WIZARD_FORM_ID}
-        submitLabel="Continuar para fotos"
-        isSubmitting={update.isPending}
-        onCancel={() => navigate(ROUTES.inspections)}
-        showDraftBanner={isDraft}
-        draftExpiresAt={inspection.draft_expires_at}
-      >
-        {form}
-      </InspectionWizardShell>
-    );
-  }
 
   return (
     <div className="space-y-4 md:space-y-6">

@@ -200,8 +200,9 @@ export function Page() {
   if (isWizardFlow) {
     return (
       <InspectionWizardShell
-        currentStep={3}
+        currentStep={2}
         inspectionId={inspectionId}
+        title="Avaliação técnica"
         showDraftBanner={inspection?.status === InspectionStatus.DRAFT}
         draftExpiresAt={inspection?.draft_expires_at}
       >
