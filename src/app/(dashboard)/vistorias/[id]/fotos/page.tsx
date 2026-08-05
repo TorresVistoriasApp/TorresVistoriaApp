@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ClipboardList } from "lucide-react";
 import { computeCaptureProgress, PhotoSlotGrid } from "@/components/photos/photo-slot-grid";
 import { PageHeader } from "@/components/shared/page-header";
@@ -10,10 +10,9 @@ import {
 } from "@/components/vistoria/inspection-wizard-shell";
 import {
   useDeletePhoto,
-  useInspectionPhotos,
   useUploadPhoto,
 } from "@/hooks/use-photos";
-import { useInspection } from "@/hooks/use-inspection";
+import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ROUTES, withNewInspectionFlow } from "@/lib/constants";
@@ -42,14 +41,12 @@ function prefetchGeoCoords(onReady: (coords: GeoCoords | null) => void) {
 }
 
 export function Page() {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
-  const { data: inspection } = useInspection(id);
-  const { data: photos = [], isLoading } = useInspectionPhotos(id);
-  const upload = useUploadPhoto(id!);
-  const deletePhoto = useDeletePhoto(id!);
+  const { inspectionId, inspection, photos, isLoadingPhotos: isLoading } = useInspectionContext();
+  const upload = useUploadPhoto(inspectionId);
+  const deletePhoto = useDeletePhoto(inspectionId);
   const { toast } = useToast();
   const geoRef = useRef<GeoCoords | null>(null);
 
@@ -112,8 +109,7 @@ export function Page() {
       toast("Conclua todas as fotografias obrigatórias antes de continuar.");
       return;
     }
-    if (!id) return;
-    const path = ROUTES.inspectionChecklist(id);
+    const path = ROUTES.inspectionChecklist(inspectionId);
     navigate(isWizardFlow ? withNewInspectionFlow(path) : path);
   };
 
@@ -132,7 +128,7 @@ export function Page() {
 
       {isWizardFlow ? (
         <WizardNavButtons
-          onBack={() => id && navigate(withNewInspectionFlow(ROUTES.inspectionEdit(id)))}
+          onBack={() => navigate(withNewInspectionFlow(ROUTES.inspectionEdit(inspectionId)))}
           onNext={goToChecklist}
           nextLabel="Continuar para checklist"
           nextDisabled={!captureProgress.canProceed}
@@ -155,7 +151,7 @@ export function Page() {
     return (
       <InspectionWizardShell
         currentStep={2}
-        inspectionId={id}
+        inspectionId={inspectionId}
         showDraftBanner={inspection?.status === InspectionStatus.DRAFT}
         draftExpiresAt={inspection?.draft_expires_at}
       >
@@ -171,7 +167,7 @@ export function Page() {
           variant="ghost"
           size="icon"
           className="mt-1 shrink-0"
-          onClick={() => id && navigate(ROUTES.inspection(id))}
+          onClick={() => navigate(ROUTES.inspection(inspectionId))}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>

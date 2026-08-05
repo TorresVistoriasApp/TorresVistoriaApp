@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPreviewObjectUrl } from "@/lib/compress-image";
 import { queryKeys } from "@/lib/queries";
 import { photoService, type InspectionPhoto } from "@/services/photo-service";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@/hooks/use-user";
 import { offlineStore } from "@/features/draft/lib/offline-store";
 import { useSyncStore } from "@/features/draft/stores/sync-store";
 import { syncLogger } from "@/features/draft/lib/sync-logger";
@@ -22,7 +22,7 @@ export function useInspectionPhotos(inspectionId: string | undefined) {
 
 export function useUploadPhoto(inspectionId: string) {
   const qc = useQueryClient();
-  const { profile } = useAuth();
+  const { companyId, userId } = useUser();
 
   return useMutation({
     mutationFn: ({
@@ -40,27 +40,27 @@ export function useUploadPhoto(inspectionId: string) {
       gpsAccuracy?: number | null;
       metadata?: Partial<PhotoCaptureMetadata>;
     }) => {
-      if (!profile?.company_id) throw new Error("Empresa não identificada");
+      if (!companyId) throw new Error("Empresa não identificada");
       return photoService.upload(file, {
-        companyId: profile.company_id,
+        companyId,
         inspectionId,
         category,
         latitude,
         longitude,
         gpsAccuracy,
-        uploadedBy: profile.id,
+        uploadedBy: userId,
         metadata,
       });
     },
     onMutate: async ({ file, category, latitude, longitude }) => {
-      if (!profile?.company_id) return;
+      if (!companyId) return;
 
       const blobUrl = await createPreviewObjectUrl(file);
       const optimisticId = `pending-${category}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const optimistic: InspectionPhoto = {
         id: optimisticId,
         inspection_id: inspectionId,
-        company_id: profile.company_id,
+        company_id: companyId,
         category,
         section_key: null,
         subcategory: null,
@@ -82,7 +82,7 @@ export function useUploadPhoto(inspectionId: string) {
         captured_at: new Date().toISOString(),
         device_model: null,
         device_os: null,
-        uploaded_by: profile.id,
+        uploaded_by: userId,
         status: "UPLOADING",
         damage_location: null,
         damage_category: null,
@@ -118,12 +118,12 @@ export function useUploadPhoto(inspectionId: string) {
     onError: async (error, variables, context) => {
       const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
 
-      if (isOffline && profile?.company_id && context?.optimisticId) {
+      if (isOffline && companyId && context?.optimisticId) {
         const pendingId = `offline-${variables.category}-${Date.now()}`;
         await offlineStore.queuePhotoUpload({
           id: pendingId,
           inspectionId,
-          companyId: profile.company_id,
+          companyId,
           category: variables.category,
           fileName: variables.file.name || `${Date.now()}.jpg`,
           mimeType: variables.file.type || "image/jpeg",
@@ -131,7 +131,7 @@ export function useUploadPhoto(inspectionId: string) {
           latitude: variables.latitude,
           longitude: variables.longitude,
           gpsAccuracy: variables.gpsAccuracy,
-          uploadedBy: profile.id,
+          uploadedBy: userId,
           createdAt: new Date().toISOString(),
         });
 

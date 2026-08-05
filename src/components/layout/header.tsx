@@ -1,5 +1,6 @@
 import { Car, ChevronDown, LogOut, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { NotificationBell } from "@/components/layout/notification-bell";
@@ -15,10 +16,11 @@ import { useUiStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
 
 export function Header() {
-  const { profile, signOut } = useAuth();
+  const { signOut } = useAuth();
+  const { fullName, avatarUrl } = useUser();
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen);
   const { status, pendingCount } = useSyncStatus();
-  const displayName = profile?.full_name ?? "Usuário";
+  const displayName = fullName ?? "Usuário";
 
   return (
     <>
@@ -56,7 +58,7 @@ export function Header() {
                     "sm:gap-3 sm:px-3",
                   )}
                 >
-                  <UserAvatar name={profile?.full_name} avatarUrl={profile?.avatar_url} size="sm" />
+                  <UserAvatar name={fullName} avatarUrl={avatarUrl} size="sm" />
                   <div className="hidden min-w-0 text-left md:block">
                     <p className="truncate text-sm font-semibold">{displayName}</p>
                     <p className="text-[10px] text-muted-foreground">Online</p>

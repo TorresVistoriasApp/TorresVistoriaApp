@@ -3,20 +3,20 @@ import { queryKeys } from "@/lib/queries";
 import { checklistService, type ChecklistItem } from "@/services/checklist-service";
 import type { ChecklistItemInput } from "@/schemas/checklist";
 import { invalidateInspectionQueries } from "@/lib/cache-invalidation";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@/hooks/use-user";
 
 export function useInspectionChecklist(inspectionId: string | undefined) {
-  const { profile } = useAuth();
+  const { companyId } = useUser();
 
   return useQuery({
     queryKey: queryKeys.checklist(inspectionId ?? ""),
     queryFn: async () => {
-      if (!profile?.company_id) {
+      if (!companyId) {
         return checklistService.listByInspection(inspectionId!);
       }
-      return checklistService.syncWithCatalog(inspectionId!, profile.company_id);
+      return checklistService.syncWithCatalog(inspectionId!, companyId);
     },
-    enabled: Boolean(inspectionId) && Boolean(profile?.company_id),
+    enabled: Boolean(inspectionId) && Boolean(companyId),
   });
 }
 

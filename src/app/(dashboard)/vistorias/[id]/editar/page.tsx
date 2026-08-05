@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VistoriaForm } from "@/components/forms/vistoria-form";
@@ -7,9 +7,9 @@ import { InspectionWizardShell } from "@/components/vistoria/inspection-wizard-s
 import { DraftAutoSaveBanner } from "@/features/draft/components/draft-auto-save-banner";
 import { useAutoSaveInspection } from "@/features/draft/hooks/use-auto-save-inspection";
 import { rememberActiveDraftId } from "@/features/draft/services/draft-service";
-import { useInspection } from "@/hooks/use-inspection";
+import { useInspectionContext } from "@/hooks/use-inspection-context";
 import { useUpdateInspection } from "@/hooks/use-inspections";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import { isSuperAdmin } from "@/lib/rbac";
 import {
@@ -25,27 +25,26 @@ const EDIT_FORM_ID = "edit-vistoria-form";
 const WIZARD_FORM_ID = "wizard-vistoria-form";
 
 export function Page() {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
-  const { profile } = useAuth();
+  const { profile } = useUser();
+  const { inspectionId, inspection, isLoading } = useInspectionContext();
   const { toast } = useToast();
-  const { data: inspection, isLoading } = useInspection(id);
-  const update = useUpdateInspection(id!);
+  const update = useUpdateInspection(inspectionId);
   const { scheduleSave } = useAutoSaveInspection({
-    inspectionId: id ?? "",
-    enabled: Boolean(id && inspection?.status === InspectionStatus.DRAFT),
+    inspectionId,
+    enabled: Boolean(inspection?.status === InspectionStatus.DRAFT),
   });
 
   const isDraft = inspection?.status === InspectionStatus.DRAFT;
 
   const handleAutoSave = useCallback(
     (data: Partial<VistoriaInput>) => {
-      if (!id || !isDraft) return;
+      if (!inspectionId || !isDraft) return;
       scheduleSave(data);
     },
-    [id, isDraft, scheduleSave],
+    [inspectionId, isDraft, scheduleSave],
   );
 
   if (isLoading || !inspection) {
@@ -59,21 +58,20 @@ export function Page() {
   const handleSubmit = async (data: VistoriaInput) => {
     try {
       await update.mutateAsync(prepareVistoriaFormForSave(data) as VistoriaInput);
-      if (!id) return;
-      rememberActiveDraftId(id);
+      if (!inspectionId) return;
+      rememberActiveDraftId(inspectionId);
       if (isWizardFlow) {
-        navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(id)));
+        navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspectionId)));
         return;
       }
-      navigate(ROUTES.inspection(id));
+      navigate(ROUTES.inspection(inspectionId));
     } catch (err) {
       toast(err instanceof Error ? err.message : "Erro ao salvar vistoria");
     }
   };
 
   const handleCancelEdit = () => {
-    if (!id) return;
-    navigate(ROUTES.inspection(id));
+    navigate(ROUTES.inspection(inspectionId));
   };
 
   const form = (
@@ -110,7 +108,7 @@ export function Page() {
     return (
       <InspectionWizardShell
         currentStep={1}
-        inspectionId={id}
+        inspectionId={inspectionId}
         title={`Vistoria #${inspection.inspection_number}`}
         formId={WIZARD_FORM_ID}
         submitLabel="Continuar para fotos"

@@ -1,26 +1,20 @@
+export { useUser, useUserContext } from "@/app/user-context";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useUserContext } from "@/app/user-context";
 import { queryKeys } from "@/lib/queries";
 import { userService } from "@/services/user-service";
 import type { UserRole } from "@/lib/enums";
 import type { UserProfileInput } from "@/schemas/user";
-import { useAuth } from "@/hooks/use-auth";
 import { invalidateUserQueries } from "@/lib/cache-invalidation";
 
-export function useUser() {
-  const auth = useAuth();
-  return {
-    user: auth.user,
-    profile: auth.profile,
-    loading: auth.loading,
-  };
-}
-
 export function useTeamProfiles() {
-  const { profile } = useAuth();
+  const { companyId, role } = useUserContext();
+
   return useQuery({
     queryKey: queryKeys.users.team,
-    queryFn: () => userService.listTeam(profile!.company_id),
-    enabled: profile?.role === "SUPER_ADMIN" && !!profile?.company_id,
+    queryFn: () => userService.listTeam(companyId!),
+    enabled: role === "SUPER_ADMIN" && !!companyId,
   });
 }
 

@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "@/app/auth-context";
+import { useUser } from "@/app/user-context";
 import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/queries";
 import { logger } from "@/lib/logger";
@@ -18,6 +19,7 @@ import {
 } from "@/services/company-service";
 
 interface CompanyContextValue {
+  companyId: string | null;
   company: Company | null;
   settings: CompanySettings | null;
   /** Plano SaaS da empresa (`companies.subscription_plan`). */
@@ -45,8 +47,9 @@ async function loadTenantData(companyId: string): Promise<{
 }
 
 export function CompanyProvider({ children }: { children: ReactNode }) {
-  const { profile, isPlatformAdmin, loading: authLoading, session } = useAuth();
-  const companyId = profile?.company_id ?? null;
+  const { companyId, loading: userLoading, profile } = useUser();
+  const { isPlatformAdmin, session } = useAuth();
+  const resolvedCompanyId = companyId ?? profile?.company_id ?? null;
 
   const [company, setCompany] = useState<Company | null>(null);
   const [settings, setSettings] = useState<CompanySettings | null>(null);
@@ -54,7 +57,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const refreshCompany = useCallback(async () => {
-    if (!companyId || isPlatformAdmin) {
+    if (!resolvedCompanyId || isPlatformAdmin) {
       setCompany(null);
       setSettings(null);
       setError(null);
@@ -64,7 +67,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const data = await loadTenantData(companyId);
+      const data = await loadTenantData(resolvedCompanyId);
       setCompany(data.company);
       setSettings(data.settings);
     } catch (err) {
@@ -74,10 +77,10 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [companyId, isPlatformAdmin]);
+  }, [resolvedCompanyId, isPlatformAdmin]);
 
   useEffect(() => {
-    if (authLoading || !session || isPlatformAdmin || !companyId) {
+    if (userLoading || !session || isPlatformAdmin || !resolvedCompanyId) {
       setCompany(null);
       setSettings(null);
       setError(null);
@@ -89,7 +92,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
 
-    void loadTenantData(companyId)
+    void loadTenantData(resolvedCompanyId)
       .then((data) => {
         if (!isActive) return;
         setCompany(data.company);
@@ -110,10 +113,11 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     return () => {
       isActive = false;
     };
-  }, [authLoading, session, isPlatformAdmin, companyId]);
+  }, [userLoading, session, isPlatformAdmin, resolvedCompanyId]);
 
   const value = useMemo(
     () => ({
+      companyId: resolvedCompanyId,
       company,
       settings,
       plan: company?.subscription_plan ?? null,
@@ -121,7 +125,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       error,
       refreshCompany,
     }),
-    [company, settings, loading, error, refreshCompany],
+    [resolvedCompanyId, company, settings, loading, error, refreshCompany],
   );
 
   return <CompanyContext.Provider value={value}>{children}</CompanyContext.Provider>;
