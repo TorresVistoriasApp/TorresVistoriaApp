@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { partitionSupportedFiles } from "@/lib/pick-image-files";
+import { partitionSupportedFiles } from "@/shared/lib/pick-image-files";
 
 describe("pick-image-files", () => {
   it("separa arquivos suportados dos rejeitados", () => {

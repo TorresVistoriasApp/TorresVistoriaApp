@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { selectFeaturedVehiclePhotos } from "@/lib/photos/pdf-photo-layout";
-import type { LaudoPhoto } from "@/lib/laudo/laudo-model";
+import { selectFeaturedVehiclePhotos } from "@/modules/torres-vistoria/domain/photos/pdf-photo-layout";
+import type { LaudoPhoto } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
 
 function photo(id: string, category: string): LaudoPhoto {
   return {

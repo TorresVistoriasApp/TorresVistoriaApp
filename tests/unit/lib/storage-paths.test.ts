@@ -3,7 +3,7 @@ import {
   buildInspectionPhotoPath,
   buildInspectionPhotoThumbnailPath,
   buildReportStoragePath,
-} from "@/lib/storage-paths";
+} from "@/infra/storage/paths";
 
 const COMPANY_ID = "00000000-0000-4000-8000-000000000001";
 const INSPECTION_ID = "95968fbc-36d7-4e21-a4ad-dabc9390c390";

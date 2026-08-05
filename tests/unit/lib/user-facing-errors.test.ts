@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatUserFacingError } from "@/lib/user-facing-errors";
+import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 
 describe("formatUserFacingError", () => {
   it("traduz e-mail já cadastrado para português formal", () => {

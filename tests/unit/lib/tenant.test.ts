@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { requireCompanyId, requireUserId } from "@/lib/tenant";
+import { requireCompanyId, requireUserId } from "@/core/tenant/tenant";
 
 describe("tenant helpers", () => {
   it("requireCompanyId aceita id válido", () => {

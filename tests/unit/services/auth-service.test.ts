@@ -9,14 +9,14 @@ const { mockAuth, mockFrom } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
 }));
 
-vi.mock("@/lib/db-client", () => ({
+vi.mock("@/infra/supabase/client", () => ({
   db: {
     auth: mockAuth,
     from: mockFrom,
   },
 }));
 
-import { authService } from "@/services/auth-service";
+import { authService } from "@/core/auth/auth-service";
 
 describe("authService", () => {
   beforeEach(() => {

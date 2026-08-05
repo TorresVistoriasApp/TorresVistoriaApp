@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PDFDocument } from "pdf-lib";
-import { optimizePdfBlob } from "@/lib/optimize-pdf";
+import { optimizePdfBlob } from "@/shared/lib/optimize-pdf";
 
 describe("optimizePdfBlob", () => {
   it("remove metadados identificáveis e preserva o número de páginas", async () => {

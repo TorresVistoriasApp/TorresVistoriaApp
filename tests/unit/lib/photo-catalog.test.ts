@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   PHOTO_CAPTURE_SECTIONS,
   PHOTO_CATALOG,
-} from "@/lib/photos/photo-catalog";
-import { groupPhotosBySection } from "@/lib/photos/pdf-photo-layout";
-import type { LaudoPhoto } from "@/lib/laudo/laudo-model";
+} from "@/modules/torres-vistoria/domain/photos/photo-catalog";
+import { groupPhotosBySection } from "@/modules/torres-vistoria/domain/photos/pdf-photo-layout";
+import type { LaudoPhoto } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
 
 describe("PHOTO_CAPTURE_SECTIONS", () => {
   it("define 13 etapas na ordem do percurso físico", () => {

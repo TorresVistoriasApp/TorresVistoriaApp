@@ -3,7 +3,7 @@ import {
   getCompanyInitials,
   getCompanyPlanLabel,
   getCompanyStatusLabel,
-} from "@/lib/company-display";
+} from "@/core/tenant/company-display";
 
 describe("company-display", () => {
   it("getCompanyInitials gera iniciais do nome fantasia", () => {

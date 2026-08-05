@@ -4,8 +4,8 @@ import {
   createPermissionCheckerWithGrants,
   PermissionService,
   resolvePermissionsForRole,
-} from "@/services/permission-service";
-import { UserRole } from "@/lib/enums";
+} from "@/core/rbac/permission-service";
+import { UserRole } from "@/core/rbac/roles";
 
 describe("permission-service", () => {
   it("SUPER_ADMIN recebe permissões administrativas", () => {

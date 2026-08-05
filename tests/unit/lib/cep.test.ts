@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildCompanyAddress, buildCompanyLocation, normalizeCep } from "@/lib/cep";
-import { maskCep } from "@/lib/masks";
+import { buildCompanyAddress, buildCompanyLocation, normalizeCep } from "@/shared/lib/cep";
+import { maskCep } from "@/shared/lib/masks";
 
 describe("maskCep", () => {
   it("formata CEP com hífen", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sanitizeEmail, sanitizePlate, sanitizeText } from "@/lib/sanitize";
+import { sanitizeEmail, sanitizePlate, sanitizeText } from "@/shared/lib/sanitize";
 
 describe("sanitize", () => {
   it("remove tags HTML", () => {

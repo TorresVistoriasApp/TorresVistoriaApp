@@ -1,0 +1,68 @@
+import { createBrowserRouter, Navigate, type RouteObject } from "react-router-dom";
+import { ROUTES } from "@/config/routes";
+import { RootLayout } from "@/layouts/root-layout";
+import { AuthLayout } from "@/layouts/auth-layout";
+import { PublicLayout } from "@/layouts/public-layout";
+import { ClientLayout } from "@/layouts/client-layout";
+import { AdminLayout } from "@/layouts/admin-layout";
+import { ProtectedRoute } from "@/routes/guards/protected-route";
+import { PlatformAdminRoute } from "@/routes/guards/platform-admin-route";
+import { RequirePasswordChanged } from "@/routes/guards/require-password-changed";
+import type { ModuleRoutes } from "@/routes/route-contract";
+import { authRoutes } from "@/core/auth/routes";
+import { complianceRoutes } from "@/core/compliance/routes";
+import { torresVistoriaRoutes } from "@/modules/torres-vistoria/routes";
+import { torresConsultaRoutes } from "@/modules/torres-consulta/routes";
+import { adminRoutes } from "@/modules/admin/routes";
+
+/**
+ * Registro de módulos da aplicação.
+ *
+ * Adicionar um produto ao Ecossistema Torres significa acrescentar uma entrada
+ * aqui — nenhum layout, guarda ou módulo existente precisa ser tocado.
+ */
+const MODULES: ModuleRoutes[] = [
+  authRoutes,
+  complianceRoutes,
+  torresVistoriaRoutes,
+  torresConsultaRoutes,
+  adminRoutes,
+];
+
+const collect = (area: keyof ModuleRoutes): RouteObject[] =>
+  MODULES.flatMap((module) => module[area] ?? []);
+
+export const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      { path: ROUTES.legacyDashboard, element: <Navigate to={ROUTES.dashboard} replace /> },
+
+      // Área pública — sem sessão.
+      { element: <PublicLayout />, children: collect("public") },
+
+      // Área de autenticação — sem sessão, shell mínimo.
+      { element: <AuthLayout />, children: collect("auth") },
+
+      // Área administrativa da plataforma — operador do SaaS.
+      {
+        element: <PlatformAdminRoute />,
+        children: [{ element: <AdminLayout />, children: collect("platform") }],
+      },
+
+      // Área autenticada do tenant.
+      {
+        element: <ProtectedRoute />,
+        children: [
+          ...collect("standalone"),
+          {
+            element: <RequirePasswordChanged />,
+            children: [{ element: <ClientLayout />, children: collect("client") }],
+          },
+        ],
+      },
+
+      { path: "*", element: <Navigate to={ROUTES.dashboard} replace /> },
+    ],
+  },
+]);

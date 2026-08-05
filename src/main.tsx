@@ -1,9 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
-import { router } from "@/app/router";
-import { reloadOnceOnChunkLoadError, clearChunkReloadFlag } from "@/lib/chunk-load-recovery";
-import { getMissingProductionEnvVars, validateEnv } from "@/lib/env";
+import { router } from "@/routes/router";
+import { reloadOnceOnChunkLoadError, clearChunkReloadFlag } from "@/shared/lib/chunk-load-recovery";
+import { getMissingProductionEnvVars, validateEnv } from "@/config/env";
+import { bootstrapIntegrations } from "@/infra/integrations/bootstrap";
 import "@/styles/globals.css";
 
 if (typeof window !== "undefined") {
@@ -64,6 +65,7 @@ if (missingEnv.length > 0) {
   renderConfigError(missingEnv);
 } else {
   validateEnv();
+  bootstrapIntegrations();
   clearChunkReloadFlag();
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

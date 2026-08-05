@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isCanonicalInspectionPhotoPath,
   isCanonicalReportPath,
-} from "@/lib/legacy-migration";
+} from "@/modules/torres-vistoria/domain/legacy-migration";
 
 const COMPANY = "00000000-0000-4000-8000-000000000001";
 const INSPECTION = "11111111-1111-4111-8111-111111111111";

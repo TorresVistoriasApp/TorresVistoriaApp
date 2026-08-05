@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { PermissionService } from "@/services/permission-service";
-import { UserRole } from "@/lib/enums";
+import { PermissionService } from "@/core/rbac/permission-service";
+import { UserRole } from "@/core/rbac/roles";
 
 describe("dashboard scope permissions", () => {
   it("SUPER_ADMIN enxerga visão da empresa", () => {

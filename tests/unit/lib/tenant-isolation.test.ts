@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { UserRole } from "@/lib/enums";
-import { queryKeys } from "@/lib/queries";
+import { UserRole } from "@/core/rbac/roles";
+import { queryKeys } from "@/infra/supabase/queries";
 import {
   canAccessAuditLog,
   canAccessFinancialRow,
@@ -9,7 +9,7 @@ import {
   isCrossTenantStoragePath,
   storagePathBelongsToCompany,
   type TenantSession,
-} from "@/lib/tenant-isolation";
+} from "@/core/tenant/tenant-isolation";
 
 const COMPANY_A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const COMPANY_B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";

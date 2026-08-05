@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { InspectionOpinion } from "@/lib/enums";
+import { InspectionOpinion } from "@/modules/torres-vistoria/domain/enums";
 import {
   getInspectionOpinionLabel,
   isOpinionReproved,
   isOpinionWithObservations,
-} from "@/lib/inspection-opinion-labels";
+} from "@/modules/torres-vistoria/domain/inspection-opinion-labels";
 
 describe("getInspectionOpinionLabel", () => {
   it("usa os rótulos do checklist no PDF", () => {
