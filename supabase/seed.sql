@@ -28,7 +28,12 @@ INSERT INTO public.permissions (code, name, description) VALUES
   ('financial.manage', 'Gerenciar financeiro', 'CRUD de lançamentos financeiros'),
   ('reports.export', 'Exportar relatórios', 'Exportar PDF, Excel e CSV'),
   ('settings.manage', 'Gerenciar configurações', 'Alterar dados da empresa e tema'),
-  ('users.manage', 'Gerenciar usuários', 'CRUD de usuários e convites')
+  ('users.manage', 'Gerenciar usuários', 'CRUD de usuários e convites'),
+  ('financial.read.own', 'Ver próprio financeiro', 'Visualizar receitas das próprias vistorias'),
+  ('consulta.create', 'Criar consultas veiculares', 'Solicitar consultas de placa ou chassi'),
+  ('consulta.read.own', 'Ver próprias consultas', 'Visualizar o histórico do próprio usuário'),
+  ('consulta.read.all', 'Ver todas as consultas', 'Visualizar o histórico de toda a empresa'),
+  ('consulta.credits.manage', 'Gerenciar créditos', 'Comprar créditos e administrar o saldo')
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO public.role_permissions (role_id, permission_id)
@@ -38,6 +43,6 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO public.role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM public.roles r
-JOIN public.permissions p ON p.code IN ('inspections.create','inspections.read.own','inspections.update.own','reports.export')
+JOIN public.permissions p ON p.code IN ('inspections.create','inspections.read.own','inspections.update.own','reports.export','financial.read.own','consulta.create','consulta.read.own')
 WHERE r.code = 'INSPECTOR'
 ON CONFLICT DO NOTHING;

@@ -4,7 +4,11 @@ import { UserRole } from "@/core/rbac/roles";
 import { PERMISSIONS } from "@/core/rbac/permissions";
 
 /**
- * Garante que PERMISSIONS no frontend está alinhado ao seed do banco (9 códigos).
+ * Garante que PERMISSIONS no frontend está alinhado ao seed do banco.
+ *
+ * Uma permissão que existe só de um lado é pior do que não existir: a UI libera
+ * a ação e o RLS nega (ou o inverso). Ao criar um código novo, adicione-o aqui e
+ * na migration correspondente.
  */
 describe("RBAC seed alignment", () => {
   const dbPermissionCodes = [
@@ -17,9 +21,13 @@ describe("RBAC seed alignment", () => {
     "reports.export",
     "settings.manage",
     "users.manage",
+    "consulta.create",
+    "consulta.read.own",
+    "consulta.read.all",
+    "consulta.credits.manage",
   ] as const;
 
-  it("mapeia os 9 códigos do seed", () => {
+  it("mapeia os códigos do seed", () => {
     expect(Object.keys(PERMISSIONS).sort()).toEqual([...dbPermissionCodes].sort());
   });
 
@@ -33,6 +41,8 @@ describe("RBAC seed alignment", () => {
       "inspections.update.own",
       "financial.read.own",
       "reports.export",
+      "consulta.create",
+      "consulta.read.own",
     ]);
   });
 });

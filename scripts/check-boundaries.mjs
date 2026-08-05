@@ -1,3 +1,21 @@
+/**
+ * Verifica as fronteiras entre as camadas da arquitetura.
+ *
+ * O ESLint já bloqueia a maioria dos casos durante a edição; este script existe
+ * para o CI ter uma checagem independente do editor, e para descrever as regras
+ * em um único lugar legível:
+ *
+ *   config  <- não depende de ninguém
+ *   core    <- config, shared
+ *   infra   <- config, core, shared
+ *   shared  <- config e ele mesmo (nunca core, infra, modules, layouts, routes)
+ *   modules <- tudo acima; entre módulos, só pelo barrel público
+ *   layouts/routes/providers <- tudo acima
+ *
+ * A regra do barrel é a mais importante: um módulo pode consumir outro, mas só
+ * pelo que ele decidiu expor em `index.ts`. Importar um arquivo interno
+ * transforma detalhe de implementação em contrato e trava refatorações.
+ */
 import fs from "node:fs";
 import path from "node:path";
 
@@ -23,18 +41,17 @@ for (const file of walk(SRC)) {
   for (const match of code.matchAll(/from "(@\/[^"]+)"/g)) {
     const spec = match[1];
     const targetModule = spec.match(/^@\/modules\/([^/]+)/)?.[1];
+    const isPublicBarrel = spec === `@/modules/${targetModule}`;
     let reason = null;
 
-    const isPublicBarrel = spec === `@/modules/${targetModule}`;
-
     if (owner && targetModule && targetModule !== owner && !isPublicBarrel) {
-      reason = `cross-module fora do barrel: ${owner} -> ${targetModule}`;
+      reason = `import interno entre módulos: ${owner} -> ${targetModule}`;
     } else if (!owner && targetModule && ["shared", "core", "infra", "config"].includes(layer)) {
-      reason = `${layer} -> modules/${targetModule}`;
+      reason = `${layer} não pode depender de módulos (${targetModule})`;
     } else if (layer === "shared" && /^@\/(core|infra|layouts|routes)\//.test(spec)) {
-      reason = `shared -> ${spec.split("/")[1]}`;
+      reason = `shared não pode depender de ${spec.split("/")[1]}`;
     } else if (layer === "core" && /^@\/layouts\//.test(spec)) {
-      reason = "core -> layouts";
+      reason = "core não pode depender de layouts";
     }
 
     if (reason) {
@@ -44,8 +61,13 @@ for (const file of walk(SRC)) {
   }
 }
 
-for (const [reason, files] of [...violations].sort()) {
-  console.log(`\n== ${reason} (${files.length})`);
-  for (const f of files.slice(0, 8)) console.log("   " + f);
+if (!violations.size) {
+  console.log("Fronteiras da arquitetura: OK");
+  process.exit(0);
 }
-if (!violations.size) console.log("Nenhuma violação de fronteira.");
+
+for (const [reason, files] of [...violations].sort()) {
+  console.error(`\n${reason} (${files.length})`);
+  for (const f of files) console.error("   " + f);
+}
+process.exit(1);

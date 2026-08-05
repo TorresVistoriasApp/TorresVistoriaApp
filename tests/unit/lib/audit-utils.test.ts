@@ -3,8 +3,8 @@ import {
   computeAuditStats,
   getAuditMetadataEntries,
   getAuditSummary,
-  isAppAuditAction,
-} from "@/core/audit/audit-utils";
+} from "@/modules/admin/audit/utils/audit-presentation";
+import { isAppAuditAction } from "@/core/audit/audit-actions";
 import type { AuditLog } from "@/core/audit/audit-service";
 
 function makeLog(overrides: Partial<AuditLog>): AuditLog {

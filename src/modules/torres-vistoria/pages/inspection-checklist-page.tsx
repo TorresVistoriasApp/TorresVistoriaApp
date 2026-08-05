@@ -8,7 +8,8 @@ import { useUpdateChecklistItem } from "@/modules/torres-vistoria/hooks/use-chec
 import { useInspectionContext } from "@/modules/torres-vistoria/hooks/use-inspection-context";
 import { useUpdateInspection } from "@/modules/torres-vistoria/hooks/use-inspections";
 import { Button } from "@/shared/ui/button";
-import { ChecklistStatus, InspectionStatus } from "@/modules/torres-vistoria/domain/enums";
+import type { ChecklistStatus} from "@/modules/torres-vistoria/domain/enums";
+import { InspectionStatus } from "@/modules/torres-vistoria/domain/enums";
 import { useToast } from "@/shared/hooks/use-toast";
 import { ROUTES, withNewInspectionFlow } from "@/config/routes";
 import { rememberActiveDraftId } from "@/modules/torres-vistoria/draft/services/draft-service";

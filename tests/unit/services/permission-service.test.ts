@@ -26,13 +26,11 @@ describe("permission-service", () => {
     expect(resolvePermissionsForRole(undefined)).toEqual([]);
   });
 
-  it("createPermissionChecker expõe API unificada", () => {
+  it("createPermissionChecker responde por permissão, não por papel", () => {
     const checker = createPermissionChecker(UserRole.INSPECTOR);
     expect(checker.has("inspections.create")).toBe(true);
     expect(checker.has("financial.manage")).toBe(false);
     expect(checker.hasAny("inspections.create", "financial.manage")).toBe(true);
-    expect(checker.hasRole(UserRole.INSPECTOR)).toBe(true);
-    expect(checker.hasAnyRole([UserRole.SUPER_ADMIN, UserRole.INSPECTOR])).toBe(true);
     expect(checker.isInspector).toBe(true);
     expect(checker.isSuperAdmin).toBe(false);
     expect(checker.canViewInspection("inspector-1", "inspector-1")).toBe(true);

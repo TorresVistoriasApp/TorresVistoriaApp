@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lint:architecture": "node scripts/check-boundaries.mjs",
+    "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
     "test": "vitest",
     "test:isolation": "vitest run tests/unit/lib/tenant-isolation.test.ts tests/integration/tenant-rls-contract.test.ts",

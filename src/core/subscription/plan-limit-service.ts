@@ -1,7 +1,8 @@
 import type { Permission } from "@/core/rbac/permissions";
 import { getPlanLimits } from "@/core/subscription/plan-catalog";
+import type {
+  SaasFeature} from "@/core/subscription/types";
 import {
-  SaasFeature,
   type PlanLimitCheck,
   type PlanUsageSnapshot,
 } from "@/core/subscription/types";
