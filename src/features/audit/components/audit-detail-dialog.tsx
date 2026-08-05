@@ -8,8 +8,10 @@ import {
 import { AuditActionBadge } from "@/features/audit/components/audit-action-badge";
 import {
   getAuditChanges,
+  getAuditMetadataEntries,
   getAuditSummary,
   getEntityLabel,
+  isAppAuditAction,
 } from "@/lib/audit-utils";
 import { formatDateTime } from "@/lib/formatters";
 import type { AuditLogWithUser } from "@/services/audit-service";
@@ -36,7 +38,9 @@ export function AuditDetailDialog({ log, open, onOpenChange }: AuditDetailDialog
   if (!log) return null;
 
   const changes = getAuditChanges(log.old_data, log.new_data);
+  const metadataEntries = getAuditMetadataEntries(log.new_data);
   const summary = getAuditSummary(log);
+  const isAppEvent = isAppAuditAction(log.action);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,7 +68,16 @@ export function AuditDetailDialog({ log, open, onOpenChange }: AuditDetailDialog
             )}
           </dl>
 
-          {changes.length > 0 ? (
+          {isAppEvent && metadataEntries.length > 0 ? (
+            <div className="mt-5 space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Detalhes do evento</h3>
+              <dl className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+                {metadataEntries.map((entry) => (
+                  <MetadataRow key={entry.label} label={entry.label} value={entry.value} />
+                ))}
+              </dl>
+            </div>
+          ) : changes.length > 0 ? (
             <div className="mt-5 space-y-3">
               <h3 className="text-sm font-semibold text-foreground">
                 {log.action === "UPDATE" ? "Campos alterados" : "Dados registrados"}

@@ -1,5 +1,6 @@
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
 import { optimizePdfBlob } from "@/lib/optimize-pdf";
+import { logAuditEvent } from "@/lib/audit-events";
 
 type ExportPdfColumn<T> = {
   header: string;
@@ -94,4 +95,8 @@ export async function exportToPdf<T extends Record<string, unknown>>(
   });
   const optimized = await optimizePdfBlob(rawBlob);
   triggerDownload(optimized, filename);
+  logAuditEvent("EXPORT_PDF", {
+    entityType: "export",
+    metadata: { filename, title, subtitle, rowCount: rows.length },
+  });
 }

@@ -3,8 +3,35 @@ import { getChecklistStatusLabel } from "@/lib/checklist-status";
 import { ChecklistStatus } from "@/lib/enums";
 import type { AuditLog } from "@/services/audit-service";
 
-export const AUDIT_ACTIONS = ["INSERT", "UPDATE", "DELETE"] as const;
+export const AUDIT_ACTIONS = [
+  "INSERT",
+  "UPDATE",
+  "DELETE",
+  "LOGIN",
+  "LOGOUT",
+  "EXPORT_PDF",
+  "EXPORT_EXCEL",
+] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+
+export const AUDIT_DML_ACTIONS = ["INSERT", "UPDATE", "DELETE"] as const;
+export type AuditDmlAction = (typeof AUDIT_DML_ACTIONS)[number];
+
+export const AUDIT_APP_ACTIONS = [
+  "LOGIN",
+  "LOGOUT",
+  "EXPORT_PDF",
+  "EXPORT_EXCEL",
+] as const;
+export type AuditAppAction = (typeof AUDIT_APP_ACTIONS)[number];
+
+export function isAppAuditAction(action: string): action is AuditAppAction {
+  return (AUDIT_APP_ACTIONS as readonly string[]).includes(action);
+}
+
+export function isDmlAuditAction(action: string): action is AuditDmlAction {
+  return (AUDIT_DML_ACTIONS as readonly string[]).includes(action);
+}
 
 export const ENTITY_LABELS: Record<string, string> = {
   inspections: "Vistoria",
@@ -17,18 +44,30 @@ export const ENTITY_LABELS: Record<string, string> = {
   inspection_checklists: "Checklist",
   inspection_comments: "Comentário",
   notifications: "Notificação",
+  inspection_types: "Tipo de vistoria",
+  app: "Aplicação",
+  export: "Exportação",
+  auth: "Autenticação",
 };
 
 export const ACTION_LABELS: Record<AuditAction, string> = {
   INSERT: "Criação",
   UPDATE: "Alteração",
   DELETE: "Exclusão",
+  LOGIN: "Login",
+  LOGOUT: "Logout",
+  EXPORT_PDF: "Exportação PDF",
+  EXPORT_EXCEL: "Exportação Excel",
 };
 
 export const ACTION_STYLES: Record<AuditAction, string> = {
   INSERT: "bg-emerald-500/10 text-emerald-700 border-emerald-500/25",
   UPDATE: "bg-amber-500/10 text-amber-700 border-amber-500/25",
   DELETE: "bg-red-500/10 text-red-600 border-red-500/25",
+  LOGIN: "bg-sky-500/10 text-sky-700 border-sky-500/25",
+  LOGOUT: "bg-slate-500/10 text-slate-700 border-slate-500/25",
+  EXPORT_PDF: "bg-violet-500/10 text-violet-700 border-violet-500/25",
+  EXPORT_EXCEL: "bg-indigo-500/10 text-indigo-700 border-indigo-500/25",
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -134,6 +173,14 @@ export function getAuditChanges(
 }
 
 export function getAuditSummary(log: AuditLog): string {
+  if (log.action === "LOGIN") return "Login realizado";
+  if (log.action === "LOGOUT") return "Logout realizado";
+  if (log.action === "EXPORT_PDF" || log.action === "EXPORT_EXCEL") {
+    const meta = log.new_data as Record<string, unknown> | null;
+    const title = meta?.title ?? meta?.filename;
+    return title ? `Exportação: ${String(title)}` : "Exportação de relatório";
+  }
+
   const data = (log.new_data ?? log.old_data) as Record<string, unknown> | null;
   if (!data) return getEntityLabel(log.entity_type);
 
@@ -163,9 +210,32 @@ export function getAuditSummary(log: AuditLog): string {
       return "Configurações da empresa";
     case "inspection_reports":
       return `Laudo v${data.version ?? "—"}`;
+    case "inspection_types":
+      return String(data.name ?? "Tipo de vistoria");
     default:
       return getEntityLabel(log.entity_type);
   }
+}
+
+export function getAuditMetadataEntries(
+  data: Record<string, unknown> | null,
+): Array<{ label: string; value: string }> {
+  if (!data) return [];
+
+  const labelMap: Record<string, string> = {
+    filename: "Arquivo",
+    title: "Título",
+    subtitle: "Subtítulo",
+    rowCount: "Linhas exportadas",
+    resource: "Recurso",
+  };
+
+  return Object.entries(data)
+    .filter(([, value]) => value != null && value !== "")
+    .map(([key, value]) => ({
+      label: labelMap[key] ?? getFieldLabel(key),
+      value: formatAuditValue(value),
+    }));
 }
 
 export type AuditStats = {
@@ -174,6 +244,8 @@ export type AuditStats = {
   inserts: number;
   updates: number;
   deletes: number;
+  logins: number;
+  exports: number;
 };
 
 export function computeAuditStats(logs: AuditLog[]): AuditStats {
@@ -187,8 +259,10 @@ export function computeAuditStats(logs: AuditLog[]): AuditStats {
       if (log.action === "INSERT") acc.inserts += 1;
       else if (log.action === "UPDATE") acc.updates += 1;
       else if (log.action === "DELETE") acc.deletes += 1;
+      else if (log.action === "LOGIN") acc.logins += 1;
+      else if (log.action === "EXPORT_PDF" || log.action === "EXPORT_EXCEL") acc.exports += 1;
       return acc;
     },
-    { total: 0, today: 0, inserts: 0, updates: 0, deletes: 0 },
+    { total: 0, today: 0, inserts: 0, updates: 0, deletes: 0, logins: 0, exports: 0 },
   );
 }

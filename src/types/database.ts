@@ -1407,6 +1407,15 @@ export type Database = {
       get_user_role: { Args: never; Returns: string }
       is_super_admin: { Args: never; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
+      record_audit_event: {
+        Args: {
+          p_action: string
+          p_entity_type?: string
+          p_entity_id?: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
       search_inspections: {
         Args: {
           p_company_id: string

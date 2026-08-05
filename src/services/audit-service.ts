@@ -1,4 +1,6 @@
 import { db } from "@/lib/db-client";
+import type { AuditAppAction } from "@/lib/audit-utils";
+import type { Json } from "@/types/database";
 
 export type AuditLog = {
   id: string;
@@ -26,8 +28,16 @@ export type AuditFilters = {
   endDate?: string;
 };
 
+export type AuditEventInput = {
+  action: AuditAppAction;
+  entityType?: string;
+  entityId?: string;
+  metadata?: Record<string, unknown>;
+};
+
 export const auditService = {
   async list(
+    companyId: string | undefined,
     filters: AuditFilters = {},
     limit = 50,
     offset = 0,
@@ -46,6 +56,10 @@ export const auditService = {
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
+    if (companyId) {
+      query = query.eq("company_id", companyId);
+    }
+
     if (filters.action) query = query.eq("action", filters.action);
     if (filters.entityType) query = query.eq("entity_type", filters.entityType);
     if (filters.userId) query = query.eq("user_id", filters.userId);
@@ -62,5 +76,17 @@ export const auditService = {
       })),
       total: count ?? 0,
     };
+  },
+
+  async recordEvent(input: AuditEventInput): Promise<string | null> {
+    const { data, error } = await db.rpc("record_audit_event", {
+      p_action: input.action,
+      p_entity_type: input.entityType ?? "app",
+      p_entity_id: input.entityId ?? undefined,
+      p_metadata: (input.metadata ?? {}) as Json,
+    });
+
+    if (error) throw error;
+    return data as string | null;
   },
 };

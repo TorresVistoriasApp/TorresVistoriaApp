@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Activity, CalendarDays, Eye, Pencil, PlusCircle } from "lucide-react";
+import { Activity, CalendarDays, Download, Eye, LogIn, Pencil, PlusCircle } from "lucide-react";
 import { RequirePermission } from "@/app/require-role";
 import { PageHeader } from "@/components/shared/page-header";
 import { ExportButton } from "@/components/shared/export-button";
@@ -137,7 +137,7 @@ export function AuditPage() {
         {isLoading ? (
           <LoadingSpinner />
         ) : (
-          <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+          <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3 2xl:grid-cols-6">
             <KpiCard
               label="Total de eventos"
               value={String(stats.total)}
@@ -161,6 +161,18 @@ export function AuditPage() {
               value={String(stats.updates)}
               icon={Pencil}
               themeIndex={3}
+            />
+            <KpiCard
+              label="Logins"
+              value={String(stats.logins)}
+              icon={LogIn}
+              themeIndex={0}
+            />
+            <KpiCard
+              label="Exportações"
+              value={String(stats.exports)}
+              icon={Download}
+              themeIndex={1}
             />
           </div>
         )}
