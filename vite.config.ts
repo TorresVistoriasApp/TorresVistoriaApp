@@ -27,6 +27,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: false,
       includeAssets: [
         "images/favicon/favicon.ico",
         "images/favicon/favicon-16x16.png",
@@ -59,6 +60,21 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [0, 200],
               },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/images/consultations/"),
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "consultation-images",
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+              networkTimeoutSeconds: 5,
             },
           },
           {
