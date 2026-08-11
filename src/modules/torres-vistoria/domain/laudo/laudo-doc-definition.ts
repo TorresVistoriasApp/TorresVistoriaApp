@@ -277,8 +277,7 @@ function buildBrandIdentityColumn(
       payload.logoDataUrl
         ? {
             image: payload.logoDataUrl,
-            width: HEADER_BRAND_LOGO_WIDTH,
-            height: HEADER_BRAND_LOGO_HEIGHT,
+            fit: [HEADER_BRAND_LOGO_WIDTH, HEADER_BRAND_LOGO_HEIGHT],
             margin: [0, 0, 0, 0],
           }
         : {
