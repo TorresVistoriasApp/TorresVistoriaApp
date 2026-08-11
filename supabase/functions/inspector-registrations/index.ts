@@ -1,0 +1,198 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
+import { jsonErrorResponse } from "../_shared/auth-errors.ts";
+import { requirePlatformAdmin } from "../_shared/require-platform-admin.ts";
+
+const ALLOWED_ROLES = ["SUPER_ADMIN", "INSPECTOR"] as const;
+type AllowedRole = (typeof ALLOWED_ROLES)[number];
+
+function normalizeDocumentDigits(value: string | null | undefined): string {
+  return String(value ?? "").replace(/\D/g, "");
+}
+
+async function hashDocumentDigits(digits: string): Promise<string> {
+  const data = new TextEncoder().encode(digits);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  try {
+    const auth = await requirePlatformAdmin(req);
+    if ("error" in auth) {
+      return new Response(JSON.stringify({ error: auth.error }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: auth.status,
+      });
+    }
+
+    const { supabase, adminId } = auth;
+    const body = await req.json();
+    const action = body.action as string | undefined;
+
+    if (action === "list") {
+      const { data: registrations, error } = await supabase
+        .from("inspector_registrations")
+        .select("*")
+        .eq("status", "pending_approval")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const { data: companies, error: companiesError } = await supabase
+        .from("companies")
+        .select("id, trade_name, document")
+        .is("deleted_at", null);
+
+      if (companiesError) throw companiesError;
+
+      const companyByHash = new Map<string, { id: string; trade_name: string }>();
+      for (const company of companies ?? []) {
+        const digits = normalizeDocumentDigits(company.document);
+        if (!digits) continue;
+        const hash = await hashDocumentDigits(digits);
+        companyByHash.set(hash, { id: company.id, trade_name: company.trade_name });
+      }
+
+      const items = (registrations ?? []).map((registration) => {
+        const suggested =
+          registration.document_type === "cnpj"
+            ? companyByHash.get(registration.document_hash)
+            : null;
+        return {
+          ...registration,
+          suggestedTenantId: suggested?.id ?? null,
+          suggestedTenantName: suggested?.trade_name ?? null,
+        };
+      });
+
+      return new Response(JSON.stringify({ items }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    if (action === "approve") {
+      const { registrationId, tenantId, role } = body;
+      if (!registrationId || !tenantId || !role) {
+        throw new Error("Informe cadastro, empresa e função para aprovação.");
+      }
+      if (!ALLOWED_ROLES.includes(role as AllowedRole)) {
+        throw new Error("A função informada é inválida.");
+      }
+
+      const { data: registration, error: registrationError } = await supabase
+        .from("inspector_registrations")
+        .select("*")
+        .eq("id", registrationId)
+        .eq("status", "pending_approval")
+        .maybeSingle();
+
+      if (registrationError) throw registrationError;
+      if (!registration) throw new Error("Cadastro pendente não encontrado.");
+
+      const { data: company, error: companyError } = await supabase
+        .from("companies")
+        .select("id")
+        .eq("id", tenantId)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (companyError) throw companyError;
+      if (!company) throw new Error("Empresa selecionada não encontrada.");
+
+      const { data: existingProfile, error: profileLookupError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", registrationId)
+        .maybeSingle();
+
+      if (profileLookupError) throw profileLookupError;
+      if (existingProfile) throw new Error("Este usuário já possui perfil operacional.");
+
+      const { error: profileInsertError } = await supabase.from("profiles").insert({
+        id: registration.id,
+        tenant_id: tenantId,
+        full_name: registration.full_name,
+        role,
+        email: registration.email,
+        phone: registration.phone,
+        must_change_password: false,
+        is_active: true,
+        status: "ACTIVE",
+      });
+
+      if (profileInsertError) throw profileInsertError;
+
+      const { error: authUpdateError } = await supabase.auth.admin.updateUserById(registration.id, {
+        app_metadata: {
+          tenant_id: tenantId,
+          role,
+        },
+      });
+
+      if (authUpdateError) throw authUpdateError;
+
+      const { error: registrationUpdateError } = await supabase
+        .from("inspector_registrations")
+        .update({
+          status: "approved",
+          approved_tenant_id: tenantId,
+          approved_role: role,
+          approved_by: adminId,
+          approved_at: new Date().toISOString(),
+        })
+        .eq("id", registrationId);
+
+      if (registrationUpdateError) throw registrationUpdateError;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    if (action === "reject") {
+      const { registrationId, rejectionReason } = body;
+      if (!registrationId) {
+        throw new Error("Informe o cadastro a ser recusado.");
+      }
+
+      const reason =
+        typeof rejectionReason === "string" && rejectionReason.trim()
+          ? rejectionReason.trim()
+          : "Cadastro não aprovado pela equipe Torres.";
+
+      const { error: registrationUpdateError } = await supabase
+        .from("inspector_registrations")
+        .update({
+          status: "rejected",
+          rejection_reason: reason,
+          rejected_at: new Date().toISOString(),
+        })
+        .eq("id", registrationId)
+        .eq("status", "pending_approval");
+
+      if (registrationUpdateError) throw registrationUpdateError;
+
+      const { error: banError } = await supabase.auth.admin.updateUserById(registrationId, {
+        ban_duration: "876000h",
+      });
+      if (banError) throw banError;
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    throw new Error("Ação inválida.");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro desconhecido";
+    return jsonErrorResponse(message, corsHeaders);
+  }
+});

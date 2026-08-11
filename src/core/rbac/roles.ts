@@ -13,8 +13,10 @@ export const PrincipalType = {
   PLATFORM_ADMIN: "PLATFORM_ADMIN",
   /** Usuário de uma empresa cliente; sempre possui `tenant_id` e `UserRole`. */
   TENANT_MEMBER: "TENANT_MEMBER",
-  /** Consumidor final (B2C do Torres Consulta). Reservado — ainda sem persistência. */
+  /** Consumidor final (B2C do Torres Consulta). */
   CUSTOMER: "CUSTOMER",
+  /** Vistoriador com cadastro público aguardando aprovação administrativa. */
+  PENDING_INSPECTOR: "PENDING_INSPECTOR",
 } as const;
 export type PrincipalType = (typeof PrincipalType)[keyof typeof PrincipalType];
 

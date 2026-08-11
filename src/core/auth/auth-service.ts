@@ -5,6 +5,7 @@ import { sanitizeEmail } from "@/shared/lib/sanitize";
 import { resolveStorageUrl } from "@/infra/storage/signed-url";
 import { AVATARS_BUCKET } from "@/infra/storage/buckets";
 import { platformAdminService } from "@/core/auth/platform-admin-service";
+import { inspectorAuthService } from "@/core/auth/services/inspector-auth-service";
 import { auditService } from "@/core/audit/audit-service";
 import type { Profile } from "@/core/auth/types";
 import type { ChangePasswordInput } from "@/core/auth/schemas/auth";
@@ -27,6 +28,8 @@ export const authService = {
         await db.auth.signOut();
         throw new AppError(USER_MESSAGES.accountDisabled);
       }
+
+      await inspectorAuthService.validateTenantLogin(data.user.id);
     }
 
     await auditService.recordEvent({ action: "LOGIN", entityType: "auth" }).catch(() => undefined);

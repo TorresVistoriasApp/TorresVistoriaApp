@@ -1,6 +1,7 @@
 import { AppError } from "@/core/errors/app-error";
 import { USER_MESSAGES } from "@/core/errors/user-facing-errors";
 import { consumerProfileService } from "@/core/auth/consumer-profile-service";
+import { inspectorRegistrationService } from "@/core/auth/inspector-registration-service";
 import { supabaseAuthAdapter } from "@/core/auth/services/supabase-auth-adapter";
 import { ConsumerAccountStatus } from "@/core/auth/types";
 import type {
@@ -24,6 +25,11 @@ export const consumerAuthService = {
 
     const profile = await consumerProfileService.getSelf(user.id);
     if (!profile) {
+      const inspectorRegistration = await inspectorRegistrationService.getSelf(user.id);
+      if (inspectorRegistration) {
+        await supabaseAuthAdapter.signOut();
+        throw new AppError(CONSUMER_LOGIN_DENIED);
+      }
       await supabaseAuthAdapter.signOut();
       throw new AppError(CONSUMER_LOGIN_DENIED);
     }

@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { Link, Navigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, LogIn, Mail, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/core/auth/use-auth";
+import { usePrincipal } from "@/core/auth/use-principal";
+import { PrincipalType } from "@/core/rbac/roles";
 import { checkRateLimit, formatRetryAfter, resetRateLimit } from "@/core/auth/rate-limit";
 import { logger } from "@/core/observability/logger";
 import { saveLgpdConsent } from "@/core/compliance/lgpd";
@@ -20,6 +22,7 @@ import { ProductCrossLink } from "@/modules/torres-consulta/components/landing/p
 
 export function LoginPage() {
   const { signIn, session, loading } = useAuth();
+  const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const {
@@ -31,8 +34,19 @@ export function LoginPage() {
     defaultValues: { acceptTerms: false },
   });
 
-  if (loading) return <LoadingScreen />;
-  if (session) return <Navigate to={ROUTES.dashboard} replace />;
+  if (loading || (session && principalLoading)) return <LoadingScreen />;
+  if (session && principalType === PrincipalType.TENANT_MEMBER) {
+    return <Navigate to={ROUTES.dashboard} replace />;
+  }
+  if (session && principalType === PrincipalType.PLATFORM_ADMIN) {
+    return <Navigate to={ROUTES.adminCompanies} replace />;
+  }
+  if (session && principalType === PrincipalType.PENDING_INSPECTOR) {
+    return <Navigate to={ROUTES.vistoriaPendingApproval} replace />;
+  }
+  if (session && principalType === PrincipalType.CUSTOMER) {
+    return <Navigate to={ROUTES.consultaApp} replace />;
+  }
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
@@ -226,6 +240,10 @@ export function LoginPage() {
                       className="font-semibold text-primary hover:underline"
                     >
                       Esqueci minha senha
+                    </Link>
+                    {" · "}
+                    <Link to={ROUTES.vistoriaRegister} className="font-semibold text-primary hover:underline">
+                      Criar conta
                     </Link>
                     {" · "}
                     <Link to={ROUTES.privacy} className="font-semibold text-primary hover:underline">

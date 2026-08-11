@@ -6,10 +6,10 @@ import { PrincipalType } from "@/core/rbac/roles";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 
 /**
- * Guarda rotas públicas de auth do consumidor (login, cadastro).
+ * Guarda rotas públicas de auth do tenant (login, cadastro vistoriador).
  * Redireciona usuários já autenticados à área correta do ecossistema.
  */
-export function ConsumerAuthRoute() {
+export function TenantAuthRoute() {
   const { session, loading: sessionLoading } = useSession();
   const { principalType, loading: principalLoading } = usePrincipal();
 
@@ -21,16 +21,16 @@ export function ConsumerAuthRoute() {
     );
   }
 
-  if (session && principalType === PrincipalType.CUSTOMER) {
-    return <Navigate to={ROUTES.consultaApp} replace />;
-  }
-
   if (session && principalType === PrincipalType.TENANT_MEMBER) {
     return <Navigate to={ROUTES.dashboard} replace />;
   }
 
   if (session && principalType === PrincipalType.PLATFORM_ADMIN) {
     return <Navigate to={ROUTES.adminCompanies} replace />;
+  }
+
+  if (session && principalType === PrincipalType.CUSTOMER) {
+    return <Navigate to={ROUTES.consultaApp} replace />;
   }
 
   if (session && principalType === PrincipalType.PENDING_INSPECTOR) {

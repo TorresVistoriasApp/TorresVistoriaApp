@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
+import { ROUTES } from "@/config/routes";
 import { usePlatformCompanies, useOnboardCompany } from "@/modules/admin/platform/hooks/use-platform-admin";
 import { OnboardCompanyDialog } from "@/modules/admin/platform/components/onboard-company-dialog";
 import { CompanyBadge } from "@/core/tenant/components/company-badge";
@@ -39,10 +41,15 @@ export function AdminCompaniesPage() {
             entre elas.
           </p>
         </div>
-        <Button className="touch-target shrink-0" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Nova empresa
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" className="touch-target shrink-0" asChild>
+            <Link to={ROUTES.adminInspectorRegistrations}>Cadastros pendentes</Link>
+          </Button>
+          <Button className="touch-target shrink-0" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Nova empresa
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
