@@ -3,6 +3,7 @@ import { ROUTES } from "@/config/routes";
 export const MARKETING_HEADER_NAV = [
   { label: "Como Funciona", to: ROUTES.comoFunciona },
   { label: "Planos", to: ROUTES.planos },
+  { label: "Para Vistoriadores", to: ROUTES.vistoriadores },
   { label: "Exemplo", to: ROUTES.relatorioExemplo },
 ] as const;
 
@@ -15,6 +16,7 @@ export const MARKETING_FOOTER = {
   produto: [
     { label: "Como Funciona", to: ROUTES.comoFunciona },
     { label: "Planos", to: ROUTES.planos },
+    { label: "Para Vistoriadores", to: ROUTES.vistoriadores },
     { label: "Relatório Exemplo", to: ROUTES.relatorioExemplo },
   ],
   legal: [

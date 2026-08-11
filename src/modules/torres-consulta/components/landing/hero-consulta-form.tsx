@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, Check, Search } from "lucide-react";
+import { ROUTES } from "@/config/routes";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { cn } from "@/shared/lib/utils";
@@ -14,15 +16,20 @@ const TRUST_BADGES = [
 ] as const;
 
 export function HeroConsultaForm() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<QueryMode>("plate");
   const [value, setValue] = useState("");
-  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!value.trim()) return;
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 4000);
+    const params = new URLSearchParams();
+    if (mode === "plate") {
+      params.set("placa", value.trim().toUpperCase());
+    } else {
+      params.set("chassi", value.trim().toUpperCase());
+    }
+    navigate(`${ROUTES.clienteRegister}?${params.toString()}`);
   };
 
   return (
@@ -95,15 +102,6 @@ export function HeroConsultaForm() {
             ? "Placa padrão Mercosul, sem hífen"
             : "Número de identificação do veículo (VIN)"}
         </p>
-
-        {submitted && (
-          <p
-            role="status"
-            className="mt-4 rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-3 text-center text-sm font-medium text-emerald-700"
-          >
-            Consulta simulada! Em breve você acessará o relatório completo.
-          </p>
-        )}
 
         <Button
           type="submit"

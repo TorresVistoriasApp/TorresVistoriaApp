@@ -1,8 +1,10 @@
 import { LandingHeader } from "@/modules/torres-consulta/components/landing/landing-header";
 import { LandingFooter } from "@/modules/torres-consulta/components/landing/landing-footer";
 import { HeroSection } from "@/modules/torres-consulta/components/landing/hero-section";
+import { AudienceSection } from "@/modules/torres-consulta/components/landing/audience-section";
 import { BenefitsSection } from "@/modules/torres-consulta/components/landing/benefits-section";
 import { HowItWorksSection } from "@/modules/torres-consulta/components/landing/how-it-works-section";
+import { InspectorSection } from "@/modules/torres-consulta/components/landing/inspector-section";
 import { PricingSection } from "@/modules/torres-consulta/components/landing/pricing-section";
 import { ReportPreviewSection } from "@/modules/torres-consulta/components/landing/report-preview-section";
 import { FaqSection } from "@/modules/torres-consulta/components/landing/faq-section";
@@ -23,10 +25,12 @@ export function LandingPage() {
         <LandingHeader />
         <main>
           <HeroSection />
+          <AudienceSection />
           <BenefitsSection />
           <HowItWorksSection />
           <PricingSection />
           <ReportPreviewSection />
+          <InspectorSection />
           <FaqSection />
         </main>
         <LandingFooter />
