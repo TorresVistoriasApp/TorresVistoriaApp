@@ -1,5 +1,28 @@
 import type { UserRole, UserStatus } from "@/core/rbac/roles";
 
+/** Status da conta do consumidor B2C (coluna `account_status` de `consumer_profiles`). */
+export const ConsumerAccountStatus = {
+  ACTIVE: "active",
+  PENDING_DELETION: "pending_deletion",
+  DELETED: "deleted",
+} as const;
+export type ConsumerAccountStatus =
+  (typeof ConsumerAccountStatus)[keyof typeof ConsumerAccountStatus];
+
+/** Perfil do consumidor final (Torres Consulta B2C). Separado de `profiles`. */
+export interface ConsumerProfile {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  account_status: ConsumerAccountStatus;
+  deletion_requested_at: string | null;
+  deletion_scheduled_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 /** Perfil do usuário dentro de um tenant. */
 export interface Profile {
   id: string;
