@@ -53,7 +53,7 @@ export function LandingHeader() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Button variant="ghost" size="sm" asChild className="text-sky-600 hover:text-sky-700">
-            <Link to={ROUTES.vistoriadores}>Para Vistoriadores</Link>
+            <Link to={ROUTES.vistoriaLogin}>Para Vistoriadores</Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link to={ROUTES.consultaLogin}>Entrar</Link>
@@ -94,7 +94,7 @@ export function LandingHeader() {
                 </Link>
               </Button>
               <Button variant="ghost" asChild>
-                <Link to={ROUTES.vistoriadores} onClick={() => setMobileOpen(false)}>
+                <Link to={ROUTES.vistoriaLogin} onClick={() => setMobileOpen(false)}>
                   Para Vistoriadores
                 </Link>
               </Button>

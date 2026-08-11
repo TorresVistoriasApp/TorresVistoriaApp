@@ -26,7 +26,7 @@ const PATHS = [
     description:
       "Fotos, checklist e laudo em PDF no mesmo sistema. A plataforma que a equipe Torres usa no dia a dia das vistorias.",
     cta: "Conhecer Torres Vistoria",
-    to: ROUTES.vistoriadores,
+    to: ROUTES.vistoriaLogin,
     accent: "from-sky-500/15 to-sky-400/5",
     border: "hover:border-sky-500/35",
     iconBg: "bg-sky-500/10 text-sky-600 group-hover:bg-sky-600 group-hover:text-white",

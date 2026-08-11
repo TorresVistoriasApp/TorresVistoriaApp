@@ -140,6 +140,7 @@ export const ROUTES = {
   cookies: route(ROUTE_SLUGS.cookies),
   planos: "/#planos",
   consultar: "/#consultar",
+  /** Âncora na landing B2C (seção Torres Vistoria). Links de navegação usam `vistoriaLogin`. */
   vistoriadores: "/#vistoriadores",
 } as const;
 
