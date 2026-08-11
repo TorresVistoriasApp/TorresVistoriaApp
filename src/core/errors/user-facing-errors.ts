@@ -1,7 +1,7 @@
 const ERROR_TRANSLATIONS: Array<{ pattern: RegExp; message: string }> = [
   {
     pattern: /already been registered|already registered|user already exists|email address is already/i,
-    message: "Já existe um usuário cadastrado com este endereço de e-mail.",
+    message: "Já existe uma conta associada a este e-mail.",
   },
   {
     pattern: /invalid login credentials|invalid credentials/i,

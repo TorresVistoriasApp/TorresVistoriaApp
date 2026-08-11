@@ -4,23 +4,23 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  Settings,
+  Plus,
   User,
   X,
 } from "lucide-react";
 import { useState } from "react";
 import { ROUTES } from "@/config/routes";
-import { consumerAuthService } from "@/modules/torres-consulta/auth/consumer-auth-service";
+import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import { ProductCrossLink } from "@/modules/torres-consulta/components/landing/product-cross-link";
 import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
 
 const NAV = [
-  { to: ROUTES.clienteDashboard, label: "Dashboard", icon: LayoutDashboard },
-  { to: ROUTES.clienteConsultas, label: "Minhas Consultas", icon: FileSearch },
-  { to: ROUTES.clienteProfile, label: "Perfil", icon: User },
-  { to: ROUTES.clienteSettings, label: "Configurações", icon: Settings },
+  { to: ROUTES.consultaApp, label: "Início", icon: LayoutDashboard },
+  { to: ROUTES.consultaAppConsultas, label: "Minhas consultas", icon: FileSearch },
+  { to: ROUTES.consultaAppNovaConsulta, label: "Consultar veículo", icon: Plus },
+  { to: ROUTES.consultaAppMinhaConta, label: "Minha conta", icon: User },
 ] as const;
 
 export function ClienteLayout() {
@@ -30,7 +30,7 @@ export function ClienteLayout() {
 
   const handleSignOut = async () => {
     await consumerAuthService.signOut();
-    navigate(ROUTES.clienteLogin, { replace: true });
+    navigate(ROUTES.consultaLogin, { replace: true });
   };
 
   return (
@@ -40,11 +40,11 @@ export function ClienteLayout() {
           <ProductCrossLink to={ROUTES.consultaLanding} label="Voltar para Página Inicial" />
         </div>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link to={ROUTES.clienteDashboard}>
+          <Link to={ROUTES.consultaApp}>
             <ConsultaBrandLogo size="sm" showSubtitle={false} />
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Área do cliente">
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Área do consumidor">
             {NAV.map((item) => (
               <Link
                 key={item.to}
@@ -64,7 +64,7 @@ export function ClienteLayout() {
 
           <div className="hidden items-center gap-2 md:flex">
             <Button variant="outline" size="sm" asChild>
-              <Link to={ROUTES.consultaLanding}>Nova Consulta</Link>
+              <Link to={ROUTES.consultaAppNovaConsulta}>Nova consulta</Link>
             </Button>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
@@ -97,7 +97,7 @@ export function ClienteLayout() {
             ))}
             <div className="mt-2 flex flex-col gap-2 border-t border-border/60 pt-3">
               <Button variant="outline" asChild>
-                <Link to={ROUTES.consultaLanding}>Nova Consulta</Link>
+                <Link to={ROUTES.consultaAppNovaConsulta}>Nova consulta</Link>
               </Button>
               <Button variant="ghost" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4" />

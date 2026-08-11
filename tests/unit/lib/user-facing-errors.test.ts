@@ -5,7 +5,7 @@ describe("formatUserFacingError", () => {
   it("traduz e-mail já cadastrado para português formal", () => {
     expect(
       formatUserFacingError("A user with this email address has already been registered"),
-    ).toBe("Já existe um usuário cadastrado com este endereço de e-mail.");
+    ).toBe("Já existe uma conta associada a este e-mail.");
   });
 
   it("preserva mensagens já em português", () => {

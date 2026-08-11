@@ -2,18 +2,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ROUTES } from "@/config/routes";
-import { consumerAuthService } from "@/modules/torres-consulta/auth/consumer-auth-service";
+import { EmailField } from "@/core/auth/components/email-field";
+import { FormError } from "@/core/auth/components/form-error";
+import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import {
   consumerForgotPasswordSchema,
   type ConsumerForgotPasswordInput,
-} from "@/modules/torres-consulta/auth/schemas/consumer-auth";
+} from "@/core/auth/schemas/consumer-auth";
 import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 
 export function ClienteForgotPasswordPage() {
   const [sent, setSent] = useState(false);
@@ -30,11 +30,13 @@ export function ClienteForgotPasswordPage() {
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
     try {
-      const redirectTo = `${window.location.origin}${ROUTES.clienteResetPassword}`;
+      const redirectTo = `${window.location.origin}${ROUTES.consultaResetPassword}`;
       await consumerAuthService.resetPassword(values, redirectTo);
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao enviar e-mail");
+      setError(
+        err instanceof Error ? err.message : "Não foi possível enviar o e-mail de recuperação.",
+      );
     }
   });
 
@@ -46,7 +48,7 @@ export function ClienteForgotPasswordPage() {
 
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>Recuperar senha</CardTitle>
+          <CardTitle>Esqueci minha senha</CardTitle>
           <CardDescription>
             {sent
               ? "Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha."
@@ -56,26 +58,19 @@ export function ClienteForgotPasswordPage() {
         <CardContent>
           {!sent ? (
             <form onSubmit={onSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input id="email" type="email" className="pl-11" {...register("email")} />
-                </div>
-                {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-              </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <EmailField error={errors.email?.message} {...register("email")} />
+              {error && <FormError message={error} />}
+              <Button type="submit" className="w-full touch-target" disabled={isSubmitting}>
                 Enviar link
               </Button>
             </form>
           ) : (
-            <Button asChild className="w-full">
-              <Link to={ROUTES.clienteLogin}>Voltar ao login</Link>
+            <Button asChild className="w-full touch-target">
+              <Link to={ROUTES.consultaLogin}>Voltar ao login</Link>
             </Button>
           )}
-          <Button variant="ghost" className="mt-4 w-full" asChild>
-            <Link to={ROUTES.clienteLogin}>
+          <Button variant="ghost" className="mt-4 w-full touch-target" asChild>
+            <Link to={ROUTES.consultaLogin}>
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Link>

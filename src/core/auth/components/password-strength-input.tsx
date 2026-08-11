@@ -27,11 +27,25 @@ export function PasswordStrengthInput({
 }: PasswordStrengthInputProps) {
   const [visible, setVisible] = useState(false);
   const strength = useMemo(() => getPasswordStrength(value), [value]);
+  const strengthLabel =
+    strength <= 2 ? "Senha fraca" : strength <= 3 ? "Senha média" : "Senha forte";
 
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <Label htmlFor={id}>{label}</Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor={id}>{label}</Label>
+          {value.length > 0 && (
+            <span
+              className={cn(
+                "text-xs font-medium",
+                strength <= 2 ? "text-destructive" : strength <= 3 ? "text-amber-600" : "text-emerald-600",
+              )}
+            >
+              {strengthLabel}
+            </span>
+          )}
+        </div>
         <div className="relative">
           <Input
             id={id}
