@@ -6,7 +6,7 @@ INSERT INTO public.settings (tenant_id, theme_mode, legal_footer)
 VALUES (
   '00000000-0000-4000-8000-000000000001',
   'light',
-  'Laudo emitido por Torres Vistoria. Documento válido mediante verificação do código QR.'
+  NULL
 ) ON CONFLICT (tenant_id) DO NOTHING;
 
 INSERT INTO public.roles (code, name, description) VALUES

@@ -91,14 +91,10 @@ function platformLegalLabel(): string {
 
 /**
  * Texto do INFORMATIVO JURÍDICO do laudo.
- * Deixa claro que o laudo foi emitido no sistema da TORRES VISTORIAS e que
- * fotos, apontamentos e responsabilidade técnica são do vistoriador.
- * Usa `settings.legal_footer` quando configurado.
+ * Sempre usa o texto padrão da plataforma (não depende de `settings.legal_footer`,
+ * para evitar que um rodapé curto do tenant substitua o informativo completo).
  */
-export function getLaudoLegalFooter(settings?: LaudoSettings | null): string {
-  const custom = settings?.legal_footer?.trim();
-  if (custom) return custom;
-
+export function getLaudoLegalFooter(): string {
   const platform = platformLegalLabel();
   const platformShort = PLATFORM_LEGAL_NAME;
 
@@ -111,8 +107,8 @@ export function getLaudoLegalFooter(settings?: LaudoSettings | null): string {
 }
 
 /** Parágrafos do informativo jurídico para renderização no PDF. */
-export function getLaudoLegalParagraphs(settings?: LaudoSettings | null): string[] {
-  return getLaudoLegalFooter(settings)
+export function getLaudoLegalParagraphs(): string[] {
+  return getLaudoLegalFooter()
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean);
