@@ -42,6 +42,10 @@ export function ClienteRegisterPage() {
   } = useForm<ConsumerRegisterInput>({
     resolver: zodResolver(consumerRegisterSchema),
     defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
       acceptTerms: false,
       acceptPrivacy: false,
       consentDataProcessing: false,

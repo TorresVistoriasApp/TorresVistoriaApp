@@ -45,8 +45,13 @@ export function InspectorRegisterPage() {
   } = useForm<InspectorRegisterInput>({
     resolver: zodResolver(inspectorRegisterSchema),
     defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
       documentType: "cpf",
       document: "",
+      password: "",
+      confirmPassword: "",
       acceptTerms: false,
       acceptPrivacy: false,
       consentDataProcessing: false,

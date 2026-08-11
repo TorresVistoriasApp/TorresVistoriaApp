@@ -13,7 +13,8 @@ export const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
 ];
 
 export function getPasswordStrength(password: string): number {
-  return PASSWORD_REQUIREMENTS.filter((req) => req.test(password)).length;
+  const safe = password ?? "";
+  return PASSWORD_REQUIREMENTS.filter((req) => req.test(safe)).length;
 }
 
 export function isStrongPassword(password: string): boolean {
