@@ -18,65 +18,65 @@ const CATEGORIES: {
   items: { icon: LucideIcon; title: string; description: string }[];
 }[] = [
   {
-    title: "Histórico do veículo",
-    description: "Saiba o que aconteceu com o carro antes de você.",
+    title: "Passado do veículo",
+    description: "Entenda a história do carro antes de fechar negócio.",
     items: [
       {
         icon: Gavel,
         title: "Leilão",
-        description: "Verifique se passou por leilão e em quais condições.",
+        description: "Saiba se o carro já foi a leilão e em que situação.",
       },
       {
         icon: AlertTriangle,
         title: "Sinistros",
-        description: "Acidentes, indenizações e registros anteriores.",
+        description: "Veja se houve acidente ou indenização no passado.",
       },
       {
         icon: Users,
         title: "Proprietários",
-        description: "Transferências anteriores, quando permitido por lei.",
+        description: "Quantas vezes o carro já mudou de dono, quando disponível.",
       },
     ],
   },
   {
-    title: "Situação legal e financeira",
-    description: "Evite surpresas com pendências e restrições.",
+    title: "Pendências e bloqueios",
+    description: "Descubra se há algo que impede a transferência.",
     items: [
       {
         icon: Shield,
         title: "Roubo e furto",
-        description: "Consulta em bases oficiais de ocorrência.",
+        description: "Consultamos bases oficiais de ocorrência.",
       },
       {
         icon: Scale,
         title: "Restrições financeiras",
-        description: "Gravames, alienação fiduciária e bloqueios.",
+        description: "Financiamento, gravame e outras restrições no nome.",
       },
       {
         icon: Car,
         title: "Recall",
-        description: "Campanhas pendentes para o modelo.",
+        description: "Confira se falta levar o carro na concessionária.",
       },
     ],
   },
   {
-    title: "Análise completa",
-    description: "Dados técnicos e visão consolidada da situação.",
+    title: "Visão geral do carro",
+    description: "Nota e dados técnicos para fechar a compra com calma.",
     items: [
       {
         icon: Star,
         title: "Score veicular",
-        description: "Avaliação consolidada da situação geral.",
+        description: "Nota que resume a situação geral do veículo.",
       },
       {
         icon: FileSearch,
         title: "Decodificação VIN",
-        description: "Dados técnicos a partir do chassi.",
+        description: "Marca, modelo e versão a partir do chassi.",
       },
       {
         icon: Camera,
         title: "Fotos históricas",
-        description: "Imagens de vistorias e leilões anteriores.",
+        description: "Fotos registradas em vistorias e leilões anteriores.",
       },
     ],
   },
@@ -87,16 +87,16 @@ export function BenefitsSection() {
     <section className="bg-canvas py-20 sm:py-28" aria-labelledby="beneficios-title">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Inteligência veicular</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">O que você descobre</p>
           <h2
             id="beneficios-title"
             className="mt-3 text-2xl font-black tracking-tight text-foreground sm:text-4xl"
           >
-            Tudo que você precisa saber antes de comprar
+            Compre sabendo o que o carro esconde
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Dados consolidados de múltiplas fontes oficiais, organizados em um único relatório fácil
-            de entender.
+            Reunimos informações de fontes oficiais num relatório direto, para você decidir com
+            segurança.
           </p>
         </ScrollReveal>
 

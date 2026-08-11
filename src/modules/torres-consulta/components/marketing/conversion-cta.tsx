@@ -12,8 +12,8 @@ interface ConversionCtaProps {
 }
 
 export function ConversionCta({
-  title = "Pronto para consultar seu veículo?",
-  description = "Descubra o histórico completo em poucos minutos e tome uma decisão segura na compra.",
+  title = "Pronto para consultar o veículo?",
+  description = "Veja o histórico completo em poucos minutos e feche a compra com mais tranquilidade.",
   className,
   showSampleLink = true,
 }: ConversionCtaProps) {

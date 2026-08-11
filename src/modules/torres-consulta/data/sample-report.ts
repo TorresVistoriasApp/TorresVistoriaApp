@@ -27,7 +27,7 @@ export const SAMPLE_STATUS_CARDS = [
 
 export const SAMPLE_TIMELINE = [
   { date: "03/2019", event: "Primeiro emplacamento", type: "info" as const },
-  { date: "11/2019", event: "Registro de sinistro leve — para-choque traseiro", type: "warn" as const },
+  { date: "11/2019", event: "Sinistro leve no para choque traseiro", type: "warn" as const },
   { date: "06/2021", event: "Transferência de propriedade", type: "info" as const },
   { date: "02/2023", event: "Vistoria cautelar aprovada", type: "ok" as const },
   { date: "01/2025", event: "Última atualização de dados", type: "info" as const },

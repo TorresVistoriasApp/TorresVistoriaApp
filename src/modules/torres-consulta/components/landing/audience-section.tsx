@@ -8,10 +8,10 @@ const PATHS = [
   {
     id: "comprador",
     icon: Car,
-    eyebrow: "Para compradores",
-    title: "Consultar antes de comprar",
+    eyebrow: "Vou comprar um carro",
+    title: "Consultar o histórico",
     description:
-      "Descubra leilões, sinistros, recalls e restrições com um relatório completo a partir da placa ou chassi.",
+      "Leilão, sinistro, recall e restrições em um relatório claro. Informe a placa ou o chassi e receba o resultado na hora.",
     cta: "Consultar veículo",
     to: ROUTES.consultar,
     accent: "from-orange-500/15 to-orange-400/5",
@@ -21,10 +21,10 @@ const PATHS = [
   {
     id: "vistoriador",
     icon: ClipboardCheck,
-    eyebrow: "Para vistoriadores",
+    eyebrow: "Trabalho com vistoria",
     title: "Emitir laudo cautelar",
     description:
-      "Registre vistorias com fotos, checklist técnico e gere laudos profissionais em PDF — tudo em uma plataforma.",
+      "Fotos, checklist e laudo em PDF no mesmo sistema. A plataforma que a equipe Torres usa no dia a dia das vistorias.",
     cta: "Conhecer Torres Vistoria",
     to: ROUTES.vistoriadores,
     accent: "from-sky-500/15 to-sky-400/5",
@@ -42,16 +42,16 @@ export function AudienceSection() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Dois produtos, um ecossistema</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Para quem é</p>
           <h2
             id="audience-title"
             className="mt-3 text-xl font-black tracking-tight text-foreground sm:text-3xl"
           >
-            Qual é o seu objetivo hoje?
+            O que você precisa fazer hoje?
           </h2>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-            Escolha o caminho certo — consulta veicular para compradores ou plataforma profissional
-            para vistoriadores.
+            Compradores consultam o histórico do veículo. Vistoriadores emitem laudos na plataforma
+            profissional do ecossistema Torres.
           </p>
         </ScrollReveal>
 

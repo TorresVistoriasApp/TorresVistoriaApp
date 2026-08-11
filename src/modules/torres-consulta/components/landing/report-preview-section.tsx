@@ -7,7 +7,7 @@ import { ScrollReveal } from "./scroll-reveal";
 const PREVIEW_PAGES = [
   {
     title: "Resumo do Veículo",
-    lines: ["Volkswagen T-Cross", "Placa BRA2E19", "Score: 97 — Excelente"],
+    lines: ["Volkswagen T Cross", "Placa BRA2E19", "Score 97 · Excelente"],
     width: "w-[85%]",
   },
   {
@@ -17,7 +17,7 @@ const PREVIEW_PAGES = [
   },
   {
     title: "Linha do Tempo",
-    lines: ["2019 — 1º emplacamento", "2021 — Transferência", "2025 — Vistoria aprovada"],
+    lines: ["2019 · 1º emplacamento", "2021 · Transferência", "2025 · Vistoria aprovada"],
     width: "w-[80%]",
   },
 ] as const;
@@ -30,15 +30,15 @@ export function ReportPreviewSection() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <ScrollReveal>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Transparência total</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Antes de comprar</p>
             <h2
               id="preview-title"
               className="mt-3 text-2xl font-black tracking-tight text-foreground sm:text-4xl"
             >
-              Veja exatamente o que você irá receber
+              Veja o que vem no seu relatório
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Relatório completo, organizado e fácil de entender. Sem surpresas na hora da compra.
+              Tudo organizado e fácil de ler. Você sabe exatamente o que está comprando.
             </p>
             <Button size="lg" className="mt-8 rounded-xl" asChild>
               <Link to={ROUTES.relatorioExemplo}>

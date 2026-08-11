@@ -38,16 +38,16 @@ export function HeroSection() {
             <span className="text-gradient-brand">qualquer veículo</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:text-xl">
-            Descubra informações importantes antes de comprar utilizando apenas a placa ou o
-            chassi.
+            Compre com mais segurança. Informe a placa ou o chassi e veja o histórico completo do
+            veículo.
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            É vistoriador profissional?{" "}
+            Trabalha com vistoria cautelar?{" "}
             <Link
               to={ROUTES.vistoriadores}
               className="inline-flex items-center gap-1 font-semibold text-sky-600 transition-colors hover:text-sky-700"
             >
-              Emita laudos cautelares na Torres Vistoria
+              Emita laudos na Torres Vistoria
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </p>

@@ -18,30 +18,30 @@ import { cn } from "@/shared/lib/utils";
 const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
   {
     icon: ClipboardCheck,
-    title: "Checklist técnico completo",
-    description: "Mais de 80 itens avaliados com critérios claros para cada componente do veículo.",
+    title: "Checklist de vistoria",
+    description: "Itens organizados por etapa para você não esquecer nada na inspeção.",
   },
   {
     icon: Camera,
-    title: "Fotos guiadas e georreferenciadas",
-    description: "Captura orientada por ângulos técnicos, com registro de local e horário da vistoria.",
+    title: "Fotos no celular",
+    description: "O app orienta os ângulos certos e registra data e local da vistoria.",
   },
   {
     icon: FileText,
-    title: "Laudo cautelar em PDF",
-    description: "Documento profissional com parecer técnico, fotos, score e validação por código QR.",
+    title: "Laudo em PDF",
+    description: "Documento pronto para entregar ao cliente, com parecer e fotos anexadas.",
   },
   {
     icon: QrCode,
-    title: "Validação pública do laudo",
-    description: "Compradores e parceiros podem verificar a autenticidade do documento online.",
+    title: "Validação do laudo",
+    description: "Quem recebe o documento pode conferir se ele é autêntico pelo site.",
   },
 ];
 
 const WORKFLOW = [
-  { step: 1, label: "Cadastre a vistoria", detail: "Placa, cliente e tipo de serviço" },
-  { step: 2, label: "Registre evidências", detail: "Fotos técnicas e checklist" },
-  { step: 3, label: "Emita o laudo", detail: "PDF pronto para entrega" },
+  { step: 1, label: "Abra a vistoria", detail: "Placa, cliente e tipo de serviço" },
+  { step: 2, label: "Registre tudo no local", detail: "Fotos e checklist no celular" },
+  { step: 3, label: "Gere o laudo", detail: "PDF pronto para enviar ao cliente" },
 ] as const;
 
 export function InspectorSection() {
@@ -66,22 +66,22 @@ export function InspectorSection() {
               id="vistoriadores-title"
               className="mt-5 text-2xl font-black tracking-tight text-white sm:text-4xl"
             >
-              Plataforma profissional para{" "}
+              Sua ferramenta para{" "}
               <span className="bg-gradient-to-r from-sky-300 to-sky-500 bg-clip-text text-transparent">
                 laudo cautelar
               </span>
             </h2>
             <p className="mt-4 text-base leading-relaxed text-slate-400">
-              Se você é vistoriador ou empresa de vistoria cautelar, a Torres Vistoria é a ferramenta
-              certa. Conduza inspeções completas no campo e gere laudos profissionais com poucos cliques
-              — sem planilhas, sem retrabalho.
+              Se você é vistoriador ou tem uma empresa de vistoria cautelar, a Torres Vistoria reúne
+              tudo o que você precisa no campo: registro da inspeção, fotos, checklist e laudo em
+              PDF para o cliente. Sem planilha e sem retrabalho.
             </p>
 
             <ul className="mt-6 space-y-3">
               {[
-                "Laudo cautelar veicular com parecer técnico",
-                "Gestão de vistorias, clientes e equipe",
-                "Indicadores financeiros e relatórios operacionais",
+                "Laudo cautelar com parecer técnico e fotos",
+                "Controle de vistorias, clientes e equipe",
+                "Visão financeira e relatórios da operação",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-sm text-slate-300">
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" strokeWidth={2.5} />
@@ -105,26 +105,25 @@ export function InspectorSection() {
               >
                 <Link to={ROUTES.vistoriaLogin}>
                   <Users className="h-4 w-4" />
-                  Sou vistoriador — entrar
+                  Entrar como vistoriador
                 </Link>
               </Button>
             </div>
 
             <p className="mt-4 text-xs text-slate-500">
-              Não confundir com Torres Consulta — aqui é para profissionais que realizam vistorias e
-              emitem laudos.
+              A Torres Consulta é para quem vai comprar um carro. Aqui é a área de quem faz e emite
+              vistorias.
             </p>
           </ScrollReveal>
 
           <ScrollReveal delayMs={120}>
             <div className="relative">
-              {/* Workflow card */}
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm sm:p-8">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-400">
                   Como funciona na prática
                 </p>
                 <ol className="mt-6 space-y-4">
-                  {WORKFLOW.map((item, index) => (
+                  {WORKFLOW.map((item) => (
                     <li key={item.step} className="flex gap-4">
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-sm font-black text-white">
                         {item.step}
@@ -133,14 +132,10 @@ export function InspectorSection() {
                         <p className="font-semibold text-white">{item.label}</p>
                         <p className="mt-0.5 text-sm text-slate-400">{item.detail}</p>
                       </div>
-                      {index < WORKFLOW.length - 1 && (
-                        <div className="absolute left-[2.65rem] hidden sm:block" aria-hidden />
-                      )}
                     </li>
                   ))}
                 </ol>
 
-                {/* Mini laudo preview */}
                 <div className="mt-6 rounded-xl border border-white/10 bg-slate-900/60 p-4">
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-sky-400">
@@ -150,21 +145,20 @@ export function InspectorSection() {
                       Aprovado
                     </span>
                   </div>
-                  <p className="mt-2 text-sm font-bold text-white">VW T-Cross · Placa BRA2E19</p>
+                  <p className="mt-2 text-sm font-bold text-white">VW T Cross · Placa BRA2E19</p>
                   <div className="mt-3 flex items-end gap-2">
                     <span className="text-3xl font-black text-white">94</span>
-                    <span className="pb-1 text-xs text-slate-400">/100 score cautelar</span>
+                    <span className="pb-1 text-xs text-slate-400">de 100 no score cautelar</span>
                   </div>
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
                     <div className="h-full w-[94%] rounded-full bg-gradient-to-r from-sky-500 to-emerald-400" />
                   </div>
                   <p className="mt-3 text-[11px] text-slate-500">
-                    PDF com fotos, checklist e código de validação QR
+                    PDF com fotos, checklist e código para validar o documento
                   </p>
                 </div>
               </div>
 
-              {/* Feature pills */}
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {FEATURES.map((feature) => (
                   <div
