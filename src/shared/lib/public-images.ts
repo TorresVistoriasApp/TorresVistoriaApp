@@ -1,9 +1,13 @@
 /** Caminhos de imagens estáticas servidas de `public/images/`. */
 export const PUBLIC_IMAGES = {
   brand: {
+    /** Lockup vetorial — nítido em qualquer tamanho/densidade de tela. */
+    lockup: "/images/brand/logo-lockup.svg",
+    /** Monograma vetorial já recortado no bounding box da marca. */
+    mark: "/images/brand/logo-mark.svg",
+    /** Rasters mantidos para contextos sem suporte a SVG (og:image, PDF, Excel). */
     trim: "/images/brand/official-trim.webp",
     full: "/images/brand/official-full.webp",
-    mark: "/images/brand/logo-curta-sidebar.webp",
   },
   auth: {
     inspection: "/images/auth/inspection.webp",

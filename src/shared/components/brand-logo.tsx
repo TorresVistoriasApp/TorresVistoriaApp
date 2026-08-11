@@ -2,7 +2,7 @@ import { PUBLIC_IMAGES } from "@/shared/lib/public-images";
 import { BrandMark } from "@/shared/components/brand-mark";
 import { cn } from "@/shared/lib/utils";
 
-const LOGO_SRC = PUBLIC_IMAGES.brand.trim;
+const LOGO_SRC = PUBLIC_IMAGES.brand.lockup;
 
 interface BrandLogoProps {
   className?: string;
@@ -45,13 +45,13 @@ export function BrandLogo({
     return (
       <div
         className={cn(
-          "flex justify-center overflow-hidden",
+          "flex items-center justify-center",
           className ?? markSizeStyles[size],
           centered && "mx-auto",
         )}
         aria-label="Torres Vistoria"
       >
-        <BrandMark className="block w-[195%] max-w-none -translate-y-[18%] object-contain object-top" />
+        <BrandMark className="h-full w-full" />
       </div>
     );
   }
@@ -66,8 +66,8 @@ export function BrandLogo({
           s.image,
           centered ? "mx-auto object-center" : "object-left",
         )}
-        width={300}
-        height={133}
+        width={261}
+        height={115}
         decoding="async"
         draggable={false}
       />
