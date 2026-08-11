@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { useState } from "react";
 import { Eye, EyeOff, LockKeyhole } from "lucide-react";
 import { Input } from "@/shared/ui/input";
@@ -7,11 +7,13 @@ import { FormField } from "@/shared/components/forms/form-field";
 type PasswordFieldProps = {
   label?: string;
   error?: string;
+  labelAction?: ReactNode;
 } & Omit<ComponentProps<typeof Input>, "type">;
 
 export function PasswordField({
   label = "Senha",
   error,
+  labelAction,
   className,
   autoComplete = "current-password",
   ...inputProps
@@ -19,7 +21,7 @@ export function PasswordField({
   const [visible, setVisible] = useState(false);
 
   return (
-    <FormField label={label} error={error}>
+    <FormField label={label} error={error} labelAction={labelAction}>
       <div className="relative">
         <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input

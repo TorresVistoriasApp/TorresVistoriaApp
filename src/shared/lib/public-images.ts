@@ -6,13 +6,7 @@ export const PUBLIC_IMAGES = {
     mark: "/images/brand/logo-curta-sidebar.webp",
   },
   auth: {
-    loginBanner: "/images/auth/inspection-1.webp",
-    loginShowcase: [
-      "/images/auth/inspection-1.webp",
-      "/images/auth/inspection-2.webp",
-      "/images/auth/inspection-3.webp",
-      "/images/auth/inspection-4.webp",
-    ] as const,
+    inspection: "/images/auth/inspection.webp",
   },
   vehicleBrands: (slug: string) => `/images/vehicle-brands/${slug}.webp` as const,
   consultations: {

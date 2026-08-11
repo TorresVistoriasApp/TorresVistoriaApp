@@ -13,6 +13,7 @@ import {
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
 import { PasswordStrengthInput } from "@/core/auth/components/password-strength-input";
+import { TenantAuthPanel } from "@/core/auth/components/tenant-auth-panel";
 import { inspectorAuthService } from "@/core/auth/services/inspector-auth-service";
 import {
   inspectorRegisterSchema,
@@ -21,9 +22,7 @@ import {
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 import type { InspectorDocumentType } from "@/core/auth/validators/document";
-import { BrandLogo } from "@/shared/components/brand-logo";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { LoadingScreen } from "@/shared/components/loading-spinner";
@@ -101,50 +100,36 @@ export function InspectorRegisterPage() {
 
   if (successEmail) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-12">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Confirme seu e-mail</CardTitle>
-            <CardDescription>
-              Enviamos um link para <span className="font-medium">{successEmail}</span>. Após
-              confirmar, seu cadastro será analisado pela equipe Torres antes do acesso ao painel.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full touch-target"
-              disabled={resendPending}
-              onClick={() => void handleResend()}
-            >
-              {resendPending ? "Reenviando..." : "Reenviar confirmação"}
-            </Button>
-            {resendMessage && <p className="text-sm text-muted-foreground">{resendMessage}</p>}
-            <Button asChild className="w-full touch-target">
-              <Link to={ROUTES.login}>Voltar para login</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <TenantAuthPanel
+        title="Confirme seu e-mail"
+        description={`Enviamos um link para ${successEmail}. Após confirmar, seu cadastro será analisado pela equipe Torres antes do acesso ao painel.`}
+      >
+        <div className="space-y-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full touch-target"
+            disabled={resendPending}
+            onClick={() => void handleResend()}
+          >
+            {resendPending ? "Reenviando..." : "Reenviar confirmação"}
+          </Button>
+          {resendMessage && <p className="text-sm text-muted-foreground">{resendMessage}</p>}
+          <Button asChild className="w-full touch-target">
+            <Link to={ROUTES.login}>Voltar para login</Link>
+          </Button>
+        </div>
+      </TenantAuthPanel>
     );
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-12">
-      <Link to={ROUTES.consultaLanding} className="mb-8">
-        <BrandLogo size="lg" />
-      </Link>
-
-      <Card className="w-full max-w-md border-border/70 shadow-elevated">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Cadastro de vistoriador</CardTitle>
-          <CardDescription>
-            Crie sua conta para operar no Torres Vistoria. O acesso é liberado após aprovação.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
+    <TenantAuthPanel
+      wide
+      title="Criar conta"
+      description="Cadastro para vistoriadores. O acesso é liberado após aprovação."
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome completo</Label>
               <div className="relative">
@@ -235,7 +220,12 @@ export function InspectorRegisterPage() {
               <FormError message={error} />
             ) : null}
 
-            <Button type="submit" className="w-full touch-target" size="lg" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="h-12 w-full rounded-2xl text-base font-semibold"
+              size="lg"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               ) : (
@@ -254,8 +244,6 @@ export function InspectorRegisterPage() {
               </Link>
             </p>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+    </TenantAuthPanel>
   );
 }
