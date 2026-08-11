@@ -20,7 +20,6 @@ import { useDashboardScope } from "@/modules/torres-vistoria/hooks/use-dashboard
 import { StatsGrid, type StatItem } from "@/shared/components/charts/stats-grid";
 import { ChartWrapper } from "@/shared/components/charts/chart-wrapper";
 import { RecentInspections } from "@/modules/torres-vistoria/components/dashboard/recent-inspections";
-import { DashboardAdminShortcuts } from "@/modules/torres-vistoria/components/dashboard/dashboard-admin-shortcuts";
 import { DashboardScopeBanner } from "@/modules/torres-vistoria/components/dashboard/dashboard-scope-banner";
 import { PageHeader } from "@/shared/components/page-header";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
@@ -247,8 +246,6 @@ export function DashboardPage() {
       />
 
       <DashboardScopeBanner />
-
-      {isCompanyView ? <DashboardAdminShortcuts /> : null}
 
       <StatsGrid
         items={buildStatItems(stats, statsLoading, isCompanyView, canViewFinancial)}

@@ -11,6 +11,8 @@ export function BrandMark({ className }: { className?: string }) {
       alt="Torres Vistoria"
       draggable={false}
       decoding="async"
+      width={454}
+      height={352}
       className={cn("shrink-0 select-none object-contain", className)}
     />
   );
