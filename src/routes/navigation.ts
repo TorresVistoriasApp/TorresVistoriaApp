@@ -153,7 +153,7 @@ export function getNavSections(access: Pick<PermissionChecker, "has" | "hasAny">
   return sections;
 }
 
-/** Navegação plana para a barra inferior mobile (sem seções). */
-export const NAV_ITEMS = getNavSections({ has: () => true, hasAny: () => true })
-  .flatMap((section) => section.items)
-  .map(({ type: _type, ...item }) => item);
+/** Navegação plana (sem seções) para a barra inferior mobile, já filtrada por permissão. */
+export function getNavItems(access: Pick<PermissionChecker, "has" | "hasAny">): NavLinkItem[] {
+  return getNavSections(access).flatMap((section) => section.items);
+}
