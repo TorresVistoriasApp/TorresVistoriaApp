@@ -26,7 +26,8 @@ export function PasswordStrengthInput({
   autoComplete = "new-password",
 }: PasswordStrengthInputProps) {
   const [visible, setVisible] = useState(false);
-  const strength = useMemo(() => getPasswordStrength(value), [value]);
+  const safeValue = value ?? "";
+  const strength = useMemo(() => getPasswordStrength(safeValue), [safeValue]);
   const strengthLabel =
     strength <= 2 ? "Senha fraca" : strength <= 3 ? "Senha média" : "Senha forte";
 
@@ -35,7 +36,7 @@ export function PasswordStrengthInput({
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <Label htmlFor={id}>{label}</Label>
-          {value.length > 0 && (
+          {safeValue.length > 0 && (
             <span
               className={cn(
                 "text-xs font-medium",
@@ -52,7 +53,7 @@ export function PasswordStrengthInput({
             type={visible ? "text" : "password"}
             autoComplete={autoComplete}
             className="touch-target pr-11"
-            value={value}
+            value={safeValue}
             onChange={(event) => onChange(event.target.value)}
           />
           <button
@@ -82,7 +83,7 @@ export function PasswordStrengthInput({
 
         <div className="grid gap-2 sm:grid-cols-2">
           {PASSWORD_REQUIREMENTS.map((requirement) => {
-            const met = requirement.test(value);
+            const met = requirement.test(safeValue);
             return (
               <div
                 key={requirement.id}
