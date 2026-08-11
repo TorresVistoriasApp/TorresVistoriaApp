@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate } from "react-router-dom";
-import { ArrowRight, LogIn } from "lucide-react";
+import { ArrowRight, LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "@/core/auth/use-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
@@ -147,22 +147,26 @@ export function LoginPage() {
         </Button>
       </form>
 
-      <div className="mt-7 border-t border-border/60 pt-5">
-        <Link
-          to={ROUTES.vistoriaRegister}
-          className="group flex items-center justify-between gap-4 rounded-xl text-left"
-        >
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold text-foreground">
-              Ainda não tem cadastro?
-            </span>
-            <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-              Crie sua conta de vistoriador e solicite aprovação.
-            </span>
+      <Link
+        to={ROUTES.vistoriaRegister}
+        className="group mt-6 flex items-center gap-4 rounded-2xl border border-primary/25 bg-primary/[0.06] p-4 transition-colors hover:border-primary/40 hover:bg-primary/[0.1]"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+          <UserPlus className="h-5 w-5" strokeWidth={2.25} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+            Ainda não tem cadastro?
           </span>
-          <ArrowRight className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      </div>
+          <span className="mt-1 block text-sm font-bold text-foreground">
+            Criar conta de vistoriador
+          </span>
+          <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+            Cadastro gratuito, liberado após aprovação da equipe.
+          </span>
+        </span>
+        <ArrowRight className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
+      </Link>
     </TenantAuthPanel>
   );
 }
