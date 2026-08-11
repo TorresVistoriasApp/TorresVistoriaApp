@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   signInWithPassword: vi.fn(),
   signOut: vi.fn(),
   getSelf: vi.fn(),
+  getSelfInspector: vi.fn(),
 }));
 
 vi.mock("@/core/auth/services/supabase-auth-adapter", () => ({
@@ -20,6 +21,10 @@ vi.mock("@/core/auth/services/supabase-auth-adapter", () => ({
 
 vi.mock("@/core/auth/consumer-profile-service", () => ({
   consumerProfileService: { getSelf: mocks.getSelf },
+}));
+
+vi.mock("@/core/auth/inspector-registration-service", () => ({
+  inspectorRegistrationService: { getSelf: mocks.getSelfInspector },
 }));
 
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
@@ -40,6 +45,7 @@ const consumerProfile = {
 describe("consumerAuthService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.getSelfInspector.mockResolvedValue(null);
   });
 
   it("signIn aceita consumidor com perfil ativo", async () => {

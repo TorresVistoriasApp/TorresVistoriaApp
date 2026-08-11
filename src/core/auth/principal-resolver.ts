@@ -1,7 +1,9 @@
 import { authService } from "@/core/auth/auth-service";
 import { consumerProfileService } from "@/core/auth/consumer-profile-service";
+import { inspectorRegistrationService } from "@/core/auth/inspector-registration-service";
 import { platformAdminService } from "@/core/auth/platform-admin-service";
-import type { ConsumerProfile, PlatformAdmin, Profile } from "@/core/auth/types";
+import type { ConsumerProfile, InspectorRegistration, PlatformAdmin, Profile } from "@/core/auth/types";
+import { InspectorRegistrationStatus } from "@/core/auth/types";
 import { PrincipalType, type PrincipalType as PrincipalTypeValue } from "@/core/rbac/roles";
 
 export type PrincipalResolution =
@@ -20,6 +22,11 @@ export type PrincipalResolution =
       principalType: typeof PrincipalType.CUSTOMER;
       consumerProfile: ConsumerProfile;
     }
+  | {
+      status: "resolved";
+      principalType: typeof PrincipalType.PENDING_INSPECTOR;
+      inspectorRegistration: InspectorRegistration;
+    }
   | { status: "anonymous" }
   | { status: "unknown" };
 
@@ -30,6 +37,7 @@ export type PrincipalResolution =
  * 1. PLATFORM_ADMIN — operador SaaS, sem tenant
  * 2. TENANT_MEMBER — membro de empresa (Torres Vistoria)
  * 3. CUSTOMER — consumidor B2C (Torres Consulta)
+ * 4. PENDING_INSPECTOR — cadastro público aguardando aprovação
  *
  * A autorização real permanece no banco (RLS); este resolver espelha o estado
  * para navegação e guards no frontend.
@@ -59,6 +67,15 @@ export async function resolvePrincipal(userId: string): Promise<PrincipalResolut
       status: "resolved",
       principalType: PrincipalType.CUSTOMER,
       consumerProfile,
+    };
+  }
+
+  const inspectorRegistration = await inspectorRegistrationService.getSelf(userId);
+  if (inspectorRegistration?.status === InspectorRegistrationStatus.PENDING_APPROVAL) {
+    return {
+      status: "resolved",
+      principalType: PrincipalType.PENDING_INSPECTOR,
+      inspectorRegistration,
     };
   }
 

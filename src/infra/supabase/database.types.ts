@@ -1925,6 +1925,71 @@ export type Database = {
         }
         Relationships: []
       }
+      inspector_registrations: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          approved_role: Database["public"]["Enums"]["tenant_role"] | null
+          approved_tenant_id: string | null
+          created_at: string
+          document_hash: string
+          document_tail: string
+          document_type: string
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          rejection_reason: string | null
+          rejected_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_role?: Database["public"]["Enums"]["tenant_role"] | null
+          approved_tenant_id?: string | null
+          created_at?: string
+          document_hash: string
+          document_tail: string
+          document_type: string
+          email: string
+          full_name: string
+          id: string
+          phone?: string | null
+          rejection_reason?: string | null
+          rejected_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_role?: Database["public"]["Enums"]["tenant_role"] | null
+          approved_tenant_id?: string | null
+          created_at?: string
+          document_hash?: string
+          document_tail?: string
+          document_type?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          rejection_reason?: string | null
+          rejected_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspector_registrations_approved_tenant_id_fkey"
+            columns: ["approved_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consumer_profiles: {
         Row: {
           account_status: string

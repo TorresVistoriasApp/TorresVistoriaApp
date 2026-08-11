@@ -103,10 +103,18 @@ export function InspectorSection() {
                 className="rounded-xl border-slate-600 bg-transparent text-white hover:bg-white/10 hover:text-white"
                 asChild
               >
-                <Link to={ROUTES.vistoriaLogin}>
+                <Link to={ROUTES.vistoriaRegister}>
                   <Users className="h-4 w-4" />
-                  Entrar como vistoriador
+                  Criar conta
                 </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-xl border-slate-600 bg-transparent text-white hover:bg-white/10 hover:text-white"
+                asChild
+              >
+                <Link to={ROUTES.vistoriaLogin}>Entrar como vistoriador</Link>
               </Button>
             </div>
 

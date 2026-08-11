@@ -43,5 +43,12 @@ export const adminRoutes: ModuleRoutes = {
         "AdminCompaniesPage",
       ),
     },
+    {
+      path: ROUTES.adminInspectorRegistrations,
+      element: lazyRoute(
+        () => import("@/modules/admin/platform/pages/admin-inspector-registrations-page"),
+        "AdminInspectorRegistrationsPage",
+      ),
+    },
   ],
 };

@@ -34,6 +34,10 @@ export function ProtectedRoute() {
     return <Navigate to={ROUTES.consultaApp} replace />;
   }
 
+  if (principalType === PrincipalType.PENDING_INSPECTOR) {
+    return <Navigate to={ROUTES.vistoriaPendingApproval} replace />;
+  }
+
   // Operador da plataforma não pertence a nenhuma empresa: nunca deve entrar
   // na área do tenant (que assume `profile` preenchido em toda a UI).
   if (isPlatformAdmin) {

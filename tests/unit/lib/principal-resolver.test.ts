@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   getSelfPlatformAdmin: vi.fn(),
   getProfile: vi.fn(),
   getSelfConsumer: vi.fn(),
+  getSelfInspector: vi.fn(),
 }));
 
 vi.mock("@/core/auth/platform-admin-service", () => ({
@@ -17,6 +18,10 @@ vi.mock("@/core/auth/auth-service", () => ({
 
 vi.mock("@/core/auth/consumer-profile-service", () => ({
   consumerProfileService: { getSelf: mocks.getSelfConsumer },
+}));
+
+vi.mock("@/core/auth/inspector-registration-service", () => ({
+  inspectorRegistrationService: { getSelf: mocks.getSelfInspector },
 }));
 
 import {
@@ -74,6 +79,7 @@ describe("resolvePrincipal", () => {
     mocks.getSelfPlatformAdmin.mockResolvedValue(null);
     mocks.getProfile.mockResolvedValue(null);
     mocks.getSelfConsumer.mockResolvedValue(null);
+    mocks.getSelfInspector.mockResolvedValue(null);
   });
 
   it("resolve PLATFORM_ADMIN com precedência", async () => {
@@ -112,6 +118,37 @@ describe("resolvePrincipal", () => {
       status: "resolved",
       principalType: PrincipalType.CUSTOMER,
       consumerProfile,
+    });
+  });
+
+  it("resolve PENDING_INSPECTOR quando cadastro aguarda aprovação", async () => {
+    const inspectorRegistration = {
+      id: USER_ID,
+      full_name: "Pendente",
+      email: "pendente@test.com",
+      phone: null,
+      document_type: "cpf" as const,
+      document_hash: "hash",
+      document_tail: "1234",
+      status: "pending_approval" as const,
+      rejection_reason: null,
+      approved_tenant_id: null,
+      approved_role: null,
+      approved_by: null,
+      approved_at: null,
+      rejected_at: null,
+      created_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-01T00:00:00Z",
+    };
+
+    mocks.getSelfInspector.mockResolvedValue(inspectorRegistration);
+
+    const result = await resolvePrincipal(USER_ID);
+
+    expect(result).toEqual({
+      status: "resolved",
+      principalType: PrincipalType.PENDING_INSPECTOR,
+      inspectorRegistration,
     });
   });
 
