@@ -3,6 +3,7 @@ import type { Inspection } from "@/modules/torres-vistoria/services/inspection-s
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
 import { ChecklistStatus } from "@/modules/torres-vistoria/domain/enums";
 import { getInspectionOpinionLabel } from "@/modules/torres-vistoria/domain/inspection-opinion-labels";
+import { formatDocument } from "@/shared/lib/formatters";
 
 export type LaudoCompany = {
   name?: string | null;
@@ -76,11 +77,45 @@ export function getOpinionLabel(opinion: string | null | undefined): string {
   return getInspectionOpinionLabel(opinion);
 }
 
+/**
+ * Identidade jurídica da plataforma (licenciadora do sistema).
+ * Preencher `PLATFORM_LEGAL_CNPJ` quando o CNPJ da TORRES VISTORIAS estiver disponível.
+ */
+export const PLATFORM_LEGAL_NAME = "TORRES VISTORIAS";
+export const PLATFORM_LEGAL_CNPJ: string | null = null;
+
+function platformLegalLabel(): string {
+  if (!PLATFORM_LEGAL_CNPJ?.trim()) return PLATFORM_LEGAL_NAME;
+  return `${PLATFORM_LEGAL_NAME}, inscrita no CNPJ sob o nº ${formatDocument(PLATFORM_LEGAL_CNPJ)}`;
+}
+
+/**
+ * Texto do INFORMATIVO JURÍDICO do laudo.
+ * Deixa claro que o laudo foi emitido no sistema da TORRES VISTORIAS e que
+ * fotos, apontamentos e responsabilidade técnica são do vistoriador.
+ * Usa `settings.legal_footer` quando configurado.
+ */
 export function getLaudoLegalFooter(settings?: LaudoSettings | null): string {
-  return (
-    settings?.legal_footer?.trim() ||
-    "A vistoria cautelar ora apresentada foi realizada por vistoriador habilitado, com análise visual, documental e fotográfica do veículo no momento da inspeção. Este laudo não substitui perícia oficial criminal ou laudo emitido por órgão público competente. As informações são válidas para a data e horário da vistoria, podendo sofrer alteração posterior por intervenção, uso, reparo, sinistro, restrição administrativa ou atualização de bases públicas e privadas."
-  );
+  const custom = settings?.legal_footer?.trim();
+  if (custom) return custom;
+
+  const platform = platformLegalLabel();
+  const platformShort = PLATFORM_LEGAL_NAME;
+
+  return [
+    `A vistoria cautelar, ora apresentada, é realizada por vistoriador habilitado da empresa contratante deste sistema licenciado pela ${platform}, sendo certo que o mesmo possui competência técnica para verificar avarias externas e alterações estruturais do veículo em análise, sem qualquer ajuste de peças ou manuseio do veículo. Todas as fotografias, informações, apontamentos técnicos e o conteúdo atestado neste laudo são de inteira e exclusiva responsabilidade do vistoriador responsável pela vistoria. Não se atribui à presente vistoria cautelar a natureza de substituto de "Perícia Oficial Criminal" e/ou de qualquer laudo emitido por instituição oficial.`,
+    `As informações prestadas e atestadas na presente vistoria cautelar são válidas apenas para o momento de realização da vistoria. Neste sentido, a empresa contratante do sistema e a ${platformShort} não se responsabilizam por qualquer alteração eventualmente realizada no veículo, após a emissão desta vistoria cautelar.`,
+    `A ${platformShort} é responsável apenas pela disponibilização do sistema e pela transmissão das informações colhidas em sua base de dados, uma vez que o conteúdo da vistoria é inserido pelo vistoriador e, quando aplicável, informações complementares podem ser obtidas junto a bancos de dados públicos e privados, não possuindo a ${platformShort} qualquer ingerência, condições e capacidade técnica para inserção, alteração e/ou exclusão de tais informações, sejam elas negativas ou positivas sobre o veículo. Portanto, a ${platformShort} é mera licenciadora do sistema e replicadora das informações constantes da base e dos bancos de dados públicos e privados consultados, não havendo qualquer responsabilidade quanto às fotos, laudo técnico, inclusão, alteração e/ou exclusão de dados sobre os veículos vistoriados ou consultados.`,
+    `Na hipótese de a presente vistoria cautelar ser utilizada para fins de contrato de financiamento e/ou de seguro, cumpre-se informar que as instituições financeiras e companhias de seguro adotam métodos e critérios próprios para a aceitação — ou não — de veículos, não se destinando a presente vistoria cautelar para aceite ou recusa por parte das referidas instituições.`,
+  ].join("\n\n");
+}
+
+/** Parágrafos do informativo jurídico para renderização no PDF. */
+export function getLaudoLegalParagraphs(settings?: LaudoSettings | null): string[] {
+  return getLaudoLegalFooter(settings)
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 }
 
 export function getPrimaryColor(company?: LaudoCompany | null): string {
