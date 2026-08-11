@@ -44,7 +44,7 @@ export function HeroSection() {
           <p className="mt-4 text-sm text-muted-foreground">
             Trabalha com vistoria cautelar?{" "}
             <Link
-              to={ROUTES.vistoriadores}
+              to={ROUTES.vistoriaLogin}
               className="inline-flex items-center gap-1 font-semibold text-sky-600 transition-colors hover:text-sky-700"
             >
               Emita laudos na Torres Vistoria
