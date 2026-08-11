@@ -1,5 +1,5 @@
 import { db } from "@/infra/supabase/client";
-import { AppError, getErrorMessage, throwIfEdgeError } from "@/core/errors/app-error";
+import { AppError, getEdgeErrorMessage, getErrorMessage, throwIfEdgeError } from "@/core/errors/app-error";
 import type { Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
@@ -95,7 +95,7 @@ export const pdfService = {
       const { data, error } = await db.functions.invoke("generate-pdf", {
         body: { inspectionId },
       });
-      return throwIfEdgeError(error, data as Record<string, unknown> | null);
+      return await throwIfEdgeError(error, data as Record<string, unknown> | null);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
@@ -279,7 +279,7 @@ export const pdfService = {
           publicUrl: null,
         },
       });
-      if (reportError) throw reportError;
+      if (reportError) throw new AppError(await getEdgeErrorMessage(reportError));
 
       await this.downloadPdfBlob(finalBlob, reportFileName(params.inspection));
 
