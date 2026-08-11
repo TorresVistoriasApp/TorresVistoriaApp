@@ -15,6 +15,15 @@ export const PUBLIC_IMAGES = {
     ] as const,
   },
   vehicleBrands: (slug: string) => `/images/vehicle-brands/${slug}.webp` as const,
+  consultations: {
+    hero: "/images/consultations/heroconsultations.webp",
+    sampleReport: {
+      front: "/images/consultations/sample-report/front.webp",
+      rear: "/images/consultations/sample-report/rear.webp",
+      side: "/images/consultations/sample-report/side.webp",
+      interior: "/images/consultations/sample-report/interior.webp",
+    },
+  },
   placeholders: {
     logo: "/images/placeholders/logo.svg",
   },

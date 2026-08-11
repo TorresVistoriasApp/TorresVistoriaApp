@@ -1,5 +1,28 @@
 export type ScoreLevel = "excelente" | "bom" | "atencao" | "critico";
 
+export const SAMPLE_VEHICLE_PHOTOS = [
+  {
+    src: "/images/consultations/sample-report/front.webp",
+    alt: "Volkswagen T-Cross — vista frontal",
+    label: "Frontal",
+  },
+  {
+    src: "/images/consultations/sample-report/rear.webp",
+    alt: "Volkswagen T-Cross — vista traseira",
+    label: "Traseira",
+  },
+  {
+    src: "/images/consultations/sample-report/side.webp",
+    alt: "Volkswagen T-Cross — perfil lateral",
+    label: "Lateral",
+  },
+  {
+    src: "/images/consultations/sample-report/interior.webp",
+    alt: "Volkswagen T-Cross — interior e painel",
+    label: "Interior",
+  },
+] as const;
+
 export const SAMPLE_VEHICLE = {
   marca: "Volkswagen",
   modelo: "T-Cross Highline 1.4 TSI",
