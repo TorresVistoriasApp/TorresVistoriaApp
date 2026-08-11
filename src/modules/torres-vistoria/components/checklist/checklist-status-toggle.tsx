@@ -32,7 +32,7 @@ export function ChecklistStatusToggle({
   if (isSegmented) {
     return (
       <div
-        className={cn("flex w-full gap-1 rounded-md bg-muted/60 p-0.5", className)}
+        className={cn("flex w-full gap-1 rounded-lg bg-white/70 p-1 shadow-inner", className)}
         role="group"
         aria-label="Status do item"
       >
@@ -50,13 +50,11 @@ export function ChecklistStatusToggle({
               aria-label={meta.label}
               aria-pressed={isActive}
               className={cn(
-                "min-h-[36px] flex-1 rounded px-1 py-1.5 text-center text-[11px] font-semibold leading-tight transition-colors duration-100",
+                "min-h-[36px] flex-1 rounded-md px-1 py-1.5 text-center text-[11px] font-semibold leading-tight transition-colors duration-100",
                 "sm:min-h-[34px] sm:text-xs",
                 "disabled:opacity-50",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                isActive
-                  ? cn(meta.badgeActive, "shadow-sm")
-                  : "bg-transparent text-muted-foreground hover:bg-background/70 active:bg-background",
+                isActive ? meta.badgeActive : meta.badgeIdle,
               )}
             >
               {meta.shortLabel}

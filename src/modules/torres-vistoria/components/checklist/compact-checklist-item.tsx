@@ -2,6 +2,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import { ChecklistStatus } from "@/modules/torres-vistoria/domain/enums";
 import { getChecklistItemCriteria } from "@/modules/torres-vistoria/domain/checklist/checklist-catalog";
+import { getChecklistStatusMeta } from "@/modules/torres-vistoria/domain/checklist/checklist-status";
 import {
   formatChecklistIssueNotes,
   getChecklistIssueOptions,
@@ -27,6 +28,7 @@ function CompactChecklistItemComponent({
   onUpdate,
 }: CompactChecklistItemProps) {
   const criteria = getChecklistItemCriteria(item.category, item.item_name);
+  const statusMeta = getChecklistStatusMeta(item.status);
   const options = useMemo(
     () => getChecklistIssueOptions(item.category, item.item_name),
     [item.category, item.item_name],
@@ -98,52 +100,59 @@ function CompactChecklistItemComponent({
   };
 
   return (
-    <li
-      className={cn(
-        "border-b border-border/30 px-2 py-1.5 last:border-b-0 sm:px-2.5",
-        isNonConform && "bg-amber-50/20",
-        isActive && isNonConform && "bg-amber-50/35",
-      )}
-    >
+    <li className="px-1.5 py-1 sm:px-2">
       <div
-        className="space-y-1"
+        className={cn(
+          "relative overflow-hidden rounded-lg border px-2.5 py-2 transition-colors duration-150",
+          statusMeta.itemCard,
+          isActive && "shadow-sm ring-1 ring-primary/25",
+          needsIssue && "ring-1 ring-amber-400/50",
+        )}
         onFocusCapture={() => onActivate?.(item.id)}
         onClick={() => onActivate?.(item.id)}
       >
-        <div className="min-w-0">
-          <p className="text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
-            {item.item_name}
-          </p>
-          {criteria && (
-            <p className="mt-0.5 line-clamp-1 text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
-              {criteria}
+        <span
+          className={cn("absolute inset-y-0 left-0 w-1", statusMeta.itemAccent)}
+          aria-hidden
+        />
+
+        <div className="space-y-1.5 pl-1.5">
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
+              {item.item_name}
             </p>
+            {criteria && (
+              <p className="mt-0.5 line-clamp-1 text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
+                {criteria}
+              </p>
+            )}
+          </div>
+
+          <ChecklistStatusToggle
+            value={item.status}
+            disabled={disabled}
+            onChange={handleStatusChange}
+            variant="segmented"
+            fullWidth
+          />
+
+          {isNonConform && (
+            <ChecklistIssuePicker
+              itemId={item.id}
+              options={options}
+              selectedCodes={issueCodes}
+              manualObservation={manualObservation}
+              disabled={disabled}
+              showValidation={needsIssue}
+              collapsed={!showIssuePanel}
+              onToggleCode={handleToggleCode}
+              onManualChange={setManualObservation}
+              onManualBlur={handleManualBlur}
+              onExpand={() => onActivate?.(item.id)}
+            />
           )}
         </div>
-        <ChecklistStatusToggle
-          value={item.status}
-          disabled={disabled}
-          onChange={handleStatusChange}
-          variant="segmented"
-          fullWidth
-        />
       </div>
-
-      {isNonConform && (
-        <ChecklistIssuePicker
-          itemId={item.id}
-          options={options}
-          selectedCodes={issueCodes}
-          manualObservation={manualObservation}
-          disabled={disabled}
-          showValidation={needsIssue}
-          collapsed={!showIssuePanel}
-          onToggleCode={handleToggleCode}
-          onManualChange={setManualObservation}
-          onManualBlur={handleManualBlur}
-          onExpand={() => onActivate?.(item.id)}
-        />
-      )}
     </li>
   );
 }
