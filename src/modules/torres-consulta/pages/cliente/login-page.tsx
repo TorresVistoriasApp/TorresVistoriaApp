@@ -12,7 +12,6 @@ import {
   consumerLoginSchema,
   type ConsumerLoginInput,
 } from "@/core/auth/schemas/consumer-auth";
-import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { LoadingScreen } from "@/shared/components/loading-spinner";
@@ -50,11 +49,6 @@ export function ClienteLoginPage() {
   });
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-12">
-      <Link to={ROUTES.consultaLanding} className="mb-8">
-        <ConsultaBrandLogo size="lg" />
-      </Link>
-
       <Card className="w-full max-w-md border-border/70 shadow-elevated">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Entrar</CardTitle>
@@ -117,6 +111,5 @@ export function ClienteLoginPage() {
           </form>
         </CardContent>
       </Card>
-    </div>
   );
 }

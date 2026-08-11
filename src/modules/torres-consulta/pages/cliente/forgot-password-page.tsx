@@ -11,7 +11,6 @@ import {
   consumerForgotPasswordSchema,
   type ConsumerForgotPasswordInput,
 } from "@/core/auth/schemas/consumer-auth";
-import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 
@@ -41,11 +40,6 @@ export function ClienteForgotPasswordPage() {
   });
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-12">
-      <Link to={ROUTES.consultaLanding} className="mb-8">
-        <ConsultaBrandLogo size="lg" />
-      </Link>
-
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Esqueci minha senha</CardTitle>
@@ -77,6 +71,5 @@ export function ClienteForgotPasswordPage() {
           </Button>
         </CardContent>
       </Card>
-    </div>
   );
 }

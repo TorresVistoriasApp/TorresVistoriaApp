@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/config/routes";
 import { ConfirmPasswordField } from "@/core/auth/components/confirm-password-field";
 import { FormError } from "@/core/auth/components/form-error";
@@ -11,7 +11,6 @@ import {
   consumerResetPasswordSchema,
   type ConsumerResetPasswordInput,
 } from "@/core/auth/schemas/consumer-auth";
-import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 
@@ -44,11 +43,6 @@ export function ClienteResetPasswordPage() {
   });
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-12">
-      <Link to={ROUTES.consultaLanding} className="mb-8">
-        <ConsultaBrandLogo size="lg" />
-      </Link>
-
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Redefinir senha</CardTitle>
@@ -71,6 +65,5 @@ export function ClienteResetPasswordPage() {
           </form>
         </CardContent>
       </Card>
-    </div>
   );
 }
