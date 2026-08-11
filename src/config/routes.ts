@@ -120,6 +120,7 @@ export const ROUTES = {
   cookies: route(ROUTE_SLUGS.cookies),
   planos: "/#planos",
   consultar: "/#consultar",
+  vistoriadores: "/#vistoriadores",
 } as const;
 
 export const ROUTE_PATTERNS = {

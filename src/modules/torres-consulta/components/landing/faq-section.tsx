@@ -27,7 +27,7 @@ const FAQ_ITEMS = [
   {
     question: "Qual a diferença entre Torres Consulta e Torres Vistoria?",
     answer:
-      "Torres Consulta é destinado a pessoas físicas que desejam consultar veículos antes de comprar. Torres Vistoria é a plataforma profissional para empresas de vistoria cautelar.",
+      "Torres Consulta é para pessoas físicas que querem consultar o histórico de um veículo antes de comprar. Torres Vistoria é a plataforma profissional para vistoriadores e empresas de vistoria cautelar — com checklist técnico, fotos guiadas e geração de laudo cautelar em PDF.",
   },
   {
     question: "Como solicito a exclusão dos meus dados?",
