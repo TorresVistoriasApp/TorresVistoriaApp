@@ -38,12 +38,30 @@ export function throwIfError<T>(
   return result.data;
 }
 
-export function throwIfEdgeError<T extends Record<string, unknown>>(
+/**
+ * O supabase-js só expõe "Edge Function returned a non-2xx status code"; a mensagem
+ * real vem no corpo da resposta, que precisa ser lido de forma assíncrona.
+ */
+export async function getEdgeErrorMessage(error: unknown): Promise<string> {
+  const context = (error as { context?: Response } | null)?.context;
+  if (typeof context?.json === "function") {
+    try {
+      const payload = (await context.json()) as { error?: string; message?: string };
+      if (payload?.error) return String(payload.error);
+      if (payload?.message) return String(payload.message);
+    } catch {
+      // corpo não-JSON ou já consumido: usa o fallback genérico
+    }
+  }
+  return getErrorMessage(error);
+}
+
+export async function throwIfEdgeError<T extends Record<string, unknown>>(
   error: unknown,
   data: T | null,
-): T {
+): Promise<T> {
   if (error) {
-    throw new AppError(getErrorMessage(error));
+    throw new AppError(await getEdgeErrorMessage(error));
   }
   if (data && "error" in data && data.error) {
     throw new AppError(String(data.error));

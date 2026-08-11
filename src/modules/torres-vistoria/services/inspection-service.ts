@@ -245,7 +245,7 @@ export const inspectionService = {
       const { data, error } = await db.functions.invoke("create-report", {
         body: { inspectionId, storagePath },
       });
-      return throwIfEdgeError(error, data as Record<string, unknown> | null);
+      return await throwIfEdgeError(error, data as Record<string, unknown> | null);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
@@ -256,7 +256,7 @@ export const inspectionService = {
       const { data, error } = await db.functions.invoke("validate-report", {
         body: { verificationCode },
       });
-      return throwIfEdgeError(error, data as Record<string, unknown> | null);
+      return await throwIfEdgeError(error, data as Record<string, unknown> | null);
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

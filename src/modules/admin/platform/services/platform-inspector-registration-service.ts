@@ -1,5 +1,5 @@
 import { db } from "@/infra/supabase/client";
-import { AppError, getErrorMessage } from "@/core/errors/app-error";
+import { AppError, getEdgeErrorMessage } from "@/core/errors/app-error";
 import { formatUserFacingError, USER_MESSAGES } from "@/core/errors/user-facing-errors";
 import type { InspectorRegistration } from "@/core/auth/types";
 import type { UserRole } from "@/core/rbac/roles";
@@ -14,19 +14,7 @@ async function parseFunctionInvokeError(
   data: Record<string, unknown> | null,
 ): Promise<string> {
   if (data?.error) return formatUserFacingError(String(data.error));
-
-  const fnError = error as { context?: Response; message?: string };
-  if (fnError?.context) {
-    try {
-      const payload = (await fnError.context.json()) as { error?: string; message?: string };
-      if (payload.error) return formatUserFacingError(payload.error);
-      if (payload.message) return formatUserFacingError(payload.message);
-    } catch {
-      // ignore JSON parse errors
-    }
-  }
-
-  return formatUserFacingError(getErrorMessage(error));
+  return formatUserFacingError(await getEdgeErrorMessage(error));
 }
 
 export const platformInspectorRegistrationService = {
