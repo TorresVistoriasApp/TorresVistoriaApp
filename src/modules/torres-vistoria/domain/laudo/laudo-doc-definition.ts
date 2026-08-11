@@ -6,6 +6,7 @@ import {
 } from "@/modules/torres-vistoria/domain/photos/pdf-photo-layout";
 import { formatDate, formatDocument, formatPhone, formatPlate } from "@/shared/lib/formatters";
 import { getChecklistCategoryLabel } from "@/modules/torres-vistoria/domain/checklist/checklist-catalog";
+import { formatChecklistObservationForPdf } from "@/modules/torres-vistoria/domain/checklist/checklist-issue-options";
 import { CHECKLIST_APONTAMENTOS_FILTER_LABEL, getChecklistStatusPdfColor, getChecklistStatusPdfLabel } from "@/modules/torres-vistoria/domain/checklist/checklist-status";
 import {
   buildInspectionInfoRows,
@@ -420,10 +421,10 @@ function buildChecklistSection(payload: LaudoPayload): PdfNode[] {
       { text: item.item_name, fontSize: 8 },
       checklistStatusNode(item.status),
       {
-        text: item.notes || "Sem observação",
+        text: formatChecklistObservationForPdf(item.status, item.notes),
         fontSize: 8,
         color: item.status === "NAO_CONFORME" ? "#92400e" : "#0f172a",
-        bold: item.status === "NAO_CONFORME",
+        bold: item.status === "NAO_CONFORME" && Boolean(item.notes?.trim()),
       },
     ]);
 

@@ -1,50 +1,123 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import { ChecklistStatus } from "@/modules/torres-vistoria/domain/enums";
 import { getChecklistItemCriteria } from "@/modules/torres-vistoria/domain/checklist/checklist-catalog";
+import {
+  formatChecklistIssueNotes,
+  getChecklistIssueOptions,
+  parseChecklistIssueNotes,
+} from "@/modules/torres-vistoria/domain/checklist/checklist-issue-options";
 import { ChecklistStatusToggle } from "@/modules/torres-vistoria/components/checklist/checklist-status-toggle";
+import { ChecklistIssuePicker } from "@/modules/torres-vistoria/components/checklist/checklist-issue-picker";
 import { cn } from "@/shared/lib/utils";
-import { AlertCircle, Camera } from "lucide-react";
 
 type CompactChecklistItemProps = {
   item: ChecklistItem;
   disabled?: boolean;
+  isActive?: boolean;
+  onActivate?: (id: string) => void;
   onUpdate: (id: string, status: string, notes?: string) => void;
 };
 
-export function CompactChecklistItem({ item, disabled, onUpdate }: CompactChecklistItemProps) {
-  const [notes, setNotes] = useState(item.notes ?? "");
+function CompactChecklistItemComponent({
+  item,
+  disabled,
+  isActive = false,
+  onActivate,
+  onUpdate,
+}: CompactChecklistItemProps) {
   const criteria = getChecklistItemCriteria(item.category, item.item_name);
+  const options = useMemo(
+    () => getChecklistIssueOptions(item.category, item.item_name),
+    [item.category, item.item_name],
+  );
+
+  const parsed = useMemo(
+    () => parseChecklistIssueNotes(item.category, item.item_name, item.notes),
+    [item.category, item.item_name, item.notes],
+  );
+
+  const [issueCodes, setIssueCodes] = useState<string[]>(parsed.issueCodes);
+  const [manualObservation, setManualObservation] = useState(parsed.manualObservation);
+
   const isNonConform = item.status === ChecklistStatus.NAO_CONFORME;
-  const needsNote = isNonConform && !notes.trim();
+  const persistedNotes = formatChecklistIssueNotes(
+    item.category,
+    item.item_name,
+    issueCodes,
+    manualObservation,
+  );
+  const needsIssue = isNonConform && !persistedNotes;
+  /** Só o item ativo mostra o painel completo — reduz scroll. */
+  const showIssuePanel = isNonConform && isActive;
 
   useEffect(() => {
-    setNotes(item.notes ?? "");
-  }, [item.notes]);
+    const next = parseChecklistIssueNotes(item.category, item.item_name, item.notes);
+    setIssueCodes(next.issueCodes);
+    setManualObservation(next.manualObservation);
+  }, [item.category, item.item_name, item.notes]);
 
-  const handleStatusChange = (status: string) => {
-    onUpdate(item.id, status, notes.trim() || undefined);
+  const persist = (status: string, codes: readonly string[], manual: string) => {
+    const notes = formatChecklistIssueNotes(item.category, item.item_name, codes, manual);
+    onUpdate(item.id, status, notes ?? undefined);
   };
 
-  const handleNotesBlur = () => {
-    const trimmed = notes.trim();
-    if (trimmed !== (item.notes ?? "")) {
-      onUpdate(item.id, item.status, trimmed || undefined);
+  const handleStatusChange = (status: string) => {
+    onActivate?.(item.id);
+
+    if (status === ChecklistStatus.NAO_CONFORME) {
+      persist(status, issueCodes, manualObservation);
+      return;
+    }
+
+    setIssueCodes([]);
+    setManualObservation("");
+    onUpdate(item.id, status, undefined);
+  };
+
+  const handleToggleCode = (code: string) => {
+    onActivate?.(item.id);
+    const next = issueCodes.includes(code)
+      ? issueCodes.filter((c) => c !== code)
+      : [...issueCodes, code];
+    setIssueCodes(next);
+    persist(ChecklistStatus.NAO_CONFORME, next, manualObservation);
+  };
+
+  const handleManualBlur = () => {
+    const trimmed = manualObservation.trim();
+    const current = formatChecklistIssueNotes(
+      item.category,
+      item.item_name,
+      issueCodes,
+      trimmed,
+    );
+    if ((current ?? null) !== (item.notes ?? null)) {
+      persist(item.status, issueCodes, trimmed);
     }
   };
 
   return (
     <li
       className={cn(
-        "border-b border-border/40 px-2.5 py-2 last:border-b-0 sm:px-3",
-        isNonConform && "bg-amber-50/25",
+        "border-b border-border/30 px-2 py-1.5 last:border-b-0 sm:px-2.5",
+        isNonConform && "bg-amber-50/20",
+        isActive && isNonConform && "bg-amber-50/35",
       )}
     >
-      <div className="space-y-1.5">
+      <div
+        className="space-y-1"
+        onFocusCapture={() => onActivate?.(item.id)}
+        onClick={() => onActivate?.(item.id)}
+      >
         <div className="min-w-0">
-          <p className="text-sm font-medium leading-snug text-foreground">{item.item_name}</p>
+          <p className="text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
+            {item.item_name}
+          </p>
           {criteria && (
-            <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{criteria}</p>
+            <p className="mt-0.5 line-clamp-1 text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
+              {criteria}
+            </p>
           )}
         </div>
         <ChecklistStatusToggle
@@ -57,35 +130,22 @@ export function CompactChecklistItem({ item, disabled, onUpdate }: CompactCheckl
       </div>
 
       {isNonConform && (
-        <div className="mt-2 space-y-1.5 rounded-md border border-amber-200/60 bg-amber-50/50 p-2">
-          <p className="text-[11px] font-medium text-amber-900">Observação obrigatória</p>
-          <textarea
-            id={`notes-${item.id}`}
-            value={notes}
-            disabled={disabled}
-            rows={2}
-            aria-required
-            placeholder="Descreva o apontamento..."
-            onChange={(e) => setNotes(e.target.value)}
-            onBlur={handleNotesBlur}
-            className={cn(
-              "w-full resize-y rounded-md border bg-card px-2.5 py-2 text-sm",
-              "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-              needsNote ? "border-amber-500/60" : "border-border",
-            )}
-          />
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <Camera className="size-3 shrink-0 opacity-50" aria-hidden />
-            <span>Fotos do apontamento em breve</span>
-          </div>
-          {needsNote && (
-            <p className="flex items-center gap-1 text-[11px] font-medium text-amber-800">
-              <AlertCircle className="size-3 shrink-0" />
-              Preencha antes de gerar o laudo.
-            </p>
-          )}
-        </div>
+        <ChecklistIssuePicker
+          itemId={item.id}
+          options={options}
+          selectedCodes={issueCodes}
+          manualObservation={manualObservation}
+          disabled={disabled}
+          showValidation={needsIssue}
+          collapsed={!showIssuePanel}
+          onToggleCode={handleToggleCode}
+          onManualChange={setManualObservation}
+          onManualBlur={handleManualBlur}
+          onExpand={() => onActivate?.(item.id)}
+        />
       )}
     </li>
   );
 }
+
+export const CompactChecklistItem = memo(CompactChecklistItemComponent);

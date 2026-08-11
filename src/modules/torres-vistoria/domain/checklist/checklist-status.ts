@@ -29,8 +29,8 @@ const CHECKLIST_STATUS_META: Record<ChecklistStatus, ChecklistStatusMeta> = {
   },
   [ChecklistStatus.NAO_CONFORME]: {
     label: "Aprovado com Apontamentos",
-    shortLabel: "Apontamentos",
-    mobileLabel: "Apontamentos",
+    shortLabel: "Apontamento",
+    mobileLabel: "Apontamento",
     pdfColor: "#d97706",
     tone: "warning",
     badgeIdle: "bg-amber-50 text-amber-800 hover:bg-amber-100 active:bg-amber-200",
@@ -43,7 +43,7 @@ const CHECKLIST_STATUS_META: Record<ChecklistStatus, ChecklistStatusMeta> = {
   },
   [ChecklistStatus.NA]: {
     label: "Não Avaliado",
-    shortLabel: "Não Avaliado",
+    shortLabel: "N/A",
     mobileLabel: "N/A",
     pdfColor: "#64748b",
     tone: "muted",

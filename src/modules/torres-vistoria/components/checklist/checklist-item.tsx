@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import { ChecklistStatus } from "@/modules/torres-vistoria/domain/enums";
 import { getChecklistItemCriteria } from "@/modules/torres-vistoria/domain/checklist/checklist-catalog";
 import { getChecklistStatusMeta } from "@/modules/torres-vistoria/domain/checklist/checklist-status";
+import {
+  formatChecklistIssueNotes,
+  getChecklistIssueOptions,
+  parseChecklistIssueNotes,
+} from "@/modules/torres-vistoria/domain/checklist/checklist-issue-options";
 import { ChecklistStatusToggle } from "@/modules/torres-vistoria/components/checklist/checklist-status-toggle";
+import { ChecklistIssuePicker } from "@/modules/torres-vistoria/components/checklist/checklist-issue-picker";
 import { cn } from "@/shared/lib/utils";
-import { AlertCircle, ChevronDown, MessageSquarePlus } from "lucide-react";
+import { ChevronDown, MessageSquarePlus } from "lucide-react";
 
 type ChecklistItemProps = {
   item: ChecklistItem;
@@ -15,47 +21,98 @@ type ChecklistItemProps = {
 };
 
 export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistItemProps) {
-  const [notes, setNotes] = useState(item.notes ?? "");
+  const criteria = getChecklistItemCriteria(item.category, item.item_name);
+  const options = useMemo(
+    () => getChecklistIssueOptions(item.category, item.item_name),
+    [item.category, item.item_name],
+  );
+  const parsed = useMemo(
+    () => parseChecklistIssueNotes(item.category, item.item_name, item.notes),
+    [item.category, item.item_name, item.notes],
+  );
+
+  const [issueCodes, setIssueCodes] = useState<string[]>(parsed.issueCodes);
+  const [manualObservation, setManualObservation] = useState(parsed.manualObservation);
   const [showOptionalNotes, setShowOptionalNotes] = useState(
     () =>
       !!item.notes?.trim() &&
       item.status !== ChecklistStatus.CONFORME &&
-      item.status !== ChecklistStatus.PENDENTE,
+      item.status !== ChecklistStatus.PENDENTE &&
+      item.status !== ChecklistStatus.NAO_CONFORME,
   );
-  const criteria = getChecklistItemCriteria(item.category, item.item_name);
+
   const isPending = item.status === ChecklistStatus.PENDENTE;
   const isNonConform = item.status === ChecklistStatus.NAO_CONFORME;
   const isEvaluated = !isPending;
-  const needsNote = isNonConform && !notes.trim();
-  const showNotesField = isNonConform || showOptionalNotes;
+  const persistedNotes = formatChecklistIssueNotes(
+    item.category,
+    item.item_name,
+    issueCodes,
+    manualObservation,
+  );
+  const needsIssue = isNonConform && !persistedNotes;
   const ressalvasMeta = getChecklistStatusMeta(ChecklistStatus.NAO_CONFORME);
   const pendingMeta = getChecklistStatusMeta(ChecklistStatus.PENDENTE);
 
   useEffect(() => {
-    if (isNonConform) {
-      setShowOptionalNotes(true);
-    }
-  }, [isNonConform]);
+    const next = parseChecklistIssueNotes(item.category, item.item_name, item.notes);
+    setIssueCodes(next.issueCodes);
+    setManualObservation(next.manualObservation);
+  }, [item.category, item.item_name, item.notes]);
 
-  const handleStatusChange = (status: string) => {
-    const isNowNonConform = status === ChecklistStatus.NAO_CONFORME;
-    const isNowPending = status === ChecklistStatus.PENDENTE;
-
-    if (isNowNonConform) {
-      setShowOptionalNotes(true);
-    } else if (!notes.trim()) {
-      setShowOptionalNotes(false);
-    }
-
-    if (isNowPending) {
-      setShowOptionalNotes(false);
-    }
-
-    onUpdate(item.id, status, notes.trim() || undefined);
+  const persist = (status: string, codes: readonly string[], manual: string) => {
+    const notes = formatChecklistIssueNotes(item.category, item.item_name, codes, manual);
+    onUpdate(item.id, status, notes ?? undefined);
   };
 
-  const handleNotesBlur = () => {
-    const trimmed = notes.trim();
+  const handleStatusChange = (status: string) => {
+    if (status === ChecklistStatus.NAO_CONFORME) {
+      setShowOptionalNotes(false);
+      persist(status, issueCodes, manualObservation);
+      return;
+    }
+
+    if (status === ChecklistStatus.PENDENTE) {
+      setIssueCodes([]);
+      setManualObservation("");
+      setShowOptionalNotes(false);
+      onUpdate(item.id, status, undefined);
+      return;
+    }
+
+    // Aprovado / Não avaliado: limpa apontamentos rápidos
+    setIssueCodes([]);
+    setManualObservation("");
+    if (!showOptionalNotes) {
+      onUpdate(item.id, status, undefined);
+    } else {
+      onUpdate(item.id, status, manualObservation.trim() || undefined);
+    }
+  };
+
+  const handleToggleCode = (code: string) => {
+    const next = issueCodes.includes(code)
+      ? issueCodes.filter((c) => c !== code)
+      : [...issueCodes, code];
+    setIssueCodes(next);
+    persist(ChecklistStatus.NAO_CONFORME, next, manualObservation);
+  };
+
+  const handleManualBlur = () => {
+    const trimmed = manualObservation.trim();
+    if (isNonConform) {
+      const current = formatChecklistIssueNotes(
+        item.category,
+        item.item_name,
+        issueCodes,
+        trimmed,
+      );
+      if ((current ?? null) !== (item.notes ?? null)) {
+        persist(item.status, issueCodes, trimmed);
+      }
+      return;
+    }
+
     if (trimmed !== (item.notes ?? "")) {
       onUpdate(item.id, item.status, trimmed || undefined);
     }
@@ -63,7 +120,7 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
 
   const closeOptionalNotes = () => {
     if (isNonConform) return;
-    setNotes("");
+    setManualObservation("");
     setShowOptionalNotes(false);
     if (item.notes?.trim()) {
       onUpdate(item.id, item.status, undefined);
@@ -114,81 +171,51 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
         </div>
       </div>
 
-      {showNotesField ? (
-        <div
-          className={cn(
-            "mt-3 space-y-2 rounded-xl border p-3",
-            isNonConform
-              ? cn(ressalvasMeta.notesBorder, ressalvasMeta.notesBg)
-              : "border-border bg-muted/20",
-          )}
-        >
+      {isNonConform ? (
+        <ChecklistIssuePicker
+          itemId={item.id}
+          options={options}
+          selectedCodes={issueCodes}
+          manualObservation={manualObservation}
+          disabled={disabled}
+          showValidation={needsIssue}
+          onToggleCode={handleToggleCode}
+          onManualChange={setManualObservation}
+          onManualBlur={handleManualBlur}
+        />
+      ) : showOptionalNotes ? (
+        <div className="mt-3 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
           <div className="flex items-start justify-between gap-2">
-            <div>
-              <p
-                className={cn(
-                  "text-xs font-semibold",
-                  isNonConform ? ressalvasMeta.notesText : "text-foreground",
-                )}
-              >
-                Observações técnicas
-                {isNonConform ? (
-                  <span className="ml-1 font-bold">· obrigatório</span>
-                ) : (
-                  <span className="ml-1 font-normal text-muted-foreground">· opcional</span>
-                )}
-              </p>
-              {isNonConform && (
-                <p className="mt-0.5 text-[11px] text-amber-700/80">
-                  Descreva o apontamento para validar o laudo.
-                </p>
-              )}
-            </div>
-            {!isNonConform && (
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={closeOptionalNotes}
-                className="shrink-0 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
-              >
-                Fechar
-              </button>
-            )}
+            <p className="text-xs font-semibold text-foreground">
+              Observações técnicas
+              <span className="ml-1 font-normal text-muted-foreground">· opcional</span>
+            </p>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={closeOptionalNotes}
+              className="shrink-0 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
+            >
+              Fechar
+            </button>
           </div>
-
           <textarea
             id={`notes-${item.id}`}
-            value={notes}
+            value={manualObservation}
             disabled={disabled}
             rows={2}
-            aria-required={isNonConform}
-            placeholder={
-              isNonConform
-                ? "Ex.: corrosão perfurante no assoalho, lado direito..."
-                : "Ex.: pequeno risco superficial, dentro do padrão..."
-            }
-            onChange={(e) => setNotes(e.target.value)}
-            onBlur={handleNotesBlur}
+            placeholder="Ex.: pequeno risco superficial, dentro do padrão..."
+            onChange={(e) => setManualObservation(e.target.value)}
+            onBlur={handleManualBlur}
             className={cn(
-              "w-full resize-y rounded-lg border bg-card px-3 py-2.5 text-sm",
+              "w-full resize-y rounded-lg border border-border bg-card px-3 py-2.5 text-sm",
               "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
               "disabled:opacity-50",
-              needsNote
-                ? "border-amber-500/60 ring-1 ring-amber-500/25"
-                : "border-border",
             )}
           />
-
-          {needsNote && (
-            <p className="flex items-center gap-1.5 text-xs font-medium text-amber-800">
-              <AlertCircle className="size-3.5 shrink-0" />
-              Preencha antes de gerar o laudo.
-            </p>
-          )}
         </div>
       ) : (
-        isEvaluated &&
-        !isNonConform && (
+        isEvaluated && (
           <button
             type="button"
             disabled={disabled}

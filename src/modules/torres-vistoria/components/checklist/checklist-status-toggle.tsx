@@ -32,10 +32,7 @@ export function ChecklistStatusToggle({
   if (isSegmented) {
     return (
       <div
-        className={cn(
-          "flex w-full gap-1.5 rounded-lg bg-muted/50 p-1",
-          className,
-        )}
+        className={cn("flex w-full gap-1 rounded-md bg-muted/60 p-0.5", className)}
         role="group"
         aria-label="Status do item"
       >
@@ -53,15 +50,16 @@ export function ChecklistStatusToggle({
               aria-label={meta.label}
               aria-pressed={isActive}
               className={cn(
-                "min-h-[40px] flex-1 rounded-md px-1.5 py-2 text-center text-[10px] font-semibold leading-tight transition-all duration-150 sm:min-h-[36px] sm:text-xs",
+                "min-h-[36px] flex-1 rounded px-1 py-1.5 text-center text-[11px] font-semibold leading-tight transition-colors duration-100",
+                "sm:min-h-[34px] sm:text-xs",
                 "disabled:opacity-50",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                 isActive
                   ? cn(meta.badgeActive, "shadow-sm")
-                  : "bg-transparent text-muted-foreground hover:bg-background/80",
+                  : "bg-transparent text-muted-foreground hover:bg-background/70 active:bg-background",
               )}
             >
-              <span className="hidden sm:inline">{meta.label}</span>
-              <span className="sm:hidden">{meta.mobileLabel}</span>
+              {meta.shortLabel}
             </button>
           );
         })}
@@ -69,12 +67,10 @@ export function ChecklistStatusToggle({
     );
   }
 
-  const stackedMobile = (compact || fullWidth) && fullWidth;
-
   return (
     <div
       className={cn(
-        "inline-flex rounded-xl border border-border bg-muted/40 p-1",
+        "inline-flex rounded-lg border border-border bg-muted/40 p-0.5",
         fullWidth && "flex w-full",
         className,
       )}
@@ -95,27 +91,11 @@ export function ChecklistStatusToggle({
             aria-label={meta.label}
             aria-pressed={isActive}
             className={cn(
-              "flex items-center justify-center rounded-lg font-semibold transition-colors duration-150 disabled:opacity-50",
-              fullWidth ? "min-h-[52px] flex-1 px-1 py-2" : "min-h-[44px] gap-1.5 px-2 py-2.5 text-xs",
-              stackedMobile ? "flex-col gap-1" : "flex-row gap-1.5 text-xs",
+              "flex min-h-[40px] flex-1 items-center justify-center rounded-md px-2 py-1.5 text-xs font-semibold transition-colors duration-100 disabled:opacity-50",
               isActive ? meta.badgeActive : meta.badgeIdle,
             )}
           >
-            {stackedMobile ? (
-              <>
-                <span className="text-center text-[10px] font-bold leading-tight sm:hidden">
-                  {meta.mobileLabel}
-                </span>
-                <span className="hidden text-xs sm:inline">{meta.label}</span>
-              </>
-            ) : compact ? (
-              <>
-                <span className="sm:hidden">{meta.mobileLabel}</span>
-                <span className="hidden sm:inline">{meta.label}</span>
-              </>
-            ) : (
-              <span>{meta.label}</span>
-            )}
+            {meta.shortLabel}
           </button>
         );
       })}
