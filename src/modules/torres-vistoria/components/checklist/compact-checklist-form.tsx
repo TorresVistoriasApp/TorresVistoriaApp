@@ -183,7 +183,7 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
             </button>
 
             {isOpen && (
-              <ul className="border-t border-border/40">
+              <ul className="space-y-0 border-t border-border/40 bg-muted/20 py-1">
                 {group.items.map((item) => (
                   <CompactChecklistItem
                     key={item.id}
