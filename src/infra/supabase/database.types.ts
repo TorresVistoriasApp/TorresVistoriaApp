@@ -1925,6 +1925,45 @@ export type Database = {
         }
         Relationships: []
       }
+      consumer_profiles: {
+        Row: {
+          account_status: string
+          created_at: string
+          deleted_at: string | null
+          deletion_requested_at: string | null
+          deletion_scheduled_at: string | null
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_status?: string
+          created_at?: string
+          deleted_at?: string | null
+          deletion_requested_at?: string | null
+          deletion_scheduled_at?: string | null
+          email: string
+          full_name: string
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_status?: string
+          created_at?: string
+          deleted_at?: string | null
+          deletion_requested_at?: string | null
+          deletion_scheduled_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           auth_user_id: string | null
