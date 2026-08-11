@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Download, FileSearch, FileText, Plus } from "lucide-react";
 import { ROUTES } from "@/config/routes";
+import { usePrincipal } from "@/core/auth/use-principal";
+import { PrincipalType } from "@/core/rbac/roles";
 import { KpiCard } from "@/shared/components/charts/kpi-card";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -30,19 +32,27 @@ const MOCK_CONSULTAS = [
 ] as const;
 
 export function ClienteDashboardPage() {
+  const { resolution } = usePrincipal();
+  const displayName =
+    resolution.status === "resolved" && resolution.principalType === PrincipalType.CUSTOMER
+      ? resolution.consumerProfile.full_name.split(" ")[0]
+      : null;
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Dashboard</h1>
+          <h1 className="text-2xl font-black tracking-tight text-foreground">
+            {displayName ? `Olá, ${displayName}` : "Início"}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Acompanhe suas consultas e relatórios veiculares.
           </p>
         </div>
         <Button asChild>
-          <Link to={ROUTES.consultaLanding}>
+          <Link to={ROUTES.consultaAppNovaConsulta}>
             <Plus className="h-4 w-4" />
-            Nova Consulta
+            Nova consulta
           </Link>
         </Button>
       </div>

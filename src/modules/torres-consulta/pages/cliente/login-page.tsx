@@ -2,26 +2,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff, LockKeyhole, LogIn, Mail, ShieldCheck } from "lucide-react";
+import { ArrowRight, LogIn } from "lucide-react";
 import { ROUTES } from "@/config/routes";
-import { useSession } from "@/core/auth/session-context";
-import { consumerAuthService } from "@/modules/torres-consulta/auth/consumer-auth-service";
+import { EmailField } from "@/core/auth/components/email-field";
+import { FormError } from "@/core/auth/components/form-error";
+import { PasswordField } from "@/core/auth/components/password-field";
+import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import {
   consumerLoginSchema,
   type ConsumerLoginInput,
-} from "@/modules/torres-consulta/auth/schemas/consumer-auth";
+} from "@/core/auth/schemas/consumer-auth";
 import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 import { LoadingScreen } from "@/shared/components/loading-spinner";
+import { usePrincipal } from "@/core/auth/use-principal";
+import { PrincipalType } from "@/core/rbac/roles";
 
 export function ClienteLoginPage() {
-  const { session, loading } = useSession();
   const location = useLocation();
+  const { principalType, loading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
 
@@ -35,14 +36,16 @@ export function ClienteLoginPage() {
   });
 
   if (loading) return <LoadingScreen />;
-  if (session) return <Navigate to={from ?? ROUTES.clienteDashboard} replace />;
+  if (principalType === PrincipalType.CUSTOMER) {
+    return <Navigate to={from ?? ROUTES.consultaApp} replace />;
+  }
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
     try {
       await consumerAuthService.signIn(values);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao entrar");
+      setError(err instanceof Error ? err.message : "Não foi possível entrar. Verifique os dados e tente novamente.");
     }
   });
 
@@ -54,50 +57,13 @@ export function ClienteLoginPage() {
 
       <Card className="w-full max-w-md border-border/70 shadow-elevated">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Área do Cliente</CardTitle>
-          <CardDescription>Entre com seu e-mail para acessar seus relatórios.</CardDescription>
+          <CardTitle className="text-xl">Entrar</CardTitle>
+          <CardDescription>Acesse sua conta Torres Consulta.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  className="pl-11"
-                  {...register("email")}
-                />
-              </div>
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <div className="relative">
-                <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  className="pl-11 pr-11"
-                  {...register("password")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  aria-label="Alternar visibilidade da senha"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
+            <EmailField error={errors.email?.message} {...register("email")} />
+            <PasswordField error={errors.password?.message} {...register("password")} />
 
             <label className="flex items-start gap-3 text-sm text-muted-foreground">
               <input type="checkbox" className="mt-1 h-4 w-4 rounded" {...register("acceptTerms")} />
@@ -117,13 +83,9 @@ export function ClienteLoginPage() {
               <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
             )}
 
-            {error && (
-              <p className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-                {error}
-              </p>
-            )}
+            {error && <FormError message={error} />}
 
-            <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+            <Button type="submit" className="w-full touch-target" size="lg" disabled={isSubmitting}>
               {isSubmitting ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               ) : (
@@ -137,29 +99,24 @@ export function ClienteLoginPage() {
 
             <p className="text-center text-sm text-muted-foreground">
               <Link
-                to={ROUTES.clienteForgotPassword}
+                to={ROUTES.consultaForgotPassword}
                 className="font-semibold text-primary hover:underline"
               >
                 Esqueci minha senha
               </Link>
             </p>
             <p className="text-center text-sm text-muted-foreground">
-              Não tem conta?{" "}
+              Novo por aqui?{" "}
               <Link
-                to={ROUTES.clienteRegister}
+                to={ROUTES.consultaRegister}
                 className="font-semibold text-primary hover:underline"
               >
-                Cadastre-se gratuitamente
+                Criar conta
               </Link>
             </p>
           </form>
         </CardContent>
       </Card>
-
-      <p className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
-        <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-        Sessão segura com Supabase Auth
-      </p>
     </div>
   );
 }

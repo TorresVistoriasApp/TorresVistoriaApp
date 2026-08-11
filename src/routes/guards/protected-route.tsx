@@ -1,5 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useTenantBoot } from "@/core/tenant/use-tenant-boot";
+import { usePrincipal } from "@/core/auth/use-principal";
+import { PrincipalType } from "@/core/rbac/roles";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { ROUTES } from "@/config/routes";
 
@@ -10,8 +12,11 @@ import { ROUTES } from "@/config/routes";
  * manifesto de rotas de cada módulo, via `RouteAccess`.
  */
 export function ProtectedRoute() {
-  const { session, isPlatformAdmin, loading } = useTenantBoot();
+  const { session, isPlatformAdmin, loading: tenantBootLoading } = useTenantBoot();
+  const { principalType, loading: principalLoading } = usePrincipal();
   const location = useLocation();
+
+  const loading = tenantBootLoading || (session && principalLoading);
 
   if (loading) {
     return (
@@ -23,6 +28,10 @@ export function ProtectedRoute() {
 
   if (!session) {
     return <Navigate to={ROUTES.login} state={{ from: location }} replace />;
+  }
+
+  if (principalType === PrincipalType.CUSTOMER) {
+    return <Navigate to={ROUTES.consultaApp} replace />;
   }
 
   // Operador da plataforma não pertence a nenhuma empresa: nunca deve entrar

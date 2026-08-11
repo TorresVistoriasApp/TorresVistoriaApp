@@ -56,7 +56,7 @@ export function LandingHeader() {
             <Link to={ROUTES.vistoriadores}>Para Vistoriadores</Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link to={ROUTES.clienteLogin}>Entrar</Link>
+            <Link to={ROUTES.consultaLogin}>Entrar</Link>
           </Button>
           <Button size="sm" asChild>
             <Link to={ROUTES.consultar}>Consultar Veículo</Link>
@@ -89,7 +89,7 @@ export function LandingHeader() {
             ))}
             <div className="mt-3 flex flex-col gap-2 border-t border-border/60 pt-3">
               <Button variant="outline" asChild>
-                <Link to={ROUTES.clienteLogin} onClick={() => setMobileOpen(false)}>
+                <Link to={ROUTES.consultaLogin} onClick={() => setMobileOpen(false)}>
                   Entrar
                 </Link>
               </Button>

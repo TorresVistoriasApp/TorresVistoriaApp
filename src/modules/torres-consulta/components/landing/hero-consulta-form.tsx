@@ -29,7 +29,7 @@ export function HeroConsultaForm() {
     } else {
       params.set("chassi", value.trim().toUpperCase());
     }
-    navigate(`${ROUTES.clienteRegister}?${params.toString()}`);
+    navigate(`${ROUTES.consultaRegister}?${params.toString()}`);
   };
 
   return (

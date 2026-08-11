@@ -26,7 +26,7 @@ export const MARKETING_FOOTER = {
     { label: "Cookies", to: ROUTES.cookies },
   ],
   suporte: [
-    { label: "Área do Cliente", to: ROUTES.clienteLogin },
+    { label: "Área do Cliente", to: ROUTES.consultaLogin },
     { label: "Área do Vistoriador", to: ROUTES.vistoriaLogin },
   ],
 } as const;

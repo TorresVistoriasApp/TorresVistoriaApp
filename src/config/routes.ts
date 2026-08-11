@@ -30,9 +30,14 @@ export const ROUTE_SLUGS = {
   admin: "admin",
   adminCompanies: "empresas",
   consulta: "consulta",
+  consultaApp: "app",
   consultaNew: "nova",
   consultaHistory: "historico",
   consultaCredits: "creditos",
+  consultaLogin: "login",
+  consultaRegister: "cadastro",
+  consultaForgotPassword: "esqueci-senha",
+  consultaResetPassword: "redefinir-senha",
   cliente: "cliente",
   clienteLogin: "login",
   clienteRegister: "cadastro",
@@ -61,6 +66,9 @@ const settingsRoute = (slug: string) => route(ROUTE_SLUGS.settings, slug);
 const financialRoute = (slug: string) => route(ROUTE_SLUGS.financial, slug);
 const consultaRoute = (slug: string) => route(ROUTE_SLUGS.consulta, slug);
 const clienteRoute = (slug: string) => route(ROUTE_SLUGS.cliente, slug);
+
+const consultaAppRoute = (...segments: string[]) =>
+  route(ROUTE_SLUGS.consulta, ROUTE_SLUGS.consultaApp, ...segments);
 
 export const ROUTES = {
   login: route(ROUTE_SLUGS.login),
@@ -99,6 +107,14 @@ export const ROUTES = {
   consultaCredits: consultaRoute(ROUTE_SLUGS.consultaCredits),
   consultaDetail: (id: string) => route(ROUTE_SLUGS.consulta, encodeURIComponent(id)),
   consultaLanding: "/",
+  consultaLogin: route(ROUTE_SLUGS.consulta, ROUTE_SLUGS.consultaLogin),
+  consultaRegister: route(ROUTE_SLUGS.consulta, ROUTE_SLUGS.consultaRegister),
+  consultaForgotPassword: route(ROUTE_SLUGS.consulta, ROUTE_SLUGS.consultaForgotPassword),
+  consultaResetPassword: route(ROUTE_SLUGS.consulta, ROUTE_SLUGS.consultaResetPassword),
+  consultaApp: consultaAppRoute(),
+  consultaAppConsultas: consultaAppRoute("consultas"),
+  consultaAppNovaConsulta: consultaAppRoute("nova-consulta"),
+  consultaAppMinhaConta: consultaAppRoute("minha-conta"),
   cliente: route(ROUTE_SLUGS.cliente),
   vistoriaLogin: route(ROUTE_SLUGS.vistoria, ROUTE_SLUGS.login),
   clienteLogin: clienteRoute(ROUTE_SLUGS.clienteLogin),

@@ -1,8 +1,24 @@
 import { Navigate } from "react-router-dom";
 import { ROUTE_PATTERNS, ROUTES } from "@/config/routes";
 import { lazyRoute } from "@/routes/lazy-route";
+import { ConsumerAuthRoute } from "@/routes/guards/consumer-auth-route";
 import type { ModuleRoutes } from "@/routes/route-contract";
 import { ClienteLayout } from "@/modules/torres-consulta/layouts/cliente-layout";
+
+const legacyAuthRedirects = [
+  { path: ROUTES.cliente, element: <Navigate to={ROUTES.consultaLogin} replace /> },
+  { path: ROUTES.clienteLogin, element: <Navigate to={ROUTES.consultaLogin} replace /> },
+  { path: ROUTES.clienteRegister, element: <Navigate to={ROUTES.consultaRegister} replace /> },
+  { path: ROUTES.clienteForgotPassword, element: <Navigate to={ROUTES.consultaForgotPassword} replace /> },
+  { path: ROUTES.clienteResetPassword, element: <Navigate to={ROUTES.consultaResetPassword} replace /> },
+] as const;
+
+const legacyConsumerRedirects = [
+  { path: ROUTES.clienteDashboard, element: <Navigate to={ROUTES.consultaApp} replace /> },
+  { path: ROUTES.clienteConsultas, element: <Navigate to={ROUTES.consultaAppConsultas} replace /> },
+  { path: ROUTES.clienteProfile, element: <Navigate to={ROUTES.consultaAppMinhaConta} replace /> },
+  { path: ROUTES.clienteSettings, element: <Navigate to={ROUTES.consultaAppMinhaConta} replace /> },
+] as const;
 
 export const torresConsultaRoutes: ModuleRoutes = {
   marketing: [
@@ -78,34 +94,39 @@ export const torresConsultaRoutes: ModuleRoutes = {
   ],
 
   auth: [
-    { path: ROUTES.cliente, element: <Navigate to={ROUTES.clienteLogin} replace /> },
     {
-      path: ROUTES.clienteLogin,
-      element: lazyRoute(
-        () => import("@/modules/torres-consulta/pages/cliente/login-page"),
-        "ClienteLoginPage",
-      ),
-    },
-    {
-      path: ROUTES.clienteRegister,
-      element: lazyRoute(
-        () => import("@/modules/torres-consulta/pages/cliente/register-page"),
-        "ClienteRegisterPage",
-      ),
-    },
-    {
-      path: ROUTES.clienteForgotPassword,
-      element: lazyRoute(
-        () => import("@/modules/torres-consulta/pages/cliente/forgot-password-page"),
-        "ClienteForgotPasswordPage",
-      ),
-    },
-    {
-      path: ROUTES.clienteResetPassword,
-      element: lazyRoute(
-        () => import("@/modules/torres-consulta/pages/cliente/reset-password-page"),
-        "ClienteResetPasswordPage",
-      ),
+      element: <ConsumerAuthRoute />,
+      children: [
+        {
+          path: ROUTES.consultaLogin,
+          element: lazyRoute(
+            () => import("@/modules/torres-consulta/pages/cliente/login-page"),
+            "ClienteLoginPage",
+          ),
+        },
+        {
+          path: ROUTES.consultaRegister,
+          element: lazyRoute(
+            () => import("@/modules/torres-consulta/pages/cliente/register-page"),
+            "ClienteRegisterPage",
+          ),
+        },
+        {
+          path: ROUTES.consultaForgotPassword,
+          element: lazyRoute(
+            () => import("@/modules/torres-consulta/pages/cliente/forgot-password-page"),
+            "ClienteForgotPasswordPage",
+          ),
+        },
+        {
+          path: ROUTES.consultaResetPassword,
+          element: lazyRoute(
+            () => import("@/modules/torres-consulta/pages/cliente/reset-password-page"),
+            "ClienteResetPasswordPage",
+          ),
+        },
+        ...legacyAuthRedirects,
+      ],
     },
   ],
 
@@ -114,33 +135,34 @@ export const torresConsultaRoutes: ModuleRoutes = {
       element: <ClienteLayout />,
       children: [
         {
-          path: ROUTES.clienteDashboard,
+          path: ROUTES.consultaApp,
           element: lazyRoute(
             () => import("@/modules/torres-consulta/pages/cliente/dashboard-page"),
             "ClienteDashboardPage",
           ),
         },
         {
-          path: ROUTES.clienteProfile,
-          element: lazyRoute(
-            () => import("@/modules/torres-consulta/pages/cliente/profile-page"),
-            "ClienteProfilePage",
-          ),
-        },
-        {
-          path: ROUTES.clienteConsultas,
+          path: ROUTES.consultaAppConsultas,
           element: lazyRoute(
             () => import("@/modules/torres-consulta/pages/cliente/consultas-page"),
             "ClienteConsultasPage",
           ),
         },
         {
-          path: ROUTES.clienteSettings,
+          path: ROUTES.consultaAppNovaConsulta,
           element: lazyRoute(
-            () => import("@/modules/torres-consulta/pages/cliente/settings-page"),
-            "ClienteSettingsPage",
+            () => import("@/modules/torres-consulta/pages/cliente/nova-consulta-page"),
+            "ConsultaAppNovaConsultaPage",
           ),
         },
+        {
+          path: ROUTES.consultaAppMinhaConta,
+          element: lazyRoute(
+            () => import("@/modules/torres-consulta/pages/cliente/profile-page"),
+            "ClienteProfilePage",
+          ),
+        },
+        ...legacyConsumerRedirects,
       ],
     },
   ],

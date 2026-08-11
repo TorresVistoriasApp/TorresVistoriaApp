@@ -2,16 +2,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate } from "react-router-dom";
-import { ArrowRight, Mail, User, UserPlus } from "lucide-react";
+import { ArrowRight, User, UserPlus } from "lucide-react";
 import { ROUTES } from "@/config/routes";
-import { useSession } from "@/core/auth/session-context";
-import { consumerAuthService } from "@/modules/torres-consulta/auth/consumer-auth-service";
+import { ConfirmPasswordField } from "@/core/auth/components/confirm-password-field";
+import {
+  DuplicateEmailAlert,
+  isDuplicateEmailError,
+} from "@/core/auth/components/duplicate-email-alert";
+import { EmailField } from "@/core/auth/components/email-field";
+import { FormError } from "@/core/auth/components/form-error";
+import { PasswordStrengthInput } from "@/core/auth/components/password-strength-input";
+import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import {
   consumerRegisterSchema,
   type ConsumerRegisterInput,
-} from "@/modules/torres-consulta/auth/schemas/consumer-auth";
+} from "@/core/auth/schemas/consumer-auth";
 import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
-import { PasswordStrengthInput } from "@/core/auth/components/password-strength-input";
+import { usePrincipal } from "@/core/auth/use-principal";
+import { PrincipalType } from "@/core/rbac/roles";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
@@ -19,9 +27,11 @@ import { Label } from "@/shared/ui/label";
 import { LoadingScreen } from "@/shared/components/loading-spinner";
 
 export function ClienteRegisterPage() {
-  const { session, loading } = useSession();
+  const { principalType, loading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [successEmail, setSuccessEmail] = useState<string | null>(null);
+  const [resendPending, setResendPending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -41,31 +51,64 @@ export function ClienteRegisterPage() {
   const password = watch("password");
 
   if (loading) return <LoadingScreen />;
-  if (session) return <Navigate to={ROUTES.clienteDashboard} replace />;
+  if (principalType === PrincipalType.CUSTOMER) {
+    return <Navigate to={ROUTES.consultaApp} replace />;
+  }
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
     try {
       await consumerAuthService.signUp(values);
-      setSuccess(true);
+      setSuccessEmail(values.email);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao criar conta");
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Não foi possível concluir o cadastro. Verifique os dados e tente novamente.";
+      setError(message);
     }
   });
 
-  if (success) {
+  const handleResend = async () => {
+    if (!successEmail) return;
+    setResendPending(true);
+    setResendMessage(null);
+    try {
+      await consumerAuthService.resendVerificationEmail(successEmail);
+      setResendMessage("Link de confirmação reenviado. Verifique seu e-mail.");
+    } catch (err) {
+      setResendMessage(
+        err instanceof Error ? err.message : "Não foi possível reenviar o e-mail de confirmação.",
+      );
+    } finally {
+      setResendPending(false);
+    }
+  };
+
+  if (successEmail) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-12">
         <Card className="w-full max-w-md text-center">
           <CardHeader>
-            <CardTitle>Verifique seu e-mail</CardTitle>
+            <CardTitle>Confirme seu e-mail</CardTitle>
             <CardDescription>
-              Enviamos um link de confirmação. Após verificar, você poderá acessar sua conta.
+              Enviamos um link de confirmação para <span className="font-medium">{successEmail}</span>.
+              Após confirmar, você poderá acessar sua conta.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to={ROUTES.clienteLogin}>Ir para o login</Link>
+          <CardContent className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full touch-target"
+              disabled={resendPending}
+              onClick={() => void handleResend()}
+            >
+              {resendPending ? "Reenviando..." : "Reenviar confirmação"}
+            </Button>
+            {resendMessage && <p className="text-sm text-muted-foreground">{resendMessage}</p>}
+            <Button asChild className="w-full touch-target">
+              <Link to={ROUTES.consultaLogin}>Voltar para login</Link>
             </Button>
           </CardContent>
         </Card>
@@ -82,7 +125,7 @@ export function ClienteRegisterPage() {
       <Card className="w-full max-w-md border-border/70 shadow-elevated">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Criar conta</CardTitle>
-          <CardDescription>Cadastro gratuito para acessar seus relatórios veiculares.</CardDescription>
+          <CardDescription>Cadastro gratuito para consultas veiculares.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -90,24 +133,12 @@ export function ClienteRegisterPage() {
               <Label htmlFor="name">Nome completo</Label>
               <div className="relative">
                 <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="name" className="pl-11" {...register("name")} />
+                <Input id="name" className="pl-11 touch-target" {...register("name")} />
               </div>
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="email" type="email" autoComplete="email" className="pl-11" {...register("email")} />
-              </div>
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone (opcional)</Label>
-              <Input id="phone" type="tel" placeholder="(00) 00000-0000" {...register("phone")} />
-            </div>
+            <EmailField error={errors.email?.message} {...register("email")} />
 
             <PasswordStrengthInput
               id="password"
@@ -117,13 +148,7 @@ export function ClienteRegisterPage() {
               error={errors.password?.message}
             />
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar senha</Label>
-              <Input id="confirmPassword" type="password" {...register("confirmPassword")} />
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-              )}
-            </div>
+            <ConfirmPasswordField error={errors.confirmPassword?.message} {...register("confirmPassword")} />
 
             <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-4 text-sm">
               <label className="flex items-start gap-3">
@@ -165,13 +190,13 @@ export function ClienteRegisterPage() {
               )}
             </div>
 
-            {error && (
-              <p className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-                {error}
-              </p>
-            )}
+            {error && isDuplicateEmailError(error) ? (
+              <DuplicateEmailAlert />
+            ) : error ? (
+              <FormError message={error} />
+            ) : null}
 
-            <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+            <Button type="submit" className="w-full touch-target" size="lg" disabled={isSubmitting}>
               {isSubmitting ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               ) : (
@@ -184,8 +209,8 @@ export function ClienteRegisterPage() {
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Já tem conta?{" "}
-              <Link to={ROUTES.clienteLogin} className="font-semibold text-primary hover:underline">
+              Já possui uma conta?{" "}
+              <Link to={ROUTES.consultaLogin} className="font-semibold text-primary hover:underline">
                 Entrar
               </Link>
             </p>
