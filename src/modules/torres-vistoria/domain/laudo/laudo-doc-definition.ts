@@ -583,7 +583,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     ...buildTechnicalOpinionSection(inspection),
     premiumHeader("INFORMATIVO JURÍDICO"),
     {
-      stack: getLaudoLegalParagraphs(payload.settings).map((paragraph, index, list) => ({
+      stack: getLaudoLegalParagraphs().map((paragraph, index, list) => ({
         text: paragraph,
         fontSize: 8,
         alignment: "justify" as const,
