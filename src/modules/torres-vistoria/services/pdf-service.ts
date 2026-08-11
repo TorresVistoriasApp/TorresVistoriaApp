@@ -13,6 +13,12 @@ import { buildVerificationCode, formatLaudoNumber } from "@/modules/torres-visto
 import { REPORTS_BUCKET } from "@/infra/storage/buckets";
 import { buildReportStoragePath } from "@/infra/storage/paths";
 
+/**
+ * A logo ocupa 160pt de largura no cabeçalho do laudo; rasterizar o vetor a 4x
+ * garante ~288 DPI na impressão em vez dos ~117 DPI do raster antigo.
+ */
+const LOGO_PRINT_WIDTH_PX = 640;
+
 async function sha256Bytes(data: Blob | string): Promise<string> {
   const buffer = typeof data === "string" ? new TextEncoder().encode(data) : await data.arrayBuffer();
   const hash = await crypto.subtle.digest("SHA-256", buffer);
@@ -162,9 +168,9 @@ export const pdfService = {
       verificationCode,
       integrityHash: baseHash,
       validationUrl: options.validationUrl,
-      logoDataUrl: await imageUrlToPdfDataUrl(PUBLIC_IMAGES.brand.trim, {
-        maxWidth: 320,
-        maxHeight: 128,
+      logoDataUrl: await imageUrlToPdfDataUrl(PUBLIC_IMAGES.brand.lockup, {
+        maxWidth: LOGO_PRINT_WIDTH_PX,
+        maxHeight: LOGO_PRINT_WIDTH_PX,
         preferAlpha: true,
       }),
       brandLogoDataUrl: brandLogoPath
