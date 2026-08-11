@@ -149,6 +149,13 @@ export const torresConsultaRoutes: ModuleRoutes = {
           ),
         },
         {
+          path: ROUTE_PATTERNS.consultaAppConsultaDetail,
+          element: lazyRoute(
+            () => import("@/modules/torres-consulta/pages/cliente/consulta-detail-page"),
+            "ClienteConsultaDetailPage",
+          ),
+        },
+        {
           path: ROUTES.consultaAppNovaConsulta,
           element: lazyRoute(
             () => import("@/modules/torres-consulta/pages/cliente/nova-consulta-page"),

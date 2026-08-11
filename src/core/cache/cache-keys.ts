@@ -21,6 +21,14 @@ export const cacheKeys = {
       ["tenant", tenantId, "consulta", id] as const,
     credits: (tenantId: string) => ["tenant", tenantId, "consulta", "credits"] as const,
   },
+  consumer: {
+    consultas: (consumerId: string) => ["consumer", consumerId, "consultas"] as const,
+    consultaDetail: (consumerId: string, id: string) =>
+      ["consumer", consumerId, "consultas", id] as const,
+    credits: (consumerId: string) => ["consumer", consumerId, "credits"] as const,
+    dashboard: (consumerId: string) => ["consumer", consumerId, "dashboard"] as const,
+    profile: (consumerId: string) => ["consumer", consumerId, "profile"] as const,
+  },
   financial: {
     all: (tenantId: string) => ["tenant", tenantId, "financial"] as const,
     summary: (tenantId: string) => ["tenant", tenantId, "financial", "summary"] as const,

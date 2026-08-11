@@ -115,6 +115,7 @@ export const ROUTES = {
   consultaAppConsultas: consultaAppRoute("consultas"),
   consultaAppNovaConsulta: consultaAppRoute("nova-consulta"),
   consultaAppMinhaConta: consultaAppRoute("minha-conta"),
+  consultaAppConsultaDetail: (id: string) => consultaAppRoute("consultas", encodeURIComponent(id)),
   cliente: route(ROUTE_SLUGS.cliente),
   vistoriaLogin: route(ROUTE_SLUGS.vistoria, ROUTE_SLUGS.login),
   clienteLogin: clienteRoute(ROUTE_SLUGS.clienteLogin),
@@ -147,6 +148,12 @@ export const ROUTE_PATTERNS = {
   inspectionChecklist: route(ROUTE_SLUGS.inspections, ":id", ROUTE_SLUGS.checklist),
   inspectionReport: route(ROUTE_SLUGS.inspections, ":id", ROUTE_SLUGS.report),
   consultaDetail: route(ROUTE_SLUGS.consulta, ":id"),
+  consultaAppConsultaDetail: route(
+    ROUTE_SLUGS.consulta,
+    ROUTE_SLUGS.consultaApp,
+    "consultas",
+    ":id",
+  ),
 } as const;
 
 export const NEW_INSPECTION_FLOW_QUERY = "fluxo=nova";

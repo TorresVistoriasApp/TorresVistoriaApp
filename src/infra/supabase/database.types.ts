@@ -1964,6 +1964,97 @@ export type Database = {
         }
         Relationships: []
       }
+      consumer_consultas: {
+        Row: {
+          chassis: string | null
+          completed_at: string | null
+          consumer_id: string
+          credits_charged: number
+          created_at: string
+          deleted_at: string | null
+          document_url: string | null
+          failure_reason: string | null
+          id: string
+          plan_name: string
+          plate: string | null
+          query_type: string
+          result_payload: Json | null
+          status: string
+        }
+        Insert: {
+          chassis?: string | null
+          completed_at?: string | null
+          consumer_id: string
+          credits_charged?: number
+          created_at?: string
+          deleted_at?: string | null
+          document_url?: string | null
+          failure_reason?: string | null
+          id?: string
+          plan_name: string
+          plate?: string | null
+          query_type: string
+          result_payload?: Json | null
+          status?: string
+        }
+        Update: {
+          chassis?: string | null
+          completed_at?: string | null
+          consumer_id?: string
+          credits_charged?: number
+          created_at?: string
+          deleted_at?: string | null
+          document_url?: string | null
+          failure_reason?: string | null
+          id?: string
+          plan_name?: string
+          plate?: string | null
+          query_type?: string
+          result_payload?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consumer_consultas_consumer_id_fkey"
+            columns: ["consumer_id"]
+            isOneToOne: false
+            referencedRelation: "consumer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consumer_credit_balances: {
+        Row: {
+          available: number
+          consumer_id: string
+          created_at: string
+          pending: number
+          updated_at: string
+        }
+        Insert: {
+          available?: number
+          consumer_id: string
+          created_at?: string
+          pending?: number
+          updated_at?: string
+        }
+        Update: {
+          available?: number
+          consumer_id?: string
+          created_at?: string
+          pending?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consumer_credit_balances_consumer_id_fkey"
+            columns: ["consumer_id"]
+            isOneToOne: true
+            referencedRelation: "consumer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           auth_user_id: string | null

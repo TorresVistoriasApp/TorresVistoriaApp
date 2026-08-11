@@ -59,3 +59,13 @@ export function invalidateConsultaQueries(qc: QueryClient, tenantId: string, id?
   void cache.invalidate(cacheKeys.consulta.all(tenantId));
   void cache.invalidate(cacheKeys.consulta.credits(tenantId));
 }
+
+export function invalidateConsumerConsultaQueries(qc: QueryClient, consumerId: string, id?: string) {
+  const cache = createCacheService(qc);
+  if (id) {
+    void cache.invalidate(cacheKeys.consumer.consultaDetail(consumerId, id));
+  }
+  void cache.invalidate(cacheKeys.consumer.consultas(consumerId));
+  void cache.invalidate(cacheKeys.consumer.credits(consumerId));
+  void cache.invalidate(cacheKeys.consumer.dashboard(consumerId));
+}

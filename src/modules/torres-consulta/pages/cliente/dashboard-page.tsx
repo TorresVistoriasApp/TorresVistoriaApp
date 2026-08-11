@@ -1,42 +1,36 @@
 import { Link } from "react-router-dom";
-import { Download, FileSearch, FileText, Plus } from "lucide-react";
+import { Download, FileSearch, FileText, Plus, Wallet } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 import { KpiCard } from "@/shared/components/charts/kpi-card";
+import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-
-const MOCK_CONSULTAS = [
-  {
-    id: "1",
-    date: "05/08/2026",
-    plate: "ABC1D23",
-    type: "Completo",
-    status: "Disponível",
-  },
-  {
-    id: "2",
-    date: "28/07/2026",
-    plate: "XYZ9A87",
-    type: "Básico",
-    status: "Disponível",
-  },
-  {
-    id: "3",
-    date: "15/07/2026",
-    plate: "JKL4M56",
-    type: "Premium",
-    status: "Processando",
-  },
-] as const;
+import {
+  useConsumerConsultas,
+  useConsumerDashboardSummary,
+} from "@/modules/torres-consulta/hooks/use-consumer-consultas";
+import {
+  canDownloadConsumerConsulta,
+  formatConsumerConsultaDate,
+  getConsumerConsultaIdentifier,
+  getConsumerConsultaStatusClass,
+  getConsumerConsultaStatusLabel,
+} from "@/modules/torres-consulta/utils/consumer-consulta-presentation";
 
 export function ClienteDashboardPage() {
   const { resolution } = usePrincipal();
+  const { data: summary, isLoading: summaryLoading } = useConsumerDashboardSummary();
+  const { data: consultas, isLoading: consultasLoading } = useConsumerConsultas();
+
   const displayName =
     resolution.status === "resolved" && resolution.principalType === PrincipalType.CUSTOMER
       ? resolution.consumerProfile.full_name.split(" ")[0]
       : null;
+
+  const recentConsultas = consultas?.slice(0, 5) ?? [];
+  const isLoading = summaryLoading || consultasLoading;
 
   return (
     <div className="space-y-8">
@@ -57,62 +51,114 @@ export function ClienteDashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Consultas realizadas" value="12" icon={FileSearch} themeIndex={0} />
-        <KpiCard label="Relatórios disponíveis" value="10" icon={FileText} themeIndex={1} />
-        <KpiCard label="Downloads realizados" value="8" icon={Download} themeIndex={2} />
-        <KpiCard label="Última consulta" value="ABC1D23" icon={FileSearch} themeIndex={3} />
-      </div>
+      {isLoading ? (
+        <div className="flex min-h-[12rem] items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard
+              label="Consultas realizadas"
+              value={String(summary?.totalConsultas ?? 0)}
+              icon={FileSearch}
+              themeIndex={0}
+            />
+            <KpiCard
+              label="Relatórios disponíveis"
+              value={String(summary?.completedConsultas ?? 0)}
+              icon={FileText}
+              themeIndex={1}
+            />
+            <KpiCard
+              label="Créditos disponíveis"
+              value={String(summary?.availableCredits ?? 0)}
+              icon={Wallet}
+              themeIndex={2}
+            />
+            <KpiCard
+              label="Última consulta"
+              value={
+                summary?.lastConsulta
+                  ? getConsumerConsultaIdentifier(summary.lastConsulta)
+                  : "—"
+              }
+              icon={FileSearch}
+              themeIndex={3}
+            />
+          </div>
 
-      <Card className="border-border/70">
-        <CardHeader>
-          <CardTitle className="text-lg">Consultas recentes</CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto p-0">
-          <table className="w-full min-w-[540px] text-sm">
-            <thead>
-              <tr className="border-b border-border/60 bg-muted/30 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                <th className="px-5 py-3">Data</th>
-                <th className="px-5 py-3">Placa</th>
-                <th className="px-5 py-3">Tipo</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3 text-right">Ação</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MOCK_CONSULTAS.map((consulta) => (
-                <tr key={consulta.id} className="border-b border-border/40 last:border-0">
-                  <td className="px-5 py-4 text-muted-foreground">{consulta.date}</td>
-                  <td className="px-5 py-4 font-mono font-semibold">{consulta.plate}</td>
-                  <td className="px-5 py-4">{consulta.type}</td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        consulta.status === "Disponível"
-                          ? "bg-emerald-500/10 text-emerald-700"
-                          : "bg-amber-500/10 text-amber-700"
-                      }`}
-                    >
-                      {consulta.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={consulta.status !== "Disponível"}
-                      aria-label={`Baixar relatório da placa ${consulta.plate}`}
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                      Baixar Relatório
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+          <Card className="border-border/70">
+            <CardHeader>
+              <CardTitle className="text-lg">Consultas recentes</CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto p-0">
+              {recentConsultas.length === 0 ? (
+                <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+                  Você ainda não realizou consultas.{" "}
+                  <Link to={ROUTES.consultaAppNovaConsulta} className="font-semibold text-primary">
+                    Iniciar primeira consulta
+                  </Link>
+                </p>
+              ) : (
+                <table className="w-full min-w-[540px] text-sm">
+                  <thead>
+                    <tr className="border-b border-border/60 bg-muted/30 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      <th className="px-5 py-3">Data</th>
+                      <th className="px-5 py-3">Identificador</th>
+                      <th className="px-5 py-3">Plano</th>
+                      <th className="px-5 py-3">Status</th>
+                      <th className="px-5 py-3 text-right">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentConsultas.map((consulta) => (
+                      <tr key={consulta.id} className="border-b border-border/40 last:border-0">
+                        <td className="px-5 py-4 text-muted-foreground">
+                          {formatConsumerConsultaDate(consulta.createdAt)}
+                        </td>
+                        <td className="px-5 py-4 font-mono font-semibold">
+                          {getConsumerConsultaIdentifier(consulta)}
+                        </td>
+                        <td className="px-5 py-4">{consulta.planName}</td>
+                        <td className="px-5 py-4">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${getConsumerConsultaStatusClass(
+                              consulta.status,
+                            )}`}
+                          >
+                            {getConsumerConsultaStatusLabel(consulta.status)}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" asChild>
+                              <Link to={ROUTES.consultaAppConsultaDetail(consulta.id)}>Ver</Link>
+                            </Button>
+                            {canDownloadConsumerConsulta(consulta) && (
+                              <Button variant="outline" size="sm" asChild>
+                                <a
+                                  href={consulta.documentUrl!}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  aria-label={`Baixar relatório ${getConsumerConsultaIdentifier(consulta)}`}
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                  Baixar
+                                </a>
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
