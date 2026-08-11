@@ -1,5 +1,4 @@
 import { Link, Outlet } from "react-router-dom";
-import { ArrowUpRight } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { TenantAuthBadge } from "@/core/auth/components/tenant-auth-badge";
 import { TenantAuthShowcase } from "@/core/auth/components/tenant-auth-showcase";
@@ -31,19 +30,9 @@ export function TenantAuthLayout() {
           <TenantAuthBadge />
         </header>
 
-        <main className="relative flex flex-1 flex-col justify-center px-4 py-8 sm:px-6 lg:px-10 lg:py-10 xl:px-16">
+        <main className="relative flex flex-1 flex-col justify-center px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6 lg:px-10 lg:py-10 xl:px-16">
           <Outlet />
         </main>
-
-        <footer className="relative px-4 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-6 lg:px-10 xl:px-16">
-          <Link
-            to={ROUTES.consultaLanding}
-            className="mx-auto flex w-fit items-center gap-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-orange-400 lg:mx-0"
-          >
-            Não é vistoriador? Consultar veículo no Torres Consulta
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </Link>
-        </footer>
       </div>
     </div>
   );

@@ -22,10 +22,19 @@ import {
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 import type { InspectorDocumentType } from "@/core/auth/validators/document";
+import { FormField } from "@/shared/components/forms/form-field";
+import { MaskedField } from "@/shared/components/forms/masked-fields";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
 import { LoadingScreen } from "@/shared/components/loading-spinner";
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+      {children}
+    </p>
+  );
+}
 
 export function InspectorRegisterPage() {
   const { principalType, loading } = usePrincipal();
@@ -52,8 +61,6 @@ export function InspectorRegisterPage() {
       password: "",
       confirmPassword: "",
       acceptTerms: false,
-      acceptPrivacy: false,
-      consentDataProcessing: false,
     },
   });
 
@@ -102,9 +109,27 @@ export function InspectorRegisterPage() {
     return (
       <TenantAuthPanel
         title="Confirme seu e-mail"
-        description={`Enviamos um link para ${successEmail}. Após confirmar, seu cadastro será analisado pela equipe Torres antes do acesso ao painel.`}
+        description={`Enviamos um link de confirmação para ${successEmail}.`}
       >
+        <ol className="mb-6 space-y-3">
+          {[
+            "Confirme o e-mail pelo link que enviamos.",
+            "Nossa equipe analisa seu cadastro.",
+            "Você recebe o aviso de acesso liberado.",
+          ].map((step, index) => (
+            <li key={step} className="flex items-start gap-3 text-sm text-muted-foreground">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                {index + 1}
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
+
         <div className="space-y-3">
+          <Button asChild className="h-12 w-full rounded-2xl text-base font-semibold">
+            <Link to={ROUTES.login}>Voltar para login</Link>
+          </Button>
           <Button
             type="button"
             variant="outline"
@@ -114,10 +139,9 @@ export function InspectorRegisterPage() {
           >
             {resendPending ? "Reenviando..." : "Reenviar confirmação"}
           </Button>
-          {resendMessage && <p className="text-sm text-muted-foreground">{resendMessage}</p>}
-          <Button asChild className="w-full touch-target">
-            <Link to={ROUTES.login}>Voltar para login</Link>
-          </Button>
+          {resendMessage && (
+            <p className="text-center text-sm text-muted-foreground">{resendMessage}</p>
+          )}
         </div>
       </TenantAuthPanel>
     );
@@ -127,123 +151,156 @@ export function InspectorRegisterPage() {
     <TenantAuthPanel
       wide
       title="Criar conta"
-      description="Cadastro para vistoriadores. O acesso é liberado após aprovação."
+      description="Cadastro para vistoriadores. O acesso é liberado após aprovação da equipe."
     >
-      <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome completo</Label>
-              <div className="relative">
-                <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="name" className="pl-11 touch-target" {...register("name")} />
-              </div>
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+      <form onSubmit={onSubmit} className="space-y-6" aria-busy={isSubmitting}>
+        <fieldset className="space-y-4">
+          <SectionLabel>Seus dados</SectionLabel>
+
+          <FormField label="Nome completo" error={errors.name?.message}>
+            <div className="relative">
+              <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="name"
+                autoComplete="name"
+                autoCapitalize="words"
+                enterKeyHint="next"
+                placeholder="Como no seu documento"
+                className="touch-target pl-11"
+                {...register("name")}
+              />
             </div>
+          </FormField>
 
-            <EmailField error={errors.email?.message} {...register("email")} />
+          <EmailField
+            id="email"
+            placeholder="seu@email.com"
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="next"
+            error={errors.email?.message}
+            {...register("email")}
+          />
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <Input id="phone" type="tel" placeholder="(00) 00000-0000" {...register("phone")} />
-              {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
-            </div>
+          <MaskedField
+            control={control}
+            name="phone"
+            label="Telefone"
+            mask="phone"
+            optional
+            placeholder="(00) 00000-0000"
+            hint="Usamos apenas para falar sobre a aprovação do cadastro."
+            error={errors.phone?.message}
+            inputClassName="touch-target"
+          />
 
-            <CpfCnpjField
-              control={control}
-              documentType={documentType}
-              onDocumentTypeChange={(type) => {
-                setValue("documentType", type, { shouldValidate: true });
-                setValue("document", "", { shouldValidate: true });
-              }}
-              errors={errors}
+          <CpfCnpjField
+            control={control}
+            documentType={documentType}
+            onDocumentTypeChange={(type) => {
+              setValue("documentType", type, { shouldValidate: true });
+              setValue("document", "", { shouldValidate: false });
+            }}
+            errors={errors}
+          />
+        </fieldset>
+
+        <fieldset className="space-y-4 border-t border-border/60 pt-6">
+          <SectionLabel>Acesso ao painel</SectionLabel>
+
+          <PasswordStrengthInput
+            id="password"
+            label="Senha"
+            value={password}
+            onChange={(v) => setValue("password", v, { shouldValidate: true })}
+            error={errors.password?.message}
+          />
+
+          <ConfirmPasswordField
+            enterKeyHint="go"
+            error={errors.confirmPassword?.message}
+            {...register("confirmPassword")}
+          />
+        </fieldset>
+
+        <div className="space-y-3 border-t border-border/60 pt-6">
+          <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border/70 bg-muted/25 p-4 text-sm leading-relaxed transition-colors hover:bg-muted/40">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"
+              {...register("acceptTerms")}
             />
-
-            <PasswordStrengthInput
-              id="password"
-              label="Senha"
-              value={password}
-              onChange={(v) => setValue("password", v, { shouldValidate: true })}
-              error={errors.password?.message}
-            />
-
-            <ConfirmPasswordField
-              error={errors.confirmPassword?.message}
-              {...register("confirmPassword")}
-            />
-
-            <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-4 text-sm">
-              <label className="flex items-start gap-3">
-                <input type="checkbox" className="mt-1 h-4 w-4 rounded" {...register("acceptTerms")} />
-                <span>
-                  Aceito os{" "}
-                  <Link to={ROUTES.termos} className="font-semibold text-primary hover:underline">
-                    Termos de Uso
-                  </Link>
-                </span>
-              </label>
-              {errors.acceptTerms && (
-                <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
-              )}
-
-              <label className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 rounded"
-                  {...register("acceptPrivacy")}
-                />
-                <span>
-                  Aceito a{" "}
-                  <Link to={ROUTES.privacy} className="font-semibold text-primary hover:underline">
-                    Política de Privacidade
-                  </Link>
-                </span>
-              </label>
-              {errors.acceptPrivacy && (
-                <p className="text-sm text-destructive">{errors.acceptPrivacy.message}</p>
-              )}
-
-              <label className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 rounded"
-                  {...register("consentDataProcessing")}
-                />
-                <span>Consinto com o tratamento dos meus dados pessoais conforme a LGPD.</span>
-              </label>
-              {errors.consentDataProcessing && (
-                <p className="text-sm text-destructive">{errors.consentDataProcessing.message}</p>
-              )}
-            </div>
-
-            {error && isDuplicateEmailError(error) ? (
-              <DuplicateEmailAlert />
-            ) : error ? (
-              <FormError message={error} />
-            ) : null}
-
-            <Button
-              type="submit"
-              className="h-12 w-full rounded-2xl text-base font-semibold"
-              size="lg"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <>
-                  <UserPlus className="h-4 w-4" />
-                  Solicitar cadastro
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-
-            <p className="text-center text-sm text-muted-foreground">
-              Já possui uma conta?{" "}
-              <Link to={ROUTES.login} className="font-semibold text-primary hover:underline">
-                Entrar
+            <span className="text-muted-foreground">
+              Li e aceito os{" "}
+              <Link
+                to={ROUTES.termos}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline"
+              >
+                Termos de Uso
+              </Link>{" "}
+              e a{" "}
+              <Link
+                to={ROUTES.privacy}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline"
+              >
+                Política de Privacidade
               </Link>
-            </p>
-          </form>
+              , e consinto com o tratamento dos meus dados conforme a{" "}
+              <Link
+                to={ROUTES.lgpd}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline"
+              >
+                LGPD
+              </Link>
+              .
+            </span>
+          </label>
+          {errors.acceptTerms && (
+            <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
+          )}
+
+          {error && isDuplicateEmailError(error) ? (
+            <DuplicateEmailAlert />
+          ) : error ? (
+            <FormError message={error} />
+          ) : null}
+
+          <Button
+            type="submit"
+            className="h-12 w-full rounded-2xl text-base font-semibold"
+            size="lg"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Enviando...
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-4 w-4" />
+                Solicitar cadastro
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Já possui uma conta?{" "}
+            <Link to={ROUTES.login} className="font-semibold text-primary hover:underline">
+              Entrar
+            </Link>
+          </p>
+        </div>
+      </form>
     </TenantAuthPanel>
   );
 }

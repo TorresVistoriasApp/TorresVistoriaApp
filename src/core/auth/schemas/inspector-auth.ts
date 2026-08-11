@@ -9,19 +9,19 @@ export const inspectorRegisterSchema = z
   .object({
     name: z.string().min(2, "Informe seu nome completo"),
     email: z.string().email("E-mail inválido"),
-    phone: z.string().min(10, "Informe um telefone válido").optional().or(z.literal("")),
+    phone: z
+      .string()
+      .optional()
+      .refine((value) => !value || value.replace(/\D/g, "").length >= 10, {
+        message: "Informe um telefone válido com DDD",
+      }),
     documentType: z.enum(["cpf", "cnpj"]),
     document: z.string().min(1, "Informe o CPF ou CNPJ"),
     password: z.string().min(1, "Informe a senha").refine(isStrongPassword, STRONG_PASSWORD_MESSAGE),
     confirmPassword: z.string().min(1, "Confirme a senha"),
+    /** Consentimento único: Termos de Uso, Política de Privacidade e LGPD. */
     acceptTerms: z.boolean().refine((value) => value, {
-      message: "Você deve aceitar os Termos de Uso",
-    }),
-    acceptPrivacy: z.boolean().refine((value) => value, {
-      message: "Você deve aceitar a Política de Privacidade",
-    }),
-    consentDataProcessing: z.boolean().refine((value) => value, {
-      message: "É necessário consentir com o tratamento de dados (LGPD)",
+      message: "É necessário aceitar os termos para criar a conta",
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {
