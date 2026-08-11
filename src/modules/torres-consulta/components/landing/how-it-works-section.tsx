@@ -15,24 +15,24 @@ const STEPS: {
     step: 1,
     icon: Search,
     title: "Informe placa ou chassi",
-    description: "Digite o identificador do veículo e crie sua conta gratuita em seguida.",
-    details: ["Validação automática do formato", "Cadastro em menos de 1 minuto"],
+    description: "Digite os dados do carro e crie sua conta grátis em seguida.",
+    details: ["Validamos o formato na hora", "Cadastro rápido, sem burocracia"],
     accent: "from-orange-500/20 to-orange-400/5",
   },
   {
     step: 2,
     icon: CreditCard,
     title: "Escolha o plano e pague",
-    description: "Selecione Básico, Completo ou Premium e finalize com cartão ou PIX.",
-    details: ["Pagamento seguro", "Confirmação imediata"],
+    description: "Básico, Completo ou Premium. Pague com cartão ou PIX.",
+    details: ["Pagamento seguro", "Confirmação na hora"],
     accent: "from-violet-500/20 to-violet-400/5",
   },
   {
     step: 3,
     icon: Download,
-    title: "Receba o relatório na hora",
-    description: "Download imediato em PDF e acesso permanente na sua área do cliente.",
-    details: ["Armazenamento na conta", "Envio por e-mail"],
+    title: "Baixe o relatório",
+    description: "O PDF fica disponível na hora e fica salvo na sua conta.",
+    details: ["Acesso quando quiser", "Cópia enviada por e-mail"],
     accent: "from-emerald-500/20 to-emerald-400/5",
   },
 ];
@@ -48,15 +48,15 @@ export function HowItWorksSection() {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">Simples e rápido</p>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary">Passo a passo</p>
           <h2
             id="como-funciona-title"
             className="mt-3 text-2xl font-black tracking-tight text-foreground sm:text-4xl"
           >
-            Do cadastro ao relatório em 3 passos
+            Consulte em 3 passos
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Sem burocracia. Você consulta, paga e recebe — tudo em poucos minutos.
+            Rápido e sem complicação. Em poucos minutos você já tem o histórico na mão.
           </p>
         </ScrollReveal>
 
@@ -95,7 +95,7 @@ export function HowItWorksSection() {
                   <ul className="mt-4 space-y-1.5 border-t border-border/40 pt-4">
                     {step.details.map((detail) => (
                       <li key={detail} className="text-xs font-medium text-muted-foreground">
-                        · {detail}
+                        {detail}
                       </li>
                     ))}
                   </ul>

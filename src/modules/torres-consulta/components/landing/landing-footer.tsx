@@ -67,7 +67,7 @@ export function LandingFooter() {
             © {new Date().getFullYear()} Torres Consulta. Todos os direitos reservados.
           </p>
           <p className="text-xs text-slate-600">
-            Parte do Ecossistema Torres —{" "}
+            Parte do Ecossistema Torres. Conheça também a{" "}
             <Link to={ROUTES.vistoriaLogin} className="text-slate-400 hover:text-primary">
               Torres Vistoria
             </Link>

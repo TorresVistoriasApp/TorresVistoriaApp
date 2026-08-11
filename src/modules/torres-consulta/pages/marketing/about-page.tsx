@@ -14,7 +14,7 @@ const TIMELINE = [
   { year: "2018", event: "Fundação da Torres Vistorias em operação cautelar." },
   { year: "2021", event: "Expansão para gestão digital de laudos e vistorias." },
   { year: "2024", event: "Lançamento do Ecossistema Torres com integrações avançadas." },
-  { year: "2026", event: "Torres Consulta — consulta veicular para o consumidor final." },
+  { year: "2026", event: "Lançamento da Torres Consulta para o consumidor final." },
 ];
 
 export function AboutPage() {
@@ -38,7 +38,7 @@ export function AboutPage() {
         eyebrow: "Quem somos",
         title: "Tecnologia que protege quem compra veículo",
         description:
-          "A Torres Consulta nasceu dentro do Ecossistema Torres — referência em vistoria cautelar — para levar a mesma seriedade e rigor técnico ao consumidor final.",
+          "A Torres Consulta nasceu dentro do Ecossistema Torres, referência em vistoria cautelar, para levar a mesma seriedade ao consumidor que vai comprar um carro.",
       }}
       fullWidth
     >
@@ -47,8 +47,8 @@ export function AboutPage() {
           <h2 className="text-xl font-bold text-foreground">Nossa missão</h2>
           <p className="leading-relaxed text-muted-foreground">
             Democratizar o acesso a informações veiculares confiáveis, permitindo que qualquer
-            pessoa tome decisões seguras na compra de um carro usado — sem depender exclusivamente
-            da palavra do vendedor.
+            pessoa tome decisões seguras na compra de um carro usado, sem depender só da
+            palavra do vendedor.
           </p>
         </section>
         <section className="space-y-4">
@@ -132,11 +132,11 @@ export function AboutPage() {
           </span>
           <span className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
-            Brasil — atendimento 100% digital
+            Brasil, atendimento 100% digital
           </span>
           <span className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
-            Seg–Sex, 9h às 18h
+            Seg a sex, 9h às 18h
           </span>
         </div>
       </section>

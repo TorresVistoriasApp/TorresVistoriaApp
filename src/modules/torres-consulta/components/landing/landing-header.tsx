@@ -35,7 +35,7 @@ export function LandingHeader() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
-        <Link to={ROUTES.consultaLanding} aria-label="Torres Consulta — Início">
+        <Link to={ROUTES.consultaLanding} aria-label="Torres Consulta, início">
           <ConsultaBrandLogo size="sm" showSubtitle={false} />
         </Link>
 

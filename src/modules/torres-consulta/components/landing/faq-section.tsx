@@ -5,34 +5,34 @@ import { cn } from "@/shared/lib/utils";
 
 const FAQ_ITEMS = [
   {
-    question: "Quanto tempo leva para receber o relatório?",
+    question: "Quanto tempo demora para sair o relatório?",
     answer:
-      "Após a confirmação do pagamento, o relatório fica disponível imediatamente para download em sua área do cliente.",
+      "Assim que o pagamento é confirmado, o relatório já fica disponível para download na sua conta.",
   },
   {
     question: "Posso consultar por placa ou chassi?",
     answer:
-      "Sim. Você pode realizar a consulta informando a placa do veículo ou o número do chassi (VIN) com 17 caracteres.",
+      "Sim. Use a placa do carro ou o chassi com 17 caracteres. Os dois levam ao mesmo veículo.",
   },
   {
-    question: "Os dados são confiáveis?",
+    question: "Posso confiar nos dados?",
     answer:
-      "Utilizamos bases oficiais e parceiros especializados para consolidar as informações. Os dados são atualizados regularmente.",
+      "Trabalhamos com bases oficiais e parceiros do setor. As informações são atualizadas com frequência.",
   },
   {
-    question: "Preciso criar uma conta?",
+    question: "Preciso criar conta?",
     answer:
-      "Sim. O cadastro é gratuito e permite que você acesse, baixe e gerencie todos os seus relatórios em um só lugar.",
+      "Sim, mas o cadastro é grátis. Assim você guarda, baixa e consulta seus relatórios quando quiser.",
   },
   {
     question: "Qual a diferença entre Torres Consulta e Torres Vistoria?",
     answer:
-      "Torres Consulta é para pessoas físicas que querem consultar o histórico de um veículo antes de comprar. Torres Vistoria é a plataforma profissional para vistoriadores e empresas de vistoria cautelar — com checklist técnico, fotos guiadas e geração de laudo cautelar em PDF.",
+      "A Torres Consulta é para quem vai comprar um carro e quer ver o histórico antes de fechar negócio. A Torres Vistoria é para profissionais e empresas que fazem vistoria cautelar e precisam emitir laudo em PDF.",
   },
   {
-    question: "Como solicito a exclusão dos meus dados?",
+    question: "Como peço para apagar meus dados?",
     answer:
-      "Na área de configurações do cliente, você pode solicitar a exclusão da conta. O pedido será processado conforme os prazos legais da LGPD.",
+      "Nas configurações da sua conta você pode solicitar a exclusão. O pedido segue os prazos da LGPD.",
   },
 ] as const;
 
@@ -44,7 +44,7 @@ export function FaqSection() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
           <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">FAQ</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Dúvidas</p>
           <h2
             id="faq-title"
             className="mt-3 text-2xl font-black tracking-tight text-foreground sm:text-3xl"

@@ -39,7 +39,7 @@ export function ContactPage() {
         schema: {
           "@context": "https://schema.org",
           "@type": "ContactPage",
-          name: "Contato — Torres Consulta",
+          name: "Contato Torres Consulta",
         },
       }}
       breadcrumb={[{ label: "Contato" }]}
@@ -119,14 +119,14 @@ export function ContactPage() {
               </li>
               <li className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 shrink-0 text-primary" />
-                Atendimento 100% digital — Brasil
+                Atendimento 100% digital, em todo o Brasil
               </li>
             </ul>
           </div>
 
           <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-border/60 bg-slate-100 text-sm text-muted-foreground">
             <MapPin className="mr-2 h-5 w-5" />
-            Mapa — em breve
+            Mapa em breve
           </div>
 
           <div className="rounded-2xl border border-border/60 bg-slate-50 p-6">

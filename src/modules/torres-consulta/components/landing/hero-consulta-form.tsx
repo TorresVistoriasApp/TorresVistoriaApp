@@ -9,10 +9,10 @@ import { cn } from "@/shared/lib/utils";
 type QueryMode = "plate" | "chassis";
 
 const TRUST_BADGES = [
-  "Dados oficiais",
-  "LGPD",
-  "Relatório em poucos minutos",
-  "Download imediato",
+  "Fontes oficiais",
+  "Dados protegidos (LGPD)",
+  "Resultado na hora",
+  "PDF para baixar",
 ] as const;
 
 export function HeroConsultaForm() {
@@ -91,7 +91,7 @@ export function HeroConsultaForm() {
             id="vehicle-identifier"
             value={value}
             onChange={(e) => setValue(e.target.value.toUpperCase())}
-            placeholder={mode === "plate" ? "Digite a placa — ex: ABC1D23" : "Digite o chassi (17 caracteres)"}
+            placeholder={mode === "plate" ? "Ex: ABC1D23" : "17 caracteres do chassi"}
             maxLength={mode === "plate" ? 7 : 17}
             className="h-16 border-slate-200/80 bg-slate-50/90 pl-14 text-lg font-semibold uppercase tracking-[0.12em] shadow-none placeholder:font-normal placeholder:normal-case placeholder:tracking-normal focus-visible:border-primary/30 focus-visible:bg-white focus-visible:ring-primary/20"
             aria-describedby="consulta-hint"
@@ -99,8 +99,8 @@ export function HeroConsultaForm() {
         </div>
         <p id="consulta-hint" className="mt-2 text-center text-xs text-muted-foreground">
           {mode === "plate"
-            ? "Placa padrão Mercosul, sem hífen"
-            : "Número de identificação do veículo (VIN)"}
+            ? "Placa Mercosul, 7 caracteres"
+            : "Número do chassi (VIN)"}
         </p>
 
         <Button

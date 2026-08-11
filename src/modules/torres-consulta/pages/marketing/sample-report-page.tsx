@@ -14,16 +14,16 @@ export function SampleReportPage() {
         schema: {
           "@context": "https://schema.org",
           "@type": "WebPage",
-          name: "Exemplo de Relatório Veicular — Torres Consulta",
+          name: "Exemplo de Relatório Veicular Torres Consulta",
           description: "Demonstração interativa do relatório veicular completo.",
         },
       }}
       breadcrumb={[{ label: "Exemplo de Relatório" }]}
       hero={{
-        eyebrow: "Transparência total",
-        title: "Veja o relatório antes de comprar",
+        eyebrow: "Antes de comprar",
+        title: "Veja o relatório antes de contratar",
         description:
-          "Este é um exemplo fiel do documento que você receberá após a consulta. Dados fictícios para demonstração.",
+          "Exemplo real de como fica o documento depois da consulta. Os dados abaixo são fictícios.",
         compact: true,
       }}
       fullWidth

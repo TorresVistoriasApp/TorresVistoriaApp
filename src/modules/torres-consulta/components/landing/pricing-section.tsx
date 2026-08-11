@@ -10,7 +10,7 @@ const PLANS = [
     name: "Básico",
     price: "19,90",
     originalPrice: null,
-    description: "Primeira verificação essencial.",
+    description: "Para a primeira checagem do carro.",
     features: ["Consulta por placa", "Histórico básico", "Relatório em PDF", "Entrega imediata"],
     highlighted: false,
   },
@@ -18,7 +18,7 @@ const PLANS = [
     name: "Completo",
     price: "39,90",
     originalPrice: "59,90",
-    description: "O mais escolhido por compradores exigentes.",
+    description: "O favorito de quem não quer correr risco.",
     features: [
       "Tudo do Básico",
       "Sinistros e leilão",
@@ -32,7 +32,7 @@ const PLANS = [
     name: "Premium",
     price: "69,90",
     originalPrice: "99,90",
-    description: "Análise máxima antes da compra.",
+    description: "Tudo que existe para analisar antes de fechar.",
     features: [
       "Tudo do Completo",
       "Decodificação VIN",
@@ -57,7 +57,7 @@ export function PricingSection() {
             Escolha o nível de análise ideal
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Preços ilustrativos. Compare e escolha com transparência.
+            Escolha o plano que combina com você. Valores de referência para comparar.
           </p>
         </ScrollReveal>
 
@@ -128,7 +128,7 @@ export function PricingSection() {
 
         <ScrollReveal className="mt-10 text-center" delayMs={200}>
           <p className="text-sm text-muted-foreground">
-            Todos os planos incluem download imediato e armazenamento na área do cliente.
+            Todos os planos incluem download na hora e cópia salva na sua conta.
           </p>
         </ScrollReveal>
       </div>

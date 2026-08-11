@@ -74,8 +74,8 @@ export function ClienteSettingsPage() {
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <p>
                 Sua solicitação foi registrada e será processada conforme os prazos legais e as
-                políticas da plataforma. A exclusão de conta não é imediata — você receberá
-                confirmação por e-mail quando o processo for concluído.
+                políticas da plataforma. A exclusão não é imediata. Você receberá confirmação por
+                e-mail quando o processo for concluído.
               </p>
             </div>
           )}

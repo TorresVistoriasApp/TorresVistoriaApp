@@ -81,7 +81,7 @@ export function PageSeo({
 export const LANDING_SEO = {
   title: "Consulta Veicular Completa",
   description:
-    "Consulte o histórico completo de um veículo antes de comprar. Descubra leilões, sinistros, recalls e restrições utilizando apenas a placa ou chassi.",
+    "Vai comprar um carro usado? Consulte leilão, sinistro, recall e restrições pela placa ou chassi e receba o relatório na hora.",
   schema: {
     "@context": "https://schema.org",
     "@type": "WebApplication",
