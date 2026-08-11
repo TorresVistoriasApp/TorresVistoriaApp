@@ -22,7 +22,7 @@ import {
   headerValidationWidth,
 } from "@/modules/torres-vistoria/domain/laudo/mercosul-plate-pdf";
 import {
-  getLaudoLegalFooter,
+  getLaudoLegalParagraphs,
   getOpinionLabel,
   getPrimaryColor,
   summarizeLaudoChecklist,
@@ -582,7 +582,14 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     ...buildPhotoSection(payload, color, featuredPhotoIds),
     ...buildTechnicalOpinionSection(inspection),
     premiumHeader("INFORMATIVO JURÍDICO"),
-    { text: getLaudoLegalFooter(payload.settings), fontSize: 8, alignment: "justify", margin: [0, 6, 0, 12] },
+    {
+      stack: getLaudoLegalParagraphs(payload.settings).map((paragraph, index, list) => ({
+        text: paragraph,
+        fontSize: 8,
+        alignment: "justify" as const,
+        margin: [0, index === 0 ? 6 : 4, 0, index === list.length - 1 ? 12 : 0] as [number, number, number, number],
+      })),
+    },
     {
       columns: [
         {
