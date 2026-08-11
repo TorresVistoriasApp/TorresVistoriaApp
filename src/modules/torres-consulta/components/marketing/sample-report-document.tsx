@@ -1,13 +1,13 @@
 import {
   AlertTriangle,
   CheckCircle2,
-  ImageIcon,
   Minus,
 } from "lucide-react";
 import {
   SAMPLE_STATUS_CARDS,
   SAMPLE_TIMELINE,
   SAMPLE_VEHICLE,
+  SAMPLE_VEHICLE_PHOTOS,
   SCORE_COLORS,
   SCORE_LABELS,
 } from "@/modules/torres-consulta/data/sample-report";
@@ -34,16 +34,18 @@ export function SampleReportDocument() {
         </span>
       </div>
 
-      <div className="relative border-b border-border/60 bg-slate-950 px-5 py-6 text-white sm:px-8">
+      <div className="relative border-b border-white/10 bg-slate-950 px-5 py-6 text-white sm:px-8 [&_h2]:text-white">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Torres Consulta</p>
-            <h2 className="mt-1 text-xl font-black sm:text-2xl">Relatório Veicular Completo</h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <h2 className="mt-1 text-xl font-black text-white sm:text-2xl">
+              Relatório Veicular Completo
+            </h2>
+            <p className="mt-1 text-sm text-slate-300">
               Protocolo {vehicle.protocolo} · {vehicle.consultaEm}
             </p>
           </div>
-          <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-400">
+          <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-300">
             Documento de exemplo
           </span>
         </div>
@@ -179,14 +181,24 @@ export function SampleReportDocument() {
             Fotos Históricas
           </h3>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[1, 2, 3, 4].map((n) => (
-              <div
-                key={n}
-                className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-slate-50 text-muted-foreground"
+            {SAMPLE_VEHICLE_PHOTOS.map((photo) => (
+              <figure
+                key={photo.src}
+                className="group overflow-hidden rounded-xl border border-border/60 bg-slate-50 shadow-soft"
               >
-                <ImageIcon className="h-8 w-8 opacity-40" />
-                <span className="mt-1 text-[10px] font-medium">Foto {n}</span>
-              </div>
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img
+                    src={photo.src}
+                    alt={photo.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <figcaption className="border-t border-border/40 px-2 py-1.5 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {photo.label}
+                </figcaption>
+              </figure>
             ))}
           </div>
         </section>
@@ -204,8 +216,13 @@ export function SampleReportDocument() {
       </div>
 
       <footer className="border-t border-border/60 bg-slate-50 px-5 py-4 text-center text-xs text-muted-foreground sm:px-8">
-        Este documento é apenas um exemplo ilustrativo. Os dados apresentados são fictícios e não
-        representam um veículo real.
+        <p>
+          Este documento é apenas um exemplo ilustrativo. Os dados apresentados são fictícios e não
+          representam um veículo real.
+        </p>
+        <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground/80">
+          Fotos do Volkswagen T-Cross via Wikimedia Commons (licenças Creative Commons).
+        </p>
       </footer>
     </div>
   );
