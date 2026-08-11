@@ -36,7 +36,7 @@ export async function loginAsDemo(page: Page, role: DemoRole = "vistoriador"): P
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha", { exact: true }).fill(password);
   await page.getByRole("checkbox").check();
-  await page.getByRole("button", { name: /Entrar no painel/i }).click();
+  await page.getByRole("button", { name: /^Entrar$/i }).click();
   await expect(page).toHaveURL("/", { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 

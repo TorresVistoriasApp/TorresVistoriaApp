@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Label } from "@/shared/ui/label";
 import { OptionalLabel } from "@/shared/components/forms/optional-label";
 import { cn } from "@/shared/lib/utils";
@@ -9,6 +10,7 @@ interface FormFieldProps {
   className?: string;
   labelClassName?: string;
   optional?: boolean;
+  labelAction?: ReactNode;
   children: React.ReactNode;
 }
 
@@ -19,6 +21,7 @@ export function FormField({
   className,
   labelClassName,
   optional,
+  labelAction,
   children,
 }: FormFieldProps) {
   return (
@@ -32,7 +35,8 @@ export function FormField({
         >
           {label}
         </Label>
-        {optional && <OptionalLabel />}
+        {labelAction}
+        {optional && !labelAction ? <OptionalLabel /> : null}
       </div>
       <div
         className={cn(
