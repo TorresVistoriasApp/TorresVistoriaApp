@@ -1,11 +1,19 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Mail, Save, User } from "lucide-react";
 import { useSession } from "@/core/auth/session-context";
+import { consumerProfileService } from "@/core/auth/consumer-profile-service";
+import { usePrincipal } from "@/core/auth/use-principal";
+import { PrincipalType } from "@/core/rbac/roles";
+import { cacheKeys } from "@/core/cache";
+import { getErrorMessage } from "@/core/errors/app-error";
 import {
   consumerProfileSchema,
   type ConsumerProfileInput,
 } from "@/modules/torres-consulta/auth/schemas/consumer-auth";
+import { useToast } from "@/shared/hooks/use-toast";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
@@ -13,22 +21,59 @@ import { Label } from "@/shared/ui/label";
 
 export function ClienteProfilePage() {
   const { user } = useSession();
+  const { resolution } = usePrincipal();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const consumerProfile =
+    resolution.status === "resolved" && resolution.principalType === PrincipalType.CUSTOMER
+      ? resolution.consumerProfile
+      : null;
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ConsumerProfileInput>({
     resolver: zodResolver(consumerProfileSchema),
     defaultValues: {
-      name: (user?.user_metadata?.full_name as string) ?? "",
-      phone: (user?.user_metadata?.phone as string) ?? "",
+      name: consumerProfile?.full_name ?? "",
+      phone: consumerProfile?.phone ?? "",
     },
   });
 
-  const onSubmit = handleSubmit(async () => {
-    // Persistência será implementada com tabela consumer_profiles.
-    await new Promise((r) => setTimeout(r, 600));
+  useEffect(() => {
+    if (consumerProfile) {
+      reset({
+        name: consumerProfile.full_name,
+        phone: consumerProfile.phone ?? "",
+      });
+    }
+  }, [consumerProfile, reset]);
+
+  const onSubmit = handleSubmit(async (data) => {
+    if (!consumerProfile) return;
+
+    try {
+      await consumerProfileService.updateSelf(consumerProfile.id, {
+        fullName: data.name,
+        phone: data.phone?.trim() ? data.phone.trim() : null,
+      });
+      void queryClient.invalidateQueries({
+        queryKey: cacheKeys.consumer.profile(consumerProfile.id),
+      });
+      toast({
+        title: "Perfil atualizado",
+        description: "Suas informações foram salvas com sucesso.",
+      });
+    } catch (cause) {
+      toast({
+        type: "error",
+        title: "Não foi possível salvar",
+        description: getErrorMessage(cause),
+      });
+    }
   });
 
   return (
@@ -63,7 +108,7 @@ export function ClienteProfilePage() {
                 <Input
                   id="email-display"
                   type="email"
-                  value={user?.email ?? ""}
+                  value={user?.email ?? consumerProfile?.email ?? ""}
                   disabled
                   className="pl-11 opacity-70"
                 />
@@ -79,7 +124,7 @@ export function ClienteProfilePage() {
               {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
             </div>
 
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !consumerProfile}>
               <Save className="h-4 w-4" />
               Salvar alterações
             </Button>
