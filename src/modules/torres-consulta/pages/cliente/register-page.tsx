@@ -17,7 +17,6 @@ import {
   consumerRegisterSchema,
   type ConsumerRegisterInput,
 } from "@/core/auth/schemas/consumer-auth";
-import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 import { Button } from "@/shared/ui/button";
@@ -91,7 +90,6 @@ export function ClienteRegisterPage() {
 
   if (successEmail) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-12">
         <Card className="w-full max-w-md text-center">
           <CardHeader>
             <CardTitle>Confirme seu e-mail</CardTitle>
@@ -116,16 +114,10 @@ export function ClienteRegisterPage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
     );
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-12">
-      <Link to={ROUTES.consultaLanding} className="mb-8">
-        <ConsultaBrandLogo size="lg" />
-      </Link>
-
       <Card className="w-full max-w-md border-border/70 shadow-elevated">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Criar conta</CardTitle>
@@ -221,6 +213,5 @@ export function ClienteRegisterPage() {
           </form>
         </CardContent>
       </Card>
-    </div>
   );
 }

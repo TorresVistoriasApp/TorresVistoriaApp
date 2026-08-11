@@ -4,6 +4,7 @@ import { lazyRoute } from "@/routes/lazy-route";
 import { ConsumerAuthRoute } from "@/routes/guards/consumer-auth-route";
 import type { ModuleRoutes } from "@/routes/route-contract";
 import { ClienteLayout } from "@/modules/torres-consulta/layouts/cliente-layout";
+import { ConsumerAuthLayout } from "@/modules/torres-consulta/layouts/consumer-auth-layout";
 
 const legacyAuthRedirects = [
   { path: ROUTES.cliente, element: <Navigate to={ROUTES.consultaLogin} replace /> },
@@ -98,32 +99,37 @@ export const torresConsultaRoutes: ModuleRoutes = {
       element: <ConsumerAuthRoute />,
       children: [
         {
-          path: ROUTES.consultaLogin,
-          element: lazyRoute(
-            () => import("@/modules/torres-consulta/pages/cliente/login-page"),
-            "ClienteLoginPage",
-          ),
-        },
-        {
-          path: ROUTES.consultaRegister,
-          element: lazyRoute(
-            () => import("@/modules/torres-consulta/pages/cliente/register-page"),
-            "ClienteRegisterPage",
-          ),
-        },
-        {
-          path: ROUTES.consultaForgotPassword,
-          element: lazyRoute(
-            () => import("@/modules/torres-consulta/pages/cliente/forgot-password-page"),
-            "ClienteForgotPasswordPage",
-          ),
-        },
-        {
-          path: ROUTES.consultaResetPassword,
-          element: lazyRoute(
-            () => import("@/modules/torres-consulta/pages/cliente/reset-password-page"),
-            "ClienteResetPasswordPage",
-          ),
+          element: <ConsumerAuthLayout />,
+          children: [
+            {
+              path: ROUTES.consultaLogin,
+              element: lazyRoute(
+                () => import("@/modules/torres-consulta/pages/cliente/login-page"),
+                "ClienteLoginPage",
+              ),
+            },
+            {
+              path: ROUTES.consultaRegister,
+              element: lazyRoute(
+                () => import("@/modules/torres-consulta/pages/cliente/register-page"),
+                "ClienteRegisterPage",
+              ),
+            },
+            {
+              path: ROUTES.consultaForgotPassword,
+              element: lazyRoute(
+                () => import("@/modules/torres-consulta/pages/cliente/forgot-password-page"),
+                "ClienteForgotPasswordPage",
+              ),
+            },
+            {
+              path: ROUTES.consultaResetPassword,
+              element: lazyRoute(
+                () => import("@/modules/torres-consulta/pages/cliente/reset-password-page"),
+                "ClienteResetPasswordPage",
+              ),
+            },
+          ],
         },
         ...legacyAuthRedirects,
       ],
