@@ -30,6 +30,7 @@ function groupProgress(groupItems: ChecklistItem[]) {
 export function CompactChecklistForm({ items, onUpdate, disabled }: CompactChecklistFormProps) {
   const summary = summarizeChecklist(items);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [flashCategory, setFlashCategory] = useState<string | null>(null);
   const prevCompleteRef = useRef<Record<string, boolean>>({});
   const pendingScrollRef = useRef(false);
@@ -67,7 +68,8 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
 
     if (complete && !wasComplete) {
       setFlashCategory(openCategory);
-      const timer = window.setTimeout(() => setFlashCategory(null), 2200);
+      setActiveItemId(null);
+      const timer = window.setTimeout(() => setFlashCategory(null), 1800);
       const idx = grouped.findIndex((g) => g.key === openCategory);
       const next = grouped.slice(idx + 1).find((g) => !isGroupComplete(g.items));
       if (next?.key) pendingScrollRef.current = true;
@@ -83,7 +85,6 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
     if (!openCategory || !pendingScrollRef.current) return;
     pendingScrollRef.current = false;
 
-    // Aguarda o DOM expandir o acordeão antes de rolar
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         document.getElementById(`checklist-group-${openCategory}`)?.scrollIntoView({
@@ -94,54 +95,50 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
     });
   }, [openCategory]);
 
-  const activeGroup = grouped.find((g) => g.key === openCategory);
-  const activeProgress = activeGroup ? groupProgress(activeGroup.items) : null;
-
   const handleToggle = useCallback((key: string) => {
     setOpenCategory((current) => {
       const next = current === key ? null : key;
       if (next) pendingScrollRef.current = true;
       return next;
     });
+    setActiveItemId(null);
   }, []);
 
-  return (
-    <div className="space-y-2">
-      {activeGroup && activeProgress && (
-        <div className="rounded-md border border-primary/15 bg-primary/[0.04] px-3 py-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-            Categoria atual
-          </p>
-          <p className="text-sm font-semibold text-foreground">
-            {getChecklistCategoryLabel(activeGroup.key)}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {activeProgress.evaluated} de {activeProgress.total} concluídos
-          </p>
-        </div>
-      )}
+  const handleActivateItem = useCallback((id: string) => {
+    setActiveItemId(id);
+  }, []);
 
+  const handleUpdate = useCallback(
+    (id: string, status: string, notes?: string) => {
+      setActiveItemId(id);
+      onUpdate(id, status, notes);
+    },
+    [onUpdate],
+  );
+
+  return (
+    <div className="space-y-1.5">
       {flashCategory && (
         <div
-          className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800"
+          className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-medium text-emerald-800"
           role="status"
         >
-          <Check className="size-3.5 shrink-0" />
+          <Check className="size-3 shrink-0" />
           {getChecklistCategoryLabel(flashCategory)} concluída
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-2 rounded-md bg-muted/30 px-2.5 py-1.5 text-xs">
-        <span className="font-medium">
-          {summary.evaluated}/{items.length} itens
+      <div className="flex items-center justify-between px-0.5 text-[11px] text-muted-foreground">
+        <span className="font-medium text-foreground">
+          {summary.evaluated} de {items.length}
         </span>
-        <span className="text-muted-foreground">
+        <span className="tabular-nums">
           {items.length > 0 ? Math.round((summary.evaluated / items.length) * 100) : 0}%
         </span>
       </div>
 
       {grouped.map((group) => {
-        const { evaluated, total, pct } = groupProgress(group.items);
+        const { evaluated, total } = groupProgress(group.items);
         const isOpen = openCategory === group.key;
         const complete = evaluated === total;
 
@@ -150,31 +147,31 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
             key={group.key}
             id={`checklist-group-${group.key}`}
             className={cn(
-              "scroll-mt-36 overflow-hidden rounded-lg border border-border/70 bg-card transition-colors",
-              isOpen && "border-primary/25 ring-1 ring-primary/10",
-              complete && !isOpen && "border-emerald-200/60",
+              "scroll-mt-36 overflow-hidden rounded-lg border border-border/60 bg-card",
+              isOpen && "border-primary/20",
+              complete && !isOpen && "border-emerald-200/50",
             )}
           >
             <button
               type="button"
               onClick={() => handleToggle(group.key)}
-              className="flex w-full items-center gap-2 px-2.5 py-2.5 text-left hover:bg-muted/20 sm:px-3"
+              className="flex w-full items-center gap-2 px-2.5 py-2 text-left hover:bg-muted/20 sm:px-3"
               aria-expanded={isOpen}
             >
               <span
                 className={cn(
-                  "flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
+                  "flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
                   complete ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground",
                 )}
               >
-                {complete ? <Check className="size-3.5" /> : pct}
+                {complete ? <Check className="size-3" /> : evaluated}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold leading-tight">
+                <p className="text-[13px] font-semibold leading-tight sm:text-sm">
                   {getChecklistCategoryLabel(group.key)}
                 </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {evaluated} de {total} itens · {pct}%
+                <p className="text-[10px] text-muted-foreground">
+                  {evaluated} de {total}
                 </p>
               </div>
               <ChevronDown
@@ -192,7 +189,9 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
                     key={item.id}
                     item={item}
                     disabled={disabled}
-                    onUpdate={onUpdate}
+                    isActive={activeItemId === item.id}
+                    onActivate={handleActivateItem}
+                    onUpdate={handleUpdate}
                   />
                 ))}
               </ul>

@@ -88,7 +88,7 @@ export function buildLaudoReadiness(
         checklistStatus.pendingCount > 0
           ? `${checklistStatus.pendingCount} item(ns) pendente(s).`
           : checklistStatus.missingNotesCount > 0
-            ? `${checklistStatus.missingNotesCount} apontamento(s) sem observação.`
+            ? `${checklistStatus.missingNotesCount} item(ns): informe o apontamento identificado.`
             : `${stats.evaluated}/${stats.total} itens · ${stats.naoConforme} apontamento(s).`,
       ok: checklistStatus.valid,
     },

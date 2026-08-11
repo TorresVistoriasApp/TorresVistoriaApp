@@ -51,6 +51,32 @@ type EvaluationBlocker = {
   sectionId: string;
 };
 
+const SECTION_LABELS: Record<string, string> = {
+  "avaliacao-identificacao": "Identificação",
+  "avaliacao-veiculo": "Dados do veículo",
+  "avaliacao-contratante": "Contratante",
+  "avaliacao-complementares": "Dados complementares",
+  "avaliacao-checklist": "Checklist técnico",
+  "checklist-parecer": "Parecer técnico",
+};
+
+const FIELD_REQUIRED_LABELS: Record<string, string> = {
+  location: "Local da vistoria",
+  inspection_date: "Data da vistoria",
+  inspection_time: "Hora da vistoria",
+  inspection_type_id: "Tipo de vistoria",
+  client_name: "Nome do contratante",
+  plate: "Placa",
+  chassis: "Chassi",
+  brand: "Marca",
+  model: "Modelo",
+  color: "Cor",
+  fuel: "Combustível",
+  manufacture_year: "Ano de fabricação",
+  model_year: "Ano do modelo",
+  situation: "Situação do veículo",
+};
+
 function getFieldSectionId(field: string): string {
   if (
     ["inspection_date", "inspection_time", "location", "inspection_type_id", "requester_name"].includes(
@@ -77,6 +103,19 @@ function getFieldSectionId(field: string): string {
   return "avaliacao-veiculo";
 }
 
+/** Evita vazamento de mensagens técnicas do Zod (ex.: Expected string, received null). */
+function humanizeZodIssueMessage(field: string, message: string): string {
+  const isTechnical =
+    /expected\s+\w+/i.test(message) ||
+    /received\s+(null|undefined)/i.test(message) ||
+    /invalid_type/i.test(message);
+
+  if (!isTechnical) return message;
+
+  const label = FIELD_REQUIRED_LABELS[field];
+  return label ? `${label} é obrigatório` : "Campo obrigatório";
+}
+
 function buildEvaluationBlockers(
   formValues: Partial<VistoriaInput>,
   checklistItems: ChecklistItem[],
@@ -99,7 +138,7 @@ function buildEvaluationBlockers(
       if (field) seenFields.add(field);
       blockers.push({
         id: `field-${field || issue.code}`,
-        message: issue.message,
+        message: humanizeZodIssueMessage(field, issue.message),
         sectionId: field ? getFieldSectionId(field) : "avaliacao-identificacao",
       });
     }
@@ -116,7 +155,7 @@ function buildEvaluationBlockers(
   if (checklist.missingNotesCount > 0) {
     blockers.push({
       id: "checklist-notes",
-      message: `${checklist.missingNotesCount} apontamento(s) sem observação obrigatória`,
+      message: `${checklist.missingNotesCount} item(ns): informe o apontamento identificado`,
       sectionId: "avaliacao-checklist",
     });
   }
@@ -140,14 +179,52 @@ function buildEvaluationBlockers(
   return blockers;
 }
 
+type BlockerSectionGroup = {
+  sectionId: string;
+  label: string;
+  count: number;
+  preview: string;
+};
+
+function groupBlockersBySection(blockers: EvaluationBlocker[]): BlockerSectionGroup[] {
+  const order = Object.keys(SECTION_LABELS);
+  const map = new Map<string, EvaluationBlocker[]>();
+
+  for (const blocker of blockers) {
+    const list = map.get(blocker.sectionId) ?? [];
+    list.push(blocker);
+    map.set(blocker.sectionId, list);
+  }
+
+  return order
+    .filter((sectionId) => map.has(sectionId))
+    .map((sectionId) => {
+      const items = map.get(sectionId) ?? [];
+      return {
+        sectionId,
+        label: SECTION_LABELS[sectionId] ?? sectionId,
+        count: items.length,
+        preview: items[0]?.message ?? "",
+      };
+    });
+}
+
+/**
+ * Banner compacto — só após tentativa de continuar.
+ * Agrupa por seção (máx. ~6 linhas) em vez de listar cada campo.
+ */
 function EvaluationBlockersBanner({
   blockers,
+  visible,
   onGoTo,
 }: {
   blockers: EvaluationBlocker[];
+  visible: boolean;
   onGoTo: (sectionId: string) => void;
 }) {
-  if (blockers.length === 0) return null;
+  if (!visible || blockers.length === 0) return null;
+
+  const groups = groupBlockersBySection(blockers);
 
   return (
     <div
@@ -157,17 +234,22 @@ function EvaluationBlockersBanner({
     >
       <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-900">
         <AlertCircle className="size-3.5 shrink-0" />
-        Para continuar, complete:
+        Ainda falta completar {groups.length} {groups.length === 1 ? "seção" : "seções"}:
       </p>
       <ul className="mt-1.5 space-y-1">
-        {blockers.map((blocker) => (
-          <li key={blocker.id}>
+        {groups.map((group) => (
+          <li key={group.sectionId}>
             <button
               type="button"
-              onClick={() => onGoTo(blocker.sectionId)}
+              onClick={() => onGoTo(group.sectionId)}
               className="text-left text-xs text-amber-900 underline-offset-2 hover:underline"
             >
-              {blocker.message}
+              <span className="font-medium">{group.label}</span>
+              <span className="text-amber-800/80">
+                {" — "}
+                {group.count > 1 ? `${group.count} itens · ` : ""}
+                {group.preview}
+              </span>
             </button>
           </li>
         ))}
@@ -176,10 +258,20 @@ function EvaluationBlockersBanner({
   );
 }
 
-function sectionBlockerStatus(blockers: EvaluationBlocker[], sectionId: string) {
+function sectionBlockerStatus(
+  blockers: EvaluationBlocker[],
+  sectionId: string,
+  options?: { revealErrors?: boolean; pendingLabel?: string },
+) {
   const count = blockers.filter((blocker) => blocker.sectionId === sectionId).length;
   if (count === 0) {
     return { statusText: "Ok", statusTone: "success" as const };
+  }
+  if (!options?.revealErrors) {
+    return {
+      statusText: options?.pendingLabel ?? "A preencher",
+      statusTone: "muted" as const,
+    };
   }
   return { statusText: `${count} pendência(s)`, statusTone: "warning" as const };
 }
@@ -219,21 +311,29 @@ function EvaluationProgressBar({
   percent: number;
   pending?: boolean;
 }) {
+  const clamped = Math.max(0, Math.min(100, percent));
+  const complete = clamped >= 100 && !pending;
+
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-[11px]">
         <span className="font-medium text-foreground">{label}</span>
-        <span className={cn("tabular-nums", pending ? "text-amber-700" : "text-muted-foreground")}>
-          {pending ? "Pendente" : `${percent}%`}
+        <span
+          className={cn(
+            "tabular-nums",
+            complete ? "text-emerald-700" : pending && clamped === 0 ? "text-muted-foreground" : "text-foreground",
+          )}
+        >
+          {complete ? "100%" : `${clamped}%`}
         </span>
       </div>
       <div className="h-1 overflow-hidden rounded-full bg-muted">
         <div
           className={cn(
             "h-full rounded-full transition-all duration-300",
-            pending ? "w-0" : percent === 100 ? "bg-emerald-500" : "bg-primary",
+            complete ? "bg-emerald-500" : clamped > 0 ? "bg-primary" : "bg-transparent",
           )}
-          style={{ width: pending ? "0%" : `${percent}%` }}
+          style={{ width: `${clamped}%` }}
         />
       </div>
     </div>
@@ -431,14 +531,21 @@ export function AvaliacaoTecnicaPanel({
       for (const issue of parsed.error.issues) {
         const field = issue.path[0];
         if (typeof field === "string") {
-          setError(field as keyof VistoriaInput, { message: issue.message });
+          setError(field as keyof VistoriaInput, {
+            message: humanizeZodIssueMessage(field, issue.message),
+          });
         }
       }
       const firstField = parsed.error.issues[0]?.path[0];
       if (typeof firstField === "string") {
         scrollToSection(getFieldSectionId(firstField));
       }
-      toast(parsed.error.issues[0]?.message ?? "Verifique os campos obrigatórios.");
+      const firstIssue = parsed.error.issues[0];
+      const firstMsg =
+        firstIssue && typeof firstIssue.path[0] === "string"
+          ? humanizeZodIssueMessage(String(firstIssue.path[0]), firstIssue.message)
+          : "Verifique os campos obrigatórios.";
+      toast(firstMsg);
       return;
     }
 
@@ -447,7 +554,7 @@ export function AvaliacaoTecnicaPanel({
       if (checklistResult.pendingCount > 0) {
         toast(`Avalie todos os itens. Faltam ${checklistResult.pendingCount} pendente(s).`);
       } else if (checklistResult.missingNotesCount > 0) {
-        toast(`Preencha observações nos ${checklistResult.missingNotesCount} item(ns) com apontamentos.`);
+        toast(`Informe o apontamento identificado em ${checklistResult.missingNotesCount} item(ns).`);
       }
       scrollToSection("avaliacao-checklist");
       return;
@@ -527,17 +634,19 @@ export function AvaliacaoTecnicaPanel({
             Rascunho salvo automaticamente
           </p>
         )}
-        {blockers.length > 0 && (
-          <p className="flex items-center gap-1 text-[10px] font-medium text-amber-800 sm:text-[11px]">
-            <AlertCircle className="size-3 shrink-0" />
-            {blockers.length} pendência(s) para continuar
-          </p>
-        )}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <EvaluationProgressBar label="Fotos" percent={photosPercent} />
           <EvaluationProgressBar label="Dados" percent={dadosValid ? 100 : 0} pending={!dadosValid} />
-          <EvaluationProgressBar label="Checklist" percent={checklistPercent} pending={!checklistValid} />
-          <EvaluationProgressBar label="Parecer" percent={parecerValid ? 100 : 0} pending={!parecerValid} />
+          <EvaluationProgressBar
+            label="Checklist"
+            percent={checklistPercent}
+            pending={!checklistValid}
+          />
+          <EvaluationProgressBar
+            label="Parecer"
+            percent={parecerValid ? 100 : 0}
+            pending={!parecerValid}
+          />
         </div>
       </div>
 
@@ -546,7 +655,9 @@ export function AvaliacaoTecnicaPanel({
         title="Identificação"
         dense
         {...sectionOpenProps("avaliacao-identificacao", sectionOpen, setSectionOpen, true)}
-        {...sectionBlockerStatus(blockers, "avaliacao-identificacao")}
+        {...sectionBlockerStatus(blockers, "avaliacao-identificacao", {
+          revealErrors: showValidationHints,
+        })}
       >
         <div className={evaluationGridClass}>
           <FormField label="Data" error={errors.inspection_date?.message}>
@@ -590,7 +701,9 @@ export function AvaliacaoTecnicaPanel({
         title="Veículo"
         dense
         {...sectionOpenProps("avaliacao-veiculo", sectionOpen, setSectionOpen)}
-        {...sectionBlockerStatus(blockers, "avaliacao-veiculo")}
+        {...sectionBlockerStatus(blockers, "avaliacao-veiculo", {
+          revealErrors: showValidationHints,
+        })}
       >
         <PlateLookupHint state={plateLookupState} />
         <VeiculoForm control={control} register={register} errors={errors} embedded evaluation />
@@ -601,7 +714,9 @@ export function AvaliacaoTecnicaPanel({
         title="Contratante"
         dense
         {...sectionOpenProps("avaliacao-contratante", sectionOpen, setSectionOpen)}
-        {...sectionBlockerStatus(blockers, "avaliacao-contratante")}
+        {...sectionBlockerStatus(blockers, "avaliacao-contratante", {
+          revealErrors: showValidationHints,
+        })}
       >
         <ClienteForm control={control} register={register} errors={errors} embedded compact />
       </EvaluationSection>
@@ -664,11 +779,15 @@ export function AvaliacaoTecnicaPanel({
         statusText={
           checklistValid
             ? "Concluído"
-            : blockers.some((blocker) => blocker.sectionId === "avaliacao-checklist")
-              ? sectionBlockerStatus(blockers, "avaliacao-checklist").statusText
-              : `${checklistSummary.pending} pendente(s)`
+            : showValidationHints
+              ? sectionBlockerStatus(blockers, "avaliacao-checklist", {
+                  revealErrors: true,
+                }).statusText
+              : `${checklistSummary.evaluated}/${checklistItems.length}`
         }
-        statusTone={checklistValid ? "success" : "warning"}
+        statusTone={
+          checklistValid ? "success" : showValidationHints ? "warning" : "muted"
+        }
       >
         {isLoadingChecklist ? (
           <LoadingSpinner label="Carregando checklist..." />
@@ -694,14 +813,18 @@ export function AvaliacaoTecnicaPanel({
         )}
       />
 
-      <EvaluationBlockersBanner blockers={blockers} onGoTo={scrollToSection} />
+      <EvaluationBlockersBanner
+        blockers={blockers}
+        visible={showValidationHints}
+        onGoTo={scrollToSection}
+      />
 
       <div className="border-t border-border/60 pt-3">
         {wizardMode ? (
           <WizardNavButtons
             onBack={onBack}
             onNext={() => void validateAndContinue()}
-            nextLabel={canContinue ? "Revisar e gerar laudo" : "Ver pendências e continuar"}
+            nextLabel={canContinue ? "Revisar e gerar laudo" : "Continuar"}
             nextDisabled={isBusy}
             nextLoading={isBusy}
           />
@@ -722,7 +845,7 @@ export function AvaliacaoTecnicaPanel({
                 ? "Salvando..."
                 : canContinue
                   ? "Revisar e gerar laudo"
-                  : "Ver pendências e continuar"}
+                  : "Continuar"}
             </Button>
           </div>
         )}
