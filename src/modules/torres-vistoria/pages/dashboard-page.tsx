@@ -1,14 +1,12 @@
 import { lazy, Suspense, useState } from "react";
 import {
   BarChart3,
-  CheckCircle2,
   ClipboardList,
   Clock3,
   DollarSign,
   PieChart,
   Plus,
   TrendingUp,
-  Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -79,12 +77,6 @@ function buildStatItems(
       isLoading,
     },
     {
-      title: isCompanyView ? "Concluídas" : "Suas concluídas",
-      value: formatNumber(stats?.completedInspections ?? 0),
-      icon: CheckCircle2,
-      isLoading,
-    },
-    {
       title: isCompanyView ? "Faturamento (ano)" : "Seu faturamento (ano)",
       value: formatCurrency(stats?.totalRevenue ?? 0),
       icon: DollarSign,
@@ -102,13 +94,6 @@ function buildStatItems(
       trendUp: (stats?.netProfit ?? 0) >= 0,
     });
   }
-
-  items.push({
-    title: "Ticket médio",
-    value: formatCurrency(stats?.averageTicket ?? 0),
-    icon: Users,
-    isLoading,
-  });
 
   return items;
 }
@@ -247,10 +232,7 @@ export function DashboardPage() {
 
       <DashboardScopeBanner />
 
-      <StatsGrid
-        items={buildStatItems(stats, statsLoading, isCompanyView, canViewFinancial)}
-        className={isCompanyView ? "xl:grid-cols-3 2xl:grid-cols-6" : undefined}
-      />
+      <StatsGrid items={buildStatItems(stats, statsLoading, isCompanyView, canViewFinancial)} />
 
       <DashboardCharts
         monthly={monthly}
