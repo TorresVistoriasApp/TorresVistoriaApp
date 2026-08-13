@@ -24,16 +24,27 @@ export function usePrincipal() {
     let isActive = true;
     setIdentityLoading(true);
 
+    const timeoutId = window.setTimeout(() => {
+      if (!isActive) return;
+      setResolution({ status: "unknown" });
+      setIdentityLoading(false);
+    }, 10_000);
+
     void resolvePrincipal(session.user.id)
       .then((result) => {
         if (isActive) setResolution(result);
       })
+      .catch(() => {
+        if (isActive) setResolution({ status: "unknown" });
+      })
       .finally(() => {
+        window.clearTimeout(timeoutId);
         if (isActive) setIdentityLoading(false);
       });
 
     return () => {
       isActive = false;
+      window.clearTimeout(timeoutId);
     };
   }, [session?.user.id, sessionLoading]);
 
