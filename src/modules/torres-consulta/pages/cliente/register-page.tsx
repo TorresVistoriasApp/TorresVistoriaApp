@@ -12,6 +12,7 @@ import {
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
 import { PasswordStrengthInput } from "@/core/auth/components/password-strength-input";
+import { useSession } from "@/core/auth/session-context";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import {
   consumerRegisterSchema,
@@ -26,7 +27,8 @@ import { Label } from "@/shared/ui/label";
 import { LoadingScreen } from "@/shared/components/loading-spinner";
 
 export function ClienteRegisterPage() {
-  const { principalType, loading } = usePrincipal();
+  const { session, loading: sessionLoading } = useSession();
+  const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
   const [successEmail, setSuccessEmail] = useState<string | null>(null);
   const [resendPending, setResendPending] = useState(false);
@@ -46,23 +48,25 @@ export function ClienteRegisterPage() {
       password: "",
       confirmPassword: "",
       acceptTerms: false,
-      acceptPrivacy: false,
-      consentDataProcessing: false,
     },
   });
 
   const password = watch("password");
 
-  if (loading) return <LoadingScreen />;
-  if (principalType === PrincipalType.CUSTOMER) {
+  if (sessionLoading || (session && principalLoading)) {
+    return <LoadingScreen />;
+  }
+  if (session && principalType === PrincipalType.CUSTOMER) {
     return <Navigate to={ROUTES.consultaApp} replace />;
   }
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
     try {
-      await consumerAuthService.signUp(values);
-      setSuccessEmail(values.email);
+      const { needsEmailConfirmation } = await consumerAuthService.signUp(values);
+      if (needsEmailConfirmation) {
+        setSuccessEmail(values.email);
+      }
     } catch (err) {
       const message =
         err instanceof Error
@@ -146,43 +150,46 @@ export function ClienteRegisterPage() {
 
             <ConfirmPasswordField error={errors.confirmPassword?.message} {...register("confirmPassword")} />
 
-            <div className="space-y-3 rounded-xl border border-border/60 bg-muted/30 p-4 text-sm">
-              <label className="flex items-start gap-3">
-                <input type="checkbox" className="mt-1 h-4 w-4 rounded" {...register("acceptTerms")} />
-                <span>
-                  Aceito os{" "}
-                  <Link to={ROUTES.termos} className="font-semibold text-primary hover:underline">
+            <div className="space-y-2 border-t border-border/60 pt-4">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/60 bg-muted/25 p-4 text-sm leading-relaxed transition-colors hover:bg-muted/40">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"
+                  {...register("acceptTerms")}
+                />
+                <span className="text-muted-foreground">
+                  Li e aceito os{" "}
+                  <Link
+                    to={ROUTES.termos}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary hover:underline"
+                  >
                     Termos de Uso
                   </Link>
+                  , a{" "}
+                  <Link
+                    to={ROUTES.privacy}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary hover:underline"
+                  >
+                    Política de Privacidade
+                  </Link>{" "}
+                  e consinto com o tratamento dos meus dados conforme a{" "}
+                  <Link
+                    to={ROUTES.lgpd}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary hover:underline"
+                  >
+                    LGPD
+                  </Link>
+                  .
                 </span>
               </label>
               {errors.acceptTerms && (
                 <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
-              )}
-
-              <label className="flex items-start gap-3">
-                <input type="checkbox" className="mt-1 h-4 w-4 rounded" {...register("acceptPrivacy")} />
-                <span>
-                  Aceito a{" "}
-                  <Link to={ROUTES.privacy} className="font-semibold text-primary hover:underline">
-                    Política de Privacidade
-                  </Link>
-                </span>
-              </label>
-              {errors.acceptPrivacy && (
-                <p className="text-sm text-destructive">{errors.acceptPrivacy.message}</p>
-              )}
-
-              <label className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 rounded"
-                  {...register("consentDataProcessing")}
-                />
-                <span>Consinto com o tratamento dos meus dados pessoais conforme a LGPD.</span>
-              </label>
-              {errors.consentDataProcessing && (
-                <p className="text-sm text-destructive">{errors.consentDataProcessing.message}</p>
               )}
             </div>
 

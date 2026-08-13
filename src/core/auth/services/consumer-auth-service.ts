@@ -1,3 +1,5 @@
+import { getAuthRedirectUrl } from "@/config/env";
+import { ROUTES } from "@/config/routes";
 import { AppError } from "@/core/errors/app-error";
 import { USER_MESSAGES } from "@/core/errors/user-facing-errors";
 import { consumerProfileService } from "@/core/auth/consumer-profile-service";
@@ -47,11 +49,21 @@ export const consumerAuthService = {
     }
   },
 
-  async signUp(input: ConsumerRegisterInput): Promise<void> {
-    await supabaseAuthAdapter.signUp(input.email, input.password, {
-      full_name: input.name,
-      user_type: "consumer",
-    });
+  async signUp(input: ConsumerRegisterInput): Promise<{ needsEmailConfirmation: boolean }> {
+    const emailRedirectTo =
+      typeof window !== "undefined" ? getAuthRedirectUrl(ROUTES.consultaApp) : undefined;
+
+    const { session } = await supabaseAuthAdapter.signUp(
+      input.email,
+      input.password,
+      {
+        full_name: input.name,
+        user_type: "consumer",
+      },
+      emailRedirectTo,
+    );
+
+    return { needsEmailConfirmation: !session };
   },
 
   async signOut(): Promise<void> {

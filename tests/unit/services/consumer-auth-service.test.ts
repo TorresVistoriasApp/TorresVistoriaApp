@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const mocks = vi.hoisted(() => ({
   signInWithPassword: vi.fn(),
   signOut: vi.fn(),
+  signUp: vi.fn(),
   getSelf: vi.fn(),
   getSelfInspector: vi.fn(),
 }));
@@ -11,7 +12,7 @@ vi.mock("@/core/auth/services/supabase-auth-adapter", () => ({
   supabaseAuthAdapter: {
     signInWithPassword: mocks.signInWithPassword,
     signOut: mocks.signOut,
-    signUp: vi.fn(),
+    signUp: mocks.signUp,
     resetPasswordForEmail: vi.fn(),
     updatePassword: vi.fn(),
     resendSignupVerification: vi.fn(),
@@ -74,5 +75,33 @@ describe("consumerAuthService", () => {
     ).rejects.toThrow("Torres Vistoria");
 
     expect(mocks.signOut).toHaveBeenCalled();
+  });
+
+  it("signUp indica confirmação de e-mail quando não há sessão", async () => {
+    mocks.signUp.mockResolvedValue({ session: null });
+
+    await expect(
+      consumerAuthService.signUp({
+        name: "Consumidor",
+        email: "c@test.com",
+        password: "SenhaForte1!",
+        confirmPassword: "SenhaForte1!",
+        acceptTerms: true,
+      }),
+    ).resolves.toEqual({ needsEmailConfirmation: true });
+  });
+
+  it("signUp entra direto no app quando a sessão é criada", async () => {
+    mocks.signUp.mockResolvedValue({ session: { user: { id: "user-1" } } });
+
+    await expect(
+      consumerAuthService.signUp({
+        name: "Consumidor",
+        email: "c@test.com",
+        password: "SenhaForte1!",
+        confirmPassword: "SenhaForte1!",
+        acceptTerms: true,
+      }),
+    ).resolves.toEqual({ needsEmailConfirmation: false });
   });
 });

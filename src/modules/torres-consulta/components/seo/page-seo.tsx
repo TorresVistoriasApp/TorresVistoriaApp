@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { CONSULTA_PUBLIC_ORIGIN } from "@/config/app";
+import { getAppUrl } from "@/config/env";
 
 export interface PageSeoProps {
   title: string;
@@ -27,10 +28,7 @@ export function PageSeo({
     document.title = fullTitle;
 
     const resolvedCanonical =
-      canonical ??
-      (canonicalPath && typeof window !== "undefined"
-        ? `${window.location.origin}${canonicalPath}`
-        : undefined);
+      canonical ?? (canonicalPath ? `${getAppUrl()}${canonicalPath}` : undefined);
 
     const setMeta = (name: string, content: string, property = false) => {
       const attr = property ? "property" : "name";

@@ -15,7 +15,15 @@ major_version = 17
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["http://localhost:3000/recuperar-senha"]
+additional_redirect_urls = [
+  "http://localhost:3000/recuperar-senha",
+  "http://localhost:3000/consulta/app",
+  "http://localhost:3000/consulta/redefinir-senha",
+  "https://www.torresconsultas.com.br/consulta/app",
+  "https://www.torresconsultas.com.br/consulta/redefinir-senha",
+  "https://torresconsultas.com.br/consulta/app",
+  "https://torresconsultas.com.br/consulta/redefinir-senha",
+]
 
 [storage]
 enabled = true
