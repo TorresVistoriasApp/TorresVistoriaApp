@@ -13,9 +13,14 @@ const LOCAL_ORIGINS = new Set([
   "http://127.0.0.1:5173",
 ]);
 
+const PRODUCTION_ORIGINS = new Set([
+  "https://torresconsultas.com.br",
+  "https://www.torresconsultas.com.br",
+]);
+
 /**
- * Enquanto não houver domínio próprio, deploys na Vercel (*.vercel.app) são
- * aceitos. Quando SITE_URL estiver definido, ele continua valendo normalmente.
+ * Deploys na Vercel (*.vercel.app) e o domínio próprio da Torres Consulta.
+ * SITE_URL / ALLOWED_ORIGINS continuam valendo normalmente.
  */
 function isVercelAppOrigin(origin: string): boolean {
   try {
@@ -31,6 +36,7 @@ function isAllowedOrigin(origin: string): boolean {
   if (DEFAULT_ORIGIN && origin === DEFAULT_ORIGIN) return true;
   if (EXTRA_ORIGINS.includes(origin)) return true;
   if (LOCAL_ORIGINS.has(origin)) return true;
+  if (PRODUCTION_ORIGINS.has(origin)) return true;
   if (isVercelAppOrigin(origin)) return true;
   return false;
 }

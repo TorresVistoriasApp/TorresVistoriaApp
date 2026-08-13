@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { CONSULTA_PUBLIC_ORIGIN } from "@/config/app";
 
 export interface PageSeoProps {
   title: string;
@@ -86,6 +87,7 @@ export const LANDING_SEO = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Torres Consulta",
+    url: CONSULTA_PUBLIC_ORIGIN,
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     offers: {

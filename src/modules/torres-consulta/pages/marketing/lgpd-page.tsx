@@ -59,7 +59,7 @@ export function LgpdPage() {
           </p>
         </LegalSectionBlock>
         <LegalSectionBlock id="encarregado" title="Encarregado de dados (DPO)">
-          <p>E-mail: privacidade@torresconsulta.com.br</p>
+          <p>E-mail: privacidade@torresconsultas.com.br</p>
         </LegalSectionBlock>
       </LegalDocLayout>
     </MarketingShell>

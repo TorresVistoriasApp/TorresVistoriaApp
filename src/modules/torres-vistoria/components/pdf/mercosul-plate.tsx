@@ -53,7 +53,6 @@ export function MercosulPlate({
           gridTemplateColumns: `${MERCOSUL_PLATE_BR_COL}px 1fr`,
           background: MERCOSUL_BLUE,
         }}
-        }}
       >
         <span
           style={{

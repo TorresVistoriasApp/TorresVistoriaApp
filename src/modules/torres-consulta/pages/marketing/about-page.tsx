@@ -1,4 +1,5 @@
 import { Building2, Clock, Mail, MapPin, Shield, Target, Users, Zap } from "lucide-react";
+import { CONSULTA_PUBLIC_ORIGIN } from "@/config/app";
 import { ROUTES } from "@/config/routes";
 import { MarketingShell } from "@/modules/torres-consulta/components/marketing/marketing-shell";
 import { ConversionCta } from "@/modules/torres-consulta/components/marketing/conversion-cta";
@@ -30,7 +31,7 @@ export function AboutPage() {
           "@type": "Organization",
           name: "Torres Consulta",
           description: "Plataforma de consulta veicular para pessoa física.",
-          url: "https://torresconsulta.com.br",
+          url: CONSULTA_PUBLIC_ORIGIN,
         },
       }}
       breadcrumb={[{ label: "Sobre" }]}
@@ -128,7 +129,7 @@ export function AboutPage() {
         <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:gap-8">
           <span className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-primary" />
-            contato@torresconsulta.com.br
+            contato@torresconsultas.com.br
           </span>
           <span className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-primary" />
