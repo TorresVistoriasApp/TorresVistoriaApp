@@ -5,6 +5,7 @@ import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
 import { buildLaudoDocDefinition } from "@/modules/torres-vistoria/domain/laudo/laudo-doc-definition";
 import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoSettings } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
+import { SILHOUETTE_HEIGHT, SILHOUETTE_WIDTH } from "@/modules/torres-vistoria/domain/laudo/pdf/paint-silhouette";
 import { PUBLIC_IMAGES } from "@/shared/lib/public-images";
 import { imageUrlToPdfDataUrl } from "@/shared/lib/pdf-embed-image";
 import { optimizePdfBlob } from "@/shared/lib/optimize-pdf";
@@ -18,6 +19,7 @@ import { buildReportStoragePath } from "@/infra/storage/paths";
  * vetor a 4x garante ~288 DPI na impressão.
  */
 const LOGO_PRINT_WIDTH_PX = 448;
+const VEHICLE_TOP_VIEW_PRINT_WIDTH_PX = 704;
 
 async function sha256Bytes(data: Blob | string): Promise<string> {
   const buffer = typeof data === "string" ? new TextEncoder().encode(data) : await data.arrayBuffer();
@@ -180,6 +182,11 @@ export const pdfService = {
             preferAlpha: true,
           })
         : undefined,
+      vehicleTopViewDataUrl: await imageUrlToPdfDataUrl(PUBLIC_IMAGES.laudo.vehicleTopView, {
+        maxWidth: VEHICLE_TOP_VIEW_PRINT_WIDTH_PX,
+        maxHeight: Math.round(VEHICLE_TOP_VIEW_PRINT_WIDTH_PX * (SILHOUETTE_HEIGHT / SILHOUETTE_WIDTH)),
+        preferAlpha: true,
+      }),
       generatedAt: new Date(),
     };
 

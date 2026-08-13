@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useLayoutEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { AvaliacaoTecnicaPanel } from "@/modules/torres-vistoria/components/vistoria/avaliacao-tecnica-panel";
@@ -31,6 +31,12 @@ export function InspectionChecklistPage() {
   const updateItem = useUpdateChecklistItem(inspectionId);
   const updateInspection = useUpdateInspection(inspectionId);
   const { toast } = useToast();
+
+  useLayoutEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
 
   useEffect(() => {
     if (isLoading || items.length === 0) return;

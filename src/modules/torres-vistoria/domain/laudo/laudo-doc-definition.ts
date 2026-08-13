@@ -538,7 +538,7 @@ function buildPhotoSection(payload: LaudoPayload, view: LaudoReportViewModel): P
   return nodes;
 }
 
-function buildPaintSection(view: LaudoReportViewModel): PdfNode[] {
+function buildPaintSection(view: LaudoReportViewModel, payload: LaudoPayload): PdfNode[] {
   if (!view.hasPaintAnalysisData) return [];
 
   const nodes: PdfNode[] = [
@@ -547,7 +547,7 @@ function buildPaintSection(view: LaudoReportViewModel): PdfNode[] {
       width: PDF_PAGE.contentWidth,
       kicker: "Indicadores baseados apenas em registros fotográficos e itens de pintura desta vistoria.",
     }),
-    buildPaintSilhouetteNode(view.paintZones),
+    buildPaintSilhouetteNode(view.paintZones, payload.vehicleTopViewDataUrl),
   ];
 
   if (view.paintChecklistItems.length > 0) {
@@ -797,7 +797,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     ...buildSaleMarketSection(payload.inspection, view),
     ...buildChecklistSection(view),
     ...buildPhotoSection(payload, view),
-    ...buildPaintSection(view),
+    ...buildPaintSection(view, payload),
     ...buildOpinionSection(payload.inspection, view),
     ...buildConclusionSection(view),
     ...buildAuthenticitySection(payload, view),

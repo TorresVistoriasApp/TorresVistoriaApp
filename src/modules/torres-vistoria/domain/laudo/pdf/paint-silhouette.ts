@@ -18,121 +18,47 @@ import {
   type LaudoPaintZone,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/laudo-report-view-model";
 
+/** Proporção da silhueta real (134×241 após recorte). */
 export const SILHOUETTE_WIDTH = 168;
-export const SILHOUETTE_HEIGHT = 248;
+export const SILHOUETTE_HEIGHT = 302;
 
 type Point = { x: number; y: number };
 
-const BODY_OUTLINE: Point[] = [
-  { x: 62, y: 10 },
-  { x: 106, y: 10 },
-  { x: 122, y: 22 },
-  { x: 132, y: 42 },
-  { x: 136, y: 70 },
-  { x: 140, y: 108 },
-  { x: 140, y: 156 },
-  { x: 134, y: 196 },
-  { x: 122, y: 222 },
-  { x: 106, y: 238 },
-  { x: 62, y: 238 },
-  { x: 46, y: 222 },
-  { x: 34, y: 196 },
-  { x: 28, y: 156 },
-  { x: 28, y: 108 },
-  { x: 32, y: 70 },
-  { x: 36, y: 42 },
-  { x: 46, y: 22 },
-];
-
-const CABIN_OUTLINE: Point[] = [
-  { x: 50, y: 78 },
-  { x: 118, y: 78 },
-  { x: 124, y: 96 },
-  { x: 124, y: 168 },
-  { x: 116, y: 190 },
-  { x: 52, y: 190 },
-  { x: 44, y: 168 },
-  { x: 44, y: 96 },
-];
-
-function polyline(
-  points: Point[],
-  options: { color: string; lineWidth: number; closePath?: boolean; fill?: string },
-) {
+export function mapZonePoint(
+  zone: Pick<LaudoPaintZone, "x" | "y">,
+  width = SILHOUETTE_WIDTH,
+  height = SILHOUETTE_HEIGHT,
+): Point {
   return {
-    type: "polyline" as const,
-    points,
-    closePath: options.closePath ?? true,
-    lineWidth: options.lineWidth,
-    lineColor: options.color,
-    ...(options.fill ? { color: options.fill } : {}),
+    x: zone.x * width,
+    y: zone.y * height,
   };
 }
 
-function mapZonePoint(zone: LaudoPaintZone): Point {
-  return {
-    x: 18 + zone.x * (SILHOUETTE_WIDTH - 36),
-    y: 12 + zone.y * (SILHOUETTE_HEIGHT - 24),
-  };
-}
-
-export function buildPaintSilhouetteCanvasOps(zones: LaudoPaintZone[]) {
-  const bodyStroke = PDF_COLOR.navy;
-  const cabinStroke = "#94a3b8";
-
-  const ops: Record<string, unknown>[] = [
-    polyline(BODY_OUTLINE, { color: bodyStroke, lineWidth: 1.15, fill: "#f8fafc" }),
-    polyline(CABIN_OUTLINE, { color: cabinStroke, lineWidth: 0.7 }),
-    {
-      type: "line",
-      x1: 52,
-      y1: 56,
-      x2: 116,
-      y2: 56,
-      lineWidth: 0.6,
-      lineColor: cabinStroke,
-    },
-    {
-      type: "line",
-      x1: 54,
-      y1: 206,
-      x2: 114,
-      y2: 206,
-      lineWidth: 0.6,
-      lineColor: cabinStroke,
-    },
-    {
-      type: "line",
-      x1: 84,
-      y1: 28,
-      x2: 84,
-      y2: 226,
-      lineWidth: 0.4,
-      lineColor: PDF_COLOR.border,
-    },
-    { type: "ellipse", x: 22, y: 78, r1: 7, r2: 16, lineWidth: 0.8, lineColor: bodyStroke },
-    { type: "ellipse", x: 146, y: 78, r1: 7, r2: 16, lineWidth: 0.8, lineColor: bodyStroke },
-    { type: "ellipse", x: 22, y: 178, r1: 7, r2: 16, lineWidth: 0.8, lineColor: bodyStroke },
-    { type: "ellipse", x: 146, y: 178, r1: 7, r2: 16, lineWidth: 0.8, lineColor: bodyStroke },
-  ];
-
-  for (const zone of zones) {
-    const point = mapZonePoint(zone);
+export function buildPaintZoneMarkerOps(
+  zones: LaudoPaintZone[],
+  size: { width: number; height: number } = { width: SILHOUETTE_WIDTH, height: SILHOUETTE_HEIGHT },
+): Record<string, unknown>[] {
+  return zones.map((zone) => {
+    const point = mapZonePoint(zone, size.width, size.height);
     const color = ZONE_STATE_COLOR[zone.state];
-    const radius = zone.state === "AVARIA" ? 5.2 : zone.state === "REGISTRADA" ? 4.4 : 3.2;
-    ops.push({
+    const radius = zone.state === "AVARIA" ? 5.4 : zone.state === "REGISTRADA" ? 4.6 : 3.2;
+    return {
       type: "ellipse",
       x: point.x,
       y: point.y,
       r1: radius,
       r2: radius,
       color,
-      lineWidth: 0.6,
+      lineWidth: 0.7,
       lineColor: PDF_COLOR.white,
-    });
-  }
+    };
+  });
+}
 
-  return ops;
+/** @deprecated Use buildPaintZoneMarkerOps — mantido para os testes de geometria. */
+export function buildPaintSilhouetteCanvasOps(zones: LaudoPaintZone[]) {
+  return buildPaintZoneMarkerOps(zones);
 }
 
 function zoneLegend(zones: LaudoPaintZone[]): PdfNode {
@@ -188,7 +114,37 @@ function zoneLegend(zones: LaudoPaintZone[]): PdfNode {
   };
 }
 
-export function buildPaintSilhouetteNode(zones: LaudoPaintZone[]): PdfNode {
+function vehicleDiagram(zones: LaudoPaintZone[], imageDataUrl?: string): PdfNode {
+  const markers = {
+    canvas: buildPaintZoneMarkerOps(zones),
+    width: SILHOUETTE_WIDTH,
+    height: SILHOUETTE_HEIGHT,
+  };
+
+  if (!imageDataUrl) {
+    return markers;
+  }
+
+  return {
+    unbreakable: true,
+    stack: [
+      {
+        image: imageDataUrl,
+        width: SILHOUETTE_WIDTH,
+        height: SILHOUETTE_HEIGHT,
+      },
+      {
+        ...markers,
+        margin: [0, -SILHOUETTE_HEIGHT, 0, PDF_SPACE.lg],
+      },
+    ],
+  };
+}
+
+export function buildPaintSilhouetteNode(
+  zones: LaudoPaintZone[],
+  imageDataUrl?: string,
+): PdfNode {
   return {
     columns: [
       {
@@ -203,11 +159,7 @@ export function buildPaintSilhouetteNode(zones: LaudoPaintZone[]): PdfNode {
             characterSpacing: PDF_TRACKING.wide,
             margin: [0, 0, 0, PDF_SPACE.sm],
           },
-          {
-            canvas: buildPaintSilhouetteCanvasOps(zones),
-            width: SILHOUETTE_WIDTH,
-            height: SILHOUETTE_HEIGHT,
-          },
+          vehicleDiagram(zones, imageDataUrl),
           {
             text: "TRASEIRA",
             fontSize: PDF_FONT.micro,
@@ -215,7 +167,7 @@ export function buildPaintSilhouetteNode(zones: LaudoPaintZone[]): PdfNode {
             color: PDF_COLOR.muted,
             alignment: "center",
             characterSpacing: PDF_TRACKING.wide,
-            margin: [0, PDF_SPACE.sm, 0, 0],
+            margin: [0, PDF_SPACE.xl, 0, 0],
           },
         ],
       },

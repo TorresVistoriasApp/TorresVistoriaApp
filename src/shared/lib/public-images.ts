@@ -25,4 +25,8 @@ export const PUBLIC_IMAGES = {
   placeholders: {
     logo: "/images/placeholders/logo.svg",
   },
+  laudo: {
+    /** Vista superior do veículo — análise de pintura no PDF. */
+    vehicleTopView: "/images/laudo/vehicle-top-view.webp",
+  },
 } as const;
