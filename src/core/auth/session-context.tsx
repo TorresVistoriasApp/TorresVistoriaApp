@@ -24,11 +24,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    db.auth.getSession().then(({ data }) => {
-      if (!isMounted) return;
-      setSession(data.session);
-      setLoading(false);
-    });
+    void db.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!isMounted) return;
+        setSession(data.session);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setSession(null);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setLoading(false);
+      });
 
     const {
       data: { subscription },
