@@ -3,6 +3,7 @@ import { AppError, getEdgeErrorMessage, getErrorMessage, throwIfEdgeError } from
 import type { Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
+import { PDF_TABLE_LAYOUTS } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
 import { buildLaudoDocDefinition } from "@/modules/torres-vistoria/domain/laudo/laudo-doc-definition";
 import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoSettings } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
 import { SILHOUETTE_HEIGHT, SILHOUETTE_WIDTH } from "@/modules/torres-vistoria/domain/laudo/pdf/paint-silhouette";
@@ -68,12 +69,18 @@ async function getPdfMake() {
   if (fonts) {
     (pdfDoc as { vfs?: unknown }).vfs = fonts;
   }
-  return pdfDoc as {
-    createPdf: (def: unknown) => {
+  const engine = pdfDoc as {
+    tableLayouts?: Record<string, unknown>;
+    createPdf: (
+      def: unknown,
+      tableLayouts?: unknown,
+    ) => {
       download: (n: string) => void;
       getBlob: (cb: (blob: Blob) => void) => void;
     };
   };
+  engine.tableLayouts = { ...engine.tableLayouts, ...PDF_TABLE_LAYOUTS };
+  return engine;
 }
 
 function reportFileName(inspection: Inspection): string {
@@ -224,7 +231,7 @@ export const pdfService = {
     try {
       const pdfDoc = await getPdfMake();
       const rawBlob = await new Promise<Blob>((resolve) => {
-        pdfDoc.createPdf(cloneDocDefinition(docDefinition)).getBlob(resolve);
+        pdfDoc.createPdf(cloneDocDefinition(docDefinition), PDF_TABLE_LAYOUTS).getBlob(resolve);
       });
       return optimizePdfBlob(rawBlob);
     } catch (error) {

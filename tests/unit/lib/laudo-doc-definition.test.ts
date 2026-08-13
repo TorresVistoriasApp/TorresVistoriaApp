@@ -317,6 +317,36 @@ describe("buildLaudoDocDefinition", () => {
     expect(collectTexts(def).join(" | ")).toContain("AUTENTICIDADE DO LAUDO");
     expect(collectTexts(def).join(" | ")).toContain("CÓDIGO DE AUTENTICIDADE");
   });
+
+  it("usa layouts nomeados que sobrevivem ao clone JSON do gerador", () => {
+    const def = buildLaudoDocDefinition(
+      makePayload({
+        photos: [makePhoto("1", "EXT_FRENTE_45_ESQ", { display_name: "Frente 45° esquerda" })],
+      }),
+    );
+    const cloned = JSON.parse(JSON.stringify(def)) as unknown;
+    const layouts: unknown[] = [];
+
+    const walk = (value: unknown) => {
+      if (value == null || typeof value === "function") return;
+      if (Array.isArray(value)) {
+        value.forEach(walk);
+        return;
+      }
+      if (typeof value === "object") {
+        const record = value as Record<string, unknown>;
+        if ("layout" in record) layouts.push(record.layout);
+        Object.values(record).forEach(walk);
+      }
+    };
+
+    walk(cloned);
+
+    expect(layouts.length).toBeGreaterThan(0);
+    expect(layouts.every((layout) => typeof layout === "string")).toBe(true);
+    expect(layouts).toContain("laudoData");
+    expect(layouts).toContain("laudoNone");
+  });
 });
 
 describe("paint silhouette", () => {

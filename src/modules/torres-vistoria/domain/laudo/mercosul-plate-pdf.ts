@@ -1,3 +1,4 @@
+import { PDF_LAYOUT } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
 import { formatPlate } from "@/shared/lib/formatters";
 import type { Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 import {
@@ -18,8 +19,6 @@ import {
   MERCOSUL_PLATE_HEADER_HEIGHT,
   MERCOSUL_PLATE_TOTAL_HEIGHT,
   PLATE_BODY,
-  PLATE_BORDER,
-  PLATE_BORDER_WIDTH,
   PLATE_BR_FONT_SIZE,
   mercosulPlateGraphicWidth,
 } from "@/modules/torres-vistoria/domain/laudo/mercosul-plate-layout";
@@ -44,17 +43,6 @@ export {
 } from "@/modules/torres-vistoria/domain/laudo/mercosul-plate-layout";
 
 type PdfNode = Record<string, unknown>;
-
-const PLATE_TABLE_LAYOUT = {
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-  hLineWidth: () => PLATE_BORDER_WIDTH,
-  vLineWidth: () => PLATE_BORDER_WIDTH,
-  hLineColor: () => PLATE_BORDER,
-  vLineColor: () => PLATE_BORDER,
-};
 
 /** Placa Mercosul para o cabeçalho do laudo PDF (pdfmake). */
 export function buildMercosulPlatePdfNode(
@@ -119,7 +107,7 @@ export function buildMercosulPlatePdfNode(
         ],
       ],
     },
-    layout: PLATE_TABLE_LAYOUT,
+    layout: PDF_LAYOUT.plate,
   };
 }
 
@@ -187,7 +175,7 @@ export function buildCoverPlatePdfNode(
         ],
       ],
     },
-    layout: PLATE_TABLE_LAYOUT,
+    layout: PDF_LAYOUT.plate,
   };
 }
 
