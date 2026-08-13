@@ -259,9 +259,12 @@ describe("buildLaudoDocDefinition", () => {
     const approvedText = collectTexts(buildLaudoDocDefinition(approved)).join(" | ");
     const reprovedText = collectTexts(buildLaudoDocDefinition(reproved)).join(" | ");
 
-    expect(approvedText).toContain("Estrutura e Longarinas");
-    expect(approvedText).toContain("Pintura e Acabamento");
+    expect(approvedText).toContain("ESTRUTURA E LONGARINAS");
+    expect(approvedText).toContain("PINTURA E ACABAMENTO");
     expect(approvedText).toContain("Longarina dianteira");
+    expect(approvedText).toContain("ITEM");
+    expect(approvedText).toContain("STATUS");
+    expect(approvedText).toContain("OBSERVAÇÃO");
     expect(reprovedText).toContain("REPROVADO");
     expect(reprovedText).toContain("Painel dianteiro");
     expect(reprovedText).toContain("Reparo identificado na inspeção.");

@@ -107,9 +107,9 @@ export const PDF_SPACE = {
  */
 export const PDF_FONT = {
   display: 16,
-  h1: 13,
-  h2: 9,
-  h3: 8,
+  h1: 11,
+  h2: 9.5,
+  h3: 8.5,
   body: 8,
   bodyLarge: 9,
   small: 7.5,
@@ -139,9 +139,19 @@ export const PDF_RADIUS = {
 
 /** Espessuras de traço — hairlines para não poluir a impressão. */
 export const PDF_STROKE = {
-  hairline: 0.4,
-  thin: 0.6,
-  medium: 0.9,
+  hairline: 0.5,
+  thin: 0.75,
+  medium: 1,
+} as const;
+
+/** Ritmo da grade fotográfica — gap igual na horizontal e na vertical. */
+export const PDF_PHOTO = {
+  gap: 8,
+  captionGap: 3,
+  rowGap: 8,
+  groupGap: 10,
+  /** Foto única: evidência em destaque, sem ocupar a página inteira. */
+  singleWidthRatio: 0.72,
 } as const;
 
 /** Métricas da capa — logo compacto para o documento liderar, não a marca. */

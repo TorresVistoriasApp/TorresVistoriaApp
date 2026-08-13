@@ -7,11 +7,12 @@
 import {
   PDF_COLOR,
   PDF_FONT,
+  PDF_PAGE,
   PDF_SPACE,
   PDF_TRACKING,
   type PdfNode,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
-import { labelValueBlock } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-primitives";
+import { labelValueBlock, subsectionHeading } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-primitives";
 import {
   ZONE_STATE_COLOR,
   ZONE_STATE_LABEL,
@@ -80,22 +81,20 @@ function zoneLegend(zones: LaudoPaintZone[]): PdfNode {
           },
         ];
 
+  const legendWidth = PDF_PAGE.contentWidth - SILHOUETTE_WIDTH - PDF_SPACE.xl;
+
   return {
     stack: [
-      {
-        text: "LEGENDA DAS REGIÕES",
-        fontSize: PDF_FONT.micro,
-        bold: true,
-        color: PDF_COLOR.muted,
-        characterSpacing: PDF_TRACKING.wide,
-        margin: [0, 0, 0, PDF_SPACE.md],
-      },
+      subsectionHeading("Legenda das regiões", {
+        margin: [0, 0, 0, PDF_SPACE.sm],
+        width: legendWidth,
+      }),
       {
         columns: [
           { width: 10, canvas: [{ type: "ellipse", x: 3, y: 5, r1: 3, r2: 3, color: ZONE_STATE_COLOR.AVARIA }] },
           { width: "*", text: ZONE_STATE_LABEL.AVARIA, fontSize: PDF_FONT.micro, color: PDF_COLOR.text },
         ],
-        columnGap: 6,
+        columnGap: PDF_SPACE.md,
         margin: [0, 0, 0, 3],
       },
       {
@@ -103,7 +102,7 @@ function zoneLegend(zones: LaudoPaintZone[]): PdfNode {
           { width: 10, canvas: [{ type: "ellipse", x: 3, y: 5, r1: 3, r2: 3, color: ZONE_STATE_COLOR.REGISTRADA }] },
           { width: "*", text: ZONE_STATE_LABEL.REGISTRADA, fontSize: PDF_FONT.micro, color: PDF_COLOR.text },
         ],
-        columnGap: 6,
+        columnGap: PDF_SPACE.md,
         margin: [0, 0, 0, PDF_SPACE.md],
       },
       ...items.map((item, index) => ({
@@ -151,22 +150,22 @@ export function buildPaintSilhouetteNode(
         width: SILHOUETTE_WIDTH,
         stack: [
           {
-            text: "FRENTE",
-            fontSize: PDF_FONT.micro,
-            bold: true,
-            color: PDF_COLOR.muted,
-            alignment: "center",
-            characterSpacing: PDF_TRACKING.wide,
-            margin: [0, 0, 0, PDF_SPACE.sm],
+        text: "FRENTE",
+        fontSize: PDF_FONT.micro,
+        bold: true,
+        color: PDF_COLOR.subtle,
+        alignment: "center",
+        characterSpacing: PDF_TRACKING.wider,
+        margin: [0, 0, 0, PDF_SPACE.sm],
           },
           vehicleDiagram(zones, imageDataUrl),
           {
             text: "TRASEIRA",
             fontSize: PDF_FONT.micro,
             bold: true,
-            color: PDF_COLOR.muted,
+            color: PDF_COLOR.subtle,
             alignment: "center",
-            characterSpacing: PDF_TRACKING.wide,
+            characterSpacing: PDF_TRACKING.wider,
             margin: [0, PDF_SPACE.sm, 0, 0],
           },
         ],

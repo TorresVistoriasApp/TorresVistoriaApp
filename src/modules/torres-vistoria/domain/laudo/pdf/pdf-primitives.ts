@@ -8,6 +8,7 @@ import {
   PDF_COLOR,
   PDF_FONT,
   PDF_LINE_HEIGHT,
+  PDF_PAGE,
   PDF_RADIUS,
   PDF_SPACE,
   PDF_STROKE,
@@ -70,11 +71,11 @@ export function sectionBar(
 ): PdfNode {
   return {
     ...(options.pageBreak ? { pageBreak: options.pageBreak } : {}),
-    margin: options.margin ?? [0, PDF_SPACE.lg, 0, PDF_SPACE.sm],
+    margin: options.margin ?? [0, PDF_SPACE.xl, 0, PDF_SPACE.sm],
     stack: [
       {
         columns: [
-          { width: 3, canvas: [{ type: "rect", x: 0, y: 1, w: 3, h: 11, color: options.accent }] },
+          { width: 2.5, canvas: [{ type: "rect", x: 0, y: 1, w: 2.5, h: 10, color: options.accent }] },
           {
             width: "*",
             stack: [
@@ -82,7 +83,7 @@ export function sectionBar(
                 text: title.toUpperCase(),
                 color: PDF_COLOR.navy,
                 bold: true,
-                fontSize: PDF_FONT.h2,
+                fontSize: PDF_FONT.h1,
                 characterSpacing: PDF_TRACKING.wide,
               },
               ...(options.kicker
@@ -100,44 +101,47 @@ export function sectionBar(
         ],
         columnGap: PDF_SPACE.md,
       },
-      ruleNode(options.width, { margin: [0, PDF_SPACE.sm, 0, 0] }),
+      ruleNode(options.width, { margin: [0, 3, 0, 0], thickness: PDF_STROKE.hairline, color: PDF_COLOR.borderStrong }),
     ],
   };
 }
 
-/** Título de subseção: barra de acento fina + rótulo, sem peso de fundo. */
+/**
+ * Título de categoria (H3): uppercase, negrito e filete.
+ * Sem barra de acento — a barra fica reservada às seções principais.
+ */
 export function subsectionHeading(
   title: string,
-  options: { accent: string; description?: string; margin?: PdfMargin } = { accent: PDF_COLOR.navy },
+  options: { accent?: string; description?: string; margin?: PdfMargin; width?: number } = {},
 ): PdfNode {
+  const width = options.width ?? PDF_PAGE.contentWidth;
+
   return {
-    margin: options.margin ?? [0, PDF_SPACE.md, 0, PDF_SPACE.xs],
-    columns: [
-      { width: 2.5, canvas: [{ type: "rect", x: 0, y: 1, w: 2.5, h: 9, color: options.accent }] },
+    margin: options.margin ?? [0, PDF_SPACE.lg, 0, PDF_SPACE.sm],
+    stack: [
       {
-        width: "*",
-        stack: [
-          {
-            text: title,
-            bold: true,
-            fontSize: PDF_FONT.h3,
-            color: PDF_COLOR.navy,
-            characterSpacing: PDF_TRACKING.tight,
-          },
-          ...(options.description
-            ? [
-                {
-                  text: options.description,
-                  fontSize: PDF_FONT.micro,
-                  color: PDF_COLOR.muted,
-                  margin: [0, 1.5, 0, 0] as PdfMargin,
-                },
-              ]
-            : []),
-        ],
+        text: title.toUpperCase(),
+        bold: true,
+        fontSize: PDF_FONT.h2,
+        color: PDF_COLOR.navy,
+        characterSpacing: PDF_TRACKING.wide,
       },
+      ...(options.description
+        ? [
+            {
+              text: options.description,
+              fontSize: PDF_FONT.micro,
+              color: PDF_COLOR.muted,
+              margin: [0, 1, 0, 0] as PdfMargin,
+            },
+          ]
+        : []),
+      ruleNode(width, {
+        margin: [0, 3, 0, 0],
+        thickness: PDF_STROKE.hairline,
+        color: PDF_COLOR.borderStrong,
+      }),
     ],
-    columnGap: PDF_SPACE.md,
   };
 }
 
@@ -169,12 +173,23 @@ export function panel(content: PdfNode[], options: PanelOptions = {}): PdfNode {
       ]
     : content;
 
+  const inner: PdfNode = {
+    stack,
+    fillColor: options.fill,
+    margin: [padding, padding, padding, padding],
+  };
+
   return {
     margin: options.margin ?? [0, 0, 0, 0],
-    table: {
-      widths: ["*"],
-      body: [[{ stack, fillColor: options.fill, margin: [padding, padding, padding, padding] }]],
-    },
+    table: options.accent
+      ? {
+          widths: [2.5, "*"],
+          body: [[{ fillColor: options.accent, text: "" }, inner]],
+        }
+      : {
+          widths: ["*"],
+          body: [[inner]],
+        },
     layout: {
       ...NO_PADDING,
       hLineWidth: () => PDF_STROKE.hairline,
@@ -403,20 +418,113 @@ export function statusDot(color: string, diameter = 5): PdfNode {
   };
 }
 
+/** Badge compacto de status — cor no texto, fundo neutro. */
+export function statusBadge(label: string, color: string): PdfNode {
+  return {
+    table: {
+      widths: ["auto"],
+      body: [
+        [
+          {
+            text: label.toUpperCase(),
+            fontSize: PDF_FONT.micro,
+            bold: true,
+            color,
+            fillColor: PDF_COLOR.surfaceAlt,
+            characterSpacing: PDF_TRACKING.normal,
+            margin: [5, 1.5, 5, 1.5],
+          },
+        ],
+      ],
+    },
+    layout: { ...NO_BORDER, ...NO_PADDING },
+  };
+}
+
+/** Achado numerado (apontamento ou avaria) — indicador lateral, sem card. */
+export function findingRow(
+  index: number,
+  options: {
+    kicker?: string;
+    title: string;
+    body?: string;
+    accent: string;
+    margin?: PdfMargin;
+  },
+): PdfNode {
+  return {
+    unbreakable: true,
+    margin: options.margin ?? [0, 0, 0, PDF_SPACE.sm],
+    table: {
+      widths: [2.5, 22, "*"],
+      body: [
+        [
+          { fillColor: options.accent, text: "" },
+          {
+            text: String(index + 1).padStart(2, "0"),
+            fontSize: PDF_FONT.h2,
+            bold: true,
+            color: PDF_COLOR.navy,
+            margin: [PDF_SPACE.sm, PDF_SPACE.sm, 0, PDF_SPACE.sm],
+          },
+          {
+            margin: [0, PDF_SPACE.sm, PDF_SPACE.sm, PDF_SPACE.sm],
+            stack: [
+              ...(options.kicker
+                ? [
+                    {
+                      text: options.kicker.toUpperCase(),
+                      fontSize: PDF_FONT.micro,
+                      bold: true,
+                      color: PDF_COLOR.navy,
+                      characterSpacing: PDF_TRACKING.wide,
+                    },
+                  ]
+                : []),
+              {
+                text: options.title,
+                fontSize: PDF_FONT.body,
+                bold: true,
+                color: PDF_COLOR.text,
+                margin: [0, options.kicker ? 1 : 0, 0, 0],
+              },
+              ...(options.body
+                ? [
+                    {
+                      text: options.body,
+                      fontSize: PDF_FONT.small,
+                      color: PDF_COLOR.muted,
+                      margin: [0, 1, 0, 0],
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ],
+      ],
+    },
+    layout: {
+      ...NO_PADDING,
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+    },
+  };
+}
+
 /** Status em linha: bolinha colorida + rótulo, imediatamente identificável. */
 export function statusLabel(label: string, color: string, options: { bold?: boolean } = {}): PdfNode {
   return {
     columns: [
-      statusDot(color),
+      statusDot(color, 4),
       {
         text: label,
-        fontSize: PDF_FONT.small,
+        fontSize: PDF_FONT.micro,
         bold: options.bold ?? true,
         color,
         width: "*",
       },
     ],
-    columnGap: PDF_SPACE.sm,
+    columnGap: PDF_SPACE.xs,
   };
 }
 
@@ -509,22 +617,23 @@ export function codeBlock(
   };
 }
 
-/** Layout de tabela padrão do laudo: apenas hairlines horizontais e zebra. */
-export function dataTableLayout(options: { headerFill?: string } = {}) {
+/** Layout de tabela premium: filetes horizontais leves, sem grade em todas as células. */
+export function dataTableLayout(options: { headerFill?: string; grid?: boolean } = {}) {
+  const grid = options.grid === true;
+
   return {
-    hLineWidth: (rowIndex: number, node: { table: { body: unknown[] } }) =>
-      rowIndex === 0 || rowIndex === 1 || rowIndex === node.table.body.length
-        ? PDF_STROKE.thin
-        : PDF_STROKE.hairline,
-    vLineWidth: () => 0,
-    hLineColor: (rowIndex: number) =>
-      rowIndex === 0 || rowIndex === 1 ? PDF_COLOR.borderStrong : PDF_COLOR.border,
-    fillColor: (rowIndex: number) =>
-      rowIndex === 0 ? (options.headerFill ?? PDF_COLOR.surfaceAlt) : rowIndex % 2 === 0 ? PDF_COLOR.surface : null,
+    hLineWidth: (rowIndex: number) => (rowIndex === 0 ? 0 : PDF_STROKE.hairline),
+    vLineWidth: () => (grid ? PDF_STROKE.hairline : 0),
+    hLineColor: () => PDF_COLOR.border,
+    vLineColor: () => PDF_COLOR.border,
+    fillColor: (rowIndex: number) => {
+      if (rowIndex === 0) return options.headerFill ?? PDF_COLOR.surface;
+      return null;
+    },
     paddingLeft: () => PDF_SPACE.sm,
     paddingRight: () => PDF_SPACE.sm,
-    paddingTop: () => 2,
-    paddingBottom: () => 2,
+    paddingTop: () => 2.5,
+    paddingBottom: () => 2.5,
   };
 }
 
@@ -538,13 +647,11 @@ export function tableHeaderCell(text: string): PdfNode {
   };
 }
 
-/** Moldura de imagem com altura fixa: preserva proporção e alinha a grade. */
+/** Fotografia: cover + filete cinza 0.5pt. Sem caixa navy, sem matting branco. */
 export function framedImage(
   dataUrl: string,
   options: { width: number; height: number; fill?: string },
 ): PdfNode {
-  const inset = 1;
-
   return {
     table: {
       widths: [options.width],
@@ -553,11 +660,12 @@ export function framedImage(
         [
           {
             image: dataUrl,
-            fit: [options.width - inset * 2, options.height - inset * 2],
-            alignment: "center",
-            verticalAlignment: "middle",
-            fillColor: options.fill ?? PDF_COLOR.white,
-            margin: [inset, inset, inset, inset],
+            cover: {
+              width: options.width,
+              height: options.height,
+              valign: "center",
+              align: "center",
+            },
           },
         ],
       ],
@@ -574,7 +682,7 @@ export function framedImage(
 
 export const PDF_LAYOUT_HELPERS = { NO_BORDER, NO_PADDING, PDF_RADIUS };
 
-/** Faixa de atenção — destaque editorial compacto, sem card. */
+/** Faixa de atenção — ícone discreto, título separado da mensagem, acento lateral. */
 export function attentionBanner(
   title: string,
   body: string,
@@ -584,28 +692,42 @@ export function attentionBanner(
     unbreakable: true,
     margin: options.margin ?? [0, PDF_SPACE.md, 0, PDF_SPACE.sm],
     table: {
-      widths: [options.width],
+      widths: [2.5, options.width - 2.5],
       body: [
         [
+          { fillColor: options.accent, text: "" },
           {
-            text: title.toUpperCase(),
-            fillColor: PDF_COLOR.navy,
-            color: options.accent,
-            bold: true,
-            fontSize: PDF_FONT.micro,
-            characterSpacing: PDF_TRACKING.wider,
-            margin: [PDF_SPACE.md, 3, PDF_SPACE.md, 3],
-          },
-        ],
-        [
-          {
-            text: body,
-            fillColor: PDF_COLOR.warningSoft,
-            color: PDF_COLOR.text,
-            fontSize: PDF_FONT.small,
-            bold: true,
-            lineHeight: PDF_LINE_HEIGHT.tight,
-            margin: [PDF_SPACE.md, PDF_SPACE.sm, PDF_SPACE.md, PDF_SPACE.sm],
+            fillColor: PDF_COLOR.surface,
+            margin: [PDF_SPACE.xl, PDF_SPACE.xl, PDF_SPACE.xl, PDF_SPACE.xl],
+            columns: [
+              {
+                width: 12,
+                text: "!",
+                bold: true,
+                fontSize: PDF_FONT.h2,
+                color: PDF_COLOR.navy,
+              },
+              {
+                width: "*",
+                stack: [
+                  {
+                    text: title.toUpperCase(),
+                    bold: true,
+                    fontSize: PDF_FONT.h2,
+                    color: PDF_COLOR.navy,
+                    characterSpacing: PDF_TRACKING.wide,
+                  },
+                  {
+                    text: body,
+                    fontSize: PDF_FONT.small,
+                    color: PDF_COLOR.text,
+                    lineHeight: PDF_LINE_HEIGHT.normal,
+                    margin: [0, PDF_SPACE.sm, 0, 0],
+                  },
+                ],
+              },
+            ],
+            columnGap: PDF_SPACE.sm,
           },
         ],
       ],

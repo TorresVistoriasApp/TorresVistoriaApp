@@ -14,22 +14,28 @@ import {
   PDF_COLOR,
   PDF_FONT,
   PDF_LINE_HEIGHT,
+  PDF_PHOTO,
   PDF_SPACE,
+  PDF_STROKE,
   PDF_TRACKING,
   type PdfMargin,
   type PdfNode,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
 import { framedImage } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-primitives";
 
-export const PHOTO_GRID_GAP = 4;
+export const PHOTO_GRID_GAP = PDF_PHOTO.gap;
 
-/** Contact sheet: células largas, altura controlada para caber 3×2 / 3×3. */
-const CELL_ASPECT_RATIO = 0.7;
-const SINGLE_PHOTO_ASPECT = 0.68;
+/** Célula ligeiramente retrato, no ritmo das fotos de vistoria no celular. */
+const CELL_ASPECT_RATIO = 1.08;
+const SINGLE_PHOTO_ASPECT = 0.92;
 
-/** Larguras de célula por número de colunas, dentro da largura de conteúdo. */
+/**
+ * Largura da célula na grade. `columns` é o número de slots da grade
+ * (em geral 3), não o número de fotos da linha — assim a última linha
+ * incompleta não estica as fotos.
+ */
 export function photoCellWidth(columns: number, contentWidth: number): number {
-  if (columns <= 1) return Math.round(contentWidth * 0.62);
+  if (columns <= 1) return Math.round(contentWidth * PDF_PHOTO.singleWidthRatio);
   return Math.floor((contentWidth - PHOTO_GRID_GAP * (columns - 1)) / columns);
 }
 
@@ -121,38 +127,31 @@ export function buildPhotoCaption(photo: LaudoPhoto, titleOverride?: string): Ph
   };
 }
 
-function captionNode(caption: PhotoCaption, accent: string, width: number): PdfNode {
+function captionNode(caption: PhotoCaption, width: number): PdfNode {
   return {
     width,
-    margin: [0, 2, 0, 0],
-    columns: [
-      { width: 2, canvas: [{ type: "rect", x: 0, y: 0.5, w: 2, h: 8.5, color: accent }] },
+    margin: [0, PDF_PHOTO.captionGap, 0, 0],
+    stack: [
       {
-        width: "*",
-        stack: [
-          {
-            text: caption.title.toUpperCase(),
-            fontSize: PDF_FONT.small,
-            bold: true,
-            color: PDF_COLOR.navy,
-            characterSpacing: PDF_TRACKING.tight,
-            lineHeight: PDF_LINE_HEIGHT.tight,
-          },
-          ...(caption.subtitle
-            ? [
-                {
-                  text: caption.subtitle,
-                  fontSize: PDF_FONT.micro,
-                  color: PDF_COLOR.muted,
-                  lineHeight: PDF_LINE_HEIGHT.tight,
-                  margin: [0, 1, 0, 0] as PdfMargin,
-                },
-              ]
-            : []),
-        ],
+        text: caption.title.toUpperCase(),
+        fontSize: PDF_FONT.small,
+        bold: true,
+        color: PDF_COLOR.navy,
+        characterSpacing: PDF_TRACKING.tight,
+        lineHeight: PDF_LINE_HEIGHT.tight,
       },
+      ...(caption.subtitle
+        ? [
+            {
+              text: caption.subtitle,
+              fontSize: PDF_FONT.micro,
+              color: PDF_COLOR.muted,
+              lineHeight: PDF_LINE_HEIGHT.tight,
+              margin: [0, 1, 0, 0] as PdfMargin,
+            },
+          ]
+        : []),
     ],
-    columnGap: PDF_SPACE.sm,
   };
 }
 
@@ -190,8 +189,8 @@ function missingImageNode(caption: PhotoCaption, width: number, height: number):
       ],
     },
     layout: {
-      hLineWidth: () => 0.4,
-      vLineWidth: () => 0.4,
+      hLineWidth: () => PDF_STROKE.hairline,
+      vLineWidth: () => PDF_STROKE.hairline,
       hLineColor: () => PDF_COLOR.border,
       vLineColor: () => PDF_COLOR.border,
       paddingLeft: () => 0,
@@ -215,7 +214,7 @@ function photoCell(
       photo.dataUrl
         ? framedImage(photo.dataUrl, { width: options.width, height: options.height })
         : missingImageNode(caption, options.width, options.height),
-      captionNode(caption, options.accent, options.width),
+      captionNode(caption, options.width),
     ],
   };
 }
@@ -237,14 +236,15 @@ export function buildPhotoGrid(photos: LaudoPhoto[], options: PhotoGridOptions):
   if (photos.length === 0) return [];
 
   const maxColumns = options.maxColumns ?? 3;
+  const gridColumns = photos.length === 1 ? 1 : photos.length === 2 ? 2 : maxColumns;
   const rows = planPhotoRows(photos.length, maxColumns);
   const nodes: PdfNode[] = [];
   let cursor = 0;
+  const width = photoCellWidth(gridColumns, options.contentWidth);
+  const height = photoCellHeight(gridColumns, options.contentWidth);
 
-  for (const columns of rows) {
+  rows.forEach((columns, rowIndex) => {
     const rowPhotos = photos.slice(cursor, cursor + columns);
-    const width = photoCellWidth(columns, options.contentWidth);
-    const height = photoCellHeight(columns, options.contentWidth);
 
     const cells = rowPhotos.map((photo, index) =>
       photoCell(photo, {
@@ -255,21 +255,26 @@ export function buildPhotoGrid(photos: LaudoPhoto[], options: PhotoGridOptions):
       }),
     );
 
+    const empties = Array.from({ length: Math.max(gridColumns - cells.length, 0) }, () => ({
+      width,
+      text: "",
+    }));
+
     const sideGutter =
-      columns === 1 ? Math.floor((options.contentWidth - width) / 2) : 0;
+      gridColumns === 1 ? Math.floor((options.contentWidth - width) / 2) : 0;
 
     nodes.push({
       columns:
-        columns === 1
+        gridColumns === 1
           ? [{ text: "", width: sideGutter }, ...cells, { text: "", width: "*" }]
-          : [...cells, ...(cells.length < columns ? [{ text: "", width: "*" }] : [])],
+          : [...cells, ...empties],
       columnGap: PHOTO_GRID_GAP,
-      margin: [0, 0, 0, PDF_SPACE.xs],
+      margin: [0, 0, 0, rowIndex < rows.length - 1 ? PDF_PHOTO.rowGap : 0],
       unbreakable: true,
     });
 
     cursor += columns;
-  }
+  });
 
   return nodes;
 }

@@ -83,11 +83,11 @@ function reportFileName(inspection: Inspection): string {
 
 /** pdfmake mutates image nodes in-place; clone before a second render pass. */
 function cloneDocDefinition(docDefinition: Record<string, unknown>): Record<string, unknown> {
+  const header = docDefinition.header;
   const footer = docDefinition.footer;
   const cloned = JSON.parse(JSON.stringify(docDefinition)) as Record<string, unknown>;
-  if (typeof footer === "function") {
-    cloned.footer = footer;
-  }
+  if (typeof header === "function") cloned.header = header;
+  if (typeof footer === "function") cloned.footer = footer;
   return cloned;
 }
 
