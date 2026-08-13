@@ -122,8 +122,10 @@ export const PDF_TABLE_LAYOUTS = {
   },
 
   [PDF_LAYOUT.plate]: {
-    hLineWidth: () => PLATE_BORDER_WIDTH,
-    vLineWidth: () => PLATE_BORDER_WIDTH,
+    hLineWidth: (rowIndex: number, node: TableNode) =>
+      rowIndex === 0 || rowIndex === node.table.body.length ? PLATE_BORDER_WIDTH : 0,
+    vLineWidth: (columnIndex: number, node: TableNode) =>
+      columnIndex === 0 || columnIndex === node.table.widths.length ? PLATE_BORDER_WIDTH : 0,
     hLineColor: () => PLATE_BORDER,
     vLineColor: () => PLATE_BORDER,
     ...ZERO_PADDING,

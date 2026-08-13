@@ -5,34 +5,35 @@ export const PLATE_BORDER = "#1e293b";
 export const PLATE_BODY = "#ffffff";
 export const PLATE_BORDER_WIDTH = 0.5;
 
-export const MERCOSUL_PLATE_BR_COL = 8;
-export const MERCOSUL_PLATE_HEADER_HEIGHT = 8;
-export const MERCOSUL_PLATE_BODY_HEIGHT = 14;
+export const MERCOSUL_PLATE_BR_COL = 10;
+export const MERCOSUL_PLATE_HEADER_HEIGHT = 6.5;
+export const MERCOSUL_PLATE_BODY_HEIGHT = 13;
 export const MERCOSUL_PLATE_TOTAL_HEIGHT = MERCOSUL_PLATE_HEADER_HEIGHT + MERCOSUL_PLATE_BODY_HEIGHT;
-export const MERCOSUL_PLATE_WIDTH = 100;
+export const MERCOSUL_PLATE_WIDTH = 92;
 
 export const HEADER_VALIDATION_MIN_WIDTH = 104;
 export const HEADER_OPINION_HEIGHT = MERCOSUL_PLATE_TOTAL_HEIGHT;
 export const HEADER_QR_SIZE = 88;
 
-export const PLATE_BR_FONT_SIZE = 3.6;
-export const PLATE_LOCATION_FONT_SIZE = 4.4;
+export const PLATE_BR_FONT_SIZE = 3.8;
+export const PLATE_LOCATION_FONT_SIZE = 4.2;
 export const PLATE_LOCATION_FONT_MIN = 3;
-export const PLATE_NUMBER_FONT_SIZE = 9.5;
-export const PLATE_NUMBER_FONT_MIN = 8;
+export const PLATE_NUMBER_FONT_SIZE = 10.5;
+export const PLATE_NUMBER_FONT_MIN = 8.5;
+export const PLATE_NUMBER_TRACKING = 0.35;
 
-/** Placa da capa: proporção próxima da Mercosul, sem faixa horizontal alongada. */
-export const COVER_PLATE_BR_COL = 14;
-export const COVER_PLATE_HEADER_HEIGHT = 11;
-export const COVER_PLATE_BODY_HEIGHT = 24;
+/** Placa da capa — retângulo baixo, letras preenchendo o campo branco. */
+export const COVER_PLATE_BR_COL = 12;
+export const COVER_PLATE_HEADER_HEIGHT = 7;
+export const COVER_PLATE_BODY_HEIGHT = 16;
 export const COVER_PLATE_TOTAL_HEIGHT = COVER_PLATE_HEADER_HEIGHT + COVER_PLATE_BODY_HEIGHT;
-export const COVER_PLATE_WIDTH = 128;
-export const COVER_PLATE_BR_FONT_SIZE = 5.6;
-export const COVER_PLATE_LOCATION_FONT_SIZE = 6.2;
-export const COVER_PLATE_LOCATION_FONT_MIN = 4.5;
-export const COVER_PLATE_NUMBER_FONT_SIZE = 13;
-export const COVER_PLATE_NUMBER_FONT_MIN = 10;
-export const COVER_PLATE_NUMBER_TRACKING = 0.9;
+export const COVER_PLATE_WIDTH = 108;
+export const COVER_PLATE_BR_FONT_SIZE = 4.2;
+export const COVER_PLATE_LOCATION_FONT_SIZE = 4.6;
+export const COVER_PLATE_LOCATION_FONT_MIN = 3.6;
+export const COVER_PLATE_NUMBER_FONT_SIZE = 14.5;
+export const COVER_PLATE_NUMBER_FONT_MIN = 12;
+export const COVER_PLATE_NUMBER_TRACKING = 0.4;
 
 function normalizeCity(value: string): string {
   return value
@@ -44,12 +45,12 @@ function normalizeCity(value: string): string {
 
 export function mercosulPlateGraphicWidth(plateText: string): number {
   const compactLength = plateText.replace(/-/g, "").length;
-  return Math.min(108, Math.max(MERCOSUL_PLATE_WIDTH, Math.round(compactLength * 6.2 + 24)));
+  return Math.min(100, Math.max(MERCOSUL_PLATE_WIDTH, Math.round(compactLength * 6.4 + 20)));
 }
 
 export function coverPlateGraphicWidth(plateText: string): number {
   const compactLength = plateText.replace(/-/g, "").length;
-  return Math.min(146, Math.max(COVER_PLATE_WIDTH, Math.round(compactLength * 8.4 + 40)));
+  return Math.min(118, Math.max(COVER_PLATE_WIDTH, Math.round(compactLength * 7.4 + 28)));
 }
 
 export function headerValidationWidth(plateText: string): number {
@@ -100,7 +101,7 @@ export function fitFontSize(
 }
 
 export function fitPlateNumberFontSize(plateText: string, maxWidth: number): number {
-  return fitFontSize(plateText, maxWidth, PLATE_NUMBER_FONT_SIZE, PLATE_NUMBER_FONT_MIN, 0.45);
+  return fitFontSize(plateText, maxWidth, PLATE_NUMBER_FONT_SIZE, PLATE_NUMBER_FONT_MIN, PLATE_NUMBER_TRACKING);
 }
 
 export function fitCoverPlateNumberFontSize(plateText: string, maxWidth: number): number {
@@ -139,4 +140,9 @@ export function getMercosulPlateColumnWidths(graphicWidth: number): [number, num
 
 export function getCoverPlateColumnWidths(graphicWidth: number): [number, number] {
   return [COVER_PLATE_BR_COL, graphicWidth - COVER_PLATE_BR_COL];
+}
+
+/** Compensa o alinhamento vertical do pdfmake, que não centra o texto na célula. */
+export function plateTextTopOffset(cellHeight: number, fontSize: number): number {
+  return Math.max(0, (cellHeight - fontSize) / 2 - 0.45);
 }
