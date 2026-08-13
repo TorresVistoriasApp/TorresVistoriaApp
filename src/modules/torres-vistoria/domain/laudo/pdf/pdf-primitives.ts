@@ -106,7 +106,7 @@ export function subsectionHeading(
   const width = options.width ?? PDF_PAGE.contentWidth;
 
   return {
-    margin: options.margin ?? [0, PDF_SPACE.lg, 0, PDF_SPACE.sm],
+    margin: options.margin ?? [0, PDF_SPACE.xl, 0, PDF_SPACE.md],
     stack: [
       {
         text: title.toUpperCase(),
@@ -126,7 +126,7 @@ export function subsectionHeading(
           ]
         : []),
       ruleNode(width, {
-        margin: [0, 3, 0, 0],
+        margin: [0, 4, 0, 0],
         thickness: PDF_STROKE.hairline,
         color: PDF_COLOR.borderStrong,
       }),

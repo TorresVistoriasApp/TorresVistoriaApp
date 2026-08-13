@@ -12,11 +12,11 @@ export type PdfMargin = [number, number, number, number];
 /** A4 retrato: 595.28 x 841.89pt. */
 export const PDF_PAGE = {
   size: "A4",
-  margins: [24, 34, 24, 28] as PdfMargin,
+  margins: [24, 40, 24, 28] as PdfMargin,
   /** 595.28 - 24 - 24, arredondado para baixo. */
   contentWidth: 547,
-  /** 841.89 - 34 - 28, arredondado para baixo. */
-  contentHeight: 780,
+  /** 841.89 - 40 - 28, arredondado para baixo. */
+  contentHeight: 774,
 } as const;
 
 export const PDF_COLOR = {
@@ -148,12 +148,13 @@ export const PDF_STROKE = {
 
 /** Ritmo da grade fotográfica — gap igual na horizontal e na vertical. */
 export const PDF_PHOTO = {
-  gap: 8,
+  gap: 10,
   captionGap: 3,
-  rowGap: 8,
-  groupGap: 10,
-  /** Foto única: evidência em destaque, sem ocupar a página inteira. */
-  singleWidthRatio: 0.72,
+  rowGap: 10,
+  groupGap: 14,
+  /** Foto única: evidência em destaque, sem ocupar meia página. */
+  singleWidthRatio: 0.55,
+  singleMaxHeight: 188,
 } as const;
 
 /** Métricas da capa — logo compacto para o documento liderar, não a marca. */

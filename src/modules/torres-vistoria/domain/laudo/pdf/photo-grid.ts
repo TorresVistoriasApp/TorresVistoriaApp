@@ -25,9 +25,9 @@ import { PDF_LAYOUT } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table
 
 export const PHOTO_GRID_GAP = PDF_PHOTO.gap;
 
-/** Célula ligeiramente retrato, no ritmo das fotos de vistoria no celular. */
-const CELL_ASPECT_RATIO = 1.08;
-const SINGLE_PHOTO_ASPECT = 0.92;
+/** Célula próxima do quadrado, para a linha caber com a legenda. */
+const CELL_ASPECT_RATIO = 0.92;
+const SINGLE_PHOTO_ASPECT = 0.72;
 
 /**
  * Largura da célula na grade. `columns` é o número de slots da grade
@@ -43,7 +43,9 @@ export function photoCellWidth(columns: number, contentWidth: number): number {
 export function photoCellHeight(columns: number, contentWidth: number): number {
   const width = photoCellWidth(columns, contentWidth);
   const ratio = columns <= 1 ? SINGLE_PHOTO_ASPECT : CELL_ASPECT_RATIO;
-  return Math.round(width * ratio);
+  const height = Math.round(width * ratio);
+  if (columns <= 1) return Math.min(height, PDF_PHOTO.singleMaxHeight);
+  return height;
 }
 
 /**
