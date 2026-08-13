@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Download, FileSearch, FileText, Plus, Wallet } from "lucide-react";
+import { Download, FileSearch, FileText, Plus, User, Wallet } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
@@ -86,6 +86,39 @@ export function ClienteDashboardPage() {
               icon={FileSearch}
               themeIndex={3}
             />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Link
+              to={ROUTES.consultaAppNovaConsulta}
+              className="group rounded-2xl border border-border/70 bg-white p-5 shadow-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
+            >
+              <Plus className="mb-3 h-5 w-5 text-primary" />
+              <p className="font-semibold text-foreground">Consultar veículo</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Placa, chassi ou Renavam — escolha o plano e gere o relatório.
+              </p>
+            </Link>
+            <Link
+              to={ROUTES.consultaAppConsultas}
+              className="group rounded-2xl border border-border/70 bg-white p-5 shadow-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
+            >
+              <FileSearch className="mb-3 h-5 w-5 text-primary" />
+              <p className="font-semibold text-foreground">Minhas consultas</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Histórico completo, status e download dos relatórios.
+              </p>
+            </Link>
+            <Link
+              to={ROUTES.consultaAppMinhaConta}
+              className="group rounded-2xl border border-border/70 bg-white p-5 shadow-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
+            >
+              <User className="mb-3 h-5 w-5 text-primary" />
+              <p className="font-semibold text-foreground">Minha conta</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Atualize nome, telefone e gerencie seus dados pessoais.
+              </p>
+            </Link>
           </div>
 
           <Card className="border-border/70">

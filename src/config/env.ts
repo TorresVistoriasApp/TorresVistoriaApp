@@ -1,3 +1,5 @@
+import { CONSULTA_PUBLIC_ORIGIN } from "@/config/app";
+
 const DEV_PLACEHOLDER_URL = "http://127.0.0.1:54321";
 const DEV_PLACEHOLDER_KEY = "dev-only-placeholder";
 
@@ -34,7 +36,18 @@ export function validateEnv(): void {
 }
 
 export function getAppUrl(): string {
-  return import.meta.env.VITE_APP_URL ?? window.location.origin;
+  const fromEnv = import.meta.env.VITE_APP_URL?.replace(/\/$/, "");
+  if (fromEnv) return fromEnv;
+  if (import.meta.env.PROD) return CONSULTA_PUBLIC_ORIGIN;
+  if (typeof window !== "undefined") return window.location.origin;
+  return CONSULTA_PUBLIC_ORIGIN;
+}
+
+/** Monta URL absoluta para redirects de auth (confirmação de e-mail, recuperação de senha). */
+export function getAuthRedirectUrl(path: string): string {
+  const base = getAppUrl().replace(/\/$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${normalizedPath}`;
 }
 
 export function isProduction(): boolean {

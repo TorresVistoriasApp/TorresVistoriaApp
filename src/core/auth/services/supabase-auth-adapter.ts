@@ -18,12 +18,20 @@ export const supabaseAuthAdapter = {
     return data;
   },
 
-  async signUp(email: string, password: string, metadata?: Record<string, unknown>) {
+  async signUp(
+    email: string,
+    password: string,
+    metadata?: Record<string, unknown>,
+    emailRedirectTo?: string,
+  ) {
     const safeEmail = sanitizeEmail(email);
     const { data, error } = await db.auth.signUp({
       email: safeEmail,
       password,
-      options: { data: metadata },
+      options: {
+        data: metadata,
+        ...(emailRedirectTo ? { emailRedirectTo } : {}),
+      },
     });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
     return data;

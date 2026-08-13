@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { getAuthRedirectUrl } from "@/config/env";
 import { ROUTES } from "@/config/routes";
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
@@ -29,7 +30,7 @@ export function ClienteForgotPasswordPage() {
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
     try {
-      const redirectTo = `${window.location.origin}${ROUTES.consultaResetPassword}`;
+      const redirectTo = getAuthRedirectUrl(ROUTES.consultaResetPassword);
       await consumerAuthService.resetPassword(values, redirectTo);
       setSent(true);
     } catch (err) {

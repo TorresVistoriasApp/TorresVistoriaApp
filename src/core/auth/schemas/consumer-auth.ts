@@ -15,14 +15,9 @@ export const consumerRegisterSchema = z
     email: z.string().email("E-mail inválido"),
     password: z.string().min(1, "Informe a senha").refine(isStrongPassword, STRONG_PASSWORD_MESSAGE),
     confirmPassword: z.string().min(1, "Confirme a senha"),
+    /** Consentimento único: Termos de Uso, Política de Privacidade e LGPD. */
     acceptTerms: z.boolean().refine((value) => value, {
-      message: "Você deve aceitar os termos e a política de privacidade",
-    }),
-    acceptPrivacy: z.boolean().refine((value) => value, {
-      message: "Você deve aceitar a política de privacidade",
-    }),
-    consentDataProcessing: z.boolean().refine((value) => value, {
-      message: "É necessário consentir com o tratamento de dados",
+      message: "É necessário aceitar os termos para criar a conta",
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {

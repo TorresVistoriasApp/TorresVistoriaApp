@@ -7,6 +7,7 @@ import { ROUTES } from "@/config/routes";
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
 import { PasswordField } from "@/core/auth/components/password-field";
+import { useSession } from "@/core/auth/session-context";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import {
   consumerLoginSchema,
@@ -20,7 +21,8 @@ import { PrincipalType } from "@/core/rbac/roles";
 
 export function ClienteLoginPage() {
   const location = useLocation();
-  const { principalType, loading } = usePrincipal();
+  const { session, loading: sessionLoading } = useSession();
+  const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
 
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
@@ -34,8 +36,8 @@ export function ClienteLoginPage() {
     defaultValues: { acceptTerms: false },
   });
 
-  if (loading) return <LoadingScreen />;
-  if (principalType === PrincipalType.CUSTOMER) {
+  if (sessionLoading || (session && principalLoading)) return <LoadingScreen />;
+  if (session && principalType === PrincipalType.CUSTOMER) {
     return <Navigate to={from ?? ROUTES.consultaApp} replace />;
   }
 
