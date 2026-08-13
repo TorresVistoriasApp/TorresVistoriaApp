@@ -321,70 +321,93 @@ function buildSaleMarketSection(
   ];
 }
 
-function compactChecklistItems(items: LaudoReportViewModel["categories"][number]["items"]): PdfNode {
-  const apontamentos = items.filter((item) => item.status === ChecklistStatus.NAO_CONFORME);
-  const others = items.filter((item) => item.status !== ChecklistStatus.NAO_CONFORME);
-  const nodes: PdfNode[] = [];
+type ChecklistCategoryVm = LaudoReportViewModel["categories"][number];
+type ChecklistItemVm = ChecklistCategoryVm["items"][number];
 
-  for (const item of apontamentos) {
-    const observation = formatChecklistObservationForPdf(item.status, item.notes);
-    nodes.push({
-      unbreakable: true,
-      columns: [
-        statusDot(getChecklistStatusPdfColor(item.status), 6),
-        {
-          width: "*",
-          stack: [
-            {
-              text: item.item_name,
-              fontSize: PDF_FONT.body,
-              bold: true,
-              color: PDF_COLOR.text,
-            },
-            ...(observation
-              ? [
-                  {
-                    text: observation,
-                    fontSize: PDF_FONT.small,
-                    color: PDF_COLOR.warning,
-                    margin: [0, 1, 0, 0],
-                  },
-                ]
-              : []),
-          ],
-        },
-      ],
-      columnGap: PDF_SPACE.sm,
-      margin: [0, 0, 0, PDF_SPACE.md],
-    });
+/** Preenche de cima para baixo, depois a próxima coluna — sem buracos de grade. */
+function splitNewspaperColumns<T>(items: T[], columnCount: number): T[][] {
+  if (columnCount <= 1 || items.length === 0) return items.length ? [items] : [];
+  const perColumn = Math.ceil(items.length / columnCount);
+  const columns: T[][] = [];
+  for (let index = 0; index < columnCount; index += 1) {
+    const slice = items.slice(index * perColumn, (index + 1) * perColumn);
+    if (slice.length > 0) columns.push(slice);
   }
+  return columns;
+}
 
-  const cells = others.map((item) => ({
+function checklistItemLine(item: ChecklistItemVm): PdfNode {
+  const isApontamento = item.status === ChecklistStatus.NAO_CONFORME;
+  const observation = formatChecklistObservationForPdf(item.status, item.notes);
+  const color = getChecklistStatusPdfColor(item.status);
+  const muted = item.status !== ChecklistStatus.CONFORME && !isApontamento;
+
+  return {
     columns: [
-      statusDot(getChecklistStatusPdfColor(item.status)),
+      statusDot(color, isApontamento ? 5 : 4),
       {
         width: "*",
-        text: item.item_name,
-        fontSize: PDF_FONT.body,
-        color: item.status === ChecklistStatus.CONFORME ? PDF_COLOR.text : PDF_COLOR.muted,
+        fontSize: PDF_FONT.small,
+        color: muted ? PDF_COLOR.muted : PDF_COLOR.text,
+        bold: isApontamento,
+        text: observation
+          ? [
+              {
+                text: item.item_name,
+                bold: true,
+                fontSize: PDF_FONT.small,
+                color: PDF_COLOR.text,
+              },
+              {
+                text: ` — ${observation}`,
+                fontSize: PDF_FONT.micro,
+                color: PDF_COLOR.warning,
+              },
+            ]
+          : item.item_name,
       },
     ],
-    columnGap: PDF_SPACE.sm,
-  }));
+    columnGap: 4,
+    margin: [0, 0, 0, 1.5],
+  };
+}
 
-  for (let index = 0; index < cells.length; index += 3) {
-    nodes.push({
-      columns: [
-        cells[index],
-        cells[index + 1] ?? { text: "" },
-        cells[index + 2] ?? { text: "" },
-      ],
-      columnGap: PDF_SPACE.md,
-      margin: [0, 0, 0, 2],
-    });
-  }
+function categoryChecklistBlock(
+  category: ChecklistCategoryVm,
+  accent: string,
+  itemColumns: number,
+): PdfNode {
+  const columns = splitNewspaperColumns(category.items, itemColumns);
 
-  return { stack: nodes };
+  return {
+    stack: [
+      subsectionHeading(category.label, {
+        accent,
+        margin: [0, 0, 0, 3],
+      }),
+      columns.length <= 1
+        ? { stack: category.items.map(checklistItemLine) }
+        : {
+            columns: columns.map((columnItems) => ({
+              width: "*",
+              stack: columnItems.map(checklistItemLine),
+            })),
+            columnGap: PDF_SPACE.xl,
+          },
+    ],
+  };
+}
+
+function compactChecklistItems(
+  category: ChecklistCategoryVm,
+  accent: string,
+  itemColumns: number,
+): PdfNode {
+  return {
+    unbreakable: true,
+    margin: [0, PDF_SPACE.sm, 0, PDF_SPACE.xs],
+    ...categoryChecklistBlock(category, accent, itemColumns),
+  };
 }
 
 function buildChecklistSection(view: LaudoReportViewModel): PdfNode[] {
@@ -405,15 +428,37 @@ function buildChecklistSection(view: LaudoReportViewModel): PdfNode[] {
     }),
   ];
 
-  for (const category of view.categories) {
-    nodes.push(
-      subsectionHeading(category.label, {
-        accent: view.primaryColor,
-        description: category.naoConforme > 0 ? `${category.naoConforme} apontamento(s)` : undefined,
-        margin: [0, PDF_SPACE.md, 0, 2],
-      }),
-      compactChecklistItems(category.items),
-    );
+  const accent = view.primaryColor;
+  const wideThreshold = 7;
+  const categories = view.categories;
+  let index = 0;
+
+  while (index < categories.length) {
+    const current = categories[index];
+    const next = categories[index + 1];
+
+    if (current.items.length >= wideThreshold) {
+      nodes.push(compactChecklistItems(current, accent, 2));
+      index += 1;
+      continue;
+    }
+
+    if (next && next.items.length < wideThreshold) {
+      nodes.push({
+        unbreakable: true,
+        margin: [0, PDF_SPACE.sm, 0, PDF_SPACE.xs],
+        columns: [
+          { width: "*", ...categoryChecklistBlock(current, accent, 1) },
+          { width: "*", ...categoryChecklistBlock(next, accent, 1) },
+        ],
+        columnGap: PDF_SPACE.xxl,
+      });
+      index += 2;
+      continue;
+    }
+
+    nodes.push(compactChecklistItems(current, accent, current.items.length >= 4 ? 2 : 1));
+    index += 1;
   }
 
   return nodes;
