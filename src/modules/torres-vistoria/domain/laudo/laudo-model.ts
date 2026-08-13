@@ -3,6 +3,7 @@ import type { Inspection } from "@/modules/torres-vistoria/services/inspection-s
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
 import { ChecklistStatus } from "@/modules/torres-vistoria/domain/enums";
 import { getInspectionOpinionLabel } from "@/modules/torres-vistoria/domain/inspection-opinion-labels";
+import { PDF_DEFAULT_PRIMARY } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
 import { formatDocument } from "@/shared/lib/formatters";
 
 export type LaudoCompany = {
@@ -115,6 +116,6 @@ export function getLaudoLegalParagraphs(): string[] {
 }
 
 export function getPrimaryColor(company?: LaudoCompany | null): string {
-  return company?.primary_color || "#ea580c";
+  return company?.primary_color || PDF_DEFAULT_PRIMARY;
 }
 

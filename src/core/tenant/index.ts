@@ -24,6 +24,7 @@ export {
   resolveTenant,
   resolvedTenantId,
   tenantSlugFromHostname,
+  tenantIdFromAppMetadata,
   isTenantId,
   type TenantId,
   type TenantResolution,

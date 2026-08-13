@@ -21,6 +21,19 @@ export const PLATE_LOCATION_FONT_MIN = 3;
 export const PLATE_NUMBER_FONT_SIZE = 9.5;
 export const PLATE_NUMBER_FONT_MIN = 8;
 
+/** Placa da capa: proporção próxima da Mercosul, sem faixa horizontal alongada. */
+export const COVER_PLATE_BR_COL = 16;
+export const COVER_PLATE_HEADER_HEIGHT = 13;
+export const COVER_PLATE_BODY_HEIGHT = 28;
+export const COVER_PLATE_TOTAL_HEIGHT = COVER_PLATE_HEADER_HEIGHT + COVER_PLATE_BODY_HEIGHT;
+export const COVER_PLATE_WIDTH = 152;
+export const COVER_PLATE_BR_FONT_SIZE = 6.4;
+export const COVER_PLATE_LOCATION_FONT_SIZE = 7;
+export const COVER_PLATE_LOCATION_FONT_MIN = 5;
+export const COVER_PLATE_NUMBER_FONT_SIZE = 15;
+export const COVER_PLATE_NUMBER_FONT_MIN = 11;
+export const COVER_PLATE_NUMBER_TRACKING = 1.05;
+
 function normalizeCity(value: string): string {
   return value
     .normalize("NFD")
@@ -32,6 +45,11 @@ function normalizeCity(value: string): string {
 export function mercosulPlateGraphicWidth(plateText: string): number {
   const compactLength = plateText.replace(/-/g, "").length;
   return Math.min(108, Math.max(MERCOSUL_PLATE_WIDTH, Math.round(compactLength * 6.2 + 24)));
+}
+
+export function coverPlateGraphicWidth(plateText: string): number {
+  const compactLength = plateText.replace(/-/g, "").length;
+  return Math.min(168, Math.max(COVER_PLATE_WIDTH, Math.round(compactLength * 9.2 + 48)));
 }
 
 export function headerValidationWidth(plateText: string): number {
@@ -85,6 +103,16 @@ export function fitPlateNumberFontSize(plateText: string, maxWidth: number): num
   return fitFontSize(plateText, maxWidth, PLATE_NUMBER_FONT_SIZE, PLATE_NUMBER_FONT_MIN, 0.45);
 }
 
+export function fitCoverPlateNumberFontSize(plateText: string, maxWidth: number): number {
+  return fitFontSize(
+    plateText,
+    maxWidth,
+    COVER_PLATE_NUMBER_FONT_SIZE,
+    COVER_PLATE_NUMBER_FONT_MIN,
+    COVER_PLATE_NUMBER_TRACKING,
+  );
+}
+
 export function fitLocationFontSize(locationLabel: string, maxWidth: number): number {
   return fitFontSize(
     locationLabel,
@@ -95,6 +123,20 @@ export function fitLocationFontSize(locationLabel: string, maxWidth: number): nu
   );
 }
 
+export function fitCoverLocationFontSize(locationLabel: string, maxWidth: number): number {
+  return fitFontSize(
+    locationLabel,
+    maxWidth,
+    COVER_PLATE_LOCATION_FONT_SIZE,
+    COVER_PLATE_LOCATION_FONT_MIN,
+    0.12,
+  );
+}
+
 export function getMercosulPlateColumnWidths(graphicWidth: number): [number, number] {
   return [MERCOSUL_PLATE_BR_COL, graphicWidth - MERCOSUL_PLATE_BR_COL];
+}
+
+export function getCoverPlateColumnWidths(graphicWidth: number): [number, number] {
+  return [COVER_PLATE_BR_COL, graphicWidth - COVER_PLATE_BR_COL];
 }

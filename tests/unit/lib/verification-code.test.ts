@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildVerificationCode, formatLaudoNumber } from "@/modules/torres-vistoria/domain/laudo/verification-code";
+import { buildVerificationCode, formatLaudoNumber, summarizeVerificationCode } from "@/modules/torres-vistoria/domain/laudo/verification-code";
 
 describe("verification-code", () => {
   it("formata número do laudo com ano e sequência", () => {
@@ -16,5 +16,10 @@ describe("verification-code", () => {
   it("gera códigos distintos em chamadas consecutivas", () => {
     const codes = new Set(Array.from({ length: 20 }, () => buildVerificationCode()));
     expect(codes.size).toBe(20);
+  });
+
+  it("resume o código de autenticidade sem alterar o valor original", () => {
+    expect(summarizeVerificationCode("TV-K7M2-9XQH-4NWP")).toBe("TV-••••-4NWP");
+    expect(summarizeVerificationCode("TV-ABCD")).toBe("TV-ABCD");
   });
 });

@@ -29,3 +29,10 @@ export function buildVerificationCode(): string {
   }
   return `TV-${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 12)}`;
 }
+
+/** Código resumido para o rodapé — o código completo permanece na seção de autenticidade. */
+export function summarizeVerificationCode(code: string): string {
+  const parts = code.split("-");
+  if (parts.length < 3) return code;
+  return `${parts[0]}-••••-${parts[parts.length - 1]}`;
+}

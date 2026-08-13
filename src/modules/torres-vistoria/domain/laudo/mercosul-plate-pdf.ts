@@ -1,9 +1,17 @@
 import { formatPlate } from "@/shared/lib/formatters";
 import type { Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 import {
+  COVER_PLATE_BODY_HEIGHT,
+  COVER_PLATE_BR_FONT_SIZE,
+  COVER_PLATE_HEADER_HEIGHT,
+  COVER_PLATE_NUMBER_TRACKING,
   buildMercosulPlateLocationLabel,
+  coverPlateGraphicWidth,
+  fitCoverLocationFontSize,
+  fitCoverPlateNumberFontSize,
   fitLocationFontSize,
   fitPlateNumberFontSize,
+  getCoverPlateColumnWidths,
   getMercosulPlateColumnWidths,
   MERCOSUL_BLUE,
   MERCOSUL_PLATE_BODY_HEIGHT,
@@ -17,6 +25,10 @@ import {
 } from "@/modules/torres-vistoria/domain/laudo/mercosul-plate-layout";
 
 export {
+  COVER_PLATE_BODY_HEIGHT,
+  COVER_PLATE_HEADER_HEIGHT,
+  COVER_PLATE_TOTAL_HEIGHT,
+  COVER_PLATE_WIDTH,
   HEADER_OPINION_HEIGHT,
   HEADER_QR_SIZE,
   HEADER_VALIDATION_MIN_WIDTH,
@@ -26,6 +38,7 @@ export {
   MERCOSUL_PLATE_TOTAL_HEIGHT,
   MERCOSUL_PLATE_WIDTH,
   buildMercosulPlateLocationLabel,
+  coverPlateGraphicWidth,
   headerValidationWidth,
   mercosulPlateGraphicWidth,
 } from "@/modules/torres-vistoria/domain/laudo/mercosul-plate-layout";
@@ -98,6 +111,74 @@ export function buildMercosulPlatePdfNode(
             verticalAlignment: "middle",
             color: "#0f172a",
             characterSpacing: 0.45,
+            lineHeight: 1,
+            noWrap: true,
+            margin: [0, 0, 0, 0],
+          },
+          {},
+        ],
+      ],
+    },
+    layout: PLATE_TABLE_LAYOUT,
+  };
+}
+
+/** Placa Mercosul em tamanho de capa — compacta, sem ocupar a largura da página. */
+export function buildCoverPlatePdfNode(
+  plate: string | null | undefined,
+  inspection: Pick<Inspection, "registration_city_uf" | "vehicle_uf">,
+): PdfNode {
+  const plateText = formatPlate(plate);
+  const locationLabel = buildMercosulPlateLocationLabel(inspection);
+  const graphicWidth = coverPlateGraphicWidth(plateText);
+  const [brColWidth, locationColWidth] = getCoverPlateColumnWidths(graphicWidth);
+  const locationFontSize = fitCoverLocationFontSize(locationLabel, locationColWidth - 4);
+  const plateFontSize = fitCoverPlateNumberFontSize(plateText, graphicWidth - 8);
+
+  return {
+    unbreakable: true,
+    width: graphicWidth,
+    table: {
+      widths: [brColWidth, locationColWidth],
+      heights: [COVER_PLATE_HEADER_HEIGHT, COVER_PLATE_BODY_HEIGHT],
+      body: [
+        [
+          {
+            text: "BR",
+            color: "#ffffff",
+            fillColor: MERCOSUL_BLUE,
+            bold: true,
+            fontSize: COVER_PLATE_BR_FONT_SIZE,
+            alignment: "center",
+            verticalAlignment: "middle",
+            lineHeight: 1,
+            margin: [0, 0, 0, 0],
+          },
+          {
+            text: locationLabel,
+            color: "#ffffff",
+            fillColor: MERCOSUL_BLUE,
+            bold: true,
+            fontSize: locationFontSize,
+            alignment: "center",
+            verticalAlignment: "middle",
+            characterSpacing: 0.12,
+            lineHeight: 1,
+            noWrap: true,
+            margin: [0, 0, 0, 0],
+          },
+        ],
+        [
+          {
+            colSpan: 2,
+            text: plateText,
+            fillColor: PLATE_BODY,
+            bold: true,
+            fontSize: plateFontSize,
+            alignment: "center",
+            verticalAlignment: "middle",
+            color: "#0f172a",
+            characterSpacing: COVER_PLATE_NUMBER_TRACKING,
             lineHeight: 1,
             noWrap: true,
             margin: [0, 0, 0, 0],
