@@ -278,7 +278,6 @@ export function buildGaugeChartNode(slices: DonutSlice[], options: DonutChartOpt
   const geometry = { cx: outerRadius, cy: outerRadius, outerRadius, innerRadius };
   const height = outerRadius + thickness / 2;
   const ops = gaugeCanvasOps(slices, geometry, options.emptyColor ?? PDF_COLOR.surfaceAlt);
-  const valueSize = options.centerValueFontSize ?? 16;
   const captionTop = outerRadius * 0.42;
 
   return chartWithCenterLabel(ops, { width: size, height }, options, captionTop);
