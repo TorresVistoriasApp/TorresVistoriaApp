@@ -47,13 +47,13 @@ export function DraftRecoveryModal({
         className="w-[calc(100%-2rem)] max-w-sm gap-5"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="space-y-0">
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start sm:gap-4">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 sm:mt-0.5">
+        <DialogHeader className="space-y-0 pr-10">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 mt-0.5">
               <FileWarning className="size-5" aria-hidden />
             </div>
-            <div className="space-y-1.5 text-center sm:text-left">
-              <DialogTitle>Encontramos uma vistoria em andamento</DialogTitle>
+            <div className="min-w-0 space-y-1.5 text-left">
+              <DialogTitle className="leading-snug">Encontramos uma vistoria em andamento</DialogTitle>
               <DialogDescription>
                 Você possui um rascunho salvo automaticamente. Deseja continuar de onde parou?
               </DialogDescription>
