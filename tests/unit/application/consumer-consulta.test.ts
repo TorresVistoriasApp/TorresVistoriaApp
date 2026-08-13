@@ -1,5 +1,4 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { AppError } from "@/core/errors/app-error";
 import { VehicleQueryType } from "@/core/integrations/ports/vehicle-lookup";
 import { ConsultaStatus } from "@/modules/torres-consulta/domain/entities/consulta";
 import type { ConsumerConsultaRepository } from "@/modules/torres-consulta/domain/repositories/consumer-consulta-repository";

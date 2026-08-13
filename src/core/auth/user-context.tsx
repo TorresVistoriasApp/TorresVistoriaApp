@@ -8,6 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import { useAuth } from "@/core/auth/auth-context";
 import type { UserRole } from "@/core/rbac/roles";
 import { createPermissionChecker } from "@/core/rbac/permission-service";
+import { tenantIdFromAppMetadata } from "@/core/tenant/tenant-resolver";
 import type { Profile } from "@/core/auth/types";
 
 export interface UserContextValue {
@@ -37,7 +38,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       user,
       profile,
       userId: profile?.id ?? user?.id ?? null,
-      tenantId: profile?.tenant_id ?? null,
+      tenantId: profile?.tenant_id ?? tenantIdFromAppMetadata(user?.app_metadata) ?? null,
       role: profile?.role ?? null,
       fullName: profile?.full_name ?? null,
       email: profile?.email ?? user?.email ?? null,

@@ -3,6 +3,7 @@ import {
   isTenantId,
   resolveTenant,
   resolvedTenantId,
+  tenantIdFromAppMetadata,
   tenantSlugFromHostname,
 } from "@/core/tenant/tenant-resolver";
 
@@ -75,6 +76,27 @@ describe("resolveTenant", () => {
       overrideTenantId: "'; DROP TABLE inspections; --",
     });
     expect(result.status).toBe("platform-admin");
+  });
+});
+
+describe("tenantIdFromAppMetadata", () => {
+  it("lê tenant_id do JWT", () => {
+    expect(tenantIdFromAppMetadata({ tenant_id: TENANT_A })).toBe(TENANT_A);
+  });
+
+  it("aceita company_id legado quando tenant_id não veio", () => {
+    expect(tenantIdFromAppMetadata({ company_id: TENANT_B })).toBe(TENANT_B);
+  });
+
+  it("prefere tenant_id quando os dois existem", () => {
+    expect(
+      tenantIdFromAppMetadata({ tenant_id: TENANT_A, company_id: TENANT_B }),
+    ).toBe(TENANT_A);
+  });
+
+  it("ignora metadata ausente ou inválida", () => {
+    expect(tenantIdFromAppMetadata(undefined)).toBeNull();
+    expect(tenantIdFromAppMetadata({ tenant_id: "empresa-a" })).toBeNull();
   });
 });
 

@@ -17,7 +17,7 @@ import { ROUTES } from "@/config/routes";
  * quebrada em vez de erro explicável.
  */
 export function TenantGuard() {
-  const { session, isPlatformAdmin } = useAuth();
+  const { session, isPlatformAdmin, loading: authLoading, signOut, refreshProfile } = useAuth();
   const { tenantId } = useUser();
   const { company, loading, error, refreshTenant } = useTenantContext();
   const location = useLocation();
@@ -27,6 +27,14 @@ export function TenantGuard() {
     isPlatformAdmin,
     sessionTenantId: tenantId,
   });
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   if (resolution.status === "anonymous") {
     return <Navigate to={ROUTES.login} state={{ from: location }} replace />;
@@ -41,6 +49,8 @@ export function TenantGuard() {
       <TenantUnavailable
         title="Conta sem empresa vinculada"
         description="Seu usuário não está associado a nenhuma empresa. Peça a um administrador para revisar seu cadastro."
+        onRetry={refreshProfile}
+        onSignOut={signOut}
       />
     );
   }
@@ -59,6 +69,7 @@ export function TenantGuard() {
         title="Não foi possível carregar a empresa"
         description={error ?? "Os dados da empresa não retornaram. Tente novamente."}
         onRetry={refreshTenant}
+        onSignOut={signOut}
       />
     );
   }
@@ -70,10 +81,12 @@ function TenantUnavailable({
   title,
   description,
   onRetry,
+  onSignOut,
 }: {
   title: string;
   description: string;
   onRetry?: () => void | Promise<void>;
+  onSignOut?: () => void | Promise<void>;
 }) {
   return (
     <div className="flex min-h-dvh items-center justify-center p-6">
@@ -83,6 +96,11 @@ function TenantUnavailable({
         {onRetry ? (
           <Button onClick={() => void onRetry()} className="w-full">
             Tentar novamente
+          </Button>
+        ) : null}
+        {onSignOut ? (
+          <Button variant="outline" onClick={() => void onSignOut()} className="w-full">
+            Sair
           </Button>
         ) : null}
       </div>

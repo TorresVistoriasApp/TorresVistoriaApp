@@ -39,6 +39,20 @@ export function isTenantId(value: unknown): value is TenantId {
   return typeof value === "string" && UUID_RE.test(value);
 }
 
+/**
+ * Tenant gravado no JWT (`app_metadata`). Convites e usuários antigos ainda
+ * carregam `company_id`; os novos usam `tenant_id`. Os dois são aceitos para
+ * não deixar a sessão sem empresa só porque o perfil ainda não chegou.
+ */
+export function tenantIdFromAppMetadata(
+  metadata: Record<string, unknown> | null | undefined,
+): TenantId | null {
+  if (!metadata) return null;
+  if (isTenantId(metadata.tenant_id)) return metadata.tenant_id;
+  if (isTenantId(metadata.company_id)) return metadata.company_id;
+  return null;
+}
+
 export function resolveTenant(input: TenantResolverInput): TenantResolution {
   if (!input.hasSession) {
     return { status: "anonymous" };
