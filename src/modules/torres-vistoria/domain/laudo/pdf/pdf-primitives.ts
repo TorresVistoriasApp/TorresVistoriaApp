@@ -16,18 +16,7 @@ import {
   type PdfMargin,
   type PdfNode,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
-
-const NO_PADDING = {
-  paddingLeft: () => 0,
-  paddingRight: () => 0,
-  paddingTop: () => 0,
-  paddingBottom: () => 0,
-};
-
-const NO_BORDER = {
-  hLineWidth: () => 0,
-  vLineWidth: () => 0,
-};
+import { PDF_LAYOUT } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
 
 /** Filete horizontal fino — separador discreto entre blocos. */
 export function ruleNode(
@@ -157,7 +146,6 @@ export type PanelOptions = {
 /** Caixa com borda hairline — agrupa conteúdo sem criar peso visual. */
 export function panel(content: PdfNode[], options: PanelOptions = {}): PdfNode {
   const padding = options.padding ?? PDF_SPACE.lg;
-  const borderColor = options.borderColor ?? PDF_COLOR.border;
 
   const stack: PdfNode[] = options.title
     ? [
@@ -190,13 +178,7 @@ export function panel(content: PdfNode[], options: PanelOptions = {}): PdfNode {
           widths: ["*"],
           body: [[inner]],
         },
-    layout: {
-      ...NO_PADDING,
-      hLineWidth: () => PDF_STROKE.hairline,
-      vLineWidth: () => PDF_STROKE.hairline,
-      hLineColor: () => borderColor,
-      vLineColor: () => borderColor,
-    },
+    layout: PDF_LAYOUT.panel,
   };
 }
 
@@ -234,7 +216,6 @@ export function labelValueGrid(
 ): PdfNode | null {
   if (rows.length === 0) return null;
   const columns = options.columns ?? 3;
-  const dividers = options.dividers ?? false;
 
   const body: PdfNode[][] = [];
   for (let index = 0; index < rows.length; index += columns) {
@@ -251,15 +232,7 @@ export function labelValueGrid(
       widths: Array.from({ length: columns }, () => "*"),
       body,
     },
-    layout: {
-      hLineWidth: (rowIndex: number) => (dividers && rowIndex > 0 ? PDF_STROKE.hairline : 0),
-      vLineWidth: () => 0,
-      hLineColor: () => PDF_COLOR.border,
-      paddingLeft: (columnIndex: number) => (columnIndex === 0 ? 0 : PDF_SPACE.md),
-      paddingRight: () => PDF_SPACE.md,
-      paddingTop: () => (dividers ? PDF_SPACE.xs : 0),
-      paddingBottom: () => PDF_SPACE.sm,
-    },
+    layout: options.dividers ? PDF_LAYOUT.fieldsDivided : PDF_LAYOUT.fields,
   };
 }
 
@@ -301,18 +274,7 @@ export function metricRow(
         })),
       ],
     },
-    layout: {
-      hLineWidth: (rowIndex: number, node: { table: { body: unknown[] } }) =>
-        rowIndex === 0 || rowIndex === node.table.body.length ? PDF_STROKE.hairline : 0,
-      vLineWidth: (columnIndex: number) =>
-        columnIndex === 0 || columnIndex === items.length ? 0 : PDF_STROKE.hairline,
-      hLineColor: () => PDF_COLOR.border,
-      vLineColor: () => PDF_COLOR.border,
-      paddingLeft: (columnIndex: number) => (columnIndex === 0 ? 0 : PDF_SPACE.md),
-      paddingRight: () => PDF_SPACE.sm,
-      paddingTop: () => PDF_SPACE.sm,
-      paddingBottom: () => PDF_SPACE.sm,
-    },
+    layout: PDF_LAYOUT.metrics,
   };
 }
 
@@ -382,7 +344,7 @@ export function kpiCardRow(
   return {
     margin: options.margin ?? [0, 0, 0, 0],
     table: { widths, body: [row] },
-    layout: { ...NO_BORDER, ...NO_PADDING },
+    layout: PDF_LAYOUT.none,
   };
 }
 
@@ -418,26 +380,16 @@ export function statusDot(color: string, diameter = 5): PdfNode {
   };
 }
 
-/** Badge compacto de status — cor no texto, fundo neutro. */
+/** Badge de status — tipografia colorida, sem caixa interna. */
 export function statusBadge(label: string, color: string): PdfNode {
   return {
-    table: {
-      widths: ["auto"],
-      body: [
-        [
-          {
-            text: label.toUpperCase(),
-            fontSize: PDF_FONT.micro,
-            bold: true,
-            color,
-            fillColor: PDF_COLOR.surfaceAlt,
-            characterSpacing: PDF_TRACKING.normal,
-            margin: [5, 1.5, 5, 1.5],
-          },
-        ],
-      ],
-    },
-    layout: { ...NO_BORDER, ...NO_PADDING },
+    text: label.toUpperCase(),
+    fontSize: PDF_FONT.micro,
+    bold: true,
+    color,
+    alignment: "left",
+    verticalAlignment: "middle",
+    characterSpacing: PDF_TRACKING.normal,
   };
 }
 
@@ -503,11 +455,7 @@ export function findingRow(
         ],
       ],
     },
-    layout: {
-      ...NO_PADDING,
-      hLineWidth: () => 0,
-      vLineWidth: () => 0,
-    },
+    layout: PDF_LAYOUT.none,
   };
 }
 
@@ -547,7 +495,7 @@ export function countChip(label: string, value: number, color: string): PdfNode 
         ],
       ],
     },
-    layout: { ...NO_BORDER, ...NO_PADDING },
+    layout: PDF_LAYOUT.none,
   };
 }
 
@@ -607,33 +555,7 @@ export function codeBlock(
         ],
       ],
     },
-    layout: {
-      ...NO_PADDING,
-      hLineWidth: () => PDF_STROKE.hairline,
-      vLineWidth: () => PDF_STROKE.hairline,
-      hLineColor: () => PDF_COLOR.border,
-      vLineColor: () => PDF_COLOR.border,
-    },
-  };
-}
-
-/** Layout de tabela premium: filetes horizontais leves, sem grade em todas as células. */
-export function dataTableLayout(options: { headerFill?: string; grid?: boolean } = {}) {
-  const grid = options.grid === true;
-
-  return {
-    hLineWidth: (rowIndex: number) => (rowIndex === 0 ? 0 : PDF_STROKE.hairline),
-    vLineWidth: () => (grid ? PDF_STROKE.hairline : 0),
-    hLineColor: () => PDF_COLOR.border,
-    vLineColor: () => PDF_COLOR.border,
-    fillColor: (rowIndex: number) => {
-      if (rowIndex === 0) return options.headerFill ?? PDF_COLOR.surface;
-      return null;
-    },
-    paddingLeft: () => PDF_SPACE.sm,
-    paddingRight: () => PDF_SPACE.sm,
-    paddingTop: () => 2.5,
-    paddingBottom: () => 2.5,
+    layout: PDF_LAYOUT.code,
   };
 }
 
@@ -670,17 +592,16 @@ export function framedImage(
         ],
       ],
     },
-    layout: {
-      ...NO_PADDING,
-      hLineWidth: () => PDF_STROKE.hairline,
-      vLineWidth: () => PDF_STROKE.hairline,
-      hLineColor: () => PDF_COLOR.border,
-      vLineColor: () => PDF_COLOR.border,
-    },
+    layout: PDF_LAYOUT.photo,
   };
 }
 
-export const PDF_LAYOUT_HELPERS = { NO_BORDER, NO_PADDING, PDF_RADIUS };
+export const PDF_LAYOUT_HELPERS = { PDF_RADIUS, PDF_LAYOUT };
+
+/** Layout de tabela premium: filetes horizontais leves, sem grade em todas as células. */
+export function dataTableLayout(options: { grid?: boolean } = {}) {
+  return options.grid ? PDF_LAYOUT.grid : PDF_LAYOUT.data;
+}
 
 /** Faixa de atenção — ícone discreto, título separado da mensagem, acento lateral. */
 export function attentionBanner(
@@ -732,6 +653,6 @@ export function attentionBanner(
         ],
       ],
     },
-    layout: { ...NO_BORDER, ...NO_PADDING },
+    layout: PDF_LAYOUT.none,
   };
 }

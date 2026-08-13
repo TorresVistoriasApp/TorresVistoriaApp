@@ -16,12 +16,12 @@ import {
   PDF_LINE_HEIGHT,
   PDF_PHOTO,
   PDF_SPACE,
-  PDF_STROKE,
   PDF_TRACKING,
   type PdfMargin,
   type PdfNode,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
 import { framedImage } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-primitives";
+import { PDF_LAYOUT } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
 
 export const PHOTO_GRID_GAP = PDF_PHOTO.gap;
 
@@ -188,16 +188,7 @@ function missingImageNode(caption: PhotoCaption, width: number, height: number):
         ],
       ],
     },
-    layout: {
-      hLineWidth: () => PDF_STROKE.hairline,
-      vLineWidth: () => PDF_STROKE.hairline,
-      hLineColor: () => PDF_COLOR.border,
-      vLineColor: () => PDF_COLOR.border,
-      paddingLeft: () => 0,
-      paddingRight: () => 0,
-      paddingTop: () => 0,
-      paddingBottom: () => 0,
-    },
+    layout: PDF_LAYOUT.photo,
   };
 }
 
