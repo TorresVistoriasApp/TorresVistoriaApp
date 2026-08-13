@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   computeDonutSegments,
+  computeGaugeSegments,
   buildRingSectorPoints,
+  buildDonutChartNode,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-charts";
 import {
   planPhotoRows,
@@ -44,18 +46,15 @@ describe("planPhotoRows", () => {
 });
 
 describe("photo cell metrics", () => {
-  it("produz células maiores em duas colunas do que em três", () => {
-    const two = photoCellWidth(2, PDF_PAGE.contentWidth);
+  it("usa o mesmo tamanho de célula na grade de três colunas", () => {
     const three = photoCellWidth(3, PDF_PAGE.contentWidth);
-    expect(two).toBeGreaterThan(three);
-    expect(photoCellHeight(2, PDF_PAGE.contentWidth)).toBeGreaterThan(
-      photoCellHeight(3, PDF_PAGE.contentWidth),
-    );
+    expect(photoCellHeight(3, PDF_PAGE.contentWidth)).toBeGreaterThan(three * 0.9);
+    expect(photoCellWidth(1, PDF_PAGE.contentWidth)).toBeGreaterThan(three);
   });
 
   it("usa foto grande quando há apenas uma imagem", () => {
     expect(photoCellWidth(1, PDF_PAGE.contentWidth)).toBeGreaterThan(
-      photoCellWidth(2, PDF_PAGE.contentWidth),
+      photoCellWidth(3, PDF_PAGE.contentWidth),
     );
   });
 });
@@ -71,6 +70,19 @@ describe("buildPhotoGrid", () => {
     } as LaudoPhoto;
   }
 
+  it("usa duas colunas largas quando há exatamente duas fotos", () => {
+    const nodes = buildPhotoGrid([photo("a"), photo("b")], {
+      accent: "#ea580c",
+      contentWidth: PDF_PAGE.contentWidth,
+    });
+
+    expect(nodes).toHaveLength(1);
+    expect((nodes[0]?.columns as unknown[]).length).toBe(2);
+    const width = (nodes[0]?.columns as Array<{ width: number }>)[0]?.width;
+    expect(width).toBe(photoCellWidth(2, PDF_PAGE.contentWidth));
+    expect(width).toBeGreaterThan(photoCellWidth(3, PDF_PAGE.contentWidth));
+  });
+
   it("mantém cada célula unbreakable para a legenda não separar da foto", () => {
     const nodes = buildPhotoGrid([photo("a"), photo("b"), photo("c")], {
       accent: "#ea580c",
@@ -83,15 +95,37 @@ describe("buildPhotoGrid", () => {
     expect(columns).toHaveLength(3);
   });
 
-  it("monta grade 2x2 para quatro fotos", () => {
+  it("monta grade 2x2 para quatro fotos, no tamanho da grade de três", () => {
     const nodes = buildPhotoGrid([photo("1"), photo("2"), photo("3"), photo("4")], {
       accent: "#ea580c",
       contentWidth: PDF_PAGE.contentWidth,
     });
 
     expect(nodes).toHaveLength(2);
-    expect((nodes[0]?.columns as unknown[]).length).toBe(2);
-    expect((nodes[1]?.columns as unknown[]).length).toBe(2);
+    expect((nodes[0]?.columns as unknown[]).length).toBe(3);
+    expect((nodes[1]?.columns as unknown[]).length).toBe(3);
+    expect((nodes[0]?.columns as Array<{ width: number }>)[0]?.width).toBe(
+      (nodes[1]?.columns as Array<{ width: number }>)[0]?.width,
+    );
+  });
+
+  it("não estica as duas fotos da última linha quando há cinco imagens", () => {
+    const nodes = buildPhotoGrid(
+      [photo("1"), photo("2"), photo("3"), photo("4"), photo("5")],
+      { accent: "#ea580c", contentWidth: PDF_PAGE.contentWidth },
+    );
+    const first = (nodes[0]?.columns as Array<{ width: number }>)[0]?.width;
+    const last = (nodes[1]?.columns as Array<{ width: number }>)[0]?.width;
+    expect(first).toBe(last);
+  });
+
+  it("preenche a célula com cover, sem faixa branca ao redor da foto", () => {
+    const nodes = buildPhotoGrid([photo("a")], {
+      accent: "#ea580c",
+      contentWidth: PDF_PAGE.contentWidth,
+    });
+    expect(JSON.stringify(nodes)).toContain("cover");
+    expect(JSON.stringify(nodes)).not.toContain("\"fit\"");
   });
 });
 
@@ -127,5 +161,33 @@ describe("computeDonutSegments", () => {
     const xs = points.map((point) => point.x);
     expect(Math.min(...xs)).toBeGreaterThanOrEqual(9);
     expect(Math.max(...xs)).toBeLessThanOrEqual(91);
+  });
+});
+
+describe("computeGaugeSegments", () => {
+  it("reprojeta as fatias para o semicírculo superior", () => {
+    const segments = computeGaugeSegments([
+      { label: "Aprovado", value: 8, color: "#16a34a" },
+      { label: "Apontamento", value: 2, color: "#d97706" },
+    ]);
+
+    expect(segments).toHaveLength(2);
+    expect(segments[0]?.startAngle).toBeCloseTo(-Math.PI / 2);
+    expect(segments[0]?.endAngle).toBeCloseTo(-Math.PI / 2 + 0.8 * Math.PI);
+    expect(segments[1]?.endAngle).toBeCloseTo(Math.PI / 2);
+  });
+});
+
+describe("buildDonutChartNode", () => {
+  it("desenha anel nítido com elipses quando há uma única fatia", () => {
+    const node = buildDonutChartNode([{ label: "Aprovado", value: 11, color: "#16a34a" }], {
+      size: 64,
+      centerValue: "11",
+      centerLabel: "itens",
+    });
+    const json = JSON.stringify(node);
+    expect(json).toContain("ellipse");
+    expect(json).toContain("11");
+    expect(json).toContain("ITENS");
   });
 });

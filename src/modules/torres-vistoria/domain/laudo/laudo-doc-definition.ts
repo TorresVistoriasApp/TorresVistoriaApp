@@ -20,7 +20,6 @@ import {
   getLaudoLegalParagraphs,
   type LaudoPayload,
 } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
-import { summarizeVerificationCode } from "@/modules/torres-vistoria/domain/laudo/verification-code";
 import {
   PDF_AUTHENTICITY,
   PDF_COLOR,
@@ -28,7 +27,9 @@ import {
   PDF_FONT,
   PDF_LINE_HEIGHT,
   PDF_PAGE,
+  PDF_PHOTO,
   PDF_SPACE,
+  PDF_STROKE,
   PDF_TRACKING,
   toneColor,
   type PdfNode,
@@ -38,20 +39,17 @@ import {
   bulletList,
   codeBlock,
   dataTableLayout,
+  findingRow,
   labelValueBlock,
   labelValueGrid,
   metricRow,
+  panel,
   resultBadge,
   sectionBar,
-  statusDot,
-  statusLabel,
+  statusBadge,
   subsectionHeading,
   tableHeaderCell,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-primitives";
-import {
-  buildChartLegendNode,
-  buildDonutChartNode,
-} from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-charts";
 import {
   buildPhotoGrid,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/photo-grid";
@@ -173,25 +171,6 @@ function buildCover(payload: LaudoPayload, view: LaudoReportViewModel): PdfNode[
       columnGap: PDF_SPACE.lg,
     },
     coverSummaryMetrics(view),
-    {
-      columns: [
-        {
-          width: 84,
-          ...buildDonutChartNode(view.checklistDistribution, {
-            size: 72,
-            centerValue: String(view.stats.evaluated),
-            centerLabel: "itens",
-          }),
-        },
-        {
-          width: "*",
-          ...buildChartLegendNode(view.checklistDistribution, { includeEmpty: false, showPercentage: true }),
-          margin: [PDF_SPACE.md, 6, 0, 0],
-        },
-      ],
-      columnGap: PDF_SPACE.sm,
-      margin: [0, PDF_SPACE.md, 0, 0],
-    },
     attentionBanner("Atenção", attentionBody(), {
       width: PDF_PAGE.contentWidth,
       accent: view.primaryColor,
@@ -258,48 +237,36 @@ function buildApontamentosSection(view: LaudoReportViewModel): PdfNode[] {
       accent: toneColor(view.opinionTone),
       width: PDF_PAGE.contentWidth,
     }),
-    ...view.apontamentos.map((apontamento, index) => ({
-      unbreakable: true,
-      columns: [
-        {
-          width: 32,
-          text: String(index + 1).padStart(2, "0"),
-          fontSize: PDF_FONT.h2,
-          bold: true,
-          color: PDF_COLOR.navy,
-        },
-        {
-          width: "*",
-          stack: [
-            {
-              text: apontamento.categoryLabel.toUpperCase(),
-              fontSize: PDF_FONT.micro,
-              color: PDF_COLOR.muted,
-              characterSpacing: PDF_TRACKING.wide,
-            },
-            {
-              text: apontamento.itemName,
-              fontSize: PDF_FONT.bodyLarge,
-              bold: true,
-              color: PDF_COLOR.text,
-              margin: [0, 2, 0, 0],
-            },
-            ...(apontamento.note
-              ? [
-                  {
-                    text: apontamento.note,
-                    fontSize: PDF_FONT.body,
-                    color: PDF_COLOR.warning,
-                    margin: [0, 2, 0, 0],
-                  },
-                ]
-              : []),
-          ],
-        },
-      ],
-      columnGap: PDF_SPACE.md,
-      margin: [0, 0, 0, PDF_SPACE.lg],
-    })),
+    ...view.apontamentos.map((apontamento, index) =>
+      findingRow(index, {
+        kicker: apontamento.categoryLabel,
+        title: apontamento.itemName,
+        body: apontamento.note || undefined,
+        accent: toneColor(view.opinionTone),
+      }),
+    ),
+  ];
+}
+
+function buildDamagesSection(view: LaudoReportViewModel): PdfNode[] {
+  if (view.damages.length === 0) return [];
+
+  return [
+    sectionBar("Avarias", {
+      accent: view.primaryColor,
+      width: PDF_PAGE.contentWidth,
+    }),
+    ...view.damages.map((damage, index) => {
+      const description =
+        damage.displayName && damage.displayName !== damage.location ? damage.displayName : null;
+
+      return findingRow(index, {
+        kicker: description || damage.severity ? damage.location : undefined,
+        title: description || damage.severity || damage.location,
+        body: description && damage.severity ? damage.severity : undefined,
+        accent: PDF_COLOR.warning,
+      });
+    }),
   ];
 }
 
@@ -322,91 +289,87 @@ function buildSaleMarketSection(
 }
 
 type ChecklistCategoryVm = LaudoReportViewModel["categories"][number];
-type ChecklistItemVm = ChecklistCategoryVm["items"][number];
 
-/** Preenche de cima para baixo, depois a próxima coluna — sem buracos de grade. */
-function splitNewspaperColumns<T>(items: T[], columnCount: number): T[][] {
-  if (columnCount <= 1 || items.length === 0) return items.length ? [items] : [];
-  const perColumn = Math.ceil(items.length / columnCount);
-  const columns: T[][] = [];
-  for (let index = 0; index < columnCount; index += 1) {
-    const slice = items.slice(index * perColumn, (index + 1) * perColumn);
-    if (slice.length > 0) columns.push(slice);
-  }
-  return columns;
+function checklistStatusCell(status: string): PdfNode {
+  return statusBadge(
+    checklistStatusDisplay(status),
+    getChecklistStatusPdfColor(status),
+  );
 }
 
-function checklistItemLine(item: ChecklistItemVm): PdfNode {
-  const isApontamento = item.status === ChecklistStatus.NAO_CONFORME;
-  const observation = formatChecklistObservationForPdf(item.status, item.notes);
-  const color = getChecklistStatusPdfColor(item.status);
-  const muted = item.status !== ChecklistStatus.CONFORME && !isApontamento;
+function checklistItemCell(item: ChecklistCategoryVm["items"][number]): PdfNode {
+  const isIssue = item.status === ChecklistStatus.NAO_CONFORME;
 
   return {
     columns: [
-      statusDot(color, isApontamento ? 5 : 4),
+      isIssue
+        ? {
+            width: 12,
+            text: "!",
+            fontSize: PDF_FONT.small,
+            bold: true,
+            color: PDF_COLOR.warning,
+          }
+        : {
+            width: 12,
+            canvas: [
+              {
+                type: "ellipse",
+                x: 3,
+                y: 4.5,
+                r1: 2,
+                r2: 2,
+                color: item.status === ChecklistStatus.CONFORME ? PDF_COLOR.success : PDF_COLOR.subtle,
+              },
+            ],
+          },
       {
         width: "*",
+        text: item.item_name,
         fontSize: PDF_FONT.small,
-        color: muted ? PDF_COLOR.muted : PDF_COLOR.text,
-        bold: isApontamento,
-        text: observation
-          ? [
-              {
-                text: item.item_name,
-                bold: true,
-                fontSize: PDF_FONT.small,
-                color: PDF_COLOR.text,
-              },
-              {
-                text: ` — ${observation}`,
-                fontSize: PDF_FONT.micro,
-                color: PDF_COLOR.warning,
-              },
-            ]
-          : item.item_name,
+        bold: isIssue,
+        color: PDF_COLOR.text,
       },
     ],
-    columnGap: 4,
-    margin: [0, 0, 0, 1.5],
+    columnGap: PDF_SPACE.xs,
   };
 }
 
-function categoryChecklistBlock(
-  category: ChecklistCategoryVm,
-  accent: string,
-  itemColumns: number,
-): PdfNode {
-  const columns = splitNewspaperColumns(category.items, itemColumns);
-
+function checklistObservationCell(item: ChecklistCategoryVm["items"][number]): PdfNode {
+  const observation = formatChecklistObservationForPdf(item.status, item.notes);
   return {
+    text: observation || "-",
+    fontSize: PDF_FONT.micro,
+    color: observation ? PDF_COLOR.warning : PDF_COLOR.subtle,
+  };
+}
+
+function checklistCategoryTable(category: ChecklistCategoryVm, accent: string): PdfNode {
+  return {
+    margin: [0, 0, 0, PDF_SPACE.xs],
     stack: [
       subsectionHeading(category.label, {
         accent,
-        margin: [0, 0, 0, 3],
+        description: `${category.total} itens · ${category.naoConforme} apontamento(s)`,
+        margin: [0, PDF_SPACE.sm, 0, 1],
       }),
-      columns.length <= 1
-        ? { stack: category.items.map(checklistItemLine) }
-        : {
-            columns: columns.map((columnItems) => ({
-              width: "*",
-              stack: columnItems.map(checklistItemLine),
-            })),
-            columnGap: PDF_SPACE.xl,
-          },
+      {
+        table: {
+          headerRows: 1,
+          dontBreakRows: true,
+          widths: ["*", 78, 108],
+          body: [
+            [tableHeaderCell("Item"), tableHeaderCell("Status"), tableHeaderCell("Observação")],
+            ...category.items.map((item) => [
+              checklistItemCell(item),
+              checklistStatusCell(item.status),
+              checklistObservationCell(item),
+            ]),
+          ],
+        },
+        layout: dataTableLayout(),
+      },
     ],
-  };
-}
-
-function compactChecklistItems(
-  category: ChecklistCategoryVm,
-  accent: string,
-  itemColumns: number,
-): PdfNode {
-  return {
-    unbreakable: true,
-    margin: [0, PDF_SPACE.sm, 0, PDF_SPACE.xs],
-    ...categoryChecklistBlock(category, accent, itemColumns),
   };
 }
 
@@ -416,52 +379,20 @@ function buildChecklistSection(view: LaudoReportViewModel): PdfNode[] {
       sectionBar("Checklist técnico", {
         accent: view.primaryColor,
         width: PDF_PAGE.contentWidth,
+        margin: [0, PDF_SPACE.sm, 0, PDF_SPACE.xs],
       }),
       { text: "Nenhum item de checklist registrado nesta vistoria.", color: PDF_COLOR.muted },
     ];
   }
 
-  const nodes: PdfNode[] = [
+  return [
     sectionBar("Checklist técnico", {
       accent: view.primaryColor,
       width: PDF_PAGE.contentWidth,
+      margin: [0, PDF_SPACE.sm, 0, PDF_SPACE.xs],
     }),
+    ...view.categories.map((category) => checklistCategoryTable(category, view.primaryColor)),
   ];
-
-  const accent = view.primaryColor;
-  const wideThreshold = 7;
-  const categories = view.categories;
-  let index = 0;
-
-  while (index < categories.length) {
-    const current = categories[index];
-    const next = categories[index + 1];
-
-    if (current.items.length >= wideThreshold) {
-      nodes.push(compactChecklistItems(current, accent, 2));
-      index += 1;
-      continue;
-    }
-
-    if (next && next.items.length < wideThreshold) {
-      nodes.push({
-        unbreakable: true,
-        margin: [0, PDF_SPACE.sm, 0, PDF_SPACE.xs],
-        columns: [
-          { width: "*", ...categoryChecklistBlock(current, accent, 1) },
-          { width: "*", ...categoryChecklistBlock(next, accent, 1) },
-        ],
-        columnGap: PDF_SPACE.xxl,
-      });
-      index += 2;
-      continue;
-    }
-
-    nodes.push(compactChecklistItems(current, accent, current.items.length >= 4 ? 2 : 1));
-    index += 1;
-  }
-
-  return nodes;
 }
 
 function buildPhotoSection(payload: LaudoPayload, view: LaudoReportViewModel): PdfNode[] {
@@ -485,20 +416,26 @@ function buildPhotoSection(payload: LaudoPayload, view: LaudoReportViewModel): P
     }),
   ];
 
+  let firstGroup = true;
   for (const section of PHOTO_CATALOG) {
     const sectionPhotos = grouped.get(section.key);
     if (!sectionPhotos?.length) continue;
 
-    nodes.push(
-      subsectionHeading(section.name, {
-        accent: view.primaryColor,
-        margin: [0, PDF_SPACE.sm, 0, 2],
-      }),
-      ...buildPhotoGrid(sectionPhotos, {
-        accent: view.primaryColor,
-        contentWidth: PDF_PAGE.contentWidth,
-      }),
-    );
+    const heading = subsectionHeading(section.name, {
+      accent: view.primaryColor,
+      width: PDF_PAGE.contentWidth,
+      margin: [0, firstGroup ? PDF_SPACE.sm : PDF_PHOTO.groupGap, 0, PDF_SPACE.xs],
+    });
+    const [firstRow, ...otherRows] = buildPhotoGrid(sectionPhotos, {
+      accent: view.primaryColor,
+      contentWidth: PDF_PAGE.contentWidth,
+    });
+
+    if (firstRow) {
+      nodes.push({ unbreakable: true, stack: [heading, firstRow] });
+      nodes.push(...otherRows);
+    }
+    firstGroup = false;
   }
 
   return nodes;
@@ -538,8 +475,8 @@ function buildPaintSection(view: LaudoReportViewModel, payload: LaudoPayload): P
                       : []),
                   ],
                 },
-                statusLabel(
-                  checklistStatusDisplay(item.status).toUpperCase(),
+                statusBadge(
+                  checklistStatusDisplay(item.status),
                   getChecklistStatusPdfColor(item.status),
                 ),
               ];
@@ -568,11 +505,11 @@ function buildOpinionSection(
     }),
     {
       text: notes,
-      fontSize: PDF_FONT.body,
+      fontSize: PDF_FONT.bodyLarge,
       color: PDF_COLOR.text,
-      lineHeight: PDF_LINE_HEIGHT.normal,
+      lineHeight: PDF_LINE_HEIGHT.relaxed,
       alignment: "justify",
-      margin: [0, PDF_SPACE.xs, 0, 0],
+      margin: [0, PDF_SPACE.sm, 0, 0],
     },
   ];
 }
@@ -590,6 +527,14 @@ function buildConclusionSection(view: LaudoReportViewModel): PdfNode[] {
       width: PDF_PAGE.contentWidth,
       fontSize: PDF_FONT.result,
     }),
+    metricRow(
+      [
+        { label: "Aprovados", value: String(view.stats.conforme), accent: PDF_COLOR.success },
+        { label: "Apontamentos", value: String(view.stats.naoConforme), accent: PDF_COLOR.warning },
+        { label: "Fotografias", value: String(view.photoCount), accent: PDF_COLOR.info },
+      ],
+      { margin: [0, PDF_SPACE.md, 0, 0] },
+    ),
     ...(photoNotes.length > 0 ? [bulletList(photoNotes, { color: PDF_COLOR.navy, margin: [0, PDF_SPACE.sm, 0, 0] })] : []),
   ];
 }
@@ -599,79 +544,94 @@ function buildAuthenticitySection(payload: LaudoPayload, view: LaudoReportViewMo
   const inspector = payload.inspector;
 
   return [
-    sectionBar("Autenticidade do laudo", {
-      accent: view.primaryColor,
-      width: PDF_PAGE.contentWidth,
-    }),
     {
       unbreakable: true,
-      columns: [
-        {
-          width: PDF_AUTHENTICITY.qrSize + 16,
-          stack: [
-            { qr: qrValue, fit: PDF_AUTHENTICITY.qrSize },
+      stack: [
+        sectionBar("Autenticidade do laudo", {
+          accent: view.primaryColor,
+          width: PDF_PAGE.contentWidth,
+        }),
+        panel(
+          [
             {
-              text: "Validação pública",
-              fontSize: PDF_FONT.micro,
-              color: PDF_COLOR.muted,
-              alignment: "center",
-              margin: [0, PDF_SPACE.sm, 0, 0],
+              columns: [
+                {
+                  width: PDF_AUTHENTICITY.qrSize + 16,
+                  stack: [
+                    { qr: qrValue, fit: PDF_AUTHENTICITY.qrSize },
+                    {
+                      text: "Validação pública",
+                      fontSize: PDF_FONT.micro,
+                      color: PDF_COLOR.muted,
+                      alignment: "center",
+                      margin: [0, PDF_SPACE.sm, 0, 0],
+                    },
+                  ],
+                },
+                {
+                  width: "*",
+                  stack: [
+                    labelValueBlock("Código de autenticidade", payload.verificationCode, {
+                      valueSize: PDF_FONT.kpi,
+                      valueColor: PDF_COLOR.navy,
+                      margin: [0, 0, 0, PDF_SPACE.lg],
+                    }),
+                    {
+                      text: "HASH SHA-256",
+                      fontSize: PDF_FONT.micro,
+                      bold: true,
+                      color: PDF_COLOR.muted,
+                      characterSpacing: PDF_TRACKING.wide,
+                      margin: [0, 0, 0, PDF_SPACE.xs],
+                    },
+                    codeBlock(payload.integrityHash, { fontSize: PDF_FONT.micro }),
+                    {
+                      text: "Documento verificável na plataforma Torres.",
+                      fontSize: PDF_FONT.small,
+                      color: PDF_COLOR.muted,
+                      margin: [0, PDF_SPACE.md, 0, 0],
+                    },
+                    ...(payload.validationUrl
+                      ? [
+                          {
+                            text: payload.validationUrl,
+                            fontSize: PDF_FONT.small,
+                            color: PDF_COLOR.navy,
+                            margin: [0, 2, 0, 0],
+                          },
+                        ]
+                      : []),
+                    ...(inspector?.full_name
+                      ? [
+                          labelValueBlock("Vistoriador responsável", inspector.full_name, {
+                            margin: [0, PDF_SPACE.md, 0, 0],
+                          }),
+                          ...(inspector.credential
+                            ? [
+                                {
+                                  text: inspector.credential,
+                                  fontSize: PDF_FONT.micro,
+                                  color: PDF_COLOR.muted,
+                                  margin: [0, 2, 0, 0],
+                                },
+                              ]
+                            : []),
+                        ]
+                      : []),
+                  ],
+                },
+              ],
+              columnGap: PDF_SPACE.xl,
             },
           ],
-        },
-        {
-          width: "*",
-          stack: [
-            labelValueBlock("Código de autenticidade", payload.verificationCode, {
-              valueSize: PDF_FONT.h1,
-              valueColor: PDF_COLOR.navy,
-              margin: [0, 0, 0, PDF_SPACE.lg],
-            }),
-            {
-              text: "HASH SHA-256",
-              fontSize: PDF_FONT.micro,
-              color: PDF_COLOR.muted,
-              characterSpacing: PDF_TRACKING.wide,
-              margin: [0, 0, 0, PDF_SPACE.xs],
-            },
-            codeBlock(payload.integrityHash, { fontSize: PDF_FONT.micro }),
-            {
-              text: "Documento verificável na plataforma Torres.",
-              fontSize: PDF_FONT.small,
-              color: PDF_COLOR.muted,
-              margin: [0, PDF_SPACE.md, 0, 0],
-            },
-            ...(payload.validationUrl
-              ? [
-                  {
-                    text: payload.validationUrl,
-                    fontSize: PDF_FONT.small,
-                    color: PDF_COLOR.navy,
-                    margin: [0, 2, 0, 0],
-                  },
-                ]
-              : []),
-            ...(inspector?.full_name
-              ? [
-                  labelValueBlock("Vistoriador responsável", inspector.full_name, {
-                    margin: [0, PDF_SPACE.md, 0, 0],
-                  }),
-                  ...(inspector.credential
-                    ? [
-                        {
-                          text: inspector.credential,
-                          fontSize: PDF_FONT.micro,
-                          color: PDF_COLOR.muted,
-                          margin: [0, 2, 0, 0],
-                        },
-                      ]
-                    : []),
-                ]
-              : []),
-          ],
-        },
+          {
+            fill: PDF_COLOR.surface,
+            padding: PDF_SPACE.xl,
+            borderColor: PDF_COLOR.border,
+            accent: view.primaryColor,
+          },
+        ),
       ],
-      columnGap: PDF_SPACE.xl,
     },
   ];
 }
@@ -756,8 +716,6 @@ function buildSignatureRow(payload: LaudoPayload): PdfNode {
 export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, unknown> {
   const view = buildLaudoReportViewModel(payload);
   const company = payload.company;
-  const issuedAt = formatDate(payload.generatedAt);
-  const codeSummary = summarizeVerificationCode(payload.verificationCode);
   const footerBrand = company?.name?.trim() || "Torres Vistoria";
 
   const content: PdfNode[] = [
@@ -766,6 +724,7 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     ...buildVehicleDataSection(payload, view),
     ...buildSaleMarketSection(payload.inspection, view),
     ...buildApontamentosSection(view),
+    ...buildDamagesSection(view),
     ...buildChecklistSection(view),
     ...buildPhotoSection(payload, view),
     ...buildPaintSection(view, payload),
@@ -780,54 +739,59 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
     pageSize: PDF_PAGE.size,
     pageMargins: PDF_PAGE.margins,
     content,
-    header: (currentPage: number, pageCount: number) => ({
+    header: () => ({
+      columns: [
+        {
+          text: footerBrand.toUpperCase(),
+          fontSize: PDF_FONT.micro,
+          bold: true,
+          color: PDF_COLOR.navy,
+          characterSpacing: PDF_TRACKING.wide,
+          margin: [PDF_PAGE.margins[0], 10, 0, 0],
+        },
+        {
+          text: `Laudo ${payload.laudoNumber}`,
+          fontSize: PDF_FONT.micro,
+          color: PDF_COLOR.muted,
+          alignment: "right",
+          margin: [0, 10, PDF_PAGE.margins[2], 0],
+        },
+      ],
+    }),
+    footer: (currentPage: number, pageCount: number) => ({
       columns: [
         {
           stack: [
             {
-              text: footerBrand.toUpperCase(),
-              fontSize: PDF_FONT.micro,
-              bold: true,
-              color: PDF_COLOR.navy,
-              characterSpacing: PDF_TRACKING.wide,
+              canvas: [
+                {
+                  type: "line",
+                  x1: 0,
+                  y1: 0,
+                  x2: PDF_PAGE.contentWidth,
+                  y2: 0,
+                  lineWidth: PDF_STROKE.hairline,
+                  lineColor: PDF_COLOR.border,
+                },
+              ],
             },
             {
-              text: `Laudo Cautelar Veicular · ${payload.laudoNumber}`,
-              fontSize: PDF_FONT.micro,
-              color: PDF_COLOR.muted,
-              margin: [0, 1, 0, 0],
+              columns: [
+                {
+                  text: payload.laudoNumber,
+                  fontSize: PDF_FONT.micro,
+                  color: PDF_COLOR.muted,
+                },
+                {
+                  text: `Página ${currentPage}/${pageCount}`,
+                  fontSize: PDF_FONT.micro,
+                  color: PDF_COLOR.muted,
+                  alignment: "right",
+                },
+              ],
+              margin: [0, 4, 0, 0],
             },
           ],
-          margin: [PDF_PAGE.margins[0], 8, 0, 0],
-        },
-        {
-          text: `Página ${currentPage} / ${pageCount}`,
-          fontSize: PDF_FONT.micro,
-          color: PDF_COLOR.muted,
-          alignment: "right",
-          margin: [0, 12, PDF_PAGE.margins[2], 0],
-        },
-      ],
-    }),
-    footer: () => ({
-      stack: [
-        {
-          canvas: [
-            {
-              type: "line",
-              x1: PDF_PAGE.margins[0],
-              y1: 0,
-              x2: PDF_PAGE.margins[0] + PDF_PAGE.contentWidth,
-              y2: 0,
-              lineWidth: 0.4,
-              lineColor: PDF_COLOR.border,
-            },
-          ],
-        },
-        {
-          text: `${codeSummary}  ·  ${issuedAt}`,
-          fontSize: PDF_FONT.micro,
-          color: PDF_COLOR.muted,
           margin: [PDF_PAGE.margins[0], 4, PDF_PAGE.margins[2], 0],
         },
       ],
