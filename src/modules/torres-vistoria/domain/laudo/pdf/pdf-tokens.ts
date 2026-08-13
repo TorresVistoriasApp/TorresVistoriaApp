@@ -29,6 +29,8 @@ export const PDF_COLOR = {
   borderStrong: "#cbd5e1",
   surface: "#f8fafc",
   surfaceAlt: "#f1f5f9",
+  /** Fundo de aviso — ardósia fria, sem amarelo de alerta genérico. */
+  attention: "#f3f5f8",
   white: "#ffffff",
   success: "#16a34a",
   successSoft: "#dcfce7",

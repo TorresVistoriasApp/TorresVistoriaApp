@@ -603,30 +603,32 @@ export function dataTableLayout(options: { grid?: boolean } = {}) {
   return options.grid ? PDF_LAYOUT.grid : PDF_LAYOUT.data;
 }
 
-/** Faixa de atenção — ícone discreto, título separado da mensagem, acento lateral. */
+/** Faixa de atenção — compacta, na altura da frase. */
 export function attentionBanner(
   title: string,
   body: string,
   options: { width: number; accent: string; margin?: PdfMargin },
 ): PdfNode {
+  const bar = 2.5;
+
   return {
     unbreakable: true,
-    margin: options.margin ?? [0, PDF_SPACE.md, 0, PDF_SPACE.sm],
+    margin: options.margin ?? [0, PDF_SPACE.lg, 0, PDF_SPACE.md],
     table: {
-      widths: [2.5, options.width - 2.5],
+      widths: [bar, options.width - bar],
       body: [
         [
           { fillColor: options.accent, text: "" },
           {
-            fillColor: PDF_COLOR.surface,
-            margin: [PDF_SPACE.xl, PDF_SPACE.xl, PDF_SPACE.xl, PDF_SPACE.xl],
+            fillColor: PDF_COLOR.attention,
+            margin: [8, 6, 10, 6],
             columns: [
               {
-                width: 12,
+                width: 9,
                 text: "!",
                 bold: true,
                 fontSize: PDF_FONT.h2,
-                color: PDF_COLOR.navy,
+                color: options.accent,
               },
               {
                 width: "*",
@@ -641,18 +643,18 @@ export function attentionBanner(
                   {
                     text: body,
                     fontSize: PDF_FONT.small,
-                    color: PDF_COLOR.text,
-                    lineHeight: PDF_LINE_HEIGHT.normal,
-                    margin: [0, PDF_SPACE.sm, 0, 0],
+                    color: PDF_COLOR.muted,
+                    lineHeight: PDF_LINE_HEIGHT.tight,
+                    margin: [0, 3, 0, 0],
                   },
                 ],
               },
             ],
-            columnGap: PDF_SPACE.sm,
+            columnGap: 6,
           },
         ],
       ],
     },
-    layout: PDF_LAYOUT.none,
+    layout: PDF_LAYOUT.panel,
   };
 }

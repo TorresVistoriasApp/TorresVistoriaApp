@@ -174,7 +174,7 @@ function buildCover(payload: LaudoPayload, view: LaudoReportViewModel): PdfNode[
     attentionBanner("Atenção", attentionBody(), {
       width: PDF_PAGE.contentWidth,
       accent: view.primaryColor,
-      margin: [0, PDF_SPACE.md, 0, 0],
+      margin: [0, PDF_SPACE.lg, 0, 0],
     }),
   ];
 }
@@ -197,7 +197,7 @@ function buildInspectionDataSection(
     sectionBar("Dados da vistoria", {
       accent: view.primaryColor,
       width: PDF_PAGE.contentWidth,
-      margin: [0, 0, 0, PDF_SPACE.lg],
+      margin: [0, PDF_SPACE.xl, 0, PDF_SPACE.lg],
     }),
     grid,
   ];
