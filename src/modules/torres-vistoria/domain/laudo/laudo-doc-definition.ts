@@ -409,14 +409,9 @@ function buildPhotoSection(payload: LaudoPayload, view: LaudoReportViewModel): P
   }
 
   const grouped = groupPhotosBySection(photos);
-  const nodes: PdfNode[] = [
-    sectionBar("Registro fotográfico", {
-      accent: view.primaryColor,
-      width: PDF_PAGE.contentWidth,
-    }),
-  ];
-
+  const nodes: PdfNode[] = [];
   let firstGroup = true;
+
   for (const section of PHOTO_CATALOG) {
     const sectionPhotos = grouped.get(section.key);
     if (!sectionPhotos?.length) continue;
@@ -424,17 +419,28 @@ function buildPhotoSection(payload: LaudoPayload, view: LaudoReportViewModel): P
     const heading = subsectionHeading(section.name, {
       accent: view.primaryColor,
       width: PDF_PAGE.contentWidth,
-      margin: [0, firstGroup ? PDF_SPACE.sm : PDF_PHOTO.groupGap, 0, PDF_SPACE.xs],
+      margin: [0, firstGroup ? PDF_SPACE.md : PDF_PHOTO.groupGap, 0, PDF_SPACE.md],
     });
     const [firstRow, ...otherRows] = buildPhotoGrid(sectionPhotos, {
       accent: view.primaryColor,
       contentWidth: PDF_PAGE.contentWidth,
     });
 
-    if (firstRow) {
-      nodes.push({ unbreakable: true, stack: [heading, firstRow] });
-      nodes.push(...otherRows);
+    if (!firstRow) continue;
+
+    const stack: PdfNode[] = [];
+    if (firstGroup) {
+      stack.push(
+        sectionBar("Registro fotográfico", {
+          accent: view.primaryColor,
+          width: PDF_PAGE.contentWidth,
+          margin: [0, PDF_SPACE.md, 0, PDF_SPACE.sm],
+        }),
+      );
     }
+    stack.push(heading, firstRow);
+    nodes.push({ unbreakable: true, stack });
+    nodes.push(...otherRows);
     firstGroup = false;
   }
 
@@ -747,14 +753,14 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
           bold: true,
           color: PDF_COLOR.navy,
           characterSpacing: PDF_TRACKING.wide,
-          margin: [PDF_PAGE.margins[0], 10, 0, 0],
+          margin: [PDF_PAGE.margins[0], 12, 0, 0],
         },
         {
           text: `Laudo ${payload.laudoNumber}`,
           fontSize: PDF_FONT.micro,
           color: PDF_COLOR.muted,
           alignment: "right",
-          margin: [0, 10, PDF_PAGE.margins[2], 0],
+          margin: [0, 12, PDF_PAGE.margins[2], 0],
         },
       ],
     }),
