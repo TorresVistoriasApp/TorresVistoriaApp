@@ -9,7 +9,7 @@ import {
   buildLaudoReportViewModel,
   getOpinionTone,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/laudo-report-view-model";
-import { buildPaintSilhouetteCanvasOps } from "@/modules/torres-vistoria/domain/laudo/pdf/paint-silhouette";
+import { buildPaintSilhouetteCanvasOps, mapZonePoint, SILHOUETTE_HEIGHT, SILHOUETTE_WIDTH } from "@/modules/torres-vistoria/domain/laudo/pdf/paint-silhouette";
 import { getLaudoLegalParagraphs } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
 
 function collectTexts(node: unknown): string[] {
@@ -319,11 +319,35 @@ describe("buildLaudoDocDefinition", () => {
 describe("paint silhouette", () => {
   it("desenha indicadores apenas para as zonas informadas", () => {
     const ops = buildPaintSilhouetteCanvasOps([
-      { key: "CAPO", label: "Capô", state: "AVARIA", x: 0.5, y: 0.15, detail: "1 avaria" },
-      { key: "TETO", label: "Teto", state: "REGISTRADA", x: 0.5, y: 0.5 },
+      { key: "CAPO", label: "Capô", state: "AVARIA", x: 0.5, y: 0.22, detail: "1 avaria" },
+      { key: "TETO", label: "Teto", state: "REGISTRADA", x: 0.5, y: 0.66 },
     ]);
 
     const dots = ops.filter((op) => op.type === "ellipse" && op.color);
     expect(dots.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("posiciona o ponto central do teto no meio da ilustração", () => {
+    const point = mapZonePoint({ x: 0.5, y: 0.66 });
+    expect(point.x).toBeCloseTo(SILHOUETTE_WIDTH * 0.5);
+    expect(point.y).toBeCloseTo(SILHOUETTE_HEIGHT * 0.66);
+  });
+
+  it("sobrepõe os pontos na ilustração quando a imagem está no payload", () => {
+    const def = buildLaudoDocDefinition(
+      makePayload({
+        vehicleTopViewDataUrl: "data:image/webp;base64,AAAA",
+        photos: [
+          makePhoto("p1", "PINT_CAPO", {
+            display_name: "Capô",
+            damage_location: "Capô",
+            damage_severity: "Média",
+          }),
+        ],
+      }),
+    );
+    const serialized = JSON.stringify(def);
+    expect(serialized).toContain("data:image/webp;base64,AAAA");
+    expect(serialized).toContain("ANÁLISE DE PINTURA E ESTRUTURA");
   });
 });

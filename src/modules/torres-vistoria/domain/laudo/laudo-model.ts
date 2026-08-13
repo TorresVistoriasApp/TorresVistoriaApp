@@ -49,6 +49,8 @@ export type LaudoPayload = {
   validationUrl?: string;
   logoDataUrl?: string;
   brandLogoDataUrl?: string;
+  /** Vista superior técnica usada na análise de pintura. */
+  vehicleTopViewDataUrl?: string;
   generatedAt: Date;
 };
 

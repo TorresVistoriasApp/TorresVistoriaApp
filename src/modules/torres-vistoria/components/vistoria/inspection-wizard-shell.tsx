@@ -1,3 +1,4 @@
+import { useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -51,6 +52,18 @@ export function InspectionWizardShell({
   draftExpiresAt,
 }: InspectionWizardShellProps) {
   const navigate = useNavigate();
+
+  useLayoutEffect(() => {
+    if (window.location.hash) return;
+
+    const resetScroll = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
+
+    resetScroll();
+    const frame = requestAnimationFrame(resetScroll);
+    return () => cancelAnimationFrame(frame);
+  }, [currentStep]);
 
   const handleStepClick = (step: WizardStep) => {
     if (!inspectionId) return;
