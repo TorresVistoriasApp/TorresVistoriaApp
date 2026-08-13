@@ -22,17 +22,17 @@ export const PLATE_NUMBER_FONT_SIZE = 9.5;
 export const PLATE_NUMBER_FONT_MIN = 8;
 
 /** Placa da capa: proporção próxima da Mercosul, sem faixa horizontal alongada. */
-export const COVER_PLATE_BR_COL = 16;
-export const COVER_PLATE_HEADER_HEIGHT = 13;
-export const COVER_PLATE_BODY_HEIGHT = 28;
+export const COVER_PLATE_BR_COL = 14;
+export const COVER_PLATE_HEADER_HEIGHT = 11;
+export const COVER_PLATE_BODY_HEIGHT = 24;
 export const COVER_PLATE_TOTAL_HEIGHT = COVER_PLATE_HEADER_HEIGHT + COVER_PLATE_BODY_HEIGHT;
-export const COVER_PLATE_WIDTH = 152;
-export const COVER_PLATE_BR_FONT_SIZE = 6.4;
-export const COVER_PLATE_LOCATION_FONT_SIZE = 7;
-export const COVER_PLATE_LOCATION_FONT_MIN = 5;
-export const COVER_PLATE_NUMBER_FONT_SIZE = 15;
-export const COVER_PLATE_NUMBER_FONT_MIN = 11;
-export const COVER_PLATE_NUMBER_TRACKING = 1.05;
+export const COVER_PLATE_WIDTH = 128;
+export const COVER_PLATE_BR_FONT_SIZE = 5.6;
+export const COVER_PLATE_LOCATION_FONT_SIZE = 6.2;
+export const COVER_PLATE_LOCATION_FONT_MIN = 4.5;
+export const COVER_PLATE_NUMBER_FONT_SIZE = 13;
+export const COVER_PLATE_NUMBER_FONT_MIN = 10;
+export const COVER_PLATE_NUMBER_TRACKING = 0.9;
 
 function normalizeCity(value: string): string {
   return value
@@ -49,7 +49,7 @@ export function mercosulPlateGraphicWidth(plateText: string): number {
 
 export function coverPlateGraphicWidth(plateText: string): number {
   const compactLength = plateText.replace(/-/g, "").length;
-  return Math.min(168, Math.max(COVER_PLATE_WIDTH, Math.round(compactLength * 9.2 + 48)));
+  return Math.min(146, Math.max(COVER_PLATE_WIDTH, Math.round(compactLength * 8.4 + 40)));
 }
 
 export function headerValidationWidth(plateText: string): number {

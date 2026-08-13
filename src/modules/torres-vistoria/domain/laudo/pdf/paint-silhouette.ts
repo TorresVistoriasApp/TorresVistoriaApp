@@ -18,9 +18,9 @@ import {
   type LaudoPaintZone,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/laudo-report-view-model";
 
-/** Proporção da silhueta real (134×241 após recorte). */
-export const SILHOUETTE_WIDTH = 168;
-export const SILHOUETTE_HEIGHT = 302;
+/** Proporção da silhueta real (134×241 após recorte), escala compacta. */
+export const SILHOUETTE_WIDTH = 132;
+export const SILHOUETTE_HEIGHT = 238;
 
 type Point = { x: number; y: number };
 
@@ -135,7 +135,7 @@ function vehicleDiagram(zones: LaudoPaintZone[], imageDataUrl?: string): PdfNode
       },
       {
         ...markers,
-        margin: [0, -SILHOUETTE_HEIGHT, 0, PDF_SPACE.lg],
+        margin: [0, -SILHOUETTE_HEIGHT, 0, 0],
       },
     ],
   };
@@ -167,7 +167,7 @@ export function buildPaintSilhouetteNode(
             color: PDF_COLOR.muted,
             alignment: "center",
             characterSpacing: PDF_TRACKING.wide,
-            margin: [0, PDF_SPACE.xl, 0, 0],
+            margin: [0, PDF_SPACE.sm, 0, 0],
           },
         ],
       },

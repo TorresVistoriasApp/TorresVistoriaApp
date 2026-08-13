@@ -55,29 +55,32 @@ export function spacer(height: number): PdfNode {
 }
 
 /**
- * Barra de seção: faixa navy com um bloco de destaque na cor da marca.
- * É o marcador de hierarquia mais forte do documento depois do título.
+ * Barra de seção: acento fino da marca + título navy + filete.
+ * Sem bloco preenchido — a hierarquia vem da tipografia, não de faixas sólidas.
  */
 export function sectionBar(
   title: string,
-  options: { accent: string; width: number; kicker?: string; margin?: PdfMargin },
+  options: {
+    accent: string;
+    width: number;
+    kicker?: string;
+    margin?: PdfMargin;
+    pageBreak?: "before";
+  },
 ): PdfNode {
-  const accentWidth = 4;
-
   return {
-    margin: options.margin ?? [0, PDF_SPACE.xl, 0, PDF_SPACE.lg],
-    table: {
-      widths: [accentWidth, options.width - accentWidth],
-      body: [
-        [
-          { text: "", fillColor: options.accent, margin: [0, 0, 0, 0] },
+    ...(options.pageBreak ? { pageBreak: options.pageBreak } : {}),
+    margin: options.margin ?? [0, PDF_SPACE.lg, 0, PDF_SPACE.sm],
+    stack: [
+      {
+        columns: [
+          { width: 3, canvas: [{ type: "rect", x: 0, y: 1, w: 3, h: 11, color: options.accent }] },
           {
-            fillColor: PDF_COLOR.navy,
-            margin: [PDF_SPACE.lg, 5.5, PDF_SPACE.lg, 5.5],
+            width: "*",
             stack: [
               {
                 text: title.toUpperCase(),
-                color: PDF_COLOR.white,
+                color: PDF_COLOR.navy,
                 bold: true,
                 fontSize: PDF_FONT.h2,
                 characterSpacing: PDF_TRACKING.wide,
@@ -86,7 +89,7 @@ export function sectionBar(
                 ? [
                     {
                       text: options.kicker,
-                      color: "#c7d2e4",
+                      color: PDF_COLOR.muted,
                       fontSize: PDF_FONT.micro,
                       margin: [0, 2, 0, 0] as PdfMargin,
                     },
@@ -95,9 +98,10 @@ export function sectionBar(
             ],
           },
         ],
-      ],
-    },
-    layout: { ...NO_BORDER, ...NO_PADDING },
+        columnGap: PDF_SPACE.md,
+      },
+      ruleNode(options.width, { margin: [0, PDF_SPACE.sm, 0, 0] }),
+    ],
   };
 }
 
@@ -107,18 +111,18 @@ export function subsectionHeading(
   options: { accent: string; description?: string; margin?: PdfMargin } = { accent: PDF_COLOR.navy },
 ): PdfNode {
   return {
-    margin: options.margin ?? [0, PDF_SPACE.lg, 0, PDF_SPACE.md],
+    margin: options.margin ?? [0, PDF_SPACE.md, 0, PDF_SPACE.xs],
     columns: [
       { width: 2.5, canvas: [{ type: "rect", x: 0, y: 1, w: 2.5, h: 9, color: options.accent }] },
       {
         width: "*",
         stack: [
           {
-            text: title.toUpperCase(),
+            text: title,
             bold: true,
             fontSize: PDF_FONT.h3,
             color: PDF_COLOR.navy,
-            characterSpacing: PDF_TRACKING.normal,
+            characterSpacing: PDF_TRACKING.tight,
           },
           ...(options.description
             ? [
@@ -211,10 +215,11 @@ export function labelValueBlock(
 /** Grade de pares rótulo/valor, sem bordas, com colunas de largura igual. */
 export function labelValueGrid(
   rows: [string, string][],
-  options: { columns?: number; margin?: PdfMargin } = {},
+  options: { columns?: number; margin?: PdfMargin; dividers?: boolean } = {},
 ): PdfNode | null {
   if (rows.length === 0) return null;
   const columns = options.columns ?? 3;
+  const dividers = options.dividers ?? false;
 
   const body: PdfNode[][] = [];
   for (let index = 0; index < rows.length; index += columns) {
@@ -232,11 +237,66 @@ export function labelValueGrid(
       body,
     },
     layout: {
-      ...NO_BORDER,
+      hLineWidth: (rowIndex: number) => (dividers && rowIndex > 0 ? PDF_STROKE.hairline : 0),
+      vLineWidth: () => 0,
+      hLineColor: () => PDF_COLOR.border,
       paddingLeft: (columnIndex: number) => (columnIndex === 0 ? 0 : PDF_SPACE.md),
       paddingRight: () => PDF_SPACE.md,
-      paddingTop: () => 0,
-      paddingBottom: () => PDF_SPACE.lg,
+      paddingTop: () => (dividers ? PDF_SPACE.xs : 0),
+      paddingBottom: () => PDF_SPACE.sm,
+    },
+  };
+}
+
+export type MetricItem = {
+  label: string;
+  value: string;
+  accent?: string;
+};
+
+/** Faixa de indicadores sem cards — números em grid, separados por filetes. */
+export function metricRow(
+  items: MetricItem[],
+  options: { margin?: PdfMargin } = {},
+): PdfNode {
+  if (items.length === 0) return { text: "" };
+
+  return {
+    margin: options.margin ?? [0, 0, 0, 0],
+    table: {
+      widths: items.map(() => "*"),
+      body: [
+        items.map((item) => ({
+          stack: [
+            {
+              text: item.label.toUpperCase(),
+              fontSize: PDF_FONT.micro,
+              color: PDF_COLOR.muted,
+              characterSpacing: PDF_TRACKING.normal,
+            },
+            {
+              text: item.value,
+              fontSize: PDF_FONT.kpi,
+              bold: true,
+              color: item.accent ?? PDF_COLOR.navy,
+              margin: [0, 1, 0, 0],
+              lineHeight: PDF_LINE_HEIGHT.tight,
+            },
+          ],
+        })),
+      ],
+    },
+    layout: {
+      hLineWidth: (rowIndex: number, node: { table: { body: unknown[] } }) =>
+        rowIndex === 0 || rowIndex === node.table.body.length ? PDF_STROKE.hairline : 0,
+      vLineWidth: (columnIndex: number) =>
+        columnIndex === 0 || columnIndex === items.length ? 0 : PDF_STROKE.hairline,
+      hLineColor: () => PDF_COLOR.border,
+      vLineColor: () => PDF_COLOR.border,
+      paddingLeft: (columnIndex: number) => (columnIndex === 0 ? 0 : PDF_SPACE.md),
+      paddingRight: () => PDF_SPACE.sm,
+      paddingTop: () => PDF_SPACE.sm,
+      paddingBottom: () => PDF_SPACE.sm,
     },
   };
 }
@@ -311,35 +371,26 @@ export function kpiCardRow(
   };
 }
 
-/** Selo sólido de resultado — usado no destaque do parecer. */
+/** Resultado em tipografia — destaque sem bloco sólido de cor. */
 export function resultBadge(
   label: string,
   options: { accent: string; width: number; height?: number; fontSize?: number },
 ): PdfNode {
-  const height = options.height ?? 30;
-  const fontSize = options.fontSize ?? (label.length > 22 ? 10 : label.length > 14 ? 12 : 14);
+  const fontSize =
+    options.fontSize ?? (label.length > 22 ? PDF_FONT.h1 : label.length > 14 ? PDF_FONT.result : PDF_FONT.display);
 
   return {
-    table: {
-      widths: [options.width],
-      heights: [height],
-      body: [
-        [
-          {
-            text: label.toUpperCase(),
-            fillColor: options.accent,
-            color: PDF_COLOR.white,
-            bold: true,
-            fontSize,
-            characterSpacing: PDF_TRACKING.wide,
-            alignment: "center",
-            verticalAlignment: "middle",
-            margin: [PDF_SPACE.md, 0, PDF_SPACE.md, 0],
-          },
-        ],
-      ],
-    },
-    layout: { ...NO_BORDER, ...NO_PADDING },
+    stack: [
+      { canvas: [{ type: "rect", x: 0, y: 0, w: 32, h: 2.5, color: options.accent }] },
+      {
+        text: label.toUpperCase(),
+        color: options.accent,
+        bold: true,
+        fontSize,
+        characterSpacing: PDF_TRACKING.wider,
+        margin: [0, PDF_SPACE.xs, 0, 0],
+      },
+    ],
   };
 }
 
@@ -470,10 +521,10 @@ export function dataTableLayout(options: { headerFill?: string } = {}) {
       rowIndex === 0 || rowIndex === 1 ? PDF_COLOR.borderStrong : PDF_COLOR.border,
     fillColor: (rowIndex: number) =>
       rowIndex === 0 ? (options.headerFill ?? PDF_COLOR.surfaceAlt) : rowIndex % 2 === 0 ? PDF_COLOR.surface : null,
-    paddingLeft: () => PDF_SPACE.md,
-    paddingRight: () => PDF_SPACE.md,
-    paddingTop: () => PDF_SPACE.sm + 0.5,
-    paddingBottom: () => PDF_SPACE.sm + 0.5,
+    paddingLeft: () => PDF_SPACE.sm,
+    paddingRight: () => PDF_SPACE.sm,
+    paddingTop: () => 2,
+    paddingBottom: () => 2,
   };
 }
 
@@ -492,7 +543,7 @@ export function framedImage(
   dataUrl: string,
   options: { width: number; height: number; fill?: string },
 ): PdfNode {
-  const inset = 3;
+  const inset = 1;
 
   return {
     table: {
@@ -505,7 +556,7 @@ export function framedImage(
             fit: [options.width - inset * 2, options.height - inset * 2],
             alignment: "center",
             verticalAlignment: "middle",
-            fillColor: options.fill ?? PDF_COLOR.surfaceAlt,
+            fillColor: options.fill ?? PDF_COLOR.white,
             margin: [inset, inset, inset, inset],
           },
         ],
@@ -522,3 +573,43 @@ export function framedImage(
 }
 
 export const PDF_LAYOUT_HELPERS = { NO_BORDER, NO_PADDING, PDF_RADIUS };
+
+/** Faixa de atenção — destaque editorial compacto, sem card. */
+export function attentionBanner(
+  title: string,
+  body: string,
+  options: { width: number; accent: string; margin?: PdfMargin },
+): PdfNode {
+  return {
+    unbreakable: true,
+    margin: options.margin ?? [0, PDF_SPACE.md, 0, PDF_SPACE.sm],
+    table: {
+      widths: [options.width],
+      body: [
+        [
+          {
+            text: title.toUpperCase(),
+            fillColor: PDF_COLOR.navy,
+            color: options.accent,
+            bold: true,
+            fontSize: PDF_FONT.micro,
+            characterSpacing: PDF_TRACKING.wider,
+            margin: [PDF_SPACE.md, 3, PDF_SPACE.md, 3],
+          },
+        ],
+        [
+          {
+            text: body,
+            fillColor: PDF_COLOR.warningSoft,
+            color: PDF_COLOR.text,
+            fontSize: PDF_FONT.small,
+            bold: true,
+            lineHeight: PDF_LINE_HEIGHT.tight,
+            margin: [PDF_SPACE.md, PDF_SPACE.sm, PDF_SPACE.md, PDF_SPACE.sm],
+          },
+        ],
+      ],
+    },
+    layout: { ...NO_BORDER, ...NO_PADDING },
+  };
+}

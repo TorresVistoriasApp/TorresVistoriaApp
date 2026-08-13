@@ -12,11 +12,11 @@ export type PdfMargin = [number, number, number, number];
 /** A4 retrato: 595.28 x 841.89pt. */
 export const PDF_PAGE = {
   size: "A4",
-  margins: [36, 48, 36, 46] as PdfMargin,
-  /** 595.28 - 36 - 36, arredondado para baixo. */
-  contentWidth: 523,
-  /** 841.89 - 48 - 46, arredondado para baixo. */
-  contentHeight: 747,
+  margins: [24, 34, 24, 28] as PdfMargin,
+  /** 595.28 - 24 - 24, arredondado para baixo. */
+  contentWidth: 547,
+  /** 841.89 - 34 - 28, arredondado para baixo. */
+  contentHeight: 780,
 } as const;
 
 export const PDF_COLOR = {
@@ -91,14 +91,14 @@ export function categoryPaletteColor(index: number): string {
   return PDF_CATEGORY_PALETTE[index % PDF_CATEGORY_PALETTE.length];
 }
 
-/** Grid de espaçamento — múltiplos de 2pt. */
+/** Grid de espaçamento — escala enxuta. Valores grandes são exceção. */
 export const PDF_SPACE = {
   xs: 2,
   sm: 4,
   md: 6,
-  lg: 10,
-  xl: 14,
-  xxl: 20,
+  lg: 8,
+  xl: 12,
+  xxl: 16,
 } as const;
 
 /**
@@ -106,15 +106,16 @@ export const PDF_SPACE = {
  * regular e bold; a hierarquia vem de tamanho, cor e espaçamento entre letras.
  */
 export const PDF_FONT = {
-  display: 19,
-  h1: 15,
-  h2: 9.5,
-  h3: 8.5,
-  body: 8.5,
-  bodyLarge: 9.5,
+  display: 16,
+  h1: 13,
+  h2: 9,
+  h3: 8,
+  body: 8,
+  bodyLarge: 9,
   small: 7.5,
   micro: 6.5,
-  kpi: 15,
+  kpi: 13,
+  result: 14,
 } as const;
 
 export const PDF_TRACKING = {
@@ -125,9 +126,9 @@ export const PDF_TRACKING = {
 } as const;
 
 export const PDF_LINE_HEIGHT = {
-  tight: 1.1,
-  normal: 1.25,
-  relaxed: 1.4,
+  tight: 1.08,
+  normal: 1.18,
+  relaxed: 1.28,
 } as const;
 
 export const PDF_RADIUS = {
@@ -145,11 +146,11 @@ export const PDF_STROKE = {
 
 /** Métricas da capa — logo compacto para o documento liderar, não a marca. */
 export const PDF_COVER = {
-  logoWidth: 108,
-  logoHeight: 42,
-  qrSize: 70,
+  logoWidth: 78,
+  logoHeight: 28,
+  qrSize: 42,
 } as const;
 
 export const PDF_AUTHENTICITY = {
-  qrSize: 96,
+  qrSize: 64,
 } as const;
