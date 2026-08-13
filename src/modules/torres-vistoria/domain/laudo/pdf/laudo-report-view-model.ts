@@ -553,9 +553,7 @@ export function buildLaudoReportViewModel(payload: LaudoPayload): LaudoReportVie
     paintZones,
     paintChecklistItems,
     hasPaintAnalysisData:
-      paintChecklistItems.length > 0 ||
-      damages.length > 0 ||
-      paintZones.some((zone) => zone.state !== "SEM_REGISTRO"),
+      damages.length > 0 || paintZones.some((zone) => zone.state !== "SEM_REGISTRO"),
     conclusionHighlights: buildConclusionHighlights(
       stats,
       apontamentos,

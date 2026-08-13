@@ -21,16 +21,15 @@ import {
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
 import { framedImage } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-primitives";
 
-export const PHOTO_GRID_GAP = 10;
+export const PHOTO_GRID_GAP = 4;
 
-/** Proporção um pouco mais alta que 3:2 — fotos ocupam a página sem distorcer. */
-const CELL_ASPECT_RATIO = 0.72;
-const SINGLE_PHOTO_WIDTH_RATIO = 0.84;
-const SINGLE_PHOTO_ASPECT = 0.62;
+/** Contact sheet: células largas, altura controlada para caber 3×2 / 3×3. */
+const CELL_ASPECT_RATIO = 0.7;
+const SINGLE_PHOTO_ASPECT = 0.68;
 
 /** Larguras de célula por número de colunas, dentro da largura de conteúdo. */
 export function photoCellWidth(columns: number, contentWidth: number): number {
-  if (columns <= 1) return Math.round(contentWidth * SINGLE_PHOTO_WIDTH_RATIO);
+  if (columns <= 1) return Math.round(contentWidth * 0.62);
   return Math.floor((contentWidth - PHOTO_GRID_GAP * (columns - 1)) / columns);
 }
 
@@ -103,16 +102,12 @@ export type PhotoCaption = {
 function formatCapturedAt(photo: LaudoPhoto): string | undefined {
   const date = photo.captured_at ?? photo.created_at;
   if (!date) return undefined;
-  return format(new Date(date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+  return format(new Date(date), "dd/MM/yyyy · HH:mm", { locale: ptBR });
 }
 
-/** Legenda padrão: nome de destaque + categoria e horário da captura. */
+/** Legenda: nome em destaque + data/hora discreta. Sem repetir categoria. */
 export function buildPhotoCaption(photo: LaudoPhoto, titleOverride?: string): PhotoCaption {
   const categoryLabel = getPhotoCategoryLabel(photo.category);
-  const damageSuffix = photo.damage_location
-    ? [photo.damage_location, photo.damage_severity].filter(Boolean).join(" · ")
-    : undefined;
-
   const title =
     titleOverride ??
     photo.complementary_name ??
@@ -122,16 +117,14 @@ export function buildPhotoCaption(photo: LaudoPhoto, titleOverride?: string): Ph
 
   return {
     title,
-    subtitle: [categoryLabel !== title ? categoryLabel : undefined, damageSuffix, formatCapturedAt(photo)]
-      .filter(Boolean)
-      .join(" · "),
+    subtitle: formatCapturedAt(photo),
   };
 }
 
 function captionNode(caption: PhotoCaption, accent: string, width: number): PdfNode {
   return {
     width,
-    margin: [0, PDF_SPACE.sm, 0, 0],
+    margin: [0, 2, 0, 0],
     columns: [
       { width: 2, canvas: [{ type: "rect", x: 0, y: 0.5, w: 2, h: 8.5, color: accent }] },
       {
@@ -141,7 +134,7 @@ function captionNode(caption: PhotoCaption, accent: string, width: number): PdfN
             text: caption.title.toUpperCase(),
             fontSize: PDF_FONT.small,
             bold: true,
-            color: accent,
+            color: PDF_COLOR.navy,
             characterSpacing: PDF_TRACKING.tight,
             lineHeight: PDF_LINE_HEIGHT.tight,
           },
@@ -271,7 +264,7 @@ export function buildPhotoGrid(photos: LaudoPhoto[], options: PhotoGridOptions):
           ? [{ text: "", width: sideGutter }, ...cells, { text: "", width: "*" }]
           : [...cells, ...(cells.length < columns ? [{ text: "", width: "*" }] : [])],
       columnGap: PHOTO_GRID_GAP,
-      margin: [0, 0, 0, PDF_SPACE.lg],
+      margin: [0, 0, 0, PDF_SPACE.xs],
       unbreakable: true,
     });
 
