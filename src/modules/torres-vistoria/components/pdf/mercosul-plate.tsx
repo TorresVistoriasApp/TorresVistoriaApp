@@ -12,6 +12,8 @@ import {
   MERCOSUL_PLATE_HEADER_HEIGHT,
   MERCOSUL_PLATE_TOTAL_HEIGHT,
   PLATE_BORDER,
+  PLATE_BR_FONT_SIZE,
+  PLATE_NUMBER_TRACKING,
 } from "@/modules/torres-vistoria/domain/laudo/mercosul-plate-layout";
 
 export function MercosulPlate({
@@ -50,7 +52,7 @@ export function MercosulPlate({
           display: "grid",
           gridTemplateColumns: `${MERCOSUL_PLATE_BR_COL}px 1fr`,
           background: MERCOSUL_BLUE,
-          borderBottom: `0.5px solid ${PLATE_BORDER}`,
+        }}
         }}
       >
         <span
@@ -59,10 +61,9 @@ export function MercosulPlate({
             alignItems: "center",
             justifyContent: "center",
             color: "#ffffff",
-            fontSize: 3.6,
+            fontSize: PLATE_BR_FONT_SIZE,
             fontWeight: 700,
             lineHeight: 1,
-            borderRight: `0.5px solid ${PLATE_BORDER}`,
           }}
         >
           BR
@@ -95,7 +96,7 @@ export function MercosulPlate({
           fontSize: plateFontSize,
           fontWeight: 700,
           lineHeight: 1,
-          letterSpacing: "0.45px",
+          letterSpacing: `${PLATE_NUMBER_TRACKING}px`,
           color: "#0f172a",
         }}
       >
