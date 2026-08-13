@@ -91,7 +91,7 @@ export function PrivacyPage() {
         </LegalSectionBlock>
         <LegalSectionBlock id="contato-dpo" title="9. Encarregado de dados">
           <p>
-            Dúvidas sobre privacidade: privacidade@torresconsulta.com.br
+            Dúvidas sobre privacidade: privacidade@torresconsultas.com.br
           </p>
         </LegalSectionBlock>
       </LegalDocLayout>
