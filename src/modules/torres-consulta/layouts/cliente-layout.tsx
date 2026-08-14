@@ -1,32 +1,42 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FileSearch,
-  LayoutDashboard,
+  Home,
   LogOut,
-  Menu,
   Plus,
   User,
-  X,
 } from "lucide-react";
-import { useState } from "react";
 import { ROUTES } from "@/config/routes";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
-import { ProductCrossLink } from "@/modules/torres-consulta/components/landing/product-cross-link";
+import { usePrincipal } from "@/core/auth/use-principal";
+import { PrincipalType } from "@/core/rbac/roles";
+import { ConsumerBottomNav } from "@/modules/torres-consulta/components/consumer-app/consumer-bottom-nav";
 import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
 
-const NAV = [
-  { to: ROUTES.consultaApp, label: "Início", icon: LayoutDashboard },
-  { to: ROUTES.consultaAppConsultas, label: "Minhas consultas", icon: FileSearch },
-  { to: ROUTES.consultaAppNovaConsulta, label: "Consultar veículo", icon: Plus },
-  { to: ROUTES.consultaAppMinhaConta, label: "Minha conta", icon: User },
+const DESKTOP_NAV = [
+  { to: ROUTES.consultaApp, label: "Início", icon: Home },
+  { to: ROUTES.consultaAppConsultas, label: "Consultas", icon: FileSearch },
+  { to: ROUTES.consultaAppMinhaConta, label: "Conta", icon: User },
 ] as const;
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
 
 export function ClienteLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { resolution } = usePrincipal();
+
+  const displayName =
+    resolution.status === "resolved" && resolution.principalType === PrincipalType.CUSTOMER
+      ? resolution.consumerProfile.full_name
+      : null;
 
   const handleSignOut = async () => {
     await consumerAuthService.signOut();
@@ -34,83 +44,88 @@ export function ClienteLayout() {
   };
 
   return (
-    <div className="min-h-dvh bg-canvas">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-white/90 backdrop-blur-xl">
-        <div className="border-b border-border/40 bg-slate-50/80 px-4 py-2 sm:px-6">
-          <ProductCrossLink to={ROUTES.consultaLanding} label="Voltar para Página Inicial" />
-        </div>
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link to={ROUTES.consultaApp}>
+    <div className="relative min-h-dvh bg-[#f4f7fb]">
+      <div
+        className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_90%_50%_at_50%_-20%,rgb(234_88_12_/_0.09),transparent_55%)]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_100%_100%,rgb(148_163_184_/_0.08),transparent_40%)]"
+        aria-hidden
+      />
+
+      <header className="sticky top-0 z-40 border-b border-white/60 bg-white/75 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6">
+          <Link to={ROUTES.consultaApp} className="shrink-0 transition-opacity hover:opacity-80">
             <ConsultaBrandLogo size="sm" showSubtitle={false} />
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Área do consumidor">
-            {NAV.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium transition-colors",
-                  location.pathname === item.to
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="hidden items-center gap-2 md:flex">
-            <Button variant="outline" size="sm" asChild>
-              <Link to={ROUTES.consultaAppNovaConsulta}>Nova consulta</Link>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-              Sair
-            </Button>
-          </div>
-
-          <button
-            type="button"
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-border/60 md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
+          <nav
+            className="hidden items-center gap-1 rounded-2xl border border-border/50 bg-white/60 p-1 md:flex"
+            aria-label="Área do consumidor"
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-
-        {mobileOpen && (
-          <nav className="border-t border-border/60 px-4 py-3 md:hidden">
-            {NAV.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium"
-                onClick={() => setMobileOpen(false)}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
-            <div className="mt-2 flex flex-col gap-2 border-t border-border/60 pt-3">
-              <Button variant="outline" asChild>
-                <Link to={ROUTES.consultaAppNovaConsulta}>Nova consulta</Link>
-              </Button>
-              <Button variant="ghost" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4" />
-                Sair
-              </Button>
-            </div>
+            {DESKTOP_NAV.map((item) => {
+              const active =
+                location.pathname === item.to ||
+                (item.to !== ROUTES.consultaApp && location.pathname.startsWith(item.to));
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={cn(
+                    "flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
+                    active
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-white hover:text-foreground",
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
-        )}
+
+          <div className="flex items-center gap-2">
+            <Button
+              asChild
+              size="sm"
+              className="hidden h-10 rounded-xl shadow-sm md:inline-flex"
+            >
+              <Link to={ROUTES.consultaAppNovaConsulta}>
+                <Plus className="h-4 w-4" />
+                Nova consulta
+              </Link>
+            </Button>
+
+            {displayName && (
+              <Link
+                to={ROUTES.consultaAppMinhaConta}
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-orange-400/10 text-xs font-bold text-primary ring-1 ring-primary/15 transition-transform active:scale-95"
+                aria-label="Minha conta"
+                title={displayName}
+              >
+                {getInitials(displayName)}
+              </Link>
+            )}
+
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              className="hidden h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-white hover:text-foreground md:flex"
+              aria-label="Sair"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <main className="relative mx-auto w-full max-w-6xl px-4 pb-28 pt-5 sm:px-6 sm:pb-8 md:pb-10 md:pt-8">
         <Outlet />
       </main>
+
+      <ConsumerBottomNav />
     </div>
   );
 }
