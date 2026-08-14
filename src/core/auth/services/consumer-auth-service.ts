@@ -51,16 +51,21 @@ export const consumerAuthService = {
       throw new AppError(CONSUMER_LOGIN_DENIED);
     }
 
-    if (profile.account_status === ConsumerAccountStatus.PENDING_DELETION) {
-      await supabaseAuthAdapter.signOut();
-      throw new AppError(
-        "Sua conta está programada para exclusão. Entre em contato com o suporte para recuperá-la.",
-      );
-    }
-
     if (profile.account_status === ConsumerAccountStatus.DELETED) {
       await supabaseAuthAdapter.signOut();
       throw new AppError(USER_MESSAGES.accountDisabled);
+    }
+
+    if (profile.account_status === ConsumerAccountStatus.PENDING_DELETION) {
+      if (
+        profile.deletion_scheduled_at &&
+        new Date(profile.deletion_scheduled_at).getTime() <= Date.now()
+      ) {
+        await supabaseAuthAdapter.signOut();
+        throw new AppError(
+          "O prazo de recuperação da sua conta expirou e ela foi excluída permanentemente.",
+        );
+      }
     }
   },
 

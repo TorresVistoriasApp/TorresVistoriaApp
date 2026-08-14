@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -23,6 +24,7 @@ interface PrincipalContextValue {
   isPlatformAdmin: boolean;
   isTenantMember: boolean;
   isCustomer: boolean;
+  refreshIdentity: () => Promise<void>;
 }
 
 const PrincipalContext = createContext<PrincipalContextValue | undefined>(undefined);
@@ -72,6 +74,15 @@ export function PrincipalProvider({ children }: { children: ReactNode }) {
     };
   }, [session?.user.id, sessionLoading]);
 
+  const refreshIdentity = useCallback(async () => {
+    if (!session?.user.id) {
+      setResolution({ status: "anonymous" });
+      return;
+    }
+    const result = await resolvePrincipal(session.user.id);
+    setResolution(result);
+  }, [session?.user.id]);
+
   const principalType = getPrincipalType(resolution);
   const loading = sessionLoading || identityLoading;
 
@@ -83,8 +94,9 @@ export function PrincipalProvider({ children }: { children: ReactNode }) {
       isPlatformAdmin: principalType === PrincipalType.PLATFORM_ADMIN,
       isTenantMember: principalType === PrincipalType.TENANT_MEMBER,
       isCustomer: principalType === PrincipalType.CUSTOMER,
+      refreshIdentity,
     }),
-    [resolution, principalType, loading],
+    [resolution, principalType, loading, refreshIdentity],
   );
 
   return <PrincipalContext.Provider value={value}>{children}</PrincipalContext.Provider>;
