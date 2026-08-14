@@ -1,10 +1,16 @@
 import { ROUTES } from "@/config/routes";
 
-export const MARKETING_HEADER_NAV = [
+/** Páginas de conteúdo — usadas no menu mobile (sem duplicar ações). */
+export const MARKETING_PAGE_NAV = [
   { label: "Como Funciona", to: ROUTES.comoFunciona },
   { label: "Planos", to: ROUTES.planos },
-  { label: "Para Vistoriadores", to: ROUTES.vistoriaLogin },
   { label: "Exemplo", to: ROUTES.relatorioExemplo },
+] as const;
+
+/** Navegação completa da barra desktop. */
+export const MARKETING_HEADER_NAV = [
+  ...MARKETING_PAGE_NAV,
+  { label: "Para Vistoriadores", to: ROUTES.vistoriaLogin },
 ] as const;
 
 export const MARKETING_FOOTER = {
