@@ -43,40 +43,42 @@ export function ConsumerChangePasswordSection() {
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 pt-4">
+    <form onSubmit={onSubmit} className="flex h-full flex-col space-y-4">
       <p className="text-sm text-muted-foreground">
         Use no mínimo 8 caracteres, com letra maiúscula, minúscula, número e símbolo.
       </p>
 
-      <Controller
-        control={control}
-        name="password"
-        render={({ field }) => (
-          <PasswordStrengthInput
-            id="consumer-change-password"
-            label="Nova senha"
-            value={field.value}
-            onChange={field.onChange}
-            error={errors.password?.message}
-          />
-        )}
-      />
+      <div className="space-y-4">
+        <Controller
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <PasswordStrengthInput
+              id="consumer-change-password"
+              label="Nova senha"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.password?.message}
+            />
+          )}
+        />
 
-      <div className="space-y-2">
-        <Label htmlFor="consumer-change-password-confirm">Confirmar nova senha</Label>
-        <div className="relative">
-          <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="consumer-change-password-confirm"
-            type="password"
-            autoComplete="new-password"
-            className="rounded-xl border-border/60 bg-muted/20 pl-11"
-            {...register("confirmPassword")}
-          />
+        <div className="space-y-2">
+          <Label htmlFor="consumer-change-password-confirm">Confirmar nova senha</Label>
+          <div className="relative">
+            <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="consumer-change-password-confirm"
+              type="password"
+              autoComplete="new-password"
+              className="pl-11"
+              {...register("confirmPassword")}
+            />
+          </div>
+          {errors.confirmPassword && (
+            <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+          )}
         </div>
-        {errors.confirmPassword && (
-          <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-        )}
       </div>
 
       {formError && (
@@ -85,7 +87,12 @@ export function ConsumerChangePasswordSection() {
         </p>
       )}
 
-      <Button type="submit" variant="outline" className="rounded-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        variant="outline"
+        className="mt-auto rounded-full"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? "Salvando..." : "Atualizar senha"}
       </Button>
     </form>

@@ -18,15 +18,15 @@ import {
 import { ConsumerAccountPrivacySection } from "@/modules/torres-consulta/components/consumer-app/consumer-account-privacy-section";
 import { ConsumerChangePasswordSection } from "@/modules/torres-consulta/components/consumer-app/consumer-change-password-section";
 import { ConsumerPageHeader } from "@/modules/torres-consulta/components/consumer-app/consumer-page-header";
-import {
-  ConsumerSurface,
-  ConsumerSurfaceHeader,
-} from "@/modules/torres-consulta/components/consumer-app/consumer-surface";
 import { useToast } from "@/shared/hooks/use-toast";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { UserAvatar } from "@/shared/components/user-avatar";
+import {
+  SETTINGS_FIELD_LABEL_CLASS,
+  SettingsSection,
+} from "@/shared/components/settings/settings-section";
 
 export function ClienteProfilePage() {
   const { user } = useSession();
@@ -43,6 +43,7 @@ export function ClienteProfilePage() {
   const isInactive =
     consumerProfile?.account_status === ConsumerAccountStatus.PENDING_DELETION;
   const displayName = consumerProfile?.full_name ?? "Cliente";
+  const email = user?.email ?? consumerProfile?.email ?? "";
 
   const {
     register,
@@ -101,7 +102,7 @@ export function ClienteProfilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="min-w-0 space-y-6 pb-6">
       <ConsumerPageHeader
         title="Minha conta"
         subtitle={
@@ -113,135 +114,163 @@ export function ClienteProfilePage() {
       />
 
       {isInactive && consumerProfile && (
-        <ConsumerSurface className="border-amber-500/20">
-          <ConsumerSurfaceHeader
-            title="Conta programada para exclusão"
-            description="Você ainda pode recuperar sua conta dentro do prazo de 90 dias."
-          />
+        <SettingsSection
+          icon={Trash2}
+          title="Conta programada para exclusão"
+          description="Você ainda pode recuperar sua conta dentro do prazo de 90 dias."
+          className="border-amber-500/25"
+        >
           <ConsumerAccountPrivacySection
             profile={consumerProfile}
             onAccountChanged={handleAccountChanged}
           />
-        </ConsumerSurface>
+        </SettingsSection>
       )}
 
-      <ConsumerSurface>
-        <div className="flex items-center gap-4 border-b border-border/40 pb-5">
-          <UserAvatar name={displayName} size="lg" />
-          <div className="min-w-0">
-            <p className="truncate text-lg font-bold text-foreground">{displayName}</p>
-            <p className="truncate text-sm text-muted-foreground">
-              {user?.email ?? consumerProfile?.email ?? ""}
-            </p>
-          </div>
-        </div>
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,280px)_minmax(0,1fr)] xl:items-start xl:gap-6">
+        <aside className="min-w-0 xl:sticky xl:top-24">
+          <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft">
+            <div className="border-b border-border/50 bg-gradient-to-br from-orange-50/80 via-white to-white px-5 py-6 text-center">
+              <UserAvatar
+                name={displayName}
+                size="xl"
+                className="mx-auto h-24 w-24 text-2xl ring-4 ring-white"
+              />
+              <p className="mt-4 truncate text-lg font-bold text-foreground">{displayName}</p>
+              <p className="mt-1 truncate text-sm text-muted-foreground">{email}</p>
+              {!isInactive ? (
+                <span className="mt-3 inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Conta ativa
+                </span>
+              ) : (
+                <span className="mt-3 inline-flex rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-800">
+                  Conta inativa
+                </span>
+              )}
+            </div>
 
-        <form onSubmit={onSubmit} className="mt-5 space-y-4">
-          <ConsumerSurfaceHeader
+            <div className="p-4">
+              <Button
+                variant="outline"
+                className="w-full rounded-xl border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => void signOut()}
+              >
+                <LogOut className="h-4 w-4" />
+                Sair da conta
+              </Button>
+            </div>
+          </div>
+        </aside>
+
+        <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-stretch">
+          <SettingsSection
+            icon={User}
             title="Dados pessoais"
             description="Informações da sua conta de consumidor."
-            icon={<User className="h-4 w-4" />}
-          />
-
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome completo</Label>
-              <div className="relative">
-                <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="name"
-                  className="rounded-xl border-border/60 bg-muted/20 pl-11"
-                  disabled={isInactive}
-                  {...register("name")}
-                />
-              </div>
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email-display">E-mail</Label>
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="email-display"
-                  type="email"
-                  value={user?.email ?? consumerProfile?.email ?? ""}
-                  disabled
-                  className="rounded-xl border-border/60 bg-muted/30 pl-11 opacity-80"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                O e-mail não pode ser alterado neste momento.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="(00) 00000-0000"
-                className="rounded-xl border-border/60 bg-muted/20"
-                disabled={isInactive}
-                {...register("phone")}
-              />
-              {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting || !consumerProfile || isInactive}
-              className="rounded-full"
-            >
-              <Save className="h-4 w-4" />
-              Salvar alterações
-            </Button>
-          </div>
-        </form>
-      </ConsumerSurface>
-
-      <ConsumerSurface>
-        <ConsumerSurfaceHeader
-          title="Segurança"
-          description="Altere sua senha de acesso."
-          icon={<Shield className="h-4 w-4" />}
-        />
-        {isInactive ? (
-          <p className="pt-4 text-sm text-muted-foreground">
-            Reative sua conta para alterar a senha.
-          </p>
-        ) : (
-          <ConsumerChangePasswordSection />
-        )}
-      </ConsumerSurface>
-
-      {!isInactive && consumerProfile && (
-        <ConsumerSurface className="border-destructive/10">
-          <ConsumerSurfaceHeader
-            title="Privacidade e LGPD"
-            description="Exclusão de conta com prazo de recuperação de 90 dias."
-            icon={<Trash2 className="h-4 w-4" />}
-          />
-          <ConsumerAccountPrivacySection
-            profile={consumerProfile}
-            onAccountChanged={handleAccountChanged}
-          />
-        </ConsumerSurface>
-      )}
-
-      <ConsumerSurface className="border-destructive/10">
-        <ConsumerSurfaceHeader title="Sessão" description="Encerre sua sessão neste dispositivo." />
-        <div className="pt-4">
-          <Button
-            variant="outline"
-            className="w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
-            onClick={() => void signOut()}
+            className="min-w-0 lg:col-span-2"
+            fillHeight
           >
-            <LogOut className="h-4 w-4" />
-            Sair da conta
-          </Button>
+            <form onSubmit={onSubmit} className="flex h-full flex-col">
+              <div className="grid flex-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="name" className={SETTINGS_FIELD_LABEL_CLASS}>
+                    Nome completo
+                  </Label>
+                  <div className="relative">
+                    <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="name"
+                      className="pl-11"
+                      disabled={isInactive}
+                      {...register("name")}
+                    />
+                  </div>
+                  {errors.name && (
+                    <p className="text-sm text-destructive">{errors.name.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email-display" className={SETTINGS_FIELD_LABEL_CLASS}>
+                    E-mail
+                  </Label>
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="email-display"
+                      type="email"
+                      value={email}
+                      disabled
+                      className="bg-muted/30 pl-11 opacity-80"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    O e-mail não pode ser alterado neste momento.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className={SETTINGS_FIELD_LABEL_CLASS}>
+                    Telefone
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="(00) 00000-0000"
+                    disabled={isInactive}
+                    {...register("phone")}
+                  />
+                  {errors.phone && (
+                    <p className="text-sm text-destructive">{errors.phone.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-5 border-t border-border/50 pt-4">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !consumerProfile || isInactive}
+                  className="rounded-full"
+                >
+                  <Save className="h-4 w-4" />
+                  Salvar alterações
+                </Button>
+              </div>
+            </form>
+          </SettingsSection>
+
+          <SettingsSection
+            icon={Shield}
+            title="Segurança"
+            description="Altere sua senha de acesso."
+            className="min-w-0 h-full"
+            fillHeight
+          >
+            {isInactive ? (
+              <p className="text-sm text-muted-foreground">
+                Reative sua conta para alterar a senha.
+              </p>
+            ) : (
+              <ConsumerChangePasswordSection />
+            )}
+          </SettingsSection>
+
+          {!isInactive && consumerProfile && (
+            <SettingsSection
+              icon={Trash2}
+              title="Privacidade e LGPD"
+              description="Exclusão de conta com prazo de recuperação de 90 dias."
+              className="min-w-0 h-full"
+              fillHeight
+            >
+              <ConsumerAccountPrivacySection
+                profile={consumerProfile}
+                onAccountChanged={handleAccountChanged}
+              />
+            </SettingsSection>
+          )}
         </div>
-      </ConsumerSurface>
+      </div>
     </div>
   );
 }

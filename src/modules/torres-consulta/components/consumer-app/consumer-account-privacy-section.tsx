@@ -89,7 +89,7 @@ export function ConsumerAccountPrivacySection({
 
   if (isPendingDeletion) {
     return (
-      <div className="space-y-4 pt-4">
+      <div className="space-y-4">
         <div className="flex gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 text-sm">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
           <div className="space-y-2">
@@ -127,7 +127,7 @@ export function ConsumerAccountPrivacySection({
   }
 
   return (
-    <div className="space-y-4 pt-4">
+    <div className="flex h-full flex-col space-y-4">
       <p className="text-sm leading-relaxed text-muted-foreground">
         Conforme a LGPD, você pode solicitar a exclusão da sua conta. A conta ficará inativa por{" "}
         {DELETION_GRACE_DAYS} dias — nesse período você pode entrar novamente e reativá-la em Minha
@@ -138,7 +138,7 @@ export function ConsumerAccountPrivacySection({
         <Button
           type="button"
           variant="outline"
-          className="rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="mt-auto w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
           onClick={() => setConfirmDelete(true)}
         >
           <Trash2 className="h-4 w-4" />
