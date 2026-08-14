@@ -1,6 +1,8 @@
+import { useEffect, useRef } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSession } from "@/core/auth/session-context";
 import { usePrincipal } from "@/core/auth/use-principal";
+import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import { PrincipalType } from "@/core/rbac/roles";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { ROUTES } from "@/config/routes";
@@ -13,13 +15,24 @@ export function ConsumerProtectedRoute() {
   const { session, loading: sessionLoading } = useSession();
   const { principalType, loading: principalLoading } = usePrincipal();
   const location = useLocation();
+  const isSigningOut = useRef(false);
 
-  const loading = sessionLoading || (session && principalLoading);
+  const loading = sessionLoading || principalLoading;
+
+  useEffect(() => {
+    if (loading || !session || principalType === PrincipalType.CUSTOMER) return;
+    if (isSigningOut.current) return;
+
+    isSigningOut.current = true;
+    void consumerAuthService.signOut().finally(() => {
+      isSigningOut.current = false;
+    });
+  }, [loading, session, principalType]);
 
   if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <LoadingSpinner />
+        <LoadingSpinner label="Carregando sua conta..." />
       </div>
     );
   }
@@ -37,7 +50,11 @@ export function ConsumerProtectedRoute() {
   }
 
   if (principalType !== PrincipalType.CUSTOMER) {
-    return <Navigate to={ROUTES.consultaLogin} state={{ from: location }} replace />;
+    return (
+      <div className="flex min-h-dvh items-center justify-center">
+        <LoadingSpinner label="Encerrando sessão inválida..." />
+      </div>
+    );
   }
 
   return <Outlet />;

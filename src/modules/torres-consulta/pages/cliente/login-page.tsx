@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ArrowRight, LogIn } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { EmailField } from "@/core/auth/components/email-field";
@@ -15,15 +15,17 @@ import {
 } from "@/core/auth/schemas/consumer-auth";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { LoadingScreen } from "@/shared/components/loading-spinner";
+import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 
 export function ClienteLoginPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { session, loading: sessionLoading } = useSession();
   const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
 
@@ -36,17 +38,28 @@ export function ClienteLoginPage() {
     defaultValues: { acceptTerms: false },
   });
 
-  if (sessionLoading || (session && principalLoading)) return <LoadingScreen />;
-  if (session && principalType === PrincipalType.CUSTOMER) {
+  if (sessionLoading || isSigningIn) {
+    return (
+      <div className="flex w-full max-w-md justify-center py-8">
+        <LoadingSpinner label={isSigningIn ? "Entrando..." : "Carregando..."} />
+      </div>
+    );
+  }
+
+  if (!principalLoading && session && principalType === PrincipalType.CUSTOMER) {
     return <Navigate to={from ?? ROUTES.consultaApp} replace />;
   }
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
+    setIsSigningIn(true);
     try {
       await consumerAuthService.signIn(values);
+      navigate(from ?? ROUTES.consultaApp, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível entrar. Verifique os dados e tente novamente.");
+    } finally {
+      setIsSigningIn(false);
     }
   });
 
