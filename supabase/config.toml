@@ -14,20 +14,56 @@ major_version = 17
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
+# Produção (Torres Consulta). Localhost permanece em additional_redirect_urls para dev.
+site_url = "https://www.torresconsultas.com.br"
 additional_redirect_urls = [
+  "http://localhost:3000",
+  "http://localhost:3000/**",
+  "http://localhost:5173",
+  "http://localhost:5173/**",
   "http://localhost:3000/recuperar-senha",
+  "http://localhost:3000/redefinir-senha",
   "http://localhost:3000/consulta/app",
   "http://localhost:3000/consulta/redefinir-senha",
+  "https://www.torresconsultas.com.br",
+  "https://www.torresconsultas.com.br/**",
+  "https://www.torresconsultas.com.br/recuperar-senha",
+  "https://www.torresconsultas.com.br/redefinir-senha",
   "https://www.torresconsultas.com.br/consulta/app",
   "https://www.torresconsultas.com.br/consulta/redefinir-senha",
+  "https://torresconsultas.com.br",
+  "https://torresconsultas.com.br/**",
+  "https://torresconsultas.com.br/recuperar-senha",
+  "https://torresconsultas.com.br/redefinir-senha",
   "https://torresconsultas.com.br/consulta/app",
   "https://torresconsultas.com.br/consulta/redefinir-senha",
+  "https://torres-vistoria-app.vercel.app",
+  "https://torres-vistoria-app.vercel.app/**",
 ]
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+secure_password_change = false
+max_frequency = "1m0s"
+otp_length = 8
+otp_expiry = 3600
+
+[auth.rate_limit]
+sign_in_sign_ups = 10
+token_verifications = 20
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
 
 [storage]
 enabled = true
 file_size_limit = "50MiB"
+
+[storage.vector]
+enabled = false
 
 [studio]
 enabled = true
