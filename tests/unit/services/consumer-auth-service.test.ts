@@ -78,7 +78,8 @@ describe("consumerAuthService", () => {
   });
 
   it("signUp indica confirmação de e-mail quando não há sessão", async () => {
-    mocks.signUp.mockResolvedValue({ session: null });
+    mocks.signUp.mockResolvedValue({ session: null, user: { id: "user-1" } });
+    mocks.getSelf.mockResolvedValue(consumerProfile);
 
     await expect(
       consumerAuthService.signUp({
@@ -89,10 +90,13 @@ describe("consumerAuthService", () => {
         acceptTerms: true,
       }),
     ).resolves.toEqual({ needsEmailConfirmation: true });
+
+    expect(mocks.signOut).toHaveBeenCalled();
   });
 
   it("signUp entra direto no app quando a sessão é criada", async () => {
     mocks.signUp.mockResolvedValue({ session: { user: { id: "user-1" } } });
+    mocks.getSelf.mockResolvedValue(consumerProfile);
 
     await expect(
       consumerAuthService.signUp({

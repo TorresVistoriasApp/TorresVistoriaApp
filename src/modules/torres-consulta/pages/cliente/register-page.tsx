@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { ArrowRight, User, UserPlus } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { ConfirmPasswordField } from "@/core/auth/components/confirm-password-field";
@@ -24,13 +24,15 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { LoadingScreen } from "@/shared/components/loading-spinner";
+import { LoadingSpinner } from "@/shared/components/loading-spinner";
 
 export function ClienteRegisterPage() {
+  const navigate = useNavigate();
   const { session, loading: sessionLoading } = useSession();
   const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
   const [successEmail, setSuccessEmail] = useState<string | null>(null);
+  const [isFinalizingSignup, setIsFinalizingSignup] = useState(false);
   const [resendPending, setResendPending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
 
@@ -53,26 +55,24 @@ export function ClienteRegisterPage() {
 
   const password = watch("password");
 
-  if (sessionLoading || (session && principalLoading)) {
-    return <LoadingScreen />;
-  }
-  if (session && principalType === PrincipalType.CUSTOMER) {
-    return <Navigate to={ROUTES.consultaApp} replace />;
-  }
-
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
+    setIsFinalizingSignup(true);
     try {
       const { needsEmailConfirmation } = await consumerAuthService.signUp(values);
       if (needsEmailConfirmation) {
         setSuccessEmail(values.email);
+        return;
       }
+      navigate(ROUTES.consultaApp, { replace: true });
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
           : "Não foi possível concluir o cadastro. Verifique os dados e tente novamente.";
       setError(message);
+    } finally {
+      setIsFinalizingSignup(false);
     }
   });
 
@@ -94,7 +94,7 @@ export function ClienteRegisterPage() {
 
   if (successEmail) {
     return (
-        <Card className="w-full max-w-md text-center">
+      <Card className="w-full max-w-md text-center">
           <CardHeader>
             <CardTitle>Confirme seu e-mail</CardTitle>
             <CardDescription>
@@ -117,8 +117,25 @@ export function ClienteRegisterPage() {
               <Link to={ROUTES.consultaLogin}>Voltar para login</Link>
             </Button>
           </CardContent>
-        </Card>
+      </Card>
     );
+  }
+
+  if (isFinalizingSignup) {
+    return (
+      <div className="flex w-full max-w-md justify-center py-8">
+        <LoadingSpinner label="Finalizando cadastro..." />
+      </div>
+    );
+  }
+
+  if (
+    !sessionLoading &&
+    !principalLoading &&
+    session &&
+    principalType === PrincipalType.CUSTOMER
+  ) {
+    return <Navigate to={ROUTES.consultaApp} replace />;
   }
 
   return (
