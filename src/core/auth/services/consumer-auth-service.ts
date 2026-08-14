@@ -16,6 +16,21 @@ import type {
 const CONSUMER_LOGIN_DENIED =
   "Esta conta pertence à Torres Vistoria. Utilize o login de vistoriador.";
 
+const PROFILE_READY_MAX_ATTEMPTS = 12;
+const PROFILE_READY_DELAY_MS = 250;
+
+async function waitForConsumerProfile(userId: string): Promise<void> {
+  for (let attempt = 0; attempt < PROFILE_READY_MAX_ATTEMPTS; attempt++) {
+    const profile = await consumerProfileService.getSelf(userId);
+    if (profile) return;
+    await new Promise((resolve) => setTimeout(resolve, PROFILE_READY_DELAY_MS));
+  }
+
+  throw new AppError(
+    "Seu cadastro foi criado, mas o perfil ainda está sendo preparado. Aguarde alguns segundos e tente entrar.",
+  );
+}
+
 /**
  * Autenticação do consumidor B2C (Torres Consulta).
  * Usa Supabase Auth + validação de identidade em consumer_profiles.
@@ -53,7 +68,7 @@ export const consumerAuthService = {
     const emailRedirectTo =
       typeof window !== "undefined" ? getAuthRedirectUrl(ROUTES.consultaApp) : undefined;
 
-    const { session } = await supabaseAuthAdapter.signUp(
+    const { session, user } = await supabaseAuthAdapter.signUp(
       input.email,
       input.password,
       {
@@ -63,7 +78,23 @@ export const consumerAuthService = {
       emailRedirectTo,
     );
 
-    return { needsEmailConfirmation: !session };
+    if (session?.user?.id) {
+      await waitForConsumerProfile(session.user.id);
+      return { needsEmailConfirmation: false };
+    }
+
+    // Confirmação por e-mail: encerra sessão parcial para não travar a tela de cadastro.
+    try {
+      await supabaseAuthAdapter.signOut();
+    } catch {
+      // Sem sessão ativa — segue para a tela de confirmação.
+    }
+
+    if (user?.id) {
+      await waitForConsumerProfile(user.id).catch(() => undefined);
+    }
+
+    return { needsEmailConfirmation: true };
   },
 
   async signOut(): Promise<void> {
