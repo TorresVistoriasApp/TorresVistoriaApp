@@ -16,7 +16,7 @@ export function TenantAuthShowcase({ className }: { className?: string }) {
   return (
     <aside
       className={cn(
-        "relative min-w-0 flex-col justify-between gap-9 overflow-hidden border-r border-white/5 p-10 xl:p-14",
+        "tenant-auth-showcase relative min-w-0 flex-col justify-between gap-8 overflow-hidden p-10 xl:p-14",
         className,
       )}
     >
@@ -29,12 +29,12 @@ export function TenantAuthShowcase({ className }: { className?: string }) {
       </Link>
 
       <div className="relative shrink-0 space-y-5">
-        <TenantAuthBadge />
-        <h2 className="text-[2.4rem] font-black leading-[1.05] tracking-[-0.04em] text-white xl:text-[2.9rem]">
-          Precisão em cada
-          <span className="block text-orange-400">laudo cautelar.</span>
+        <TenantAuthBadge className="border-orange-500/30 bg-orange-500/10 text-orange-400" />
+        <h2 className="max-w-lg text-[2.35rem] font-black leading-[1.05] tracking-[-0.04em] text-white xl:text-[2.75rem]">
+          Precisão em cada{" "}
+          <span className="text-primary">laudo cautelar.</span>
         </h2>
-        <p className="max-w-md text-[0.95rem] leading-relaxed text-slate-400">
+        <p className="max-w-md text-[0.95rem] leading-relaxed text-neutral-400">
           Ambiente exclusivo para profissionais: evidências fotográficas, checklist técnico e emissão
           de laudos com rastreabilidade.
         </p>
@@ -44,17 +44,20 @@ export function TenantAuthShowcase({ className }: { className?: string }) {
         <img
           src={PUBLIC_IMAGES.auth.inspection}
           alt="Vistoriador realizando inspeção técnica sob um veículo elevado"
-          className="h-full w-full object-cover object-[center_40%]"
+          className="h-full w-full object-cover object-[center_40%] saturate-[0.92] contrast-[1.03]"
           loading="lazy"
           decoding="async"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-orange-950/10 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#090909] via-[#090909]/15 to-transparent" />
       </figure>
 
       <ul className="relative flex shrink-0 flex-wrap items-center gap-x-7 gap-y-3">
         {FEATURES.map(({ label, icon: Icon }) => (
-          <li key={label} className="flex items-center gap-2.5 text-sm font-medium text-slate-300">
-            <Icon className="h-4 w-4 text-orange-400" strokeWidth={2.25} />
+          <li key={label} className="flex items-center gap-2.5 text-sm font-medium text-neutral-300">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary">
+              <Icon className="h-4 w-4" strokeWidth={2.25} />
+            </span>
             {label}
           </li>
         ))}

@@ -6,7 +6,7 @@ export function TenantAuthBadge({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-orange-400/25 bg-orange-400/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-orange-300",
+        "inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.08] px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary",
         className,
       )}
     >
