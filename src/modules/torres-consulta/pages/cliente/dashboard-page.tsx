@@ -15,6 +15,7 @@ import { PrincipalType } from "@/core/rbac/roles";
 import { ConsumerConsultaListItem } from "@/modules/torres-consulta/components/consumer-app/consumer-consulta-list-item";
 import { ConsumerDashboardSkeleton } from "@/modules/torres-consulta/components/consumer-app/consumer-dashboard-skeleton";
 import { ConsumerPlanOffersSection } from "@/modules/torres-consulta/components/consumer-app/consumer-plan-offers";
+import { ConsumerSurface } from "@/modules/torres-consulta/components/consumer-app/consumer-surface";
 import {
   useConsumerConsultas,
   useConsumerDashboardSummary,
@@ -183,7 +184,7 @@ export function ClienteDashboardPage() {
         </div>
 
         {!hasConsultas ? (
-          <div className="rounded-[1.75rem] border border-dashed border-primary/20 bg-white/60 px-6 py-10 text-center backdrop-blur-sm">
+          <ConsumerSurface className="border-dashed border-primary/20 bg-white/60 px-6 py-10 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <FileSearch className="h-6 w-6" />
             </div>
@@ -198,13 +199,13 @@ export function ClienteDashboardPage() {
               Ver planos e consultar
               <ArrowRight className="h-4 w-4" />
             </Link>
-          </div>
+          </ConsumerSurface>
         ) : (
-          <div className="space-y-3">
+          <ConsumerSurface padding="none" className="divide-y divide-border/40">
             {recentConsultas.map((consulta) => (
-              <ConsumerConsultaListItem key={consulta.id} consulta={consulta} />
+              <ConsumerConsultaListItem key={consulta.id} consulta={consulta} variant="flat" />
             ))}
-          </div>
+          </ConsumerSurface>
         )}
       </section>
     </div>

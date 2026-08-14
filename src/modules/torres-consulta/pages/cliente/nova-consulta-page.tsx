@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Search, ShieldCheck } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Search, ShieldCheck } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { getErrorMessage } from "@/core/errors/app-error";
 import { ConsumerConsultaForm } from "@/modules/torres-consulta/components/consumer-consulta-form";
+import { ConsumerPageHeader } from "@/modules/torres-consulta/components/consumer-app/consumer-page-header";
+import { ConsumerSurface } from "@/modules/torres-consulta/components/consumer-app/consumer-surface";
 import { IntegrationPendingNotice } from "@/modules/torres-consulta/components/integration-pending-notice";
 import { useRequestConsumerConsulta } from "@/modules/torres-consulta/hooks/use-consumer-consultas";
 import { isConsultaAvailable } from "@/modules/torres-consulta/domain/services/consulta-availability";
@@ -11,7 +13,6 @@ import {
   CONSUMER_PLAN_NAMES,
   type ConsumerPlanName,
 } from "@/modules/torres-consulta/domain/consumer-plan-catalog";
-import { Button } from "@/shared/ui/button";
 
 function resolvePlanFromQuery(value: string | null): ConsumerPlanName {
   if (value && CONSUMER_PLAN_NAMES.includes(value as ConsumerPlanName)) {
@@ -44,25 +45,19 @@ export function ConsultaAppNovaConsultaPage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6 md:max-w-2xl">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="shrink-0 rounded-xl" asChild>
-          <Link to={ROUTES.consultaApp} aria-label="Voltar ao início">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">
-            Nova consulta
-          </h1>
-          <p className="text-sm text-muted-foreground">Pagamento avulso · escolha o plano ideal</p>
-        </div>
-      </div>
+      <ConsumerPageHeader
+        title="Nova consulta"
+        subtitle="Pagamento avulso · escolha o plano ideal"
+        backTo={ROUTES.consultaApp}
+        backLabel="Início"
+        badge="Avulsa"
+      />
 
-      <div className="overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 shadow-[0_16px_48px_rgb(15_23_42_/_0.06)] backdrop-blur-sm">
+      <ConsumerSurface padding="none">
         <div className="border-b border-border/50 bg-gradient-to-r from-orange-50/80 to-white px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Search className="h-5 w-5" />
+              <Search className="h-4 w-4" />
             </span>
             <div>
               <p className="text-sm font-bold text-foreground">Consultar veículo</p>
@@ -87,7 +82,7 @@ export function ConsultaAppNovaConsultaPage() {
             </p>
           )}
         </div>
-      </div>
+      </ConsumerSurface>
 
       <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3.5">
         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
