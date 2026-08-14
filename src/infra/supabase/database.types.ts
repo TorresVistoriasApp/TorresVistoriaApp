@@ -2414,6 +2414,15 @@ export type Database = {
         Returns: boolean
       }
       cleanup_expired_inspection_drafts: { Args: never; Returns: number }
+      finalize_expired_consumer_accounts: { Args: never; Returns: number }
+      reactivate_consumer_account: {
+        Args: never
+        Returns: Database["public"]["Tables"]["consumer_profiles"]["Row"]
+      }
+      request_consumer_account_deletion: {
+        Args: never
+        Returns: Database["public"]["Tables"]["consumer_profiles"]["Row"]
+      }
       company_inspection_revenue: {
         Args: {
           p_end_date?: string

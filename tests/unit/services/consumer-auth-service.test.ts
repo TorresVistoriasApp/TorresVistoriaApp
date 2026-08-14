@@ -108,4 +108,44 @@ describe("consumerAuthService", () => {
       }),
     ).resolves.toEqual({ needsEmailConfirmation: false });
   });
+
+  it("signIn permite conta em exclusão pendente dentro do prazo", async () => {
+    mocks.signInWithPassword.mockResolvedValue({ user: { id: "user-1" } });
+    mocks.getSelf.mockResolvedValue({
+      ...consumerProfile,
+      account_status: "pending_deletion",
+      deletion_requested_at: "2026-01-01T00:00:00Z",
+      deletion_scheduled_at: "2026-12-01T00:00:00Z",
+    });
+
+    await expect(
+      consumerAuthService.signIn({
+        email: "c@test.com",
+        password: "SenhaForte1!",
+        acceptTerms: true,
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(mocks.signOut).not.toHaveBeenCalled();
+  });
+
+  it("signIn rejeita conta com prazo de recuperação expirado", async () => {
+    mocks.signInWithPassword.mockResolvedValue({ user: { id: "user-1" } });
+    mocks.getSelf.mockResolvedValue({
+      ...consumerProfile,
+      account_status: "pending_deletion",
+      deletion_requested_at: "2025-01-01T00:00:00Z",
+      deletion_scheduled_at: "2025-04-01T00:00:00Z",
+    });
+
+    await expect(
+      consumerAuthService.signIn({
+        email: "c@test.com",
+        password: "SenhaForte1!",
+        acceptTerms: true,
+      }),
+    ).rejects.toThrow("prazo de recuperação");
+
+    expect(mocks.signOut).toHaveBeenCalled();
+  });
 });

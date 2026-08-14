@@ -7,6 +7,7 @@ import { ClientLayout } from "@/layouts/client-layout";
 import { AdminLayout } from "@/layouts/admin-layout";
 import { ProtectedRoute } from "@/routes/guards/protected-route";
 import { ConsumerProtectedRoute } from "@/routes/guards/consumer-protected-route";
+import { ConsumerInactiveAccountRoute } from "@/routes/guards/consumer-inactive-account-route";
 import { PlatformAdminRoute } from "@/routes/guards/platform-admin-route";
 import { RequirePasswordChanged } from "@/routes/guards/require-password-changed";
 import { TenantGuard } from "@/core/tenant/tenant-guard";
@@ -58,7 +59,12 @@ export const router = createBrowserRouter([
       // Área autenticada do consumidor (B2C) — sem tenant.
       {
         element: <ConsumerProtectedRoute />,
-        children: collect("consumer"),
+        children: [
+          {
+            element: <ConsumerInactiveAccountRoute />,
+            children: collect("consumer"),
+          },
+        ],
       },
 
       // Área autenticada do tenant.
