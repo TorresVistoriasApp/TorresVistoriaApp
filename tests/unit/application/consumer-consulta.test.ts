@@ -65,25 +65,8 @@ describe("requestConsumerConsulta", () => {
     expect(result.failureReason).toContain("integração");
   });
 
-  it("exige créditos quando integração disponível", async () => {
+  it("persiste consulta quando integração está ativa (B2C sem saldo de créditos)", async () => {
     mocks.isConsultaAvailable.mockReturnValue(true);
-    mocks.getCreditBalance.mockResolvedValue({ available: 0, pending: 0 });
-
-    await expect(
-      requestConsumerConsulta("consumer-1", {
-        planName: "Completo",
-        queryType: VehicleQueryType.COMPLETE,
-        plate: "ABC1D23",
-        chassis: null,
-      }),
-    ).rejects.toMatchObject({ code: "INSUFFICIENT_CREDITS" });
-
-    expect(mocks.save).not.toHaveBeenCalled();
-  });
-
-  it("persiste consulta quando há créditos e integração ativa", async () => {
-    mocks.isConsultaAvailable.mockReturnValue(true);
-    mocks.getCreditBalance.mockResolvedValue({ available: 10, pending: 0 });
 
     const result = await requestConsumerConsulta("consumer-1", {
       planName: "Básico",
@@ -92,6 +75,7 @@ describe("requestConsumerConsulta", () => {
       chassis: null,
     });
 
+    expect(mocks.getCreditBalance).not.toHaveBeenCalled();
     expect(mocks.save).toHaveBeenCalledOnce();
     expect(result.id).toBe("consulta-1");
     expect(result.failureReason).toBeNull();

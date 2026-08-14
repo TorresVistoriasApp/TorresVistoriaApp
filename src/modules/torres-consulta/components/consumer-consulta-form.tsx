@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Search } from "lucide-react";
+import { CreditCard, Search } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -9,7 +9,7 @@ import { cn } from "@/shared/lib/utils";
 import { maskChassis, maskPlate } from "@/shared/lib/masks";
 import { PRICING_PLANS } from "@/modules/torres-consulta/components/landing/pricing-carousel";
 import {
-  getConsumerPlanCredits,
+  getConsumerPlanPriceLabel,
   type ConsumerPlanName,
 } from "@/modules/torres-consulta/domain/consumer-plan-catalog";
 import {
@@ -22,9 +22,7 @@ import {
 interface ConsumerConsultaFormProps {
   onSubmit: (input: ConsumerConsultaRequestInput) => Promise<void> | void;
   submitting?: boolean;
-  availableCredits?: number | null;
-  /** Quando false, não exige saldo (integração pendente). */
-  enforceCredits?: boolean;
+  defaultPlanName?: ConsumerPlanName;
 }
 
 const SEARCH_MODES = [
@@ -35,8 +33,7 @@ const SEARCH_MODES = [
 export function ConsumerConsultaForm({
   onSubmit,
   submitting,
-  availableCredits,
-  enforceCredits = true,
+  defaultPlanName = "Completo",
 }: ConsumerConsultaFormProps) {
   const [searchBy, setSearchBy] = useState<"plate" | "chassis">("plate");
 
@@ -52,17 +49,13 @@ export function ConsumerConsultaForm({
       searchBy: "plate",
       plate: "",
       chassis: "",
-      planName: "Completo" as ConsumerPlanName,
+      planName: defaultPlanName,
     },
   });
 
   const selectedPlan = watch("planName");
-  const cost = getConsumerPlanCredits(selectedPlan);
-  const insufficientCredits =
-    enforceCredits &&
-    availableCredits !== null &&
-    availableCredits !== undefined &&
-    availableCredits < cost;
+  const selectedPlanData = PRICING_PLANS.find((plan) => plan.name === selectedPlan);
+  const priceLabel = getConsumerPlanPriceLabel(selectedPlan);
 
   const switchMode = (mode: "plate" | "chassis") => {
     setSearchBy(mode);
@@ -136,48 +129,58 @@ export function ConsumerConsultaForm({
       </div>
 
       <div className="space-y-3">
-        <Label>Plano</Label>
+        <Label>Escolha o plano</Label>
         <div className="grid gap-3 sm:grid-cols-3">
-          {PRICING_PLANS.map((plan) => (
-            <button
-              key={plan.name}
-              type="button"
-              onClick={() => setValue("planName", plan.name as ConsumerPlanName)}
-              className={cn(
-                "rounded-xl border px-4 py-3 text-left transition-colors",
-                selectedPlan === plan.name
-                  ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                  : "border-border hover:border-primary/40",
-              )}
-            >
-              <p className="font-semibold">{plan.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {getConsumerPlanCredits(plan.name as ConsumerPlanName)} crédito(s)
-              </p>
-            </button>
-          ))}
+          {PRICING_PLANS.map((plan) => {
+            const Icon = plan.icon;
+            const isSelected = selectedPlan === plan.name;
+            return (
+              <button
+                key={plan.name}
+                type="button"
+                onClick={() => setValue("planName", plan.name as ConsumerPlanName)}
+                className={cn(
+                  "relative rounded-2xl border px-4 py-3.5 text-left transition-all",
+                  isSelected
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/25"
+                    : "border-border hover:border-primary/30",
+                  plan.highlighted && !isSelected && "border-primary/20",
+                )}
+              >
+                {plan.highlighted && (
+                  <span className="absolute -top-2 right-3 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+                    Top
+                  </span>
+                )}
+                <div className="flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-primary" strokeWidth={1.75} />
+                  <p className="font-semibold">{plan.name}</p>
+                </div>
+                <p className="mt-1 text-sm font-bold text-foreground">R$ {plan.price}</p>
+                <p className="text-[11px] text-muted-foreground">pagamento avulso</p>
+              </button>
+            );
+          })}
         </div>
         {errors.planName && <p className="text-sm text-destructive">{errors.planName.message}</p>}
       </div>
 
-      {enforceCredits && availableCredits !== null && availableCredits !== undefined && (
-        <p className="text-sm text-muted-foreground">
-          Saldo disponível: <span className="font-semibold text-foreground">{availableCredits}</span>
-          {" · "}
-          Esta consulta usa <span className="font-semibold text-foreground">{cost}</span> crédito(s).
+      <div className="rounded-2xl border border-border/70 bg-muted/30 px-4 py-3">
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CreditCard className="h-4 w-4 shrink-0 text-primary" />
+          Você pagará <span className="font-bold text-foreground">{priceLabel}</span> por esta
+          consulta
+          {selectedPlanData?.originalPrice && (
+            <span className="text-xs line-through">R$ {selectedPlanData.originalPrice}</span>
+          )}
+          . Aceitamos cartão e PIX.
         </p>
-      )}
+      </div>
 
-      <Button type="submit" disabled={submitting || insufficientCredits} className="w-full sm:w-auto">
+      <Button type="submit" disabled={submitting} className="h-12 w-full rounded-2xl text-base font-bold sm:w-auto">
         <Search className="h-4 w-4" />
-        Solicitar consulta
+        {submitting ? "Processando..." : `Consultar por ${priceLabel}`}
       </Button>
-
-      {insufficientCredits && (
-        <p className="text-sm text-destructive">
-          Créditos insuficientes para o plano selecionado.
-        </p>
-      )}
     </form>
   );
 }

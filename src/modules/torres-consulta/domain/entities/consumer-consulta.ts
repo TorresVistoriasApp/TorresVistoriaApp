@@ -31,7 +31,7 @@ export interface ConsumerCreditBalance {
 export interface ConsumerDashboardSummary {
   totalConsultas: number;
   completedConsultas: number;
-  availableCredits: number;
+  processingConsultas: number;
   lastConsulta: ConsumerConsulta | null;
 }
 
