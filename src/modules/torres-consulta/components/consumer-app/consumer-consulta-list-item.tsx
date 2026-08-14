@@ -13,14 +13,25 @@ import { cn } from "@/shared/lib/utils";
 
 interface ConsumerConsultaListItemProps {
   consulta: ConsumerConsulta;
+  variant?: "card" | "flat";
 }
 
-export function ConsumerConsultaListItem({ consulta }: ConsumerConsultaListItemProps) {
+export function ConsumerConsultaListItem({
+  consulta,
+  variant = "card",
+}: ConsumerConsultaListItemProps) {
   const identifier = getConsumerConsultaIdentifier(consulta);
   const downloadable = canDownloadConsumerConsulta(consulta);
 
   return (
-    <article className="group relative overflow-hidden rounded-[1.25rem] border border-white/80 bg-white/90 p-4 shadow-[0_8px_24px_rgb(15_23_42_/_0.05)] backdrop-blur-sm transition-all active:scale-[0.99]">
+    <article
+      className={cn(
+        "group relative overflow-hidden p-4 transition-all",
+        variant === "card"
+          ? "rounded-[1.25rem] border border-white/80 bg-white/90 shadow-[0_8px_24px_rgb(15_23_42_/_0.05)] backdrop-blur-sm active:scale-[0.99]"
+          : "hover:bg-muted/20",
+      )}
+    >
       <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
 
       <div className="relative flex items-start justify-between gap-3">
