@@ -23,28 +23,29 @@ export function TenantAuthPanel({
   return (
     <div
       className={cn(
-        "mx-auto w-full space-y-3.5 lg:mx-0",
-        wide ? "max-w-lg" : "max-w-[26.5rem]",
+        "mx-auto w-full space-y-4 lg:mx-0",
+        wide ? "max-w-lg" : "max-w-[27rem]",
         className,
       )}
     >
-      <section className="rounded-[1.75rem] border border-white/10 bg-white p-6 shadow-[0_30px_90px_-30px_rgb(0_0_0_/_0.75)] sm:p-8">
-        <header className="mb-6">
-          <h1 className="text-2xl font-black tracking-[-0.025em] text-foreground">{title}</h1>
+      <section className="overflow-hidden rounded-[1.75rem] border border-neutral-200/90 bg-white shadow-[0_20px_50px_-24px_rgb(0_0_0_/_0.22)]">
+        <header className="border-b border-neutral-100 px-6 pb-5 pt-6 sm:px-8 sm:pt-7">
+          <div className="mb-4 h-1 w-12 rounded-full bg-primary" aria-hidden />
+          <h1 className="text-2xl font-black tracking-[-0.025em] text-neutral-950">{title}</h1>
           {description ? (
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">{description}</p>
           ) : null}
         </header>
-        {children}
+        <div className="px-6 pb-6 sm:px-8 sm:pb-8">{children}</div>
       </section>
 
       <Link
         to={ROUTES.consultaLanding}
-        className="flex items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-center text-sm text-slate-300 transition-colors hover:border-orange-400/30 hover:bg-orange-400/[0.07] hover:text-white"
+        className="flex items-center justify-center gap-1.5 rounded-2xl border border-neutral-200 bg-white px-4 py-3.5 text-center text-sm text-neutral-600 shadow-[0_8px_24px_-18px_rgb(0_0_0_/_0.18)] transition-colors hover:border-primary/25 hover:text-neutral-950"
       >
         Não é vistoriador?
-        <span className="font-semibold text-orange-400">Consultar veículo</span>
-        <ArrowUpRight className="h-4 w-4 shrink-0 text-orange-400" />
+        <span className="font-semibold text-primary">Consultar veículo</span>
+        <ArrowUpRight className="h-4 w-4 shrink-0 text-primary" />
       </Link>
     </div>
   );

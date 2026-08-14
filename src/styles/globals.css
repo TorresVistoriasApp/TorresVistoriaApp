@@ -138,6 +138,27 @@
       radial-gradient(at 80% 20%, rgb(148 163 184 / 0.08) 0, transparent 45%);
   }
 
+  .tenant-auth-shell {
+    background-color: #f4f4f5;
+  }
+
+  .tenant-auth-showcase {
+    background-color: #090909;
+    background-image:
+      radial-gradient(ellipse 90% 60% at 0% 0%, rgb(234 88 12 / 0.14), transparent 58%),
+      linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+    background-size:
+      auto,
+      48px 48px,
+      48px 48px;
+  }
+
+  .tenant-auth-form-side {
+    background-color: #f4f4f5;
+    background-image: radial-gradient(ellipse 80% 55% at 100% 0%, rgb(234 88 12 / 0.06), transparent 58%);
+  }
+
   .text-gradient-brand {
     background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%);
     -webkit-background-clip: text;
