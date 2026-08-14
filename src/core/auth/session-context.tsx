@@ -24,6 +24,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
+    const finishLoading = () => {
+      if (isMounted) setLoading(false);
+    };
+
+    const sessionTimeoutId = window.setTimeout(finishLoading, 8_000);
+
     void db.auth
       .getSession()
       .then(({ data }) => {
@@ -35,19 +41,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setSession(null);
       })
       .finally(() => {
-        if (!isMounted) return;
-        setLoading(false);
+        window.clearTimeout(sessionTimeoutId);
+        finishLoading();
       });
 
     const {
       data: { subscription },
     } = db.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
-      setLoading(false);
+      finishLoading();
     });
 
     return () => {
       isMounted = false;
+      window.clearTimeout(sessionTimeoutId);
       subscription.unsubscribe();
     };
   }, []);
