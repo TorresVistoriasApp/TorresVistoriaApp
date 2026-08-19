@@ -14,6 +14,7 @@ import { FormError } from "@/core/auth/components/form-error";
 import { PasswordStrengthInput } from "@/core/auth/components/password-strength-input";
 import { useSession } from "@/core/auth/session-context";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
+import { checkRateLimit, tooManyAttemptsMessage } from "@/core/auth/rate-limit";
 import {
   consumerRegisterSchema,
   type ConsumerRegisterInput,
@@ -57,6 +58,16 @@ export function ClienteRegisterPage() {
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
+
+    const normalized = values.email.trim().toLowerCase();
+    const perEmail = checkRateLimit(`consulta-signup:${normalized}`, 3, 15 * 60 * 1000);
+    const global = checkRateLimit("consulta-signup:global", 20, 15 * 60 * 1000);
+    if (!perEmail.allowed || !global.allowed) {
+      const retry = Math.max(perEmail.retryAfterMs, global.retryAfterMs);
+      setError(tooManyAttemptsMessage(retry));
+      return;
+    }
+
     setIsFinalizingSignup(true);
     try {
       const { needsEmailConfirmation } = await consumerAuthService.signUp(values);
