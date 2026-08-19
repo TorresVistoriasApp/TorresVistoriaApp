@@ -86,3 +86,21 @@ verify_jwt = true
 
 [functions.validate-report]
 verify_jwt = false
+
+# ────────────────────────────────────────────────────────────────────────────────
+# FASE 5 — Resend + Supabase Auth Send Email Hook
+# ────────────────────────────────────────────────────────────────────────────────
+#
+# Este hook é chamado pelo Supabase Auth para eventos de e-mail (ex.: signup,
+# recovery). A função send-email deve ser verificada por secret para evitar abuse.
+#
+# Observação: a configuração de URI para hooks pode exigir ajuste dependendo
+# do ambiente (local vs produção). Aqui configuramos para ambiente local.
+#
+[auth.hook.send_email]
+enabled = true
+uri = "http://host.docker.internal:54321/functions/v1/send-email"
+secrets = "env(SEND_EMAIL_HOOK_SECRET)"
+
+[functions.send-email]
+verify_jwt = false
