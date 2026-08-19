@@ -96,13 +96,13 @@ verify_jwt = false
 # Este hook é chamado pelo Supabase Auth para eventos de e-mail (ex.: signup,
 # recovery). A função send-email deve ser verificada por secret para evitar abuse.
 #
-# Observação: a configuração de URI para hooks pode exigir ajuste dependendo
-# do ambiente (local vs produção). Aqui configuramos para ambiente local.
+# Observação: o secret do hook HTTPS deve ser configurado no Dashboard
+# (Authentication → Hooks → Send Email). NÃO use secrets = "env(...)" aqui —
+# o config push remoto pode sobrescrever o secret do Dashboard com valor vazio.
 #
 [auth.hook.send_email]
 enabled = true
 uri = "https://ljzttzfjtskblxekmquu.supabase.co/functions/v1/send-email"
-secrets = "env(SEND_EMAIL_HOOK_SECRET)"
 
 [functions.send-email]
 verify_jwt = false
