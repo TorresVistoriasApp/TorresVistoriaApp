@@ -46,7 +46,7 @@ const ERROR_TRANSLATIONS: Array<{ pattern: RegExp; message: string }> = [
     message: TOO_MANY_EMAIL_ATTEMPTS,
   },
   {
-    pattern: /hook.*failed|error sending.*email|send.*email.*hook/i,
+    pattern: /hook requires authorization token|hook.*failed|error sending.*email|send.*email.*hook|unexpected_failure/i,
     message:
       "Não foi possível enviar o e-mail no momento. Tente novamente em instantes ou entre em contato com o suporte.",
   },

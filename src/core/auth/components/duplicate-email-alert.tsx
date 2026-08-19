@@ -33,7 +33,7 @@ export function DuplicateEmailAlert({
 }
 
 export function isDuplicateEmailError(message: string): boolean {
-  return /já existe um usuário cadastrado|already been registered|already registered|user already exists|duplicate key|unique constraint/i.test(
+  return /já existe uma conta associada|já existe um usuário cadastrado|already been registered|already registered|user already exists|duplicate key|unique constraint/i.test(
     message,
   );
 }
