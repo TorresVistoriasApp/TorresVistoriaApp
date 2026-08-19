@@ -38,6 +38,8 @@ describe("send-email hook contract (Fase 5)", () => {
     expect(template).toContain("Torres Consulta");
     expect(template).toContain("#ea580c");
     expect(template).toContain("Consulta veicular para você");
+    expect(template).toContain("renderBulletproofButton");
+    expect(template).toContain("v:roundrect");
   });
 
   it("monta confirmation URL via /auth/v1/verify com token e redirect_to", () => {
