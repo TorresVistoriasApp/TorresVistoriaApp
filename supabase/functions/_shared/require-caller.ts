@@ -55,9 +55,9 @@ export async function requireCaller(req: Request): Promise<AuthorizedCaller | Au
  */
 export function canAccessInspection(
   caller: AuthorizedCaller,
-  inspection: { tenant_id: string; inspector_id: string },
+  inspection: { tenant_id: string; created_by: string },
 ): boolean {
   if (inspection.tenant_id !== caller.tenantId) return false;
   if (caller.role === "SUPER_ADMIN") return true;
-  return inspection.inspector_id === caller.userId;
+  return inspection.created_by === caller.userId;
 }
