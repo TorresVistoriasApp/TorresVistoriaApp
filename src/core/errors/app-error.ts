@@ -19,8 +19,11 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof AppError) return error.message;
   if (error instanceof Error) return humanizeDbError(error.message);
   if (typeof error === "string") return humanizeDbError(error);
-  if (error && typeof error === "object" && "message" in error) {
-    return humanizeDbError(String((error as { message: unknown }).message));
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    if (typeof record.error_code === "string") return record.error_code;
+    if (typeof record.msg === "string") return humanizeDbError(record.msg);
+    if ("message" in record) return humanizeDbError(String(record.message));
   }
   return "Erro desconhecido";
 }

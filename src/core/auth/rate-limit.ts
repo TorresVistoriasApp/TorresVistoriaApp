@@ -36,3 +36,7 @@ export function formatRetryAfter(ms: number): string {
   const seconds = Math.ceil(ms / 1000);
   return seconds < 60 ? `${seconds}s` : `${Math.ceil(seconds / 60)} min`;
 }
+
+export function tooManyAttemptsMessage(retryAfterMs: number): string {
+  return `Muitas tentativas realizadas. Aguarde ${formatRetryAfter(retryAfterMs)} e tente novamente.`;
+}

@@ -19,4 +19,13 @@ describe("formatUserFacingError", () => {
       "Sua sessão expirou ou não está autenticada. Efetue login novamente.",
     );
   });
+
+  it("traduz limite de envio de e-mail do Supabase Auth", () => {
+    expect(formatUserFacingError("email rate limit exceeded")).toBe(
+      "Muitas tentativas realizadas. Aguarde um momento e tente novamente.",
+    );
+    expect(formatUserFacingError("over_email_send_rate_limit")).toBe(
+      "Muitas tentativas realizadas. Aguarde um momento e tente novamente.",
+    );
+  });
 });

@@ -5,8 +5,11 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { getAuthRedirectUrl } from "@/config/env";
 import { ROUTES } from "@/config/routes";
+import { AppError, getErrorMessage } from "@/core/errors/app-error";
+import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
+import { checkRateLimit, tooManyAttemptsMessage } from "@/core/auth/rate-limit";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import {
   consumerForgotPasswordSchema,
@@ -29,14 +32,26 @@ export function ClienteForgotPasswordPage() {
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
+
+    const normalized = values.email.trim().toLowerCase();
+    const perEmail = checkRateLimit(`consulta-reset:${normalized}`, 3, 15 * 60 * 1000);
+    const global = checkRateLimit("consulta-reset:global", 20, 15 * 60 * 1000);
+    if (!perEmail.allowed || !global.allowed) {
+      const retry = Math.max(perEmail.retryAfterMs, global.retryAfterMs);
+      setError(tooManyAttemptsMessage(retry));
+      return;
+    }
+
     try {
       const redirectTo = getAuthRedirectUrl(ROUTES.consultaResetPassword);
       await consumerAuthService.resetPassword(values, redirectTo);
       setSent(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Não foi possível enviar o e-mail de recuperação.",
-      );
+      const message =
+        err instanceof AppError
+          ? err.message
+          : formatUserFacingError(getErrorMessage(err));
+      setError(message);
     }
   });
 
