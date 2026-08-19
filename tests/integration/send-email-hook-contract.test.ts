@@ -31,6 +31,15 @@ describe("send-email hook contract (Fase 5)", () => {
     expect(src).toContain("Redefinir senha");
   });
 
+  it("usa template de marca Torres Consulta", () => {
+    const template = readFileSafe(
+      path.resolve(process.cwd(), "supabase/functions/send-email/email-template.ts"),
+    );
+    expect(template).toContain("Torres Consulta");
+    expect(template).toContain("#ea580c");
+    expect(template).toContain("Consulta veicular para você");
+  });
+
   it("monta confirmation URL via /auth/v1/verify com token e redirect_to", () => {
     expect(src).toContain("new URL(\"/auth/v1/verify\", supabaseUrl)");
     expect(src).toContain("verifyBase.searchParams.set(\"token\", tokenHash)");

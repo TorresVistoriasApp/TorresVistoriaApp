@@ -1,47 +1,8 @@
 import { Webhook } from "npm:standardwebhooks@^1";
 import { Resend } from "npm:resend@^6";
+import { renderTorresConsultaAuthEmail } from "./email-template.ts";
 
 type EmailActionType = "signup" | "recovery" | string;
-
-function htmlEmailBase({ title, body, ctaLabel, ctaUrl }: { title: string; body: string; ctaLabel: string; ctaUrl: string }) {
-  return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${title}</title>
-  </head>
-  <body style="margin:0;padding:0;background:#f8fafc;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji';">
-    <div style="max-width:560px;margin:0 auto;padding:24px;">
-      <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;">
-        <div style="font-size:12px;color:#6b7280;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">
-          TORRES
-        </div>
-        <h1 style="margin:12px 0 0 0;font-size:20px;line-height:1.3;color:#0f172a;font-weight:800;">
-          ${title}
-        </h1>
-        <p style="margin:14px 0 0 0;font-size:14px;line-height:1.6;color:#334155;">
-          ${body}
-        </p>
-
-        <div style="margin-top:20px;">
-          <a href="${ctaUrl}"
-             style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:800;font-size:14px;">
-            ${ctaLabel}
-          </a>
-        </div>
-
-        <p style="margin:18px 0 0 0;font-size:12px;line-height:1.6;color:#6b7280;">
-          Este e-mail foi enviado automaticamente. Não responda.
-        </p>
-      </div>
-      <div style="margin-top:14px;text-align:center;font-size:12px;color:#94a3b8;">
-        Torres Consulta / Torres Vistoria
-      </div>
-    </div>
-  </body>
-</html>`;
-}
 
 function buildVerifyUrl({
   supabaseUrl,
@@ -64,19 +25,25 @@ function buildVerifyUrl({
 function buildAuthEmail({ emailActionType }: { emailActionType: EmailActionType }) {
   if (emailActionType === "signup") {
     return {
-      subject: "Confirme seu endereço de e-mail",
+      subject: "Confirme seu e-mail — Torres Consulta",
       title: "Confirme seu endereço de e-mail",
-      body: "Para concluir seu cadastro, confirme seu endereço de e-mail clicando no botão abaixo.",
+      body:
+        "Estamos quase lá! Para ativar sua conta e começar a consultar veículos, confirme seu endereço de e-mail clicando no botão abaixo.",
       ctaLabel: "Confirmar e-mail",
+      preheader: "Ative sua conta Torres Consulta em um clique.",
     };
   }
 
   if (emailActionType === "recovery") {
     return {
-      subject: "Redefina sua senha",
+      subject: "Redefina sua senha — Torres Consulta",
       title: "Redefina sua senha",
-      body: "Recebemos uma solicitação para redefinir sua senha. Clique no botão abaixo para continuar.",
+      body:
+        "Recebemos uma solicitação para redefinir a senha da sua conta. Se foi você, use o botão abaixo para criar uma nova senha.",
       ctaLabel: "Redefinir senha",
+      preheader: "Solicitação de redefinição de senha na Torres Consulta.",
+      footnote:
+        "Não solicitou esta alteração? Ignore este e-mail — sua senha permanece a mesma.",
     };
   }
 
@@ -90,7 +57,7 @@ function normalizeHookSecret(raw: string): string {
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 const sendEmailHookSecret = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
 const resendFromEmail = Deno.env.get("RESEND_FROM_EMAIL") ?? "noreply@torresconsultas.com.br";
-const resendFromName = Deno.env.get("RESEND_FROM_NAME") ?? "Torres";
+const resendFromName = Deno.env.get("RESEND_FROM_NAME") ?? "Torres Consulta";
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 
 if (!resendApiKey) {
@@ -167,11 +134,13 @@ Deno.serve(async (req) => {
       from: `${resendFromName} <${resendFromEmail}>`,
       to: [email],
       subject: authEmail.subject,
-      html: htmlEmailBase({
+      html: renderTorresConsultaAuthEmail({
         title: authEmail.title,
         body: authEmail.body,
         ctaLabel: authEmail.ctaLabel,
         ctaUrl: confirmationUrl,
+        preheader: authEmail.preheader,
+        footnote: authEmail.footnote,
       }),
     });
 
