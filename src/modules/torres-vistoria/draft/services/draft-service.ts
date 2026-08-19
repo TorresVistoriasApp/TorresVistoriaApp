@@ -13,6 +13,9 @@ import { STORAGE_BUCKET } from "@/infra/storage/buckets";
 import type { VistoriaInput, VistoriaUpdateInput } from "@/modules/torres-vistoria/schemas/vistoria";
 import { inspectionService, type Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 
+/** Chave para persistir o serviço selecionado junto ao draft ativo. */
+const ACTIVE_DRAFT_SERVICE_KEY = "torres_active_draft_service_id";
+
 function draftSelectFields() {
   return `
     id, inspection_number, client_name, plate, completion_percent,
@@ -35,6 +38,19 @@ export function rememberActiveDraftId(id: string | null) {
 
 export function getRememberedActiveDraftId(): string | null {
   return localStorage.getItem(ACTIVE_DRAFT_STORAGE_KEY);
+}
+
+/** Persiste o platform_service_id escolhido junto ao draft ativo. */
+export function rememberActiveDraftServiceId(serviceId: string | null) {
+  if (serviceId) {
+    localStorage.setItem(ACTIVE_DRAFT_SERVICE_KEY, serviceId);
+  } else {
+    localStorage.removeItem(ACTIVE_DRAFT_SERVICE_KEY);
+  }
+}
+
+export function getRememberedActiveDraftServiceId(): string | null {
+  return localStorage.getItem(ACTIVE_DRAFT_SERVICE_KEY);
 }
 
 export const draftService = {
@@ -70,11 +86,24 @@ export const draftService = {
   async createEmptyDraft(meta: {
     tenantId: string;
     inspectorId: string;
+    /** UUID do serviço da plataforma selecionado. Opcional para compatibilidade legada. */
+    platformServiceId?: string;
+    /**
+     * UUID único gerado pelo frontend antes da requisição.
+     * Garante idempotência: retries não criam pedidos duplicados.
+     */
+    idempotencyKey?: string;
   }): Promise<Inspection> {
     try {
       const input = buildEmptyDraftInput();
+
+      // Inclui platform_service_id quando informado (novo fluxo)
+      const createPayload = meta.platformServiceId
+        ? { ...input, platform_service_id: meta.platformServiceId }
+        : input;
+
       const inspection = throwIfError(
-        await mutations.inspections.create(input, meta.inspectorId, meta.tenantId),
+        await mutations.inspections.create(createPayload as VistoriaInput, meta.inspectorId, meta.tenantId),
         "Erro ao criar rascunho",
       );
 
@@ -82,8 +111,35 @@ export const draftService = {
       const { error: checklistError } = await db.from("inspection_checklists").insert(checklistRows);
       if (checklistError) throw checklistError;
 
+      // Cria inspection_order se o serviço foi informado.
+      // O trigger do banco busca o preço oficial e sobrescreve qualquer amount enviado.
+      if (meta.platformServiceId && meta.idempotencyKey) {
+        const { error: orderError } = await db.from("inspection_orders").insert({
+          inspection_id: inspection.id,
+          tenant_id: meta.tenantId,
+          platform_service_id: meta.platformServiceId,
+          created_by: meta.inspectorId,
+          // amount é preenchido pelo trigger — enviamos 0 como placeholder
+          amount: 0,
+          idempotency_key: meta.idempotencyKey,
+        });
+
+        if (orderError) {
+          // Se for violação de unique (idempotência), não é erro: pedido já existe
+          if (orderError.code !== "23505") {
+            syncLogger.warn("Erro ao criar inspection_order", { error: orderError.message });
+          }
+        }
+      }
+
       rememberActiveDraftId(inspection.id);
-      syncLogger.info("Rascunho criado", { inspectionId: inspection.id });
+      if (meta.platformServiceId) {
+        rememberActiveDraftServiceId(meta.platformServiceId);
+      }
+      syncLogger.info("Rascunho criado", {
+        inspectionId: inspection.id,
+        platformServiceId: meta.platformServiceId ?? "legado",
+      });
 
       return inspection as Inspection;
     } catch (error) {
@@ -172,6 +228,7 @@ export const draftService = {
 
       if (getRememberedActiveDraftId() === id) {
         rememberActiveDraftId(null);
+        rememberActiveDraftServiceId(null);
       }
 
       syncLogger.info("Rascunho excluído", { inspectionId: id });

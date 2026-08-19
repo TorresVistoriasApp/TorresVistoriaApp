@@ -7,6 +7,16 @@ import { ROUTES, withNewInspectionFlow } from "@/config/routes";
 import { invalidateInspectionQueries } from "@/infra/query/cache-invalidation";
 import type { ActiveDraftSummary } from "@/modules/torres-vistoria/draft/types";
 
+export interface CreateDraftParams {
+  /** UUID do serviço da plataforma selecionado no modal. */
+  platformServiceId: string;
+  /**
+   * Chave de idempotência gerada pelo frontend (UUID v4).
+   * Previne criação duplicada em caso de retry ou double-tap.
+   */
+  idempotencyKey: string;
+}
+
 export const draftQueryKeys = {
   active: (tenantId?: string, inspectorId?: string) =>
     ["draft", "active", tenantId, inspectorId] as const,
@@ -29,10 +39,12 @@ export function useCreateDraftInspection() {
   const { tenantId, userId } = useUser();
 
   return useMutation({
-    mutationFn: () =>
+    mutationFn: (params: CreateDraftParams) =>
       draftService.createEmptyDraft({
         tenantId: requireTenantId(tenantId),
         inspectorId: requireUserId(userId),
+        platformServiceId: params.platformServiceId,
+        idempotencyKey: params.idempotencyKey,
       }),
     onSuccess: (inspection) => {
       rememberActiveDraftId(inspection.id);
@@ -69,9 +81,9 @@ export function useDraftRecoveryActions() {
     navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(draft.id)));
   };
 
-  const discardAndStartNew = async (draft: ActiveDraftSummary) => {
+  const discardAndStartNew = async (draft: ActiveDraftSummary, params: CreateDraftParams) => {
     await deleteDraft.mutateAsync(draft.id);
-    const inspection = await createDraft.mutateAsync();
+    const inspection = await createDraft.mutateAsync(params);
     navigate(withNewInspectionFlow(ROUTES.inspectionPhotos(inspection.id)), { replace: true });
   };
 
