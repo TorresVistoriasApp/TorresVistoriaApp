@@ -20,7 +20,7 @@ export function DraftSystemProvider({ children }: { children: React.ReactNode })
   const { data: activeDraft, isLoading } = useActiveDraft();
   const deleteDraft = useDeleteDraft();
   const cleanup = useDraftCleanup();
-  const { continueDraft, discardAndStartNew, isBusy } = useDraftRecoveryActions();
+  const { continueDraft, isBusy } = useDraftRecoveryActions();
   const [dismissed, setDismissed] = useState(false);
   const cleanupRanRef = useRef(false);
 
@@ -74,8 +74,11 @@ export function DraftSystemProvider({ children }: { children: React.ReactNode })
   const handleStartNew = async () => {
     if (!activeDraft) return;
     try {
-      await discardAndStartNew(activeDraft);
+      // Descarta o draft atual e redireciona para /vistorias/nova,
+      // onde o ServiceSelectorModal será exibido para escolha do serviço.
+      await deleteDraft.mutateAsync(activeDraft.id);
       setDismissed(true);
+      window.location.href = "/vistorias/nova";
     } catch (error) {
       toast(error instanceof Error ? error.message : "Erro ao iniciar nova vistoria");
     }
