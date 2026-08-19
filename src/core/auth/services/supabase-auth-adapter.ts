@@ -2,6 +2,7 @@ import { db } from "@/infra/supabase/client";
 import { AppError, getErrorMessage } from "@/core/errors/app-error";
 import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 import { sanitizeEmail } from "@/shared/lib/sanitize";
+import { getAppUrl } from "@/config/env";
 
 /**
  * Operações comuns de Supabase Auth compartilhadas entre produtos do ecossistema.
@@ -43,6 +44,35 @@ export const supabaseAuthAdapter = {
   },
 
   async resetPasswordForEmail(email: string, redirectTo: string): Promise<void> {
+    // Defesa em profundidade contra open-redirect.
+    if (!redirectTo || typeof redirectTo !== "string") throw new AppError("redirectTo inválido");
+
+    const appBase = getAppUrl();
+    let expectedOrigin: string | null = null;
+    try {
+      expectedOrigin = new URL(appBase).origin;
+    } catch {
+      expectedOrigin = null;
+    }
+
+    const runtimeOrigin =
+      typeof window !== "undefined" && window.location?.origin ? window.location.origin : null;
+
+    let redirectUrl: URL;
+    try {
+      redirectUrl = new URL(redirectTo);
+    } catch {
+      throw new AppError("redirectTo inválido");
+    }
+
+    if (runtimeOrigin && redirectUrl.origin === runtimeOrigin) {
+      // ok
+    } else if (expectedOrigin && redirectUrl.origin === expectedOrigin) {
+      // ok
+    } else {
+      throw new AppError("redirectTo inválido");
+    }
+
     const safeEmail = sanitizeEmail(email);
     const { error } = await db.auth.resetPasswordForEmail(safeEmail, { redirectTo });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));

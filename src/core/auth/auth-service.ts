@@ -7,8 +7,40 @@ import { AVATARS_BUCKET } from "@/infra/storage/buckets";
 import { platformAdminService } from "@/core/auth/platform-admin-service";
 import { inspectorAuthService } from "@/core/auth/services/inspector-auth-service";
 import { auditService } from "@/core/audit/audit-service";
+import { getAppUrl } from "@/config/env";
 import type { Profile } from "@/core/auth/types";
 import type { ChangePasswordInput } from "@/core/auth/schemas/auth";
+
+function assertAllowedAuthRedirectUrl(redirectTo: string): void {
+  // Defesa em profundidade contra open-redirect:
+  // só permitimos redirecionamento para a origem do próprio app (ou a origem canônica do ambiente).
+  if (!redirectTo || typeof redirectTo !== "string") {
+    throw new AppError("redirectTo inválido");
+  }
+
+  const appBase = getAppUrl();
+  let expectedOrigin: string | null = null;
+  try {
+    expectedOrigin = new URL(appBase).origin;
+  } catch {
+    expectedOrigin = null;
+  }
+
+  const runtimeOrigin =
+    typeof window !== "undefined" && window.location?.origin ? window.location.origin : null;
+
+  let redirectUrl: URL;
+  try {
+    redirectUrl = new URL(redirectTo);
+  } catch {
+    throw new AppError("redirectTo inválido");
+  }
+
+  if (runtimeOrigin && redirectUrl.origin === runtimeOrigin) return;
+  if (expectedOrigin && redirectUrl.origin === expectedOrigin) return;
+
+  throw new AppError("redirectTo inválido");
+}
 
 export const authService = {
   async signIn(email: string, password: string): Promise<void> {
@@ -42,6 +74,7 @@ export const authService = {
   },
 
   async resetPassword(email: string, redirectTo: string): Promise<void> {
+    assertAllowedAuthRedirectUrl(redirectTo);
     const safeEmail = sanitizeEmail(email);
     const { error } = await db.auth.resetPasswordForEmail(safeEmail, { redirectTo });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));

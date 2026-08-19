@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
 
     const { data: inspection, error: inspectionError } = await supabase
       .from("inspections")
-      .select("id, tenant_id, inspector_id, status, inspection_number, inspection_date")
+      .select("id, tenant_id, created_by, inspector_id, status, inspection_number, inspection_date")
       .eq("id", inspectionId)
       .is("deleted_at", null)
       .maybeSingle();
@@ -95,7 +95,8 @@ Deno.serve(async (req) => {
         integrity_hash: hash,
         qr_code_data: qrCodeData,
         public_url: publicUrl,
-        generated_by: inspection.inspector_id,
+        // O dono canônico da vistoria é `created_by` (regras alinhadas às policies/RLS).
+        generated_by: inspection.created_by,
       })
       .select()
       .single();
