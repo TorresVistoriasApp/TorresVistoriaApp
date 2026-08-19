@@ -17,14 +17,17 @@ function humanizeDbError(message: string): string {
 
 export function getErrorMessage(error: unknown): string {
   if (error instanceof AppError) return error.message;
-  if (error instanceof Error) return humanizeDbError(error.message);
-  if (typeof error === "string") return humanizeDbError(error);
   if (error && typeof error === "object") {
     const record = error as Record<string, unknown>;
+    if (typeof record.code === "string" && record.code) return record.code;
     if (typeof record.error_code === "string") return record.error_code;
     if (typeof record.msg === "string") return humanizeDbError(record.msg);
-    if ("message" in record) return humanizeDbError(String(record.message));
+    if ("message" in record && typeof record.message === "string") {
+      return humanizeDbError(record.message);
+    }
   }
+  if (error instanceof Error) return humanizeDbError(error.message);
+  if (typeof error === "string") return humanizeDbError(error);
   return "Erro desconhecido";
 }
 
