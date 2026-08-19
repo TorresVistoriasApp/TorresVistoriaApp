@@ -4,8 +4,6 @@ import { Resend } from "npm:resend@^6";
 type EmailActionType = "signup" | "recovery" | string;
 
 function htmlEmailBase({ title, body, ctaLabel, ctaUrl }: { title: string; body: string; ctaLabel: string; ctaUrl: string }) {
-  // Templates simples e premium (sem dependência de React/React Email).
-  // O conteúdo deve ser enviado via Resend como HTML.
   return `<!doctype html>
 <html>
   <head>
@@ -56,7 +54,6 @@ function buildVerifyUrl({
   emailActionType: string;
   redirectTo: string;
 }) {
-  // Link canônico do Supabase para completar a ação (confirmar e-mail / reset senha).
   const verifyBase = new URL("/auth/v1/verify", supabaseUrl);
   verifyBase.searchParams.set("token", tokenHash);
   verifyBase.searchParams.set("type", emailActionType);
@@ -64,11 +61,7 @@ function buildVerifyUrl({
   return verifyBase.toString();
 }
 
-function buildAuthEmail({
-  emailActionType,
-}: {
-  emailActionType: EmailActionType;
-}) {
+function buildAuthEmail({ emailActionType }: { emailActionType: EmailActionType }) {
   if (emailActionType === "signup") {
     return {
       subject: "Confirme seu endereço de e-mail",
@@ -90,6 +83,10 @@ function buildAuthEmail({
   return null;
 }
 
+function normalizeHookSecret(raw: string): string {
+  return raw.trim().replace(/^v1,whsec_/, "");
+}
+
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
 const sendEmailHookSecret = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
 const resendFromEmail = Deno.env.get("RESEND_FROM_EMAIL") ?? "noreply@torresconsultas.com.br";
@@ -107,27 +104,43 @@ if (!supabaseUrl) {
 }
 
 const resend = new Resend(resendApiKey);
-const hookSecret = sendEmailHookSecret.replace("v1,whsec_", "");
+const hookSecret = normalizeHookSecret(sendEmailHookSecret);
 
 Deno.serve(async (req) => {
-  try {
-    if (req.method !== "POST") {
-      return new Response("not allowed", { status: 405 });
-    }
+  if (req.method !== "POST") {
+    return new Response("not allowed", { status: 405 });
+  }
 
-    const payload = await req.text();
-    const headers = Object.fromEntries(req.headers);
+  const payload = await req.text();
+  const headers = Object.fromEntries(req.headers);
 
-    const wh = new Webhook(hookSecret);
-    const verified = wh.verify(payload, headers) as {
-      user: { email: string };
-      email_data: {
-        token_hash: string;
-        redirect_to: string;
-        email_action_type: string;
-      };
+  let verified: {
+    user: { email: string };
+    email_data: {
+      token_hash: string;
+      redirect_to: string;
+      email_action_type: string;
     };
+  };
 
+  try {
+    const wh = new Webhook(hookSecret);
+    verified = wh.verify(payload, headers) as typeof verified;
+  } catch (error) {
+    const hasWebhookHeaders = Boolean(
+      headers["webhook-signature"] ?? headers["Webhook-Signature"],
+    );
+    console.error("[send-email] webhook verify failed", {
+      hasWebhookHeaders,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      headers: { "Content-Type": "application/json" },
+      status: 401,
+    });
+  }
+
+  try {
     const email = verified.user?.email;
     const { token_hash, redirect_to, email_action_type } = verified.email_data;
 
@@ -142,13 +155,9 @@ Deno.serve(async (req) => {
       redirectTo: redirect_to,
     });
 
-    const authEmail = buildAuthEmail({
-      emailActionType: email_action_type,
-    });
-
-    // Se for outro tipo de e-mail (invite/magiclink/etc.), a entrega pode ser feita via outro fluxo no futuro.
+    const authEmail = buildAuthEmail({ emailActionType: email_action_type });
     if (!authEmail) {
-      return new Response(JSON.stringify({ skipped: true }), {
+      return new Response(JSON.stringify({}), {
         headers: { "Content-Type": "application/json" },
         status: 200,
       });
@@ -167,19 +176,22 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      throw error;
+      console.error("[send-email] resend error", error);
+      return new Response(JSON.stringify({ error: "Resend delivery failed" }), {
+        headers: { "Content-Type": "application/json" },
+        status: 500,
+      });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({}), {
       headers: { "Content-Type": "application/json" },
       status: 200,
     });
-  } catch {
-    // Evita vazar detalhes do payload/assinatura para potenciais atacantes.
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+  } catch (error) {
+    console.error("[send-email] unexpected error", error);
+    return new Response(JSON.stringify({ error: "Internal error" }), {
       headers: { "Content-Type": "application/json" },
-      status: 401,
+      status: 500,
     });
   }
 });
-
