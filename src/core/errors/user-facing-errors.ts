@@ -1,3 +1,6 @@
+const TOO_MANY_EMAIL_ATTEMPTS =
+  "Muitas tentativas realizadas. Aguarde um momento e tente novamente.";
+
 const ERROR_TRANSLATIONS: Array<{ pattern: RegExp; message: string }> = [
   {
     pattern: /already been registered|already registered|user already exists|email address is already/i,
@@ -36,6 +39,16 @@ const ERROR_TRANSLATIONS: Array<{ pattern: RegExp; message: string }> = [
   {
     pattern: /failed to fetch|network|edge function|non-2xx/i,
     message: "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.",
+  },
+  {
+    pattern:
+      /over_email_send_rate_limit|over_request_rate_limit|email rate limit exceeded|too many emails|rate limit/i,
+    message: TOO_MANY_EMAIL_ATTEMPTS,
+  },
+  {
+    pattern: /hook.*failed|error sending.*email|send.*email.*hook/i,
+    message:
+      "Não foi possível enviar o e-mail no momento. Tente novamente em instantes ou entre em contato com o suporte.",
   },
   {
     pattern: /duplicate key|unique constraint/i,
@@ -83,4 +96,5 @@ export const USER_MESSAGES = {
     "A conta encontra-se desativada. Entre em contato com o administrador do sistema.",
   notAuthenticated: "Sessão não autenticada. Efetue login novamente.",
   emptyFunctionResponse: "O servidor não retornou resposta para a operação solicitada.",
+  tooManyEmailAttempts: TOO_MANY_EMAIL_ATTEMPTS,
 } as const;

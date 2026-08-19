@@ -3,10 +3,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/core/auth/use-auth";
-import { checkRateLimit, formatRetryAfter } from "@/core/auth/rate-limit";
+import { checkRateLimit, tooManyAttemptsMessage } from "@/core/auth/rate-limit";
 import { forgotPasswordSchema, type ForgotPasswordInput } from "@/core/auth/schemas/auth";
 import { EmailField } from "@/core/auth/components/email-field";
 import { TenantAuthPanel } from "@/core/auth/components/tenant-auth-panel";
+import { AppError, getErrorMessage } from "@/core/errors/app-error";
+import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 import { Button } from "@/shared/ui/button";
 import { ROUTES } from "@/config/routes";
 
@@ -29,15 +31,19 @@ export function ForgotPasswordPage() {
     const global = checkRateLimit("reset:global", 20, 15 * 60 * 1000);
     if (!perEmail.allowed || !global.allowed) {
       const retry = Math.max(perEmail.retryAfterMs, global.retryAfterMs);
-      setError(`Muitas tentativas. Tente novamente em ${formatRetryAfter(retry)}.`);
+      setError(tooManyAttemptsMessage(retry));
       return;
     }
 
     try {
       await resetPassword(email);
       setMessage("Se o e-mail estiver cadastrado, enviaremos um link de recuperação.");
-    } catch {
-      setMessage("Se o e-mail estiver cadastrado, enviaremos um link de recuperação.");
+    } catch (err) {
+      const message =
+        err instanceof AppError
+          ? err.message
+          : formatUserFacingError(getErrorMessage(err));
+      setError(message);
     }
   });
 
