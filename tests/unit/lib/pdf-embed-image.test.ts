@@ -34,7 +34,7 @@ describe("sniffImageMime", () => {
     expect(sniffImageMime(bytes)).toBe("image/webp");
   });
 
-  it("rejeita HTML disfarçado de imagem", () => {
+  it("não classifica HTML como imagem", () => {
     const html = new TextEncoder().encode("<!DOCTYPE html><html>");
     expect(sniffImageMime(html)).toBeNull();
   });

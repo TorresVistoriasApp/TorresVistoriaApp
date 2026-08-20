@@ -37,7 +37,7 @@ function encodeCanvas(
   const canvas = document.createElement("canvas");
   canvas.width = size.width;
   canvas.height = size.height;
-  const ctx = canvas.getContext("2d", { alpha: preferAlpha });
+  const ctx = canvas.getContext("2d");
   if (!ctx) return undefined;
 
   if (preferAlpha) {
@@ -71,7 +71,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Magic bytes — evita tentar decodificar HTML/JSON devolvido por URL inválida. */
+/** Magic bytes — ajuda a tipar blobs octet-stream; não bloqueia decode se falhar. */
 export function sniffImageMime(bytes: Uint8Array): string | null {
   if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
     return "image/jpeg";
@@ -166,10 +166,51 @@ async function svgToDataUrl(
   }
 }
 
+async function rasterToDataUrl(
+  blob: Blob,
+  maxWidth: number,
+  maxHeight: number,
+  preferAlpha: boolean,
+  jpegQuality: number,
+): Promise<string | undefined> {
+  // 1) ImageBitmap (rápido quando funciona)
+  try {
+    const bitmap = await createImageBitmap(blob);
+    try {
+      if (!bitmap.width || !bitmap.height) return undefined;
+      const size = fitWithin(bitmap.width, bitmap.height, maxWidth, maxHeight);
+      return encodeCanvas(
+        size,
+        (ctx, { width, height }) => ctx.drawImage(bitmap, 0, 0, width, height),
+        preferAlpha,
+        jpegQuality,
+      );
+    } finally {
+      bitmap.close();
+    }
+  } catch {
+    // segue para HTMLImageElement
+  }
+
+  // 2) Mesmo decoder da galeria (<img>)
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const image = await loadImage(objectUrl);
+    const size = fitWithin(image.naturalWidth, image.naturalHeight, maxWidth, maxHeight);
+    return encodeCanvas(
+      size,
+      (ctx, { width, height }) => ctx.drawImage(image, 0, 0, width, height),
+      preferAlpha,
+      jpegQuality,
+    );
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 /**
  * Converte Blob → data URL JPEG/PNG para pdfmake.
- * Usa HTMLImageElement (mesmo decoder da galeria), não createImageBitmap —
- * alguns WebP do Storage falham no ImageBitmap e passavam como "indisponível".
+ * pdfmake não embute WebP: re-encode via canvas.
  */
 export async function blobToPdfDataUrl(
   source: Blob,
@@ -185,11 +226,27 @@ export async function blobToPdfDataUrl(
 
   try {
     const buffer = await source.arrayBuffer();
+    if (buffer.byteLength < 8) return undefined;
+
     const bytes = new Uint8Array(buffer);
     const sniffed = sniffImageMime(bytes);
-    if (!sniffed) return undefined;
+    const type =
+      sniffed ??
+      (source.type?.startsWith("image/") ? source.type : null) ??
+      (mimeHint?.startsWith("image/") ? mimeHint : null) ??
+      "image/webp";
 
-    if (sniffed.startsWith(SVG_MIME)) {
+    // Resposta HTML/JSON de erro (não é imagem)
+    if (!sniffed && source.type && !source.type.startsWith("image/")) {
+      const head = new TextDecoder().decode(bytes.slice(0, 64)).trim().toLowerCase();
+      if (head.startsWith("<!doctype") || head.startsWith("<html") || head.startsWith("{")) {
+        return undefined;
+      }
+    }
+
+    const typed = new Blob([buffer], { type });
+
+    if (type.startsWith(SVG_MIME)) {
       return await svgToDataUrl(
         new TextDecoder().decode(bytes),
         maxWidth,
@@ -199,22 +256,7 @@ export async function blobToPdfDataUrl(
       );
     }
 
-    const typed = new Blob([buffer], {
-      type: sniffed || ensureImageBlob(source, mimeHint).type,
-    });
-    const objectUrl = URL.createObjectURL(typed);
-    try {
-      const image = await loadImage(objectUrl);
-      const size = fitWithin(image.naturalWidth, image.naturalHeight, maxWidth, maxHeight);
-      return encodeCanvas(
-        size,
-        (ctx, { width, height }) => ctx.drawImage(image, 0, 0, width, height),
-        preferAlpha,
-        jpegQuality,
-      );
-    } finally {
-      URL.revokeObjectURL(objectUrl);
-    }
+    return await rasterToDataUrl(typed, maxWidth, maxHeight, preferAlpha, jpegQuality);
   } catch {
     return undefined;
   }
