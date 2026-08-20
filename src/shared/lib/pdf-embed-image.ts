@@ -5,11 +5,14 @@ export type PdfEmbedImageOptions = {
   preferAlpha?: boolean;
   /** Qualidade JPEG (0–1). Ignorado para PNG. */
   jpegQuality?: number;
+  /** MIME sugerido quando o blob vem sem Content-Type (ex.: download do Storage). */
+  mimeHint?: string;
 };
 
 type Size = { width: number; height: number };
 
 const SVG_MIME = "image/svg+xml";
+const EMPTY_DATA_URL = "data:,";
 
 function fitWithin(
   width: number,
@@ -45,7 +48,13 @@ function encodeCanvas(
   }
   paint(ctx, size);
 
-  return preferAlpha ? canvas.toDataURL("image/png") : canvas.toDataURL("image/jpeg", jpegQuality);
+  const dataUrl = preferAlpha
+    ? canvas.toDataURL("image/png")
+    : canvas.toDataURL("image/jpeg", jpegQuality);
+
+  // Canvas com dimensão inválida / encoder falhou → "data:,"
+  if (!dataUrl || dataUrl === EMPTY_DATA_URL || dataUrl.length < 32) return undefined;
+  return dataUrl;
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -55,6 +64,28 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     image.onerror = () => reject(new Error("Falha ao carregar imagem"));
     image.src = src;
   });
+}
+
+/** Garante MIME de imagem — Storage às vezes devolve application/octet-stream. */
+export function ensureImageBlob(blob: Blob, mimeHint?: string): Blob {
+  const type = blob.type?.toLowerCase() ?? "";
+  if (type.startsWith("image/")) return blob;
+  const hint = mimeHint?.toLowerCase();
+  if (hint?.startsWith("image/")) return new Blob([blob], { type: hint });
+  return new Blob([blob], { type: "image/webp" });
+}
+
+async function decodeRaster(blob: Blob): Promise<CanvasImageSource> {
+  try {
+    return await createImageBitmap(blob);
+  } catch {
+    const objectUrl = URL.createObjectURL(blob);
+    try {
+      return await loadImage(objectUrl);
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
 }
 
 function readSvgSize(svg: Element): Size | null {
@@ -115,12 +146,11 @@ async function svgToDataUrl(
 }
 
 /**
- * Carrega uma imagem e gera data URL otimizada para pdfmake.
+ * Converte um Blob de imagem em data URL otimizada para pdfmake.
  * pdfmake não embute WebP nem SVG de forma confiável: usa PNG (alpha) ou JPEG (fotos).
- * Bitmaps são redimensionados só quando ultrapassam o teto; remove metadados via re-encode.
  */
-export async function imageUrlToPdfDataUrl(
-  url: string,
+export async function blobToPdfDataUrl(
+  source: Blob,
   options: PdfEmbedImageOptions = {},
 ): Promise<string | undefined> {
   const {
@@ -128,20 +158,30 @@ export async function imageUrlToPdfDataUrl(
     maxHeight = 1200,
     preferAlpha = false,
     jpegQuality = 0.8,
+    mimeHint,
   } = options;
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) return undefined;
-    const blob = await response.blob();
+    const blob = ensureImageBlob(source, mimeHint);
 
     if (blob.type.startsWith(SVG_MIME)) {
       return await svgToDataUrl(await blob.text(), maxWidth, maxHeight, preferAlpha, jpegQuality);
     }
 
-    const bitmap = await createImageBitmap(blob);
+    const bitmap = await decodeRaster(blob);
     try {
-      const size = fitWithin(bitmap.width, bitmap.height, maxWidth, maxHeight);
+      const intrinsicWidth =
+        "naturalWidth" in bitmap && bitmap.naturalWidth > 0
+          ? bitmap.naturalWidth
+          : (bitmap as ImageBitmap).width;
+      const intrinsicHeight =
+        "naturalHeight" in bitmap && bitmap.naturalHeight > 0
+          ? bitmap.naturalHeight
+          : (bitmap as ImageBitmap).height;
+
+      if (!intrinsicWidth || !intrinsicHeight) return undefined;
+
+      const size = fitWithin(intrinsicWidth, intrinsicHeight, maxWidth, maxHeight);
       return encodeCanvas(
         size,
         (ctx, { width, height }) => ctx.drawImage(bitmap, 0, 0, width, height),
@@ -149,9 +189,50 @@ export async function imageUrlToPdfDataUrl(
         jpegQuality,
       );
     } finally {
-      bitmap.close();
+      if (typeof ImageBitmap !== "undefined" && bitmap instanceof ImageBitmap) {
+        bitmap.close();
+      }
     }
   } catch {
     return undefined;
   }
+}
+
+/**
+ * Carrega uma imagem (URL http(s), path relativo ou blob:) e gera data URL para pdfmake.
+ */
+export async function imageUrlToPdfDataUrl(
+  url: string,
+  options: PdfEmbedImageOptions = {},
+): Promise<string | undefined> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return undefined;
+    const blob = await response.blob();
+    return await blobToPdfDataUrl(blob, options);
+  } catch {
+    return undefined;
+  }
+}
+
+/** Executa async map com limite de paralelismo — evita OOM ao embutir dezenas de fotos. */
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  mapper: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  if (items.length === 0) return [];
+  const limit = Math.max(1, Math.min(concurrency, items.length));
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await mapper(items[index]!, index);
+    }
+  }
+
+  await Promise.all(Array.from({ length: limit }, () => worker()));
+  return results;
 }
