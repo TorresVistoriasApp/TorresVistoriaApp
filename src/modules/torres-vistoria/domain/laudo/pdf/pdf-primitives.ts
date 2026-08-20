@@ -569,7 +569,7 @@ export function tableHeaderCell(text: string): PdfNode {
   };
 }
 
-/** Fotografia: cover + filete cinza 0.5pt. Sem caixa navy, sem matting branco. */
+/** Fotografia: fit + filete cinza 0.5pt. Sem caixa navy, sem matting branco. */
 export function framedImage(
   dataUrl: string,
   options: { width: number; height: number; fill?: string },
@@ -582,12 +582,9 @@ export function framedImage(
         [
           {
             image: dataUrl,
-            cover: {
-              width: options.width,
-              height: options.height,
-              valign: "center",
-              align: "center",
-            },
+            // `fit` é mais estável que `cover` no pdfmake 0.2 com dezenas de JPEGs.
+            fit: [options.width, options.height],
+            alignment: "center",
           },
         ],
       ],

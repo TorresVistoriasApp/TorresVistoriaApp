@@ -37,7 +37,7 @@ function encodeCanvas(
   const canvas = document.createElement("canvas");
   canvas.width = size.width;
   canvas.height = size.height;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { alpha: preferAlpha });
   if (!ctx) return undefined;
 
   if (preferAlpha) {
@@ -52,7 +52,6 @@ function encodeCanvas(
     ? canvas.toDataURL("image/png")
     : canvas.toDataURL("image/jpeg", jpegQuality);
 
-  // Canvas com dimensão inválida / encoder falhou → "data:,"
   if (!dataUrl || dataUrl === EMPTY_DATA_URL || dataUrl.length < 32) return undefined;
   return dataUrl;
 }
@@ -60,10 +59,50 @@ function encodeCanvas(
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
-    image.onload = () => resolve(image);
+    image.onload = () => {
+      if (image.naturalWidth < 1 || image.naturalHeight < 1) {
+        reject(new Error("Imagem sem dimensões"));
+        return;
+      }
+      resolve(image);
+    };
     image.onerror = () => reject(new Error("Falha ao carregar imagem"));
     image.src = src;
   });
+}
+
+/** Magic bytes — evita tentar decodificar HTML/JSON devolvido por URL inválida. */
+export function sniffImageMime(bytes: Uint8Array): string | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47
+  ) {
+    return "image/png";
+  }
+  if (
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  ) {
+    return "image/webp";
+  }
+  if (bytes.length >= 5) {
+    const head = String.fromCharCode(bytes[0]!, bytes[1]!, bytes[2]!, bytes[3]!, bytes[4]!);
+    if (head.startsWith("<svg") || head.startsWith("<?xml")) return SVG_MIME;
+  }
+  return null;
 }
 
 /** Garante MIME de imagem — Storage às vezes devolve application/octet-stream. */
@@ -75,26 +114,13 @@ export function ensureImageBlob(blob: Blob, mimeHint?: string): Blob {
   return new Blob([blob], { type: "image/webp" });
 }
 
-async function decodeRaster(blob: Blob): Promise<CanvasImageSource> {
-  try {
-    return await createImageBitmap(blob);
-  } catch {
-    const objectUrl = URL.createObjectURL(blob);
-    try {
-      return await loadImage(objectUrl);
-    } finally {
-      URL.revokeObjectURL(objectUrl);
-    }
-  }
-}
-
 function readSvgSize(svg: Element): Size | null {
   const viewBox = svg
     .getAttribute("viewBox")
     ?.split(/[\s,]+/)
     .map(Number);
-  if (viewBox?.length === 4 && viewBox[2] > 0 && viewBox[3] > 0) {
-    return { width: viewBox[2], height: viewBox[3] };
+  if (viewBox?.length === 4 && viewBox[2]! > 0 && viewBox[3]! > 0) {
+    return { width: viewBox[2]!, height: viewBox[3]! };
   }
 
   const width = Number.parseFloat(svg.getAttribute("width") ?? "");
@@ -104,11 +130,6 @@ function readSvgSize(svg: Element): Size | null {
   return null;
 }
 
-/**
- * Vetores não têm resolução nativa: rasterizamos direto no tamanho pedido, sem o teto
- * de 1x usado para bitmaps. As dimensões são gravadas no próprio SVG antes de virar
- * imagem para que todos os engines rasterizem na resolução final em vez de ampliar.
- */
 async function svgToDataUrl(
   markup: string,
   maxWidth: number,
@@ -146,8 +167,9 @@ async function svgToDataUrl(
 }
 
 /**
- * Converte um Blob de imagem em data URL otimizada para pdfmake.
- * pdfmake não embute WebP nem SVG de forma confiável: usa PNG (alpha) ou JPEG (fotos).
+ * Converte Blob → data URL JPEG/PNG para pdfmake.
+ * Usa HTMLImageElement (mesmo decoder da galeria), não createImageBitmap —
+ * alguns WebP do Storage falham no ImageBitmap e passavam como "indisponível".
  */
 export async function blobToPdfDataUrl(
   source: Blob,
@@ -162,40 +184,50 @@ export async function blobToPdfDataUrl(
   } = options;
 
   try {
-    const blob = ensureImageBlob(source, mimeHint);
+    const buffer = await source.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const sniffed = sniffImageMime(bytes);
+    if (!sniffed) return undefined;
 
-    if (blob.type.startsWith(SVG_MIME)) {
-      return await svgToDataUrl(await blob.text(), maxWidth, maxHeight, preferAlpha, jpegQuality);
+    if (sniffed.startsWith(SVG_MIME)) {
+      return await svgToDataUrl(
+        new TextDecoder().decode(bytes),
+        maxWidth,
+        maxHeight,
+        preferAlpha,
+        jpegQuality,
+      );
     }
 
-    const bitmap = await decodeRaster(blob);
+    const typed = new Blob([buffer], {
+      type: sniffed || ensureImageBlob(source, mimeHint).type,
+    });
+    const objectUrl = URL.createObjectURL(typed);
     try {
-      const intrinsicWidth =
-        "naturalWidth" in bitmap && bitmap.naturalWidth > 0
-          ? bitmap.naturalWidth
-          : (bitmap as ImageBitmap).width;
-      const intrinsicHeight =
-        "naturalHeight" in bitmap && bitmap.naturalHeight > 0
-          ? bitmap.naturalHeight
-          : (bitmap as ImageBitmap).height;
-
-      if (!intrinsicWidth || !intrinsicHeight) return undefined;
-
-      const size = fitWithin(intrinsicWidth, intrinsicHeight, maxWidth, maxHeight);
+      const image = await loadImage(objectUrl);
+      const size = fitWithin(image.naturalWidth, image.naturalHeight, maxWidth, maxHeight);
       return encodeCanvas(
         size,
-        (ctx, { width, height }) => ctx.drawImage(bitmap, 0, 0, width, height),
+        (ctx, { width, height }) => ctx.drawImage(image, 0, 0, width, height),
         preferAlpha,
         jpegQuality,
       );
     } finally {
-      if (typeof ImageBitmap !== "undefined" && bitmap instanceof ImageBitmap) {
-        bitmap.close();
-      }
+      URL.revokeObjectURL(objectUrl);
     }
   } catch {
     return undefined;
   }
+}
+
+function isFetchableUrl(url: string): boolean {
+  return (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:") ||
+    url.startsWith("/")
+  );
 }
 
 /**
@@ -205,8 +237,10 @@ export async function imageUrlToPdfDataUrl(
   url: string,
   options: PdfEmbedImageOptions = {},
 ): Promise<string | undefined> {
+  if (!url || !isFetchableUrl(url)) return undefined;
+
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) return undefined;
     const blob = await response.blob();
     return await blobToPdfDataUrl(blob, options);
