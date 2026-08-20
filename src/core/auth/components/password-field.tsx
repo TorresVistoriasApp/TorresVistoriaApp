@@ -16,15 +16,17 @@ export function PasswordField({
   labelAction,
   className,
   autoComplete = "current-password",
+  id,
   ...inputProps
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
   return (
-    <FormField label={label} error={error} labelAction={labelAction}>
+    <FormField label={label} error={error} labelAction={labelAction} htmlFor={id}>
       <div className="relative">
         <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
+          id={id}
           type={visible ? "text" : "password"}
           autoComplete={autoComplete}
           className={`touch-target pl-11 pr-11 ${className ?? ""}`}

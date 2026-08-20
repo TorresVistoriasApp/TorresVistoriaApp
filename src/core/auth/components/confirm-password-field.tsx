@@ -12,11 +12,13 @@ export function ConfirmPasswordField({
   error,
   className,
   autoComplete = "new-password",
+  id,
   ...inputProps
 }: ConfirmPasswordFieldProps) {
   return (
-    <FormField label={label} error={error}>
+    <FormField label={label} error={error} htmlFor={id}>
       <Input
+        id={id}
         type="password"
         autoComplete={autoComplete}
         className={`touch-target ${className ?? ""}`}

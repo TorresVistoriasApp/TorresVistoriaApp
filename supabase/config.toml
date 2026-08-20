@@ -100,8 +100,11 @@ verify_jwt = false
 # (Authentication → Hooks → Send Email). NÃO use secrets = "env(...)" aqui —
 # o config push remoto pode sobrescrever o secret do Dashboard com valor vazio.
 #
+# Desabilitado no config versionado: o hook de produção vive no Dashboard.
+# Isso permite `supabase start` / `npm run test:db` local sem secrets no repo.
+#
 [auth.hook.send_email]
-enabled = true
+enabled = false
 uri = "https://ljzttzfjtskblxekmquu.supabase.co/functions/v1/send-email"
 
 [functions.send-email]

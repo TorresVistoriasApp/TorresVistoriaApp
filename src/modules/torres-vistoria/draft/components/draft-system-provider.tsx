@@ -11,6 +11,7 @@ import { useOfflineSyncEngine } from "@/modules/torres-vistoria/draft/hooks/use-
 import { useAuth } from "@/core/auth/use-auth";
 import { registerSessionCleanup } from "@/core/auth/session-cleanup";
 import { offlineStore } from "@/modules/torres-vistoria/draft/lib/offline-store";
+import { clearActiveDraftLocalState } from "@/modules/torres-vistoria/draft/services/draft-service";
 import { useToast } from "@/shared/hooks/use-toast";
 
 export function DraftSystemProvider({ children }: { children: React.ReactNode }) {
@@ -26,9 +27,16 @@ export function DraftSystemProvider({ children }: { children: React.ReactNode })
 
   useOfflineSyncEngine();
 
-  // Rascunhos ficam em IndexedDB: o logout precisa apagá-los para não vazar
-  // dados de vistoria entre usuários do mesmo dispositivo.
-  useEffect(() => registerSessionCleanup(() => offlineStore.clearAll()), []);
+  // Rascunhos ficam em IndexedDB e localStorage: o logout precisa apagá-los
+  // para não vazar dados de vistoria entre usuários do mesmo dispositivo.
+  useEffect(
+    () =>
+      registerSessionCleanup(async () => {
+        clearActiveDraftLocalState();
+        await offlineStore.clearAll();
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (!user || cleanupRanRef.current) return;

@@ -24,9 +24,9 @@ test.describe("Autenticação", () => {
       });
     });
 
-    test("vistoriador não acessa financeiro (acesso negado)", async ({ page }) => {
+    test("vistoriador não acessa despesas da empresa (acesso negado)", async ({ page }) => {
       await loginAsDemo(page, "vistoriador");
-      await page.goto("/financeiro");
+      await page.goto("/financeiro/despesas");
       await expect(page.getByText("Acesso negado")).toBeVisible();
     });
   });

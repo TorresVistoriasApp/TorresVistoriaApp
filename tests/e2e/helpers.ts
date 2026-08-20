@@ -37,7 +37,7 @@ export async function loginAsDemo(page: Page, role: DemoRole = "vistoriador"): P
   await page.getByLabel("Senha", { exact: true }).fill(password);
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: /^Entrar$/i }).click();
-  await expect(page).toHaveURL("/", { timeout: 15_000 });
+  await expect(page).toHaveURL("/dashboard", { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 
   const cookieAccept = page.getByRole("button", { name: /Aceitar essenciais/i });
