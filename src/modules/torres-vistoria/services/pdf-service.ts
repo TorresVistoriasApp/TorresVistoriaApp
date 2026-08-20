@@ -3,6 +3,7 @@ import { AppError, getEdgeErrorMessage, getErrorMessage, throwIfEdgeError } from
 import type { Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
+import { withSignedPhotoUrls } from "@/modules/torres-vistoria/services/photo-service";
 import { PDF_TABLE_LAYOUTS } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
 import { buildLaudoDocDefinition } from "@/modules/torres-vistoria/domain/laudo/laudo-doc-definition";
 import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoPhoto, LaudoSettings } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
@@ -29,14 +30,14 @@ import {
 const LOGO_PRINT_WIDTH_PX = 448;
 const VEHICLE_TOP_VIEW_PRINT_WIDTH_PX = 704;
 
-/** Evita OOM / falhas silenciosas ao decodificar dezenas de WebP em paralelo. */
-const PHOTO_EMBED_CONCURRENCY = 4;
+/** Poucas em paralelo: decode WebP+canvas em massa falhava em parte das fotos. */
+const PHOTO_EMBED_CONCURRENCY = 2;
 
 const PHOTO_EMBED_OPTIONS = {
   maxWidth: 960,
   maxHeight: 720,
   preferAlpha: false,
-  jpegQuality: 0.8,
+  jpegQuality: 0.82,
 } as const;
 
 async function sha256Bytes(data: Blob | string): Promise<string> {
@@ -63,9 +64,13 @@ async function resolveVerificationCode(inspectionId: string): Promise<string> {
 }
 
 async function downloadStorageBlob(path: string): Promise<Blob | null> {
-  const { data, error } = await db.storage.from(STORAGE_BUCKET).download(path);
-  if (error || !data) return null;
-  return data;
+  try {
+    const { data, error } = await db.storage.from(STORAGE_BUCKET).download(path);
+    if (error || !data || data.size < 32) return null;
+    return data;
+  } catch {
+    return null;
+  }
 }
 
 async function embedBlobWithRetry(
@@ -75,55 +80,82 @@ async function embedBlobWithRetry(
   const options = { ...PHOTO_EMBED_OPTIONS, mimeHint };
   const first = await blobToPdfDataUrl(blob, options);
   if (first) return first;
-  // Segunda tentativa: falhas transitórias de decode/GPU no browser.
   return blobToPdfDataUrl(blob, options);
+}
+
+function isUsablePhotoUrl(url: string | null | undefined): url is string {
+  if (!url) return false;
+  return (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  );
 }
 
 /**
  * Incorpora fotos para o PDF.
- * Preferimos download autenticado pelo storage_path (bucket privado) — fetch da
- * URL assinada falhava em parte das fotos sob carga/CORS/MIME vazio.
- * Reusa dataUrl já presente (2ª passagem do registro do laudo).
+ * 1) Renova URLs assinadas (as da tela podem ter expirado no cache)
+ * 2) Prefere fetch da URL que a galeria já exibe
+ * 3) Fallback: download autenticado + thumbnail
  */
 async function loadPhotoDataUrls(photos: InspectionPhoto[]): Promise<LaudoPhoto[]> {
-  return mapWithConcurrency(photos, PHOTO_EMBED_CONCURRENCY, async (photo) => {
-    const existing = (photo as LaudoPhoto).dataUrl;
-    if (existing) return { ...photo, dataUrl: existing };
+  if (photos.length === 0) return [];
 
-    let dataUrl: string | undefined;
+  const allHaveEmbed = photos.every((photo) => Boolean((photo as LaudoPhoto).dataUrl));
+  const sourcePhotos = allHaveEmbed ? photos : await withSignedPhotoUrls(photos);
 
-    if (photo.storage_path) {
-      const full = await downloadStorageBlob(photo.storage_path);
-      if (full) {
-        dataUrl = await embedBlobWithRetry(full, photo.mime_type);
+  const embedded = await mapWithConcurrency(
+    sourcePhotos,
+    PHOTO_EMBED_CONCURRENCY,
+    async (photo) => {
+      const existing = (photo as LaudoPhoto).dataUrl;
+      if (existing) return { ...photo, dataUrl: existing };
+
+      let dataUrl: string | undefined;
+
+      // Mesma origem visual da UI — signed URL / blob URL.
+      if (isUsablePhotoUrl(photo.public_url)) {
+        dataUrl = await imageUrlToPdfDataUrl(photo.public_url, {
+          ...PHOTO_EMBED_OPTIONS,
+          mimeHint: photo.mime_type,
+        });
       }
-    }
 
-    if (!dataUrl && photo.public_url) {
-      dataUrl = await imageUrlToPdfDataUrl(photo.public_url, {
-        ...PHOTO_EMBED_OPTIONS,
-        mimeHint: photo.mime_type,
-      });
-    }
-
-    if (!dataUrl) {
-      const thumbStoragePath = photo.storage_path
-        ? buildInspectionPhotoThumbnailPath(photo.storage_path)
-        : null;
-      if (thumbStoragePath) {
-        const thumb = await downloadStorageBlob(thumbStoragePath);
-        if (thumb) dataUrl = await embedBlobWithRetry(thumb, photo.mime_type);
+      if (!dataUrl && photo.storage_path) {
+        const full = await downloadStorageBlob(photo.storage_path);
+        if (full) dataUrl = await embedBlobWithRetry(full, photo.mime_type);
       }
-      if (!dataUrl && photo.thumbnail_url) {
+
+      if (!dataUrl && isUsablePhotoUrl(photo.thumbnail_url)) {
         dataUrl = await imageUrlToPdfDataUrl(photo.thumbnail_url, {
           ...PHOTO_EMBED_OPTIONS,
           mimeHint: photo.mime_type,
         });
       }
-    }
 
-    return { ...photo, dataUrl };
-  });
+      if (!dataUrl && photo.storage_path) {
+        const thumb = await downloadStorageBlob(
+          buildInspectionPhotoThumbnailPath(photo.storage_path),
+        );
+        if (thumb) dataUrl = await embedBlobWithRetry(thumb, photo.mime_type);
+      }
+
+      return { ...photo, dataUrl };
+    },
+  );
+
+  const ok = embedded.filter((photo) => photo.dataUrl).length;
+  if (photos.length > 0 && ok === 0) {
+    throw new AppError(
+      "Não foi possível incorporar as fotos no PDF. Atualize a página e tente novamente.",
+    );
+  }
+  if (ok < photos.length) {
+    console.warn(`[pdf] ${photos.length - ok}/${photos.length} foto(s) sem embed no laudo`);
+  }
+
+  return embedded;
 }
 
 async function getPdfMake() {
