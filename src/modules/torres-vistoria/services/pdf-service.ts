@@ -5,15 +5,22 @@ import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
 import { PDF_TABLE_LAYOUTS } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
 import { buildLaudoDocDefinition } from "@/modules/torres-vistoria/domain/laudo/laudo-doc-definition";
-import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoSettings } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
+import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoPhoto, LaudoSettings } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
 import { SILHOUETTE_HEIGHT, SILHOUETTE_WIDTH } from "@/modules/torres-vistoria/domain/laudo/pdf/paint-silhouette";
 import { PUBLIC_IMAGES } from "@/shared/lib/public-images";
-import { imageUrlToPdfDataUrl } from "@/shared/lib/pdf-embed-image";
+import {
+  blobToPdfDataUrl,
+  imageUrlToPdfDataUrl,
+  mapWithConcurrency,
+} from "@/shared/lib/pdf-embed-image";
 import { optimizePdfBlob } from "@/shared/lib/optimize-pdf";
 import { getBrandLogoPath } from "@/modules/torres-vistoria/domain/vehicle-brand-logos";
 import { buildVerificationCode, formatLaudoNumber } from "@/modules/torres-vistoria/domain/laudo/verification-code";
-import { REPORTS_BUCKET } from "@/infra/storage/buckets";
-import { buildReportStoragePath } from "@/infra/storage/paths";
+import { REPORTS_BUCKET, STORAGE_BUCKET } from "@/infra/storage/buckets";
+import {
+  buildInspectionPhotoThumbnailPath,
+  buildReportStoragePath,
+} from "@/infra/storage/paths";
 
 /**
  * A logo ocupa 108pt de largura no cabeçalho compacto do laudo; rasterizar o
@@ -21,6 +28,16 @@ import { buildReportStoragePath } from "@/infra/storage/paths";
  */
 const LOGO_PRINT_WIDTH_PX = 448;
 const VEHICLE_TOP_VIEW_PRINT_WIDTH_PX = 704;
+
+/** Evita OOM / falhas silenciosas ao decodificar dezenas de WebP em paralelo. */
+const PHOTO_EMBED_CONCURRENCY = 4;
+
+const PHOTO_EMBED_OPTIONS = {
+  maxWidth: 960,
+  maxHeight: 720,
+  preferAlpha: false,
+  jpegQuality: 0.8,
+} as const;
 
 async function sha256Bytes(data: Blob | string): Promise<string> {
   const buffer = typeof data === "string" ? new TextEncoder().encode(data) : await data.arrayBuffer();
@@ -45,20 +62,68 @@ async function resolveVerificationCode(inspectionId: string): Promise<string> {
   return buildVerificationCode();
 }
 
-async function loadPhotoDataUrls(photos: InspectionPhoto[]) {
-  return Promise.all(
-    photos.map(async (photo) => ({
-      ...photo,
-      dataUrl: photo.public_url
-        ? await imageUrlToPdfDataUrl(photo.public_url, {
-            maxWidth: 960,
-            maxHeight: 720,
-            preferAlpha: false,
-            jpegQuality: 0.8,
-          })
-        : undefined,
-    })),
-  );
+async function downloadStorageBlob(path: string): Promise<Blob | null> {
+  const { data, error } = await db.storage.from(STORAGE_BUCKET).download(path);
+  if (error || !data) return null;
+  return data;
+}
+
+async function embedBlobWithRetry(
+  blob: Blob,
+  mimeHint?: string,
+): Promise<string | undefined> {
+  const options = { ...PHOTO_EMBED_OPTIONS, mimeHint };
+  const first = await blobToPdfDataUrl(blob, options);
+  if (first) return first;
+  // Segunda tentativa: falhas transitórias de decode/GPU no browser.
+  return blobToPdfDataUrl(blob, options);
+}
+
+/**
+ * Incorpora fotos para o PDF.
+ * Preferimos download autenticado pelo storage_path (bucket privado) — fetch da
+ * URL assinada falhava em parte das fotos sob carga/CORS/MIME vazio.
+ * Reusa dataUrl já presente (2ª passagem do registro do laudo).
+ */
+async function loadPhotoDataUrls(photos: InspectionPhoto[]): Promise<LaudoPhoto[]> {
+  return mapWithConcurrency(photos, PHOTO_EMBED_CONCURRENCY, async (photo) => {
+    const existing = (photo as LaudoPhoto).dataUrl;
+    if (existing) return { ...photo, dataUrl: existing };
+
+    let dataUrl: string | undefined;
+
+    if (photo.storage_path) {
+      const full = await downloadStorageBlob(photo.storage_path);
+      if (full) {
+        dataUrl = await embedBlobWithRetry(full, photo.mime_type);
+      }
+    }
+
+    if (!dataUrl && photo.public_url) {
+      dataUrl = await imageUrlToPdfDataUrl(photo.public_url, {
+        ...PHOTO_EMBED_OPTIONS,
+        mimeHint: photo.mime_type,
+      });
+    }
+
+    if (!dataUrl) {
+      const thumbStoragePath = photo.storage_path
+        ? buildInspectionPhotoThumbnailPath(photo.storage_path)
+        : null;
+      if (thumbStoragePath) {
+        const thumb = await downloadStorageBlob(thumbStoragePath);
+        if (thumb) dataUrl = await embedBlobWithRetry(thumb, photo.mime_type);
+      }
+      if (!dataUrl && photo.thumbnail_url) {
+        dataUrl = await imageUrlToPdfDataUrl(photo.thumbnail_url, {
+          ...PHOTO_EMBED_OPTIONS,
+          mimeHint: photo.mime_type,
+        });
+      }
+    }
+
+    return { ...photo, dataUrl };
+  });
 }
 
 async function getPdfMake() {
@@ -251,23 +316,36 @@ export const pdfService = {
     try {
       const verificationCode = await resolveVerificationCode(params.inspection.id);
       const validationUrl = `${params.validationBaseUrl ?? window.location.origin}/validar/${encodeURIComponent(verificationCode)}`;
-      const firstPass = await this.generateLaudoPayload(params.inspection, params.checklist, params.photos, {
-        company: params.company,
-        settings: params.settings,
-        inspector: params.inspector,
-        verificationCode,
-        validationUrl,
-      });
+      // Embed uma vez e reutiliza na 2ª passagem (hash de integridade) — evita
+      // recarregar/dezenas de WebP e falhas intermitentes na segunda rodada.
+      const photosWithEmbeds = await loadPhotoDataUrls(params.photos);
+      const firstPass = await this.generateLaudoPayload(
+        params.inspection,
+        params.checklist,
+        photosWithEmbeds,
+        {
+          company: params.company,
+          settings: params.settings,
+          inspector: params.inspector,
+          verificationCode,
+          validationUrl,
+        },
+      );
       const firstBlob = await this.createPdfBlob(firstPass.docDefinition);
       const integrityHash = await sha256Bytes(firstBlob);
-      const finalPass = await this.generateLaudoPayload(params.inspection, params.checklist, params.photos, {
-        company: params.company,
-        settings: params.settings,
-        inspector: params.inspector,
-        verificationCode,
-        integrityHash,
-        validationUrl,
-      });
+      const finalPass = await this.generateLaudoPayload(
+        params.inspection,
+        params.checklist,
+        photosWithEmbeds,
+        {
+          company: params.company,
+          settings: params.settings,
+          inspector: params.inspector,
+          verificationCode,
+          integrityHash,
+          validationUrl,
+        },
+      );
       const finalBlob = await this.createPdfBlob(finalPass.docDefinition);
       const storagePath = buildReportStoragePath(
         params.inspection.tenant_id,
