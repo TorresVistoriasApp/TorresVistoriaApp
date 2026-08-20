@@ -80,6 +80,7 @@ export function LoginPage() {
           {...register("email")}
         />
         <PasswordField
+          id="password"
           enterKeyHint="go"
           error={errors.password?.message}
           labelAction={

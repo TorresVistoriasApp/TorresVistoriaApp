@@ -14,7 +14,7 @@ import type { VistoriaInput, VistoriaUpdateInput } from "@/modules/torres-vistor
 import { inspectionService, type Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 
 /** Chave para persistir o serviço selecionado junto ao draft ativo. */
-const ACTIVE_DRAFT_SERVICE_KEY = "torres_active_draft_service_id";
+export const ACTIVE_DRAFT_SERVICE_KEY = "torres_active_draft_service_id";
 
 function draftSelectFields() {
   return `
@@ -51,6 +51,16 @@ export function rememberActiveDraftServiceId(serviceId: string | null) {
 
 export function getRememberedActiveDraftServiceId(): string | null {
   return localStorage.getItem(ACTIVE_DRAFT_SERVICE_KEY);
+}
+
+/** Remove apenas o ponteiro local do draft — não apaga rascunhos no servidor. */
+export function clearActiveDraftLocalState(): void {
+  try {
+    localStorage.removeItem(ACTIVE_DRAFT_STORAGE_KEY);
+    localStorage.removeItem(ACTIVE_DRAFT_SERVICE_KEY);
+  } catch {
+    // localStorage indisponível (modo privado restrito)
+  }
 }
 
 export const draftService = {

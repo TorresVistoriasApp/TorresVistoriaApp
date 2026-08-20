@@ -15,13 +15,15 @@ export function EmailField({
   error,
   icon: Icon = Mail,
   className,
+  id,
   ...inputProps
 }: EmailFieldProps) {
   return (
-    <FormField label={label} error={error}>
+    <FormField label={label} error={error} htmlFor={id}>
       <div className="relative">
         <Icon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
+          id={id}
           type="email"
           autoComplete="email"
           className={`pl-11 touch-target ${className ?? ""}`}
