@@ -18,8 +18,8 @@ export function PhotoCategories({
           className={cn(
             "touch-target rounded-full px-3 py-1.5 text-xs font-semibold transition-all",
             selected === cat
-              ? "gradient-primary text-primary-foreground shadow-glow"
-              : "border border-border bg-card text-muted-foreground hover:border-primary/30",
+              ? "bg-primary text-primary-foreground shadow-soft"
+              : "border border-border bg-card text-muted-foreground hover:bg-brand-subtle hover:text-primary",
           )}
         >
           {PHOTO_CATEGORY_LABELS[cat] ?? cat.replace(/_/g, " ")}

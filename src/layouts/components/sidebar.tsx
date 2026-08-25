@@ -48,8 +48,8 @@ export function Sidebar({ className, onNavigate, embedded }: SidebarProps) {
       </nav>
 
       {!embedded && !collapsed && (
-        <div className="mt-6 space-y-3 border-t border-border/60 pt-4">
-          <p className="px-1 text-[10px] text-muted-foreground">{APP_NAME} · v0.1</p>
+        <div className="mt-6 border-t border-border pt-4">
+          <p className="ui-microlabel px-1">{APP_NAME} · v0.1</p>
         </div>
       )}
     </aside>

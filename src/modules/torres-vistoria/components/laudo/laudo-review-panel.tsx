@@ -114,11 +114,11 @@ export function LaudoReviewPanel({
       </EvaluationSection>
 
       {verificationCode && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3.5 py-3">
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+        <div className="flex items-start gap-2.5 rounded-lg border border-success-border bg-success-subtle px-3.5 py-3">
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-emerald-900">Laudo emitido</p>
-            <p className="mt-0.5 text-xs text-emerald-800">
+            <p className="text-sm font-bold text-success">Laudo emitido</p>
+            <p className="mt-0.5 text-xs text-success">
               Código: <span className="font-mono font-bold">{verificationCode}</span>
             </p>
           </div>
@@ -129,7 +129,7 @@ export function LaudoReviewPanel({
         className={cn(
           "space-y-3 rounded-xl border border-border bg-card p-3.5 shadow-soft sm:p-4",
           "max-sm:fixed max-sm:bottom-20 max-sm:left-0 max-sm:right-0 max-sm:z-20",
-          "max-sm:mx-3 max-sm:rounded-2xl max-sm:border-border/80 max-sm:bg-card/95 max-sm:backdrop-blur-md max-sm:shadow-lg",
+          "max-sm:mx-3 max-sm:rounded-xl max-sm:border-border max-sm:bg-card max-sm:shadow-elevated",
         )}
       >
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

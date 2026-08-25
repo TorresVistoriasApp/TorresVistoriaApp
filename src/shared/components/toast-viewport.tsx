@@ -24,7 +24,7 @@ export function ToastViewport() {
         <div
           key={item.id}
           className={cn(
-            "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border px-4 py-3 shadow-lg",
+            "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border px-4 py-3 shadow-elevated",
             typeStyles[item.type],
           )}
           role="status"

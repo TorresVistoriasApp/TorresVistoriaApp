@@ -53,7 +53,7 @@ export function AuditDetailDialog({ log, open, onOpenChange }: AuditDetailDialog
             </DialogDescription>
           </DialogHeader>
 
-          <dl className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+          <dl className="space-y-3 rounded-lg border border-border bg-muted p-4">
             <MetadataRow label="Usuário" value={log.user?.full_name ?? "Sistema"} />
             <MetadataRow label="Entidade" value={getEntityLabel(log.entity_type)} />
             <MetadataRow label="ID do registro" value={log.entity_id ?? "—"} />
@@ -66,7 +66,7 @@ export function AuditDetailDialog({ log, open, onOpenChange }: AuditDetailDialog
           {isAppEvent && metadataEntries.length > 0 ? (
             <div className="mt-5 space-y-3">
               <h3 className="text-sm font-semibold text-foreground">Detalhes do evento</h3>
-              <dl className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+              <dl className="space-y-3 rounded-lg border border-border bg-muted p-4">
                 {metadataEntries.map((entry) => (
                   <MetadataRow key={entry.label} label={entry.label} value={entry.value} />
                 ))}
@@ -77,10 +77,10 @@ export function AuditDetailDialog({ log, open, onOpenChange }: AuditDetailDialog
               <h3 className="text-sm font-semibold text-foreground">
                 {log.action === "UPDATE" ? "Campos alterados" : "Dados registrados"}
               </h3>
-              <div className="overflow-x-auto rounded-xl border border-border/60">
+              <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border/60 bg-muted/40">
+                    <tr className="border-b border-border bg-muted">
                       <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Campo
                       </th>
@@ -96,7 +96,7 @@ export function AuditDetailDialog({ log, open, onOpenChange }: AuditDetailDialog
                   </thead>
                   <tbody>
                     {changes.map((change) => (
-                      <tr key={change.field} className="border-b border-border/40 last:border-0">
+                      <tr key={change.field} className="border-b border-border last:border-0">
                         <td className="px-4 py-2.5 font-medium">{change.label}</td>
                         {log.action === "UPDATE" && (
                           <td className="px-4 py-2.5 text-muted-foreground">{change.before}</td>

@@ -22,7 +22,7 @@ export function FormFieldGroup({
   return (
     <section className={cn("space-y-4", bordered && showHeader && "pt-1 first:pt-0", className)}>
       {showHeader && (
-        <div className={cn(bordered && "border-b border-border/50 pb-3")}>
+        <div className={cn(bordered && "border-b border-border pb-3")}>
           <h4 className="text-sm font-semibold text-foreground">{title}</h4>
           {description && (
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">

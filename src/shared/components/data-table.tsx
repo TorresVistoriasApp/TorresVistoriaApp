@@ -24,14 +24,14 @@ export function DataTable<T>({ columns, rows, rowKey, emptyMessage }: DataTableP
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border/60">
+    <div className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border/60 bg-muted/40">
+          <tr className="border-b border-border bg-muted">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground ${col.className ?? ""}`}
+                className={`ui-microlabel px-4 py-3 text-left ${col.className ?? ""}`}
               >
                 {col.header}
               </th>
@@ -42,7 +42,7 @@ export function DataTable<T>({ columns, rows, rowKey, emptyMessage }: DataTableP
           {rows.map((row) => (
             <tr
               key={rowKey(row)}
-              className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/30"
+              className="border-b border-border transition-colors duration-150 last:border-0 hover:bg-brand-subtle"
             >
               {columns.map((col) => (
                 <td key={col.key} className={`px-4 py-3 ${col.className ?? ""}`}>

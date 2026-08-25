@@ -87,7 +87,7 @@ function ProfileSection({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadAvatar.isPending}
-              className="absolute -bottom-0.5 -right-0.5 flex h-11 w-11 items-center justify-center rounded-full border-2 border-card bg-primary text-white shadow-md transition hover:bg-primary/90 disabled:opacity-60 sm:h-9 sm:w-9"
+              className="absolute -bottom-0.5 -right-0.5 flex h-11 w-11 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-soft transition-colors duration-150 hover:bg-primary-hover disabled:opacity-60 sm:h-9 sm:w-9"
               aria-label="Alterar foto de perfil"
             >
               <Camera className="h-4 w-4" />
@@ -464,7 +464,7 @@ export function SettingsPage() {
         <PrivacyRightsSection className="min-w-0 h-full" />
       </div>
 
-      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-20 border-t border-border/60 bg-card/95 px-4 py-3 shadow-elevated backdrop-blur-sm sm:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-20 border-t border-border bg-card px-4 py-3 shadow-elevated sm:hidden">
         <SaveSettingsButton
           isSaving={isSaving}
           disabled={saveDisabled}

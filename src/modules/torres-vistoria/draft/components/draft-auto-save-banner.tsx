@@ -16,22 +16,22 @@ export function DraftAutoSaveBanner({ draftExpiresAt, className }: DraftAutoSave
   return (
     <div
       className={cn(
-        "rounded-lg border border-sky-200/80 bg-sky-50/70 px-3 py-2.5 text-xs leading-relaxed text-sky-950",
+        "rounded-lg border border-border bg-muted px-3 py-2.5 text-xs leading-relaxed text-muted-foreground",
         className,
       )}
       role="status"
       aria-live="polite"
     >
       <div className="flex items-start gap-2">
-        <Save className="mt-0.5 size-3.5 shrink-0 text-sky-700" aria-hidden />
+        <Save className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden />
         <div className="space-y-1">
-          <p className="font-medium">Rascunho salvo automaticamente.</p>
-          <p className="text-sky-900/80">
+          <p className="font-bold text-foreground">Rascunho salvo automaticamente.</p>
+          <p>
             Esta vistoria está sendo salva automaticamente. Você possui até 24 horas para concluí-la.
             Após esse prazo ela será removida automaticamente.
           </p>
           {expiryLabel && (
-            <p className="flex items-center gap-1 text-sky-800/70">
+            <p className="flex items-center gap-1">
               <Clock className="size-3" aria-hidden />
               Expira em {expiryLabel}
             </p>

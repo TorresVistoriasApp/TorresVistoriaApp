@@ -86,7 +86,7 @@ export function ParecerTecnicoSection({
     >
       <div className="mb-4 space-y-1 sm:mb-5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary ring-4 ring-primary/5 sm:size-9">
+          <span className="ui-icon-box ui-metric size-8 shrink-0 rounded-full sm:size-9">
             <Scale className="size-4 sm:size-[1.125rem]" aria-hidden />
           </span>
           <h2 id="checklist-parecer-title" className="text-base font-semibold sm:text-lg">

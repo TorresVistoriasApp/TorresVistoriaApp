@@ -34,7 +34,7 @@ export function CpfCnpjField({
       <div
         role="group"
         aria-label="Tipo de documento"
-        className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/40 p-1"
+        className="grid grid-cols-2 gap-1 rounded-lg border border-border bg-muted p-1"
       >
         {DOCUMENT_TYPES.map((type) => {
           const selected = documentType === type.id;

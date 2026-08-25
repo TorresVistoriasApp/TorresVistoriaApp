@@ -68,7 +68,7 @@ export function ChecklistStatusToggle({
   return (
     <div
       className={cn(
-        "inline-flex rounded-lg border border-border bg-muted/40 p-0.5",
+        "inline-flex rounded-lg border border-border bg-muted p-0.5",
         fullWidth && "flex w-full",
         className,
       )}

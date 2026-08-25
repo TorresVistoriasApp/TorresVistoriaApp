@@ -31,22 +31,20 @@ export function PhotoSectionCard({
     <div id={id} className={cn("scroll-mt-24", className)}>
       <div
         className={cn(
-          "overflow-hidden rounded-2xl border bg-card shadow-sm transition-colors",
-          isComplete && !open ? "border-emerald-200/80 bg-emerald-50/30" : "border-border/80",
+          "ui-panel overflow-hidden transition-colors duration-150",
+          isComplete && !open && "border-success-border bg-success-subtle",
         )}
       >
         <button
           type="button"
           onClick={() => onOpenChange(!open)}
-          className="flex w-full items-center gap-2.5 px-3 py-3 text-left transition-colors hover:bg-muted/30 sm:gap-3 sm:px-4 sm:py-3.5"
+          className="flex w-full items-center gap-2.5 px-3 py-3 text-left transition-colors duration-150 hover:bg-brand-subtle sm:gap-3 sm:px-4 sm:py-3.5"
           aria-expanded={open}
         >
           <span
             className={cn(
-              "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold sm:size-9 sm:text-sm",
-              isComplete
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-muted text-muted-foreground",
+              "ui-metric flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold sm:size-9 sm:text-sm",
+              isComplete ? "bg-success-subtle text-success" : "bg-muted text-muted-foreground",
             )}
           >
             {isComplete ? <CheckCircle2 className="size-4 sm:size-[18px]" aria-hidden /> : index}
@@ -58,7 +56,7 @@ export function PhotoSectionCard({
                 {title}
               </span>
               {isComplete && (
-                <span className="shrink-0 text-[10px] font-medium text-emerald-700 sm:text-xs">
+                <span className="shrink-0 text-[10px] font-semibold text-success sm:text-xs">
                   Etapa concluída
                 </span>
               )}
@@ -80,7 +78,7 @@ export function PhotoSectionCard({
         </button>
 
         {open && (
-          <div className="space-y-3 border-t border-border/60 px-3 pb-3 pt-2.5 sm:space-y-3.5 sm:px-4 sm:pb-4 sm:pt-3">
+          <div className="space-y-3 border-t border-border px-3 pb-3 pt-2.5 sm:space-y-3.5 sm:px-4 sm:pb-4 sm:pt-3">
             {guidance && (
               <p className="text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
                 {guidance}

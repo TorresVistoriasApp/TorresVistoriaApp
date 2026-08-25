@@ -67,8 +67,8 @@ export function InspectionWizardStepper({
           const node = (
             <div
               className={cn(
-                "flex w-full flex-col items-center gap-1.5 rounded-xl px-2 py-2",
-                isCurrent && "bg-primary/5 ring-1 ring-primary/15",
+                "flex w-full flex-col items-center gap-1.5 rounded-lg px-2 py-2",
+                isCurrent && "border border-brand-border bg-brand-subtle",
               )}
             >
               <StepCircle
@@ -108,7 +108,7 @@ export function InspectionWizardStepper({
                     type="button"
                     onClick={() => onStepClick?.(step)}
                     aria-label={`Voltar ao passo ${step}: ${label}`}
-                    className="group w-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+                    className="group w-full rounded-lg"
                   >
                     {node}
                   </button>
@@ -145,7 +145,7 @@ export function InspectionWizardStepper({
 function ProgressBar({ currentStep }: { currentStep: WizardStep }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+      <span className="ui-microlabel shrink-0">
         Passo {currentStep} de {WIZARD_STEP_COUNT}
       </span>
       <div className="flex min-w-0 flex-1 gap-1" aria-hidden>
@@ -153,9 +153,9 @@ function ProgressBar({ currentStep }: { currentStep: WizardStep }) {
           <div
             key={step}
             className={cn(
-              "h-1.5 flex-1 rounded-full transition-colors",
+              "h-1.5 flex-1 rounded-full transition-colors duration-150",
               step < currentStep && "bg-primary",
-              step === currentStep && "bg-primary/70",
+              step === currentStep && "bg-brand-muted",
               step > currentStep && "bg-muted",
             )}
           />
@@ -197,7 +197,7 @@ function CompactStepTrack({
                 "max-w-[4rem] truncate text-center text-[10px] font-semibold leading-none",
                 isCurrent && "text-primary",
                 isCompleted && "text-foreground",
-                isLocked && "text-muted-foreground/70",
+                isLocked && "text-subtle-foreground",
               )}
             >
               {label}
@@ -216,7 +216,7 @@ function CompactStepTrack({
                   type="button"
                   onClick={() => onStepClick?.(step)}
                   aria-label={`Voltar ao passo ${step}: ${label}`}
-                  className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                  className="rounded-lg"
                 >
                   {content}
                 </button>
@@ -257,16 +257,16 @@ function CurrentStepCard({
 }) {
   return (
     <div
-      className="flex gap-3 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-3"
+      className="flex gap-3 rounded-lg border border-brand-border bg-brand-subtle px-3.5 py-3"
       aria-current="step"
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+      <span className="ui-metric flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
         {step}
       </span>
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex items-center gap-2">
-          <Icon className="size-4 shrink-0 text-primary" aria-hidden />
-          <p className="text-sm font-semibold leading-tight text-foreground">
+          <Icon className="size-4 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
+          <p className="text-sm font-bold leading-tight text-foreground">
             {label}
             <span className="font-normal text-muted-foreground">, {description}</span>
           </p>
@@ -297,13 +297,12 @@ function StepCircle({
   return (
     <span
       className={cn(
-        "relative flex shrink-0 items-center justify-center rounded-full border-2 transition-all",
+        "relative flex shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-150",
         size === "lg" ? "size-10" : "size-8",
-        isCurrent &&
-          "border-primary bg-primary text-primary-foreground shadow-md ring-4 ring-primary/15",
-        isCompleted && "border-primary bg-primary/10 text-primary",
-        isLocked && "border-border bg-muted/60 text-muted-foreground/70",
-        interactive && "group-hover:border-primary group-hover:bg-primary/20",
+        isCurrent && "border-primary bg-primary text-primary-foreground shadow-soft",
+        isCompleted && "border-primary bg-brand-subtle text-primary",
+        isLocked && "border-border bg-muted text-subtle-foreground",
+        interactive && "group-hover:bg-brand-muted",
       )}
     >
       {isCompleted ? (
@@ -342,10 +341,10 @@ function StepLabel({
     <div className="flex w-full min-w-0 flex-col items-center gap-0.5">
       <span
         className={cn(
-          "text-center text-xs font-semibold leading-tight",
+          "text-center text-xs font-bold leading-tight",
           isCurrent && "text-primary",
           isCompleted && "text-foreground",
-          isLocked && "text-muted-foreground/80",
+          isLocked && "text-subtle-foreground",
         )}
       >
         <span className="tabular-nums">{step}.</span> {label}
@@ -354,7 +353,7 @@ function StepLabel({
         <span
           className={cn(
             "text-center text-[11px] leading-tight text-muted-foreground",
-            isCurrent && "text-primary/80",
+            isCurrent && "text-brand-emphasis",
           )}
         >
           {description}

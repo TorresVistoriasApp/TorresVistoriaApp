@@ -22,7 +22,7 @@ export function SidebarProfile({
   }
 
   return (
-    <div className={cn("flex items-center gap-3 rounded-2xl bg-muted/60 p-3", className)}>
+    <div className={cn("flex items-center gap-3 rounded-lg border border-border bg-muted p-3", className)}>
       <UserAvatar name={name} avatarUrl={avatarUrl} size="lg" />
       <div className="min-w-0 flex-1 space-y-1">
         <p className="truncate text-sm font-bold text-foreground">{name}</p>

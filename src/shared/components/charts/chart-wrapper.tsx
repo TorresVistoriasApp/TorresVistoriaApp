@@ -16,23 +16,23 @@ export function ChartWrapper({
   icon?: LucideIcon;
 }) {
   return (
-    <div className={cn("surface-interactive overflow-hidden", className)}>
+    <div className={cn("ui-panel ui-panel-interactive overflow-hidden", className)}>
       {(title || description) && (
-        <div className="flex items-start justify-between gap-3 border-b border-border/50 px-5 py-4 md:px-6">
-          <div>
-            {title && <h3 className="text-base font-bold tracking-tight">{title}</h3>}
+        <div className="ui-panel-header">
+          <div className="min-w-0">
+            {title && <h3 className="text-[17px] font-bold text-foreground">{title}</h3>}
             {description && (
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{description}</p>
             )}
           </div>
           {Icon && (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Icon className="h-5 w-5" strokeWidth={2} />
-            </div>
+            <span className="ui-icon-box h-10 w-10">
+              <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+            </span>
           )}
         </div>
       )}
-      <div className="p-4 md:p-5">{children}</div>
+      <div className="ui-panel-body">{children}</div>
     </div>
   );
 }

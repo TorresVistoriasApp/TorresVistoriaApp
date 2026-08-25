@@ -15,7 +15,7 @@ export function DuplicateEmailAlert({
   forgotPasswordRoute = ROUTES.consultaForgotPassword,
 }: DuplicateEmailAlertProps) {
   return (
-    <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm">
+    <div className="rounded-lg border border-warning-border bg-warning-subtle px-4 py-3 text-sm">
       <p className="font-medium text-foreground">Já existe uma conta associada a este e-mail.</p>
       <p className="mt-1 text-muted-foreground">
         Você pode entrar com suas credenciais ou recuperar sua senha.

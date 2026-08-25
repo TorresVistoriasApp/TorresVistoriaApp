@@ -12,8 +12,8 @@ export const COMPANY_STATUS_LABELS: Record<string, string> = {
 };
 
 export const COMPANY_STATUS_BADGE_CLASS: Record<string, string> = {
-  trial: "bg-amber-500/10 text-amber-700 border-amber-500/20",
-  active: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
+  trial: "border-warning-border bg-warning-subtle text-warning",
+  active: "border-success-border bg-success-subtle text-success",
   suspended: "bg-destructive/10 text-destructive border-destructive/20",
   canceled: "bg-muted text-muted-foreground border-border",
 };

@@ -30,7 +30,7 @@ export function LaudoDataSummary({ inspection }: { inspection: Inspection }) {
   return (
     <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {rows.map((row) => (
-        <div key={row.label} className="rounded-lg bg-muted/25 px-3 py-2">
+        <div key={row.label} className="rounded-lg border border-border bg-muted px-3 py-2">
           <dt className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             {row.label}
           </dt>
@@ -62,7 +62,7 @@ export function LaudoPhotosGrid({
         {preview.map((photo) => (
           <div
             key={photo.id}
-            className="aspect-square overflow-hidden rounded-lg border border-border/60 bg-muted"
+            className="aspect-square overflow-hidden rounded-lg border border-border bg-muted"
           >
             {photo.public_url ? (
               <img
@@ -117,7 +117,7 @@ export function LaudoChecklistSummary({
         <StatPill label="Pendentes" value={String(stats.pendente)} tone={stats.pendente > 0 ? "warning" : "default"} />
       </div>
       {opinion && (
-        <div className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5">
+        <div className="rounded-lg border border-border bg-muted px-3 py-2.5">
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             Parecer
           </p>
@@ -146,7 +146,9 @@ function StatPill({
     <div
       className={cn(
         "rounded-lg px-2 py-2 text-center",
-        tone === "warning" ? "bg-amber-50 text-amber-900" : "bg-muted/30 text-foreground",
+        tone === "warning"
+          ? "border border-warning-border bg-warning-subtle text-warning"
+          : "border border-border bg-muted text-foreground",
       )}
     >
       <p className="text-[10px] font-medium text-muted-foreground">{label}</p>

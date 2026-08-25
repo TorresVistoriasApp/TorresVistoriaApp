@@ -10,19 +10,19 @@ export function DashboardScopeBanner() {
   if (!isPersonalView) return null;
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="ui-panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Info className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-sm font-semibold">Seu painel pessoal</p>
-          <p className="text-xs text-muted-foreground">
+        <span className="ui-icon-box h-9 w-9">
+          <Info className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[15px] font-bold text-foreground">Seu painel pessoal</p>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
             Métricas, gráficos e histórico limitados às vistorias criadas por você.
           </p>
         </div>
       </div>
-      <Button asChild variant="outline" size="sm" className="shrink-0 touch-target">
+      <Button asChild variant="outline" size="sm" className="shrink-0">
         <Link to={ROUTES.inspections}>Ver minhas vistorias</Link>
       </Button>
     </div>

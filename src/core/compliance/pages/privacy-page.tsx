@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 export function PrivacyPage() {
   return (
-    <Card className="border-border/70">
+    <Card>
       <CardHeader className="space-y-2">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
           Termos de Uso e LGPD
@@ -13,7 +13,7 @@ export function PrivacyPage() {
         <CardTitle>Termos de Uso e Política de Privacidade do {APP_NAME}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 text-sm leading-relaxed text-muted-foreground">
-        <p className="rounded-2xl border border-primary/10 bg-primary/5 p-4 text-foreground">
+        <p className="rounded-xl border border-brand-border bg-brand-subtle p-4 text-foreground">
           Este documento estabelece as condições de uso da plataforma {APP_NAME} e informa, de
           forma clara e objetiva, como dados pessoais são tratados em conformidade com a Lei Geral
           de Proteção de Dados (Lei nº 13.709/2018).

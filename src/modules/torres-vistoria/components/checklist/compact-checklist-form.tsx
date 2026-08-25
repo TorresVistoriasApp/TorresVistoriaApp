@@ -120,7 +120,7 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
     <div className="space-y-1.5">
       {flashCategory && (
         <div
-          className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-medium text-emerald-800"
+          className="flex items-center gap-1.5 rounded-md border border-success-border bg-success-subtle px-2.5 py-1.5 text-[11px] font-semibold text-success"
           role="status"
         >
           <Check className="size-3 shrink-0" />
@@ -147,21 +147,21 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
             key={group.key}
             id={`checklist-group-${group.key}`}
             className={cn(
-              "scroll-mt-36 overflow-hidden rounded-lg border border-border/60 bg-card",
-              isOpen && "border-primary/20",
-              complete && !isOpen && "border-emerald-200/50",
+              "scroll-mt-36 overflow-hidden rounded-lg border border-border bg-card",
+              isOpen && "border-border-strong",
+              complete && !isOpen && "border-success-border",
             )}
           >
             <button
               type="button"
               onClick={() => handleToggle(group.key)}
-              className="flex w-full items-center gap-2 px-2.5 py-2 text-left hover:bg-muted/20 sm:px-3"
+              className="flex w-full items-center gap-2 px-2.5 py-2 text-left transition-colors duration-150 hover:bg-brand-subtle sm:px-3"
               aria-expanded={isOpen}
             >
               <span
                 className={cn(
                   "flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
-                  complete ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground",
+                  complete ? "bg-success-subtle text-success" : "bg-muted text-muted-foreground",
                 )}
               >
                 {complete ? <Check className="size-3" /> : evaluated}
@@ -183,7 +183,7 @@ export function CompactChecklistForm({ items, onUpdate, disabled }: CompactCheck
             </button>
 
             {isOpen && (
-              <ul className="space-y-0 border-t border-border/40 bg-muted/20 py-1">
+              <ul className="space-y-0 border-t border-border bg-muted py-1">
                 {group.items.map((item) => (
                   <CompactChecklistItem
                     key={item.id}

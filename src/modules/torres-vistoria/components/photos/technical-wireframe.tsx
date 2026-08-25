@@ -33,7 +33,7 @@ export function TechnicalWireframe({
     <svg
       viewBox={WIREFRAME_VIEWBOX}
       preserveAspectRatio="xMidYMid meet"
-      className={cn("h-full w-full", isSlot ? "text-slate-400/80" : "", className)}
+      className={cn("h-full w-full", isSlot && "text-subtle-foreground", className)}
       aria-hidden
     >
       <path

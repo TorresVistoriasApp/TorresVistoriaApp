@@ -28,7 +28,7 @@ export function PhotoActionSheet({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm gap-0 p-0 sm:rounded-2xl">
-        <DialogHeader className="space-y-1 border-b border-border/60 px-5 py-4 text-left">
+        <DialogHeader className="space-y-1 border-b border-border px-5 py-4 text-left">
           <DialogTitle className="text-base">Adicionar fotografia</DialogTitle>
           {categoryName && (
             <DialogDescription>{categoryName}</DialogDescription>

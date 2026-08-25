@@ -91,7 +91,7 @@ export function RevenueChart({
                 <stop offset="100%" stopColor={CHART_COLORS.primary} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="6 6" vertical={false} />
+            <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="label" {...chartAxisStyle} interval={0} dy={8} />
             <YAxis
               {...chartAxisStyle}
@@ -106,14 +106,14 @@ export function RevenueChart({
               {...chartTooltipStyle}
               formatter={(value: number) => [formatCurrency(value), "Receita"]}
               labelFormatter={(label) => `Mês: ${label}`}
-              cursor={{ fill: CHART_COLORS.primarySoft, opacity: 0.4, radius: 8 }}
+              cursor={{ fill: CHART_COLORS.primarySoft, radius: 8 }}
             />
             <Bar
               dataKey="revenue"
               fill={barGradient.url}
               name="Receita"
-              radius={[10, 10, 4, 4]}
-              maxBarSize={56}
+              radius={[8, 8, 0, 0]}
+              maxBarSize={44}
             />
           </BarChart>
         </ChartResponsiveContainer>

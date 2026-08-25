@@ -25,25 +25,20 @@ export function SettingsSection({
   return (
     <section
       className={cn(
-        "min-w-0 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft",
+        "ui-panel min-w-0 overflow-hidden",
         fillHeight ? "flex h-full flex-col" : "h-fit",
         className,
       )}
     >
-      <div className="shrink-0 border-b border-border/50 bg-muted/15 px-4 py-3.5 sm:px-5">
+      <div className="shrink-0 border-b border-border px-4 py-3.5 sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
-            <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10 sm:h-11 sm:w-11"
-              aria-hidden
-            >
-              <Icon className="h-5 w-5" />
-            </div>
+            <span className="ui-icon-box h-10 w-10" aria-hidden>
+              <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+            </span>
             <div className="min-w-0">
-              <h2 className="text-base font-semibold tracking-tight text-foreground">
-                {title}
-              </h2>
-              <p className="mt-0.5 line-clamp-2 text-sm leading-snug text-muted-foreground">
+              <h2 className="text-[17px] font-bold text-foreground">{title}</h2>
+              <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">
                 {description}
               </p>
             </div>
@@ -73,7 +68,7 @@ export function SettingsNotice({
   return (
     <p
       className={cn(
-        "rounded-xl border border-border/60 bg-muted/25 px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground sm:text-sm",
+        "rounded-lg border border-border bg-muted px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground sm:text-sm",
         className,
       )}
     >
@@ -92,7 +87,7 @@ export function SettingsFormActions({
   hint?: string;
 }) {
   return (
-    <div className={cn("mt-6 border-t border-border/50 pt-5", className)}>
+    <div className={cn("mt-6 border-t border-border pt-5", className)}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {hint ? (
           <p className="text-xs leading-relaxed text-muted-foreground sm:max-w-sm sm:text-sm">

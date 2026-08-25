@@ -224,9 +224,9 @@ export function InspectionDetailPage() {
 
       <PermissionGuard permission="inspections.read.all">
         {inspection.internal_notes && (
-          <Card className="border-amber-200 bg-amber-50">
+          <Card className="border-warning-border bg-warning-subtle">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-amber-800">
+              <CardTitle className="text-sm text-warning">
                 Comentários internos
               </CardTitle>
             </CardHeader>

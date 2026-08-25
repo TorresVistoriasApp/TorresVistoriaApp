@@ -49,7 +49,7 @@ export function DraftRecoveryModal({
       >
         <DialogHeader className="space-y-0 pr-10">
           <div className="flex items-start gap-3 sm:gap-4">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 mt-0.5">
+            <div className="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-full border border-warning-border bg-warning-subtle text-warning">
               <FileWarning className="size-5" aria-hidden />
             </div>
             <div className="min-w-0 space-y-1.5 text-left">
@@ -61,7 +61,7 @@ export function DraftRecoveryModal({
           </div>
         </DialogHeader>
 
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 rounded-lg border border-border/70 bg-muted/20 px-4 py-3.5 text-sm sm:gap-x-6">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 rounded-lg border border-border bg-muted px-4 py-3.5 text-sm sm:gap-x-6">
           <dt className="text-muted-foreground">Cliente</dt>
           <dd className="font-medium">{draft.client_name}</dd>
           <dt className="text-muted-foreground">Placa</dt>

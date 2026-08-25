@@ -24,16 +24,14 @@ export function UserCard({
   const isSuperAdmin = user.role === UserRole.SUPER_ADMIN;
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-border/60 bg-card p-5 shadow-soft">
+    <article className="ui-panel ui-panel-interactive flex h-full flex-col p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-base font-semibold text-foreground">{user.full_name}</h3>
+            <h3 className="truncate text-[17px] font-bold text-foreground">{user.full_name}</h3>
             <RoleBadge role={user.role} />
             {!user.is_active && (
-              <span className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-destructive">
-                Inativo
-              </span>
+              <span className="ui-chip-negative uppercase tracking-wide">Inativo</span>
             )}
           </div>
           <p className="truncate text-sm text-muted-foreground">{user.email ?? "—"}</p>
@@ -51,11 +49,7 @@ export function UserCard({
               type="button"
               variant="outline"
               size="sm"
-              className={cn(
-                user.is_active
-                  ? "border-destructive/30 text-destructive hover:bg-destructive/5"
-                  : "border-emerald-300 text-emerald-700 hover:bg-emerald-50",
-              )}
+              className={cn(user.is_active ? "text-destructive" : "text-success")}
               disabled={isToggling}
               onClick={() => onToggleActive(user)}
             >
@@ -75,7 +69,7 @@ export function UserCard({
         )}
       </div>
 
-      <div className="mt-4 rounded-xl border border-border/50 bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
+      <div className="mt-4 rounded-lg border border-border bg-muted p-3 text-xs leading-relaxed text-muted-foreground">
         {isSuperAdmin ? (
           <p>
             Acesso completo à plataforma. Super Admin gerencia usuários, auditoria, financeiro e configurações da empresa.
@@ -86,12 +80,12 @@ export function UserCard({
           </p>
         )}
         {user.must_change_password && (
-          <p className="mt-2 font-medium text-amber-700">
+          <p className="mt-2 font-semibold text-warning">
             Este usuário ainda precisa trocar a senha inicial no primeiro acesso.
           </p>
         )}
         {isCurrentUser && (
-          <p className="mt-2 font-medium text-foreground">Esta é a sua conta.</p>
+          <p className="mt-2 font-semibold text-foreground">Esta é a sua conta.</p>
         )}
       </div>
     </article>

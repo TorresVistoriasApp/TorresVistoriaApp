@@ -228,11 +228,11 @@ function EvaluationBlockersBanner({
 
   return (
     <div
-      className="rounded-lg border border-amber-200/80 bg-amber-50/60 px-3 py-2.5"
+      className="rounded-lg border border-warning-border bg-warning-subtle px-3 py-2.5"
       role="status"
       aria-live="polite"
     >
-      <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-900">
+      <p className="flex items-center gap-1.5 text-xs font-bold text-warning">
         <AlertCircle className="size-3.5 shrink-0" />
         Ainda falta completar {groups.length} {groups.length === 1 ? "seção" : "seções"}:
       </p>
@@ -242,10 +242,10 @@ function EvaluationBlockersBanner({
             <button
               type="button"
               onClick={() => onGoTo(group.sectionId)}
-              className="text-left text-xs text-amber-900 underline-offset-2 hover:underline"
+              className="text-left text-xs text-warning underline-offset-2 hover:underline"
             >
-              <span className="font-medium">{group.label}</span>
-              <span className="text-amber-800/80">
+              <span className="font-semibold">{group.label}</span>
+              <span>
                 {" — "}
                 {group.count > 1 ? `${group.count} itens · ` : ""}
                 {group.preview}
@@ -321,7 +321,7 @@ function EvaluationProgressBar({
         <span
           className={cn(
             "tabular-nums",
-            complete ? "text-emerald-700" : pending && clamped === 0 ? "text-muted-foreground" : "text-foreground",
+            complete ? "text-success" : pending && clamped === 0 ? "text-muted-foreground" : "text-foreground",
           )}
         >
           {complete ? "100%" : `${clamped}%`}
@@ -331,7 +331,7 @@ function EvaluationProgressBar({
         <div
           className={cn(
             "h-full rounded-full transition-all duration-300",
-            complete ? "bg-emerald-500" : clamped > 0 ? "bg-primary" : "bg-transparent",
+            complete ? "bg-success" : clamped > 0 ? "bg-primary" : "bg-transparent",
           )}
           style={{ width: `${clamped}%` }}
         />
@@ -600,7 +600,7 @@ export function AvaliacaoTecnicaPanel({
       }}
       className="w-full space-y-2.5 sm:space-y-3"
     >
-      <div className="sticky top-14 z-20 -mx-1 space-y-2 rounded-lg border border-border/80 bg-card/95 px-2.5 py-2 shadow-sm backdrop-blur-md sm:top-[3.75rem] sm:px-3">
+      <div className="sticky top-16 z-20 -mx-1 space-y-2 rounded-lg border border-border bg-card px-2.5 py-2 shadow-soft sm:px-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground sm:text-xs">
           <span className="inline-flex items-center gap-1">
             <Camera className="size-3 shrink-0" />
@@ -629,7 +629,7 @@ export function AvaliacaoTecnicaPanel({
           )}
         </div>
         {isDraft && (
-          <p className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700">
+          <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-success">
             <Save className="size-3" />
             Rascunho salvo automaticamente
           </p>
@@ -687,7 +687,7 @@ export function AvaliacaoTecnicaPanel({
             <Input
               readOnly
               value={selectedType ? formatCurrency(selectedType.amount) : "—"}
-              className="bg-muted/30"
+              className="bg-muted"
             />
           </FormField>
           <FormField label="Indicado por" error={errors.requester_name?.message} optional>
@@ -809,7 +809,7 @@ export function AvaliacaoTecnicaPanel({
         disabled={isSaving}
         variant="compact"
         className={cn(
-          !parecerValid && showValidationHints && "border-amber-300 ring-1 ring-amber-200/80",
+          !parecerValid && showValidationHints && "border-warning",
         )}
       />
 
@@ -819,7 +819,7 @@ export function AvaliacaoTecnicaPanel({
         onGoTo={scrollToSection}
       />
 
-      <div className="border-t border-border/60 pt-3">
+      <div className="border-t border-border pt-3">
         {wizardMode ? (
           <WizardNavButtons
             onBack={onBack}

@@ -55,7 +55,7 @@ export function AdminCompaniesPage() {
       {isLoading ? (
         <LoadingSpinner />
       ) : companies.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 py-12 text-center">
+        <div className="rounded-xl border border-dashed border-border bg-muted px-6 py-12 text-center">
           <p className="text-sm text-muted-foreground">Nenhuma empresa cadastrada ainda.</p>
         </div>
       ) : (
@@ -63,7 +63,7 @@ export function AdminCompaniesPage() {
           {companies.map((company) => (
             <div
               key={company.id}
-              className="space-y-3 rounded-2xl border border-border/60 bg-card p-4 shadow-soft"
+              className="ui-panel space-y-3 p-4"
             >
               <CompanyBadge
                 tradeName={company.trade_name}

@@ -373,7 +373,7 @@ export function VistoriaForm({
     <div
       className={cn(
         "mt-2 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:hidden",
-        "max-sm:sticky max-sm:bottom-20 max-sm:z-10 max-sm:-mx-4 max-sm:border-border/60 max-sm:bg-background/95 max-sm:px-4 max-sm:py-4 max-sm:backdrop-blur-md",
+        "max-sm:sticky max-sm:bottom-20 max-sm:z-10 max-sm:-mx-4 max-sm:border-border max-sm:bg-card max-sm:px-4 max-sm:py-4",
       )}
     >
       {onBack ? (
@@ -404,7 +404,7 @@ export function VistoriaForm({
       className={cn(
         "flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-between",
         stickyActions &&
-          "max-sm:sticky max-sm:bottom-20 max-sm:z-10 max-sm:-mx-4 max-sm:border-border/60 max-sm:bg-background/95 max-sm:px-4 max-sm:py-4 max-sm:backdrop-blur-md sm:hidden",
+          "max-sm:sticky max-sm:bottom-20 max-sm:z-10 max-sm:-mx-4 max-sm:border-border max-sm:bg-card max-sm:px-4 max-sm:py-4 sm:hidden",
       )}
     >
       <Button

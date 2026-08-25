@@ -40,7 +40,7 @@ export function PasswordStrengthInput({
             <span
               className={cn(
                 "text-xs font-medium",
-                strength <= 2 ? "text-destructive" : strength <= 3 ? "text-amber-600" : "text-emerald-600",
+                strength <= 2 ? "text-destructive" : strength <= 3 ? "text-warning" : "text-success",
               )}
             >
               {strengthLabel}
@@ -68,7 +68,7 @@ export function PasswordStrengthInput({
         {error && <p className="text-sm text-destructive">{error}</p>}
       </div>
 
-      <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-3">
+      <div className="space-y-3 rounded-lg border border-border bg-muted p-3">
         <div className="grid grid-cols-4 gap-1.5">
           {Array.from({ length: 4 }).map((_, index) => (
             <div
@@ -89,7 +89,7 @@ export function PasswordStrengthInput({
                 key={requirement.id}
                 className={cn(
                   "flex items-center gap-2 text-xs",
-                  met ? "text-emerald-600" : "text-muted-foreground",
+                  met ? "text-success" : "text-muted-foreground",
                 )}
               >
                 {met ? <Check className="h-3.5 w-3.5 shrink-0" /> : <X className="h-3.5 w-3.5 shrink-0" />}

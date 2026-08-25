@@ -22,10 +22,9 @@ export function SidebarCollapseToggle({
       title={label}
       className={cn(
         "group flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-        "border border-primary/25 bg-card text-primary shadow-sm",
-        "ring-1 ring-primary/10 transition-all",
-        "hover:border-primary/45 hover:bg-primary/10 hover:shadow-md",
-        "active:scale-95",
+        "border border-border bg-card text-muted-foreground",
+        "transition-colors duration-150",
+        "hover:bg-brand-subtle hover:text-primary",
         className,
       )}
     >

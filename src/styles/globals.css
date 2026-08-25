@@ -17,6 +17,7 @@
   --color-accent-foreground: #ffffff;
   --color-brand-subtle: #fff5ed;
   --color-brand-muted: #ffe6d5;
+  --color-brand-border: #f7cdae;
   --color-brand-emphasis: #b4400a;
 
   --color-background: #f7f8f9;
@@ -31,8 +32,14 @@
   --color-border: #e4e7eb;
   --color-border-strong: #d3d8de;
   --color-destructive: #dc2626;
+  --color-destructive-subtle: #fdecec;
+  --color-destructive-border: #f5c4c4;
   --color-success: #0f9d6e;
+  --color-success-subtle: #e7f7f1;
+  --color-success-border: #b2e2d1;
   --color-warning: #d97706;
+  --color-warning-subtle: #fdf3e5;
+  --color-warning-border: #f1d7a6;
   --color-ring: #e2570c;
 
   --color-ink: #131a23;
@@ -136,37 +143,127 @@
     border-right: 1px solid var(--color-border);
   }
 
-  /* ---------- Superfícies base (app interno) ---------- */
+  /* ---------- Superfícies unificadas (app + landing) ---------- */
 
-  .surface {
+  .ui-panel,
+  .surface,
+  .landing-card {
     @apply min-w-0 max-w-full rounded-xl border border-border bg-card text-card-foreground;
     box-shadow: var(--shadow-card);
   }
 
+  .ui-panel-elevated,
   .surface-elevated {
     @apply min-w-0 rounded-xl border border-border bg-card text-card-foreground;
     box-shadow: var(--shadow-elevated);
   }
 
-  .surface-interactive {
-    @apply rounded-xl border border-border bg-card text-card-foreground;
-    box-shadow: var(--shadow-card);
+  .ui-panel-interactive,
+  .landing-card-interactive {
     transition:
       border-color 0.18s ease,
-      box-shadow 0.18s ease;
+      box-shadow 0.18s ease,
+      transform 0.18s var(--ease-out-quart);
   }
 
-  .surface-interactive:hover {
-    border-color: var(--color-border-strong);
-    box-shadow: var(--shadow-elevated);
+  @media (hover: hover) {
+    .ui-panel-interactive:hover {
+      border-color: var(--color-border-strong);
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .landing-card-interactive:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-border-strong);
+      box-shadow: var(--shadow-elevated);
+    }
+  }
+
+  /* ---------- Primitivos de conteúdo ---------- */
+
+  .ui-panel-header {
+    @apply flex items-start justify-between gap-3 border-b border-border px-5 py-4 md:px-6;
+  }
+
+  .ui-panel-body {
+    @apply p-5 md:p-6;
+  }
+
+  .ui-eyebrow,
+  .landing-eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase;
+    letter-spacing: 0.09em;
+    color: var(--color-primary);
+  }
+
+  /* Rótulo de métrica / seção — discreto, sem cor de marca */
+  .ui-microlabel {
+    @apply text-[10px] font-bold uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-subtle-foreground);
+  }
+
+  /* Número de destaque: tabular para alinhar colunas de KPI */
+  .ui-metric {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+
+  /* Grid de divisórias de 1px, sem bordas duplas */
+  .ui-grid-hairline {
+    @apply grid gap-px overflow-hidden rounded-xl border border-border;
+    background-color: var(--color-border);
+    box-shadow: var(--shadow-card);
+  }
+
+  .ui-icon-box,
+  .landing-icon-box {
+    @apply flex shrink-0 items-center justify-center rounded-lg border;
+    border-color: var(--color-brand-border);
+    background-color: var(--color-brand-subtle);
+    color: var(--color-primary);
+  }
+
+  .ui-icon-box-neutral,
+  .landing-icon-box-neutral {
+    border-color: var(--color-border);
+    background-color: var(--color-muted);
+    color: var(--color-muted-foreground);
+  }
+
+  .ui-badge,
+  .landing-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold;
+    border-color: var(--color-brand-border);
+    background-color: var(--color-brand-subtle);
+    color: var(--color-brand-emphasis);
+    letter-spacing: -0.005em;
+  }
+
+  /* Chips de variação — semântica por token, nunca por cor bruta */
+  .ui-chip-positive {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold;
+    border-color: var(--color-success-border);
+    background-color: var(--color-success-subtle);
+    color: var(--color-success);
+  }
+
+  .ui-chip-negative {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold;
+    border-color: var(--color-destructive-border);
+    background-color: var(--color-destructive-subtle);
+    color: var(--color-destructive);
+  }
+
+  .ui-chip-warning {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold;
+    border-color: var(--color-warning-border);
+    background-color: var(--color-warning-subtle);
+    color: var(--color-warning);
   }
 
   .gradient-brand {
     background: linear-gradient(135deg, #b4400a 0%, #e2570c 100%);
-  }
-
-  .gradient-primary {
-    background-color: var(--color-primary);
   }
 
   /* ---------- Landing / marketing ---------- */
@@ -212,37 +309,9 @@
     background-size: 64px 64px;
   }
 
-  .landing-card {
-    @apply rounded-xl border border-border bg-card text-card-foreground;
-    box-shadow: var(--shadow-card);
-  }
-
-  .landing-card-interactive {
-    transition:
-      border-color 0.18s ease,
-      box-shadow 0.18s ease,
-      transform 0.18s var(--ease-out-quart);
-  }
-
-  @media (hover: hover) {
-    .landing-card-interactive:hover {
-      transform: translateY(-2px);
-      border-color: var(--color-border-strong);
-      box-shadow: var(--shadow-elevated);
-    }
-  }
-
   .landing-card-featured {
     border-color: #f3b489;
     box-shadow: var(--shadow-elevated);
-  }
-
-  .landing-badge {
-    @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold;
-    border-color: #f7cdae;
-    background-color: var(--color-brand-subtle);
-    color: var(--color-brand-emphasis);
-    letter-spacing: -0.005em;
   }
 
   .landing-badge-neutral {
@@ -255,26 +324,6 @@
     border-color: var(--color-ink-border);
     background-color: var(--color-ink-soft);
     color: var(--color-ink-muted);
-  }
-
-  /* Eyebrow tipográfico — hierarquia sem caixa */
-  .landing-eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-bold uppercase;
-    letter-spacing: 0.09em;
-    color: var(--color-primary);
-  }
-
-  .landing-icon-box {
-    @apply flex shrink-0 items-center justify-center rounded-lg border;
-    border-color: #f9d7bf;
-    background-color: var(--color-brand-subtle);
-    color: var(--color-primary);
-  }
-
-  .landing-icon-box-neutral {
-    border-color: var(--color-border);
-    background-color: var(--color-muted);
-    color: var(--color-muted-foreground);
   }
 
   .landing-segment {
@@ -348,27 +397,9 @@
     @apply h-[220px] w-full min-h-[200px] sm:h-[260px] md:h-[280px];
   }
 
+  /* Cabeçalho de página: hierarquia tipográfica sobre o canvas, sem caixa */
   .page-header-strip {
-    @apply overflow-hidden rounded-xl border border-border bg-card px-5 py-5 sm:px-6;
-    box-shadow: var(--shadow-soft);
-  }
-
-  .kpi-card {
-    @apply rounded-xl border border-border bg-card;
-    box-shadow: var(--shadow-card);
-    transition:
-      border-color 0.18s ease,
-      box-shadow 0.18s ease;
-  }
-
-  .kpi-card:hover {
-    border-color: var(--color-border-strong);
-    box-shadow: var(--shadow-elevated);
-  }
-
-  .kpi-card-value {
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.03em;
+    @apply min-w-0 border-b border-border pb-5;
   }
 
   /* ---------- Movimento ---------- */

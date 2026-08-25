@@ -130,7 +130,7 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
   return (
     <li
       className={cn(
-        "border-b border-border/60 px-3 py-3.5 transition-colors last:border-b-0 sm:px-4 sm:py-4",
+        "border-b border-border px-3 py-3.5 transition-colors duration-150 last:border-b-0 sm:px-4 sm:py-4",
         isPending && pendingMeta.itemBg,
         isNonConform && ressalvasMeta.itemBg,
       )}
@@ -184,7 +184,7 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
           onManualBlur={handleManualBlur}
         />
       ) : showOptionalNotes ? (
-        <div className="mt-3 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+        <div className="mt-3 space-y-2 rounded-lg border border-border bg-muted p-3">
           <div className="flex items-start justify-between gap-2">
             <p className="text-xs font-semibold text-foreground">
               Observações técnicas
@@ -209,7 +209,7 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
             onBlur={handleManualBlur}
             className={cn(
               "w-full resize-y rounded-lg border border-border bg-card px-3 py-2.5 text-sm",
-              "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
+              "transition-colors duration-150 focus-visible:border-primary",
               "disabled:opacity-50",
             )}
           />
@@ -221,8 +221,8 @@ export function ChecklistItemRow({ item, index, disabled, onUpdate }: ChecklistI
             disabled={disabled}
             onClick={() => setShowOptionalNotes(true)}
             className={cn(
-              "mt-3 flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-muted/20 px-3 py-3 text-left transition-colors",
-              "hover:border-primary/30 hover:bg-muted/40 active:bg-muted/50 disabled:opacity-50",
+              "mt-3 flex w-full items-center gap-3 rounded-lg border border-dashed border-border bg-muted px-3 py-3 text-left transition-colors duration-150",
+              "hover:bg-brand-subtle disabled:opacity-50",
             )}
           >
             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground shadow-soft">

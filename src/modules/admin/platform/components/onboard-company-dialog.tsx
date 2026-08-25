@@ -114,7 +114,7 @@ export function OnboardCompanyDialog({ open, onOpenChange, onSubmit }: OnboardCo
             </select>
           </div>
 
-          <div className="border-t border-border/60 pt-4">
+          <div className="border-t border-border pt-4">
             <p className="mb-3 text-sm font-medium text-muted-foreground">
               Primeiro administrador da empresa
             </p>

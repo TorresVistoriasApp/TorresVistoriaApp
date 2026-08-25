@@ -60,7 +60,7 @@ export function OptionalMaskedField<T extends FieldValues>({
                   className={cn(inputClassName, isNA && "opacity-50")}
                 />
               )}
-              <label className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/40">
+              <label className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-brand-subtle">
                 <input
                   type="checkbox"
                   checked={isNA}

@@ -15,11 +15,11 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-dvh bg-canvas">
-      <header className="border-b border-border/60 bg-card">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
+      <header className="border-b border-border bg-card">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Painel da plataforma</p>
-            <p className="text-lg font-semibold">Torres Vistoria SaaS</p>
+            <p className="ui-microlabel">Painel da plataforma</p>
+            <p className="text-[17px] font-bold text-foreground">Torres Vistoria SaaS</p>
           </div>
           <div className="flex items-center gap-3">
             {platformAdmin?.full_name && (

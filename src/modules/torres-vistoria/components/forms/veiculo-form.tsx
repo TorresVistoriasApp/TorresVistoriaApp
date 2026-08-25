@@ -215,7 +215,7 @@ export function VeiculoForm({
         name="is_armored"
         render={({ field }) => (
           <label
-            className={`${evaluationSpan3} flex cursor-pointer items-center gap-2.5 rounded-lg border border-border/70 bg-muted/20 px-3 py-2.5 transition-colors hover:border-primary/25`}
+            className={`${evaluationSpan3} flex cursor-pointer items-center gap-2.5 rounded-lg border border-border bg-muted px-3 py-2.5 transition-colors duration-150 hover:bg-brand-subtle`}
           >
             <input
               type="checkbox"
@@ -454,7 +454,7 @@ export function VeiculoForm({
           name="is_armored"
           render={({ field }) => (
             <label
-              className={`${formGridFullWidthClass} flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/30`}
+              className={`${formGridFullWidthClass} flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors duration-150 hover:bg-brand-subtle`}
             >
               <input
                 type="checkbox"

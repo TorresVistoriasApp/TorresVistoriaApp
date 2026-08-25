@@ -133,43 +133,13 @@ export function AuditPage() {
         {isLoading ? (
           <LoadingSpinner />
         ) : (
-          <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3 2xl:grid-cols-6">
-            <KpiCard
-              label="Total de eventos"
-              value={String(stats.total)}
-              icon={Activity}
-              themeIndex={0}
-            />
-            <KpiCard
-              label="Eventos hoje"
-              value={String(stats.today)}
-              icon={CalendarDays}
-              themeIndex={1}
-            />
-            <KpiCard
-              label="Criações"
-              value={String(stats.inserts)}
-              icon={PlusCircle}
-              themeIndex={2}
-            />
-            <KpiCard
-              label="Alterações"
-              value={String(stats.updates)}
-              icon={Pencil}
-              themeIndex={3}
-            />
-            <KpiCard
-              label="Logins"
-              value={String(stats.logins)}
-              icon={LogIn}
-              themeIndex={0}
-            />
-            <KpiCard
-              label="Exportações"
-              value={String(stats.exports)}
-              icon={Download}
-              themeIndex={1}
-            />
+          <div className="ui-grid-hairline sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+            <KpiCard label="Total de eventos" value={String(stats.total)} icon={Activity} />
+            <KpiCard label="Eventos hoje" value={String(stats.today)} icon={CalendarDays} />
+            <KpiCard label="Criações" value={String(stats.inserts)} icon={PlusCircle} />
+            <KpiCard label="Alterações" value={String(stats.updates)} icon={Pencil} />
+            <KpiCard label="Logins" value={String(stats.logins)} icon={LogIn} />
+            <KpiCard label="Exportações" value={String(stats.exports)} icon={Download} />
           </div>
         )}
 
@@ -295,7 +265,7 @@ export function AuditPage() {
                       >
                         Anterior
                       </Button>
-                      <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-lg bg-primary/10 px-3 text-sm font-semibold text-primary">
+                      <span className="ui-icon-box ui-metric h-9 min-w-9 px-3 text-sm font-bold">
                         {currentPage}
                       </span>
                       <Button

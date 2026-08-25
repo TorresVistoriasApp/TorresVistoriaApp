@@ -11,17 +11,17 @@ export function RecentInspections() {
   const { data: recent = [], isLoading } = useRecentInspections();
 
   return (
-    <div className="surface-interactive overflow-hidden">
-      <div className="flex items-center justify-between border-b border-border/50 px-5 py-4 md:px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <ClipboardList className="h-5 w-5" strokeWidth={2} />
-          </div>
-          <div>
-            <h3 className="text-base font-bold">
+    <div className="ui-panel ui-panel-interactive flex h-full flex-col overflow-hidden">
+      <div className="ui-panel-header items-center">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="ui-icon-box h-10 w-10">
+            <ClipboardList className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-[17px] font-bold text-foreground">
               {isCompanyView ? "Últimas vistorias da empresa" : "Suas últimas vistorias"}
             </h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
               {isCompanyView
                 ? "Acesso rápido às vistorias mais recentes da equipe"
                 : "Acesso rápido aos seus laudos recentes"}
@@ -30,10 +30,10 @@ export function RecentInspections() {
         </div>
       </div>
 
-      <div className="divide-y divide-border/50">
+      <div className="divide-y divide-border">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 animate-pulse bg-muted/30" />
+            <div key={i} className="h-[76px] bg-muted" />
           ))
         ) : recent.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted-foreground">
@@ -44,12 +44,12 @@ export function RecentInspections() {
             <Link
               key={inspection.id}
               to={ROUTES.inspection(inspection.id)}
-              className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-primary/[0.03] md:px-6"
+              className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors duration-150 hover:bg-brand-subtle md:px-6"
             >
               <div className="flex min-w-0 items-center gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted/80 text-xs font-bold text-primary">
+                <span className="ui-icon-box ui-metric h-11 w-11 text-[13px] font-bold">
                   #{inspection.inspection_number}
-                </div>
+                </span>
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-bold">
@@ -58,7 +58,11 @@ export function RecentInspections() {
                     <VistoriaStatusBadge status={inspection.status} />
                   </div>
                   <p className="truncate text-xs text-muted-foreground">
-                    {inspection.plate} · {inspection.client_name}
+                    <span className="font-mono font-semibold uppercase tracking-[0.08em] text-foreground">
+                      {inspection.plate}
+                    </span>
+                    {" · "}
+                    {inspection.client_name}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
                     {formatDate(inspection.inspection_date)}

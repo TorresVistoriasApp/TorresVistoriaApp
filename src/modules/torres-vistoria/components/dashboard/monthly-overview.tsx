@@ -81,16 +81,15 @@ export function MonthlyOverview({
           <AreaChart data={visibleData} margin={{ top: 12, right: 12, left: -8, bottom: 4 }}>
             <defs>
               <linearGradient id={areaGradient.id} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={CHART_COLORS.primary} stopOpacity={0.35} />
-                <stop offset="50%" stopColor={CHART_COLORS.primaryLight} stopOpacity={0.12} />
+                <stop offset="0%" stopColor={CHART_COLORS.primary} stopOpacity={0.18} />
                 <stop offset="100%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
               </linearGradient>
               <linearGradient id={lineGradient.id} x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor={CHART_COLORS.primaryDark} />
-                <stop offset="100%" stopColor={CHART_COLORS.primaryLight} />
+                <stop offset="100%" stopColor={CHART_COLORS.primary} />
               </linearGradient>
             </defs>
-            <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="6 6" vertical={false} />
+            <CartesianGrid stroke={CHART_COLORS.grid} strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="label" {...chartAxisStyle} interval={0} dy={8} />
             <YAxis
               {...chartAxisStyle}
@@ -108,19 +107,19 @@ export function MonthlyOverview({
               type="monotone"
               dataKey="count"
               stroke={lineGradient.url}
-              strokeWidth={3}
+              strokeWidth={2}
               fill={areaGradient.url}
               name="Vistorias"
               dot={{
                 fill: CHART_COLORS.primary,
-                stroke: "#FFFFFF",
+                stroke: CHART_COLORS.surface,
                 strokeWidth: 2,
-                r: 5,
+                r: 4,
               }}
               activeDot={{
-                r: 7,
+                r: 5,
                 fill: CHART_COLORS.primaryDark,
-                stroke: "#FFFFFF",
+                stroke: CHART_COLORS.surface,
                 strokeWidth: 2,
               }}
             />

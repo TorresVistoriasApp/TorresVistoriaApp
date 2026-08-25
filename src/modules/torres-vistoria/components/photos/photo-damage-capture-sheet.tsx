@@ -70,7 +70,7 @@ export function PhotoDamageCaptureSheet({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-sm gap-0 overflow-y-auto p-0 sm:rounded-2xl">
-        <DialogHeader className="space-y-1 border-b border-border/60 px-5 py-4 text-left">
+        <DialogHeader className="space-y-1 border-b border-border px-5 py-4 text-left">
           <DialogTitle className="text-base">
             {typeof damageIndex === "number" ? `Avaria ${damageIndex}` : "Registrar avaria"}
           </DialogTitle>
@@ -147,8 +147,8 @@ export function PhotoDamageCaptureSheet({
                     className={cn(
                       "rounded-xl border-2 px-3 py-2.5 text-left transition-colors",
                       isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-card hover:border-primary/30",
+                        ? "border-primary bg-brand-subtle"
+                        : "border-border bg-card hover:bg-brand-subtle",
                     )}
                   >
                     <span className="block text-sm font-semibold text-foreground">

@@ -16,16 +16,21 @@ type StatsGridProps = {
   className?: string;
 };
 
+/** Colunas derivadas da quantidade — evita célula vazia mostrando a cor da borda */
+function columnsClass(count: number) {
+  if (count <= 1) return "";
+  if (count === 2) return "sm:grid-cols-2";
+  if (count === 3) return "sm:grid-cols-2 lg:grid-cols-3";
+  return "sm:grid-cols-2 xl:grid-cols-4";
+}
+
 export function StatsGrid({ items, className }: StatsGridProps) {
+  if (items.length === 0) return null;
+
   return (
-    <div
-      className={cn(
-        "grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4",
-        className,
-      )}
-    >
-      {items.map((item, index) => (
-        <KpiCard key={item.title} {...item} themeIndex={index} />
+    <div className={cn("ui-grid-hairline", columnsClass(items.length), className)}>
+      {items.map((item) => (
+        <KpiCard key={item.title} {...item} />
       ))}
     </div>
   );

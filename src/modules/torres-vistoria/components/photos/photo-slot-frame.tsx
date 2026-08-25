@@ -49,17 +49,17 @@ export function PhotoSlotFrame({
       disabled={isInteractive ? disabled : undefined}
       onClick={onClick}
       className={cn(
-        "group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl border-2 text-left transition-all duration-200",
+        "group relative flex h-full min-w-0 flex-col overflow-hidden rounded-xl border-2 text-left transition-colors duration-150",
         isFilled
-          ? "border-primary/30 bg-card shadow-soft"
-          : "border-dashed border-primary/20 bg-white hover:border-primary/40 hover:shadow-sm",
+          ? "border-brand-border bg-card shadow-soft"
+          : "border-dashed border-brand-border bg-card hover:border-primary",
         isInteractive && disabled && !isUploading && "opacity-60",
         !isInteractive && isFilled && "shadow-soft",
         className,
       )}
     >
       {required && !isFilled && (
-        <span className="absolute right-1.5 top-1.5 z-10 rounded bg-amber-100 px-1 py-0.5 text-[8px] font-bold uppercase leading-none text-amber-800 sm:text-[9px]">
+        <span className="absolute right-1.5 top-1.5 z-10 rounded border border-warning-border bg-warning-subtle px-1 py-0.5 text-[8px] font-bold uppercase leading-none text-warning sm:text-[9px]">
           Obrig.
         </span>
       )}
@@ -75,12 +75,12 @@ export function PhotoSlotFrame({
             <img src={imageUrl!} alt={label} className="h-full w-full object-cover" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
             {indexBadge != null ? (
-              <div className="absolute left-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-md sm:size-7 sm:text-xs">
+              <div className="ui-metric absolute left-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-soft sm:size-7 sm:text-xs">
                 {indexBadge}
               </div>
             ) : (
               !isUploading && (
-                <div className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md sm:size-7">
+                <div className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-success text-white shadow-soft sm:size-7">
                   {countBadge != null && countBadge > 1 ? (
                     <span className="text-[10px] font-bold sm:text-xs">{countBadge}</span>
                   ) : (
@@ -91,7 +91,7 @@ export function PhotoSlotFrame({
             )}
           </>
         ) : (
-          <div className="relative h-full w-full bg-gradient-to-b from-slate-50 to-slate-100/80">
+          <div className="relative h-full w-full bg-muted">
             {visualGuide ? (
               <div className="absolute inset-1.5 sm:inset-2.5">
                 <TechnicalIllustration
@@ -102,13 +102,13 @@ export function PhotoSlotFrame({
               </div>
             ) : (
               <div className="flex h-full items-center justify-center">
-                <div className="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white/80 text-primary/70 sm:size-12">
+                <div className="ui-icon-box size-10 sm:size-12">
                   <Icon className="size-5 sm:size-6" strokeWidth={1.5} />
                 </div>
               </div>
             )}
 
-            <div className="absolute bottom-1.5 right-1.5 flex items-center gap-0.5 rounded-md bg-white/95 px-1.5 py-1 shadow-sm ring-1 ring-slate-200/80 transition-transform group-hover:scale-105 sm:bottom-2 sm:right-2 sm:gap-1 sm:px-2">
+            <div className="absolute bottom-1.5 right-1.5 flex items-center gap-0.5 rounded-md border border-border bg-card px-1.5 py-1 shadow-soft sm:bottom-2 sm:right-2 sm:gap-1 sm:px-2">
               <Camera className="size-3 text-primary sm:size-3.5" />
               <span className="text-[8px] font-bold uppercase tracking-wide text-primary sm:text-[9px]">
                 Capturar
@@ -118,13 +118,13 @@ export function PhotoSlotFrame({
         )}
 
         {isUploading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px]">
+          <div className="absolute inset-0 flex items-center justify-center bg-canvas/80">
             <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent sm:size-7" />
           </div>
         )}
       </div>
 
-      <div className="border-t border-border/60 bg-white px-2 py-2 sm:px-3 sm:py-2.5">
+      <div className="border-t border-border bg-card px-2 py-2 sm:px-3 sm:py-2.5">
         <p className="line-clamp-2 text-[11px] font-bold leading-tight text-foreground sm:text-xs">
           {label}
         </p>

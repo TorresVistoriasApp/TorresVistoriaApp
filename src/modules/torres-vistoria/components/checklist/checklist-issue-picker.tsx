@@ -56,13 +56,13 @@ export function ChecklistIssuePicker({
           selectedOptions.map((option) => (
             <span
               key={option.code}
-              className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-900"
+              className="rounded border border-warning-border bg-warning-subtle px-1.5 py-0.5 text-[10px] font-semibold text-warning"
             >
               {option.label}
             </span>
           ))
         ) : (
-          <span className="text-[11px] font-medium text-amber-800">
+          <span className="text-[11px] font-semibold text-warning">
             {showValidation ? "Informe o apontamento" : "Toque para apontar"}
           </span>
         )}
@@ -77,7 +77,7 @@ export function ChecklistIssuePicker({
 
   return (
     <div
-      className="mt-1.5 space-y-1.5 rounded-md border border-amber-200/50 bg-amber-50/40 p-2"
+      className="mt-1.5 space-y-1.5 rounded-md border border-warning-border bg-warning-subtle p-2"
       role="group"
       aria-label="Apontamentos do item"
     >
@@ -96,10 +96,9 @@ export function ChecklistIssuePicker({
                 className={cn(
                   "min-h-[34px] rounded border px-2 py-1 text-[11px] font-medium transition-colors duration-100",
                   "disabled:opacity-50 sm:min-h-[32px]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/40",
                   active
-                    ? "border-amber-600 bg-amber-600 text-white"
-                    : "border-border/80 bg-card text-foreground hover:border-amber-400 hover:bg-amber-50",
+                    ? "border-warning bg-warning text-white"
+                    : "border-border bg-card text-foreground hover:border-warning-border hover:bg-warning-subtle",
                 )}
               >
                 {option.label}
@@ -124,8 +123,8 @@ export function ChecklistIssuePicker({
             onBlur={onManualBlur}
             className={cn(
               "w-full resize-y rounded-md border bg-card px-2 py-1.5 text-sm",
-              "focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20",
-              showValidation && selectedCodes.length === 0 ? "border-amber-500/60" : "border-border",
+              "transition-colors duration-150 focus-visible:border-primary",
+              showValidation && selectedCodes.length === 0 ? "border-warning" : "border-border",
             )}
           />
         </div>
@@ -142,7 +141,7 @@ export function ChecklistIssuePicker({
       )}
 
       {showValidation && (
-        <p className="flex items-center gap-1 text-[11px] font-medium text-amber-800" role="alert">
+        <p className="flex items-center gap-1 text-[11px] font-semibold text-warning" role="alert">
           <AlertCircle className="size-3 shrink-0" aria-hidden />
           Informe o apontamento identificado.
         </p>
