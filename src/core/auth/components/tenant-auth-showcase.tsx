@@ -1,67 +1,67 @@
-import { Link } from "react-router-dom";
-import { Camera, ClipboardCheck, FileText } from "lucide-react";
-import { ROUTES } from "@/config/routes";
-import { TenantAuthBadge } from "@/core/auth/components/tenant-auth-badge";
-import { BrandLogo } from "@/shared/components/brand-logo";
+import { Check, ShieldCheck } from "lucide-react";
 import { PUBLIC_IMAGES } from "@/shared/lib/public-images";
 import { cn } from "@/shared/lib/utils";
 
-const FEATURES = [
-  { label: "Fotos guiadas", icon: Camera },
-  { label: "Checklist digital", icon: ClipboardCheck },
-  { label: "Laudo em PDF", icon: FileText },
+const LAUDO_ROWS = [
+  { label: "Checklist técnico", value: "Por etapa" },
+  { label: "Fotos guiadas", value: "Data e local" },
+  { label: "Parecer", value: "No documento" },
+  { label: "Autenticidade", value: "Rastreável" },
 ] as const;
 
 export function TenantAuthShowcase({ className }: { className?: string }) {
   return (
-    <aside
-      className={cn(
-        "tenant-auth-showcase relative min-w-0 flex-col justify-between gap-8 overflow-hidden p-10 xl:p-14",
-        className,
-      )}
-    >
-      <Link
-        to={ROUTES.consultaLanding}
-        className="relative w-fit shrink-0 transition-opacity hover:opacity-80"
-        aria-label="Torres Vistorias, ir para Torres Consulta"
-      >
-        <BrandLogo size="lg" />
-      </Link>
+    <div className={cn("w-full", className)}>
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-elevated">
+        <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.09em] text-primary">
+              Torres Vistoria
+            </p>
+            <p className="mt-1 text-[17px] font-bold text-foreground">Laudo cautelar</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Inspeção em campo · evidências anexadas
+            </p>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-muted px-2.5 py-1.5 text-[11px] font-semibold text-success">
+            <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
+            Rastreável
+          </span>
+        </div>
 
-      <div className="relative shrink-0 space-y-5">
-        <TenantAuthBadge className="border-orange-500/30 bg-orange-500/10 text-orange-400" />
-        <h2 className="max-w-lg text-[2.35rem] font-black leading-[1.05] tracking-[-0.04em] text-white xl:text-[2.75rem]">
-          Precisão em cada{" "}
-          <span className="text-primary">laudo cautelar.</span>
-        </h2>
-        <p className="max-w-md text-[0.95rem] leading-relaxed text-neutral-400">
-          Ambiente exclusivo para profissionais: evidências fotográficas, checklist técnico e emissão
-          de laudos com rastreabilidade.
-        </p>
+        <div className="border-b border-border bg-muted">
+          <img
+            src={PUBLIC_IMAGES.auth.inspection}
+            alt="Vistoriador inspecionando o assoalho de um veículo elevado"
+            width={1200}
+            height={800}
+            className="h-56 w-full object-cover object-[center_38%] sm:h-64"
+            decoding="async"
+            fetchPriority="high"
+          />
+          <p className="px-5 py-3 text-center text-sm font-semibold text-foreground sm:px-6">
+            Registro fotográfico da vistoria
+            <span className="ml-1.5 font-medium text-muted-foreground">checklist · PDF</span>
+          </p>
+        </div>
+
+        <ul className="shrink-0 divide-y divide-border">
+          {LAUDO_ROWS.map((row) => (
+            <li key={row.label} className="flex items-center gap-3 px-5 py-3 sm:px-6">
+              <Check className="h-4 w-4 shrink-0 text-success" strokeWidth={2.5} aria-hidden />
+              <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{row.label}</span>
+              <span className="shrink-0 text-sm font-semibold text-foreground">{row.value}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="shrink-0 border-t border-border px-5 py-4 sm:px-6">
+          <p className="text-[11px] font-bold uppercase tracking-[0.09em] text-subtle-foreground">
+            Entrega ao cliente
+          </p>
+          <p className="mt-1 text-sm font-semibold text-foreground">Laudo em PDF, pronto para enviar</p>
+        </div>
       </div>
-
-      <figure className="relative min-h-0 flex-1 overflow-hidden rounded-[1.75rem] ring-1 ring-white/10">
-        <img
-          src={PUBLIC_IMAGES.auth.inspection}
-          alt="Vistoriador realizando inspeção técnica sob um veículo elevado"
-          className="h-full w-full object-cover object-[center_40%] saturate-[0.92] contrast-[1.03]"
-          loading="lazy"
-          decoding="async"
-        />
-        <div className="absolute inset-0 bg-orange-950/10 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#090909] via-[#090909]/15 to-transparent" />
-      </figure>
-
-      <ul className="relative flex shrink-0 flex-wrap items-center gap-x-7 gap-y-3">
-        {FEATURES.map(({ label, icon: Icon }) => (
-          <li key={label} className="flex items-center gap-2.5 text-sm font-medium text-neutral-300">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary">
-              <Icon className="h-4 w-4" strokeWidth={2.25} />
-            </span>
-            {label}
-          </li>
-        ))}
-      </ul>
-    </aside>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate } from "react-router-dom";
-import { ArrowRight, LogIn, UserPlus } from "lucide-react";
+import { ArrowRight, ArrowUpRight, UserPlus } from "lucide-react";
 import { useAuth } from "@/core/auth/use-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
@@ -15,7 +15,7 @@ import { FormError } from "@/core/auth/components/form-error";
 import { PasswordField } from "@/core/auth/components/password-field";
 import { TenantAuthPanel } from "@/core/auth/components/tenant-auth-panel";
 import { Button } from "@/shared/ui/button";
-import { LoadingScreen } from "@/shared/components/loading-spinner";
+import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { ROUTES } from "@/config/routes";
 
 export function LoginPage() {
@@ -31,7 +31,13 @@ export function LoginPage() {
     defaultValues: { acceptTerms: false },
   });
 
-  if (loading || (session && principalLoading)) return <LoadingScreen />;
+  if (loading || (session && principalLoading)) {
+    return (
+      <div className="lg:col-start-2 lg:row-start-2">
+        <LoadingSpinner />
+      </div>
+    );
+  }
   if (session && principalType === PrincipalType.TENANT_MEMBER) {
     return <Navigate to={ROUTES.dashboard} replace />;
   }
@@ -65,9 +71,42 @@ export function LoginPage() {
   return (
     <TenantAuthPanel
       title="Entrar no painel"
-      description="Use as credenciais da sua conta Torres Vistorias."
+      meta="Use sua conta Torres Vistorias"
+      cta={
+        <Link
+          to={ROUTES.vistoriaRegister}
+          className="group flex items-center gap-3 rounded-xl border border-brand-border bg-brand-subtle p-3.5 transition-colors duration-150 hover:bg-brand-muted"
+        >
+          <span className="ui-icon-box h-10 w-10">
+            <UserPlus className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="ui-eyebrow">Ainda não tem cadastro?</span>
+            <span className="mt-1 block text-sm font-bold text-foreground">
+              Criar conta de vistoriador
+            </span>
+            <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+              Cadastro gratuito, liberado após aprovação da equipe.
+            </span>
+          </span>
+          <ArrowRight
+            className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5"
+            aria-hidden
+          />
+        </Link>
+      }
+      footer={
+        <Link
+          to={ROUTES.consultaLanding}
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-3.5 text-center text-sm text-muted-foreground shadow-card transition-colors duration-150 hover:text-foreground"
+        >
+          Não é vistoriador?
+          <span className="font-semibold text-primary">Consultar veículo</span>
+          <ArrowUpRight className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+        </Link>
+      }
     >
-      <form onSubmit={onSubmit} className="space-y-5" data-testid="login-form" aria-busy={isSubmitting}>
+      <form onSubmit={onSubmit} className="space-y-3.5" data-testid="login-form" aria-busy={isSubmitting}>
         <EmailField
           id="email"
           placeholder="seu@email.com"
@@ -94,7 +133,7 @@ export function LoginPage() {
           {...register("password")}
         />
 
-        <label className="flex items-start gap-3 text-[0.8rem] leading-relaxed text-muted-foreground">
+        <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-muted-foreground">
           <input
             type="checkbox"
             className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"
@@ -128,46 +167,23 @@ export function LoginPage() {
 
         {error && <FormError message={error} />}
 
-        <Button
-          type="submit"
-          className="h-12 w-full rounded-2xl text-base font-semibold"
-          size="lg"
-          disabled={isSubmitting}
-        >
+        <Button type="submit" className="h-12 w-full" size="lg" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                aria-hidden
+              />
               Entrando...
             </>
           ) : (
             <>
-              <LogIn className="h-4 w-4" />
               Entrar
+              <ArrowRight className="h-4 w-4" aria-hidden />
             </>
           )}
         </Button>
       </form>
-
-      <Link
-        to={ROUTES.vistoriaRegister}
-        className="group mt-6 flex items-center gap-4 rounded-xl border border-brand-border bg-brand-subtle p-4 transition-colors duration-150 hover:bg-brand-muted"
-      >
-        <span className="ui-icon-box h-11 w-11">
-          <UserPlus className="h-5 w-5" strokeWidth={2.25} />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-            Ainda não tem cadastro?
-          </span>
-          <span className="mt-1 block text-sm font-bold text-foreground">
-            Criar conta de vistoriador
-          </span>
-          <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-            Cadastro gratuito, liberado após aprovação da equipe.
-          </span>
-        </span>
-        <ArrowRight className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" />
-      </Link>
     </TenantAuthPanel>
   );
 }

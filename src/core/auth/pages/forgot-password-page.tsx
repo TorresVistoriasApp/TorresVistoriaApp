@@ -62,11 +62,7 @@ export function ForgotPasswordPage() {
         />
         {message && <p className="text-sm text-success">{message}</p>}
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button
-          type="submit"
-          className="h-12 w-full rounded-2xl text-base font-semibold"
-          disabled={isSubmitting}
-        >
+        <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
           {isSubmitting ? "Enviando..." : "Enviar link"}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
