@@ -1,10 +1,10 @@
 import { AlertTriangle, Info, ShieldAlert } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { cn } from "@/shared/lib/utils";
-import { formatPlate } from "@/modules/torres-consulta/utils/vehicle-identifier";
+import { formatPlate } from "@/modules/torres-consulta/domain/value-objects";
 import { getQueryLabel } from "@/modules/torres-consulta/domain/query-catalog";
 import type { VehicleFinding } from "@/core/integrations/ports/vehicle-lookup";
-import type { Consulta } from "@/modules/torres-consulta/types/consulta";
+import type { Consulta } from "@/modules/torres-consulta/domain/entities/consulta";
 
 const SEVERITY_STYLES: Record<VehicleFinding["severity"], { icon: typeof Info; className: string }> = {
   info: { icon: Info, className: "border-border/60 bg-muted/30 text-muted-foreground" },

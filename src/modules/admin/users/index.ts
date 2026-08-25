@@ -7,7 +7,6 @@ export {
   useSetUserActive,
   useUpdateUser,
 } from "@/modules/admin/users/hooks/use-admin-users";
-export { UsersPage } from "@/modules/admin/users/pages/users-page";
 export {
   createUserSchema,
   updateUserSchema,

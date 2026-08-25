@@ -5,7 +5,7 @@ import {
   isValidPlate,
   normalizeChassis,
   normalizePlate,
-} from "@/modules/torres-consulta/utils/vehicle-identifier";
+} from "@/modules/torres-consulta/domain/value-objects";
 
 const queryTypeSchema = z.enum([
   VehicleQueryType.BASIC,

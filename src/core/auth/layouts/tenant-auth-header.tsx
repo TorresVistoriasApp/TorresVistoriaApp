@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { ROUTES } from "@/config/routes";
 import { AuthPageHeader } from "@/core/auth/layouts/auth-page-header";
 import { BrandLogo } from "@/shared/components/brand-logo";

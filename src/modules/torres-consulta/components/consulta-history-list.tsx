@@ -8,8 +8,8 @@ import { getQueryLabel } from "@/modules/torres-consulta/domain/query-catalog";
 import {
   formatPlate,
   maskChassisForDisplay,
-} from "@/modules/torres-consulta/utils/vehicle-identifier";
-import { ConsultaStatus, type Consulta } from "@/modules/torres-consulta/types/consulta";
+} from "@/modules/torres-consulta/domain/value-objects";
+import { ConsultaStatus, type Consulta } from "@/modules/torres-consulta/domain/entities/consulta";
 
 const STATUS_STYLES: Record<ConsultaStatus, { label: string; className: string }> = {
   [ConsultaStatus.PROCESSING]: {

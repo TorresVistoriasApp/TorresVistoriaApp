@@ -6,7 +6,7 @@ import { MobileBackButton } from "@/shared/components/mobile-back-button";
 import { ROUTES } from "@/config/routes";
 import { ConsultaResult } from "@/modules/torres-consulta/components/consulta-result";
 import { useConsulta } from "@/modules/torres-consulta/hooks/use-consultas";
-import { ConsultaStatus } from "@/modules/torres-consulta/types/consulta";
+import { ConsultaStatus } from "@/modules/torres-consulta/domain/entities/consulta";
 import { ConsultaFeatureGate } from "@/modules/torres-consulta/components/consulta-feature-gate";
 
 export function ConsultaDetailPage() {

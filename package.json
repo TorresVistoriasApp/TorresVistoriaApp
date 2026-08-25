@@ -11,7 +11,7 @@
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview --port 3000",
     "test": "vitest",
-    "test:isolation": "vitest run tests/unit/lib/tenant-isolation.test.ts tests/integration/tenant-rls-contract.test.ts",
+    "test:isolation": "vitest run tests/unit/core/tenant tests/integration/tenant-rls-contract.test.ts",
     "test:db": "supabase test db --local supabase/tests",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -20,8 +20,7 @@
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
     "db:seed": "supabase db seed",
-    "db:migrate-legacy-storage": "node scripts/migrate-legacy-storage.mjs",
-    "scaffold": "node scripts/scaffold-step2.mjs"
+    "db:migrate-legacy-storage": "node scripts/migrate-legacy-storage.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

@@ -14,7 +14,7 @@ import { getErrorMessage } from "@/core/errors/app-error";
 import {
   consumerProfileSchema,
   type ConsumerProfileInput,
-} from "@/modules/torres-consulta/auth/schemas/consumer-auth";
+} from "@/core/auth/schemas/consumer-auth";
 import { ConsumerAccountPrivacySection } from "@/modules/torres-consulta/components/consumer-app/consumer-account-privacy-section";
 import { ConsumerChangePasswordSection } from "@/modules/torres-consulta/components/consumer-app/consumer-change-password-section";
 import { ConsumerPageHeader } from "@/modules/torres-consulta/components/consumer-app/consumer-page-header";

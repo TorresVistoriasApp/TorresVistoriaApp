@@ -47,6 +47,10 @@ playwright-report
 blob-report
 playwright/.cache
 
+# Local experiment artifacts
+tmp-*.pdf
+/tmp-*
+
 # Supabase
 .supabase
 .vercel
