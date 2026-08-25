@@ -69,14 +69,14 @@ export function ConsumerConsultaForm({
       className="space-y-6"
     >
       <div className="space-y-3">
-        <div className="inline-flex rounded-xl border border-border bg-muted/40 p-1">
+        <div className="landing-segment">
           {SEARCH_MODES.map((mode) => (
             <button
               key={mode.id}
               type="button"
               onClick={() => switchMode(mode.id)}
               className={cn(
-                "rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
+                "relative z-10 rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-150",
                 searchBy === mode.id
                   ? "bg-card text-foreground shadow-soft"
                   : "text-muted-foreground hover:text-foreground",
@@ -140,15 +140,15 @@ export function ConsumerConsultaForm({
                 type="button"
                 onClick={() => setValue("planName", plan.name as ConsumerPlanName)}
                 className={cn(
-                  "relative rounded-2xl border px-4 py-3.5 text-left transition-all",
+                  "relative rounded-xl border px-4 py-3.5 text-left transition-colors duration-150",
                   isSelected
-                    ? "border-primary bg-primary/5 ring-2 ring-primary/25"
-                    : "border-border hover:border-primary/30",
-                  plan.highlighted && !isSelected && "border-primary/20",
+                    ? "border-primary bg-brand-subtle"
+                    : "border-border bg-card hover:border-border-strong",
+                  plan.highlighted && !isSelected && "landing-card-featured",
                 )}
               >
                 {plan.highlighted && (
-                  <span className="absolute -top-2 right-3 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+                  <span className="absolute -top-2 right-3 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.07em] text-primary-foreground">
                     Top
                   </span>
                 )}
@@ -165,7 +165,7 @@ export function ConsumerConsultaForm({
         {errors.planName && <p className="text-sm text-destructive">{errors.planName.message}</p>}
       </div>
 
-      <div className="rounded-2xl border border-border/70 bg-muted/30 px-4 py-3">
+      <div className="rounded-xl border border-border bg-muted px-4 py-3">
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <CreditCard className="h-4 w-4 shrink-0 text-primary" />
           Você pagará <span className="font-bold text-foreground">{priceLabel}</span> por esta
@@ -177,7 +177,7 @@ export function ConsumerConsultaForm({
         </p>
       </div>
 
-      <Button type="submit" disabled={submitting} className="h-12 w-full rounded-2xl text-base font-bold sm:w-auto">
+      <Button type="submit" disabled={submitting} className="h-12 w-full text-base sm:w-auto">
         <Search className="h-4 w-4" />
         {submitting ? "Processando..." : `Consultar por ${priceLabel}`}
       </Button>

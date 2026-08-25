@@ -25,6 +25,7 @@ import { Label } from "@/shared/ui/label";
 import { UserAvatar } from "@/shared/components/user-avatar";
 import {
   SETTINGS_FIELD_LABEL_CLASS,
+  SettingsFormActions,
   SettingsSection,
 } from "@/shared/components/settings/settings-section";
 
@@ -118,7 +119,7 @@ export function ClienteProfilePage() {
           icon={Trash2}
           title="Conta programada para exclusão"
           description="Você ainda pode recuperar sua conta dentro do prazo de 90 dias."
-          className="border-amber-500/25"
+          className="border-warning-border"
         >
           <ConsumerAccountPrivacySection
             profile={consumerProfile}
@@ -129,30 +130,22 @@ export function ClienteProfilePage() {
 
       <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,280px)_minmax(0,1fr)] xl:items-start xl:gap-6">
         <aside className="min-w-0 xl:sticky xl:top-24">
-          <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft">
-            <div className="border-b border-border/50 bg-gradient-to-br from-orange-50/80 via-white to-white px-5 py-6 text-center">
-              <UserAvatar
-                name={displayName}
-                size="xl"
-                className="mx-auto h-24 w-24 text-2xl ring-4 ring-white"
-              />
+          <div className="ui-panel overflow-hidden">
+            <div className="border-b border-border px-5 py-6 text-center">
+              <UserAvatar name={displayName} size="xl" className="mx-auto h-24 w-24 text-2xl" />
               <p className="mt-4 truncate text-lg font-bold text-foreground">{displayName}</p>
               <p className="mt-1 truncate text-sm text-muted-foreground">{email}</p>
               {!isInactive ? (
-                <span className="mt-3 inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  Conta ativa
-                </span>
+                <span className="ui-chip-positive mt-3 inline-flex">Conta ativa</span>
               ) : (
-                <span className="mt-3 inline-flex rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-800">
-                  Conta inativa
-                </span>
+                <span className="ui-chip-warning mt-3 inline-flex">Conta inativa</span>
               )}
             </div>
 
             <div className="p-4">
               <Button
                 variant="outline"
-                className="w-full rounded-xl border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                className="w-full border-destructive-border text-destructive hover:bg-destructive-subtle hover:text-destructive"
                 onClick={() => void signOut()}
               >
                 <LogOut className="h-4 w-4" />
@@ -201,7 +194,7 @@ export function ClienteProfilePage() {
                       type="email"
                       value={email}
                       disabled
-                      className="bg-muted/30 pl-11 opacity-80"
+                      className="bg-muted pl-11"
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -226,16 +219,12 @@ export function ClienteProfilePage() {
                 </div>
               </div>
 
-              <div className="mt-5 border-t border-border/50 pt-4">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !consumerProfile || isInactive}
-                  className="rounded-full"
-                >
+              <SettingsFormActions>
+                <Button type="submit" disabled={isSubmitting || !consumerProfile || isInactive}>
                   <Save className="h-4 w-4" />
                   Salvar alterações
                 </Button>
-              </div>
+              </SettingsFormActions>
             </form>
           </SettingsSection>
 

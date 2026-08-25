@@ -26,25 +26,20 @@ export function ConsumerConsultaListItem({
   return (
     <article
       className={cn(
-        "group p-4 transition-colors",
-        variant === "card" ? "landing-card" : "hover:bg-muted/50",
+        "group p-5 transition-colors duration-150 sm:p-6",
+        variant === "card" ? "ui-panel ui-panel-interactive" : "hover:bg-brand-subtle",
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-base font-bold tracking-[0.08em] text-foreground">
+          <p className="font-mono text-base font-bold uppercase tracking-[0.08em] text-foreground">
             {identifier}
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-[13px] text-muted-foreground">
             {formatConsumerConsultaDate(consulta.createdAt)} · {consulta.planName}
           </p>
         </div>
-        <span
-          className={cn(
-            "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
-            getConsumerConsultaStatusClass(consulta.status),
-          )}
-        >
+        <span className={cn("shrink-0", getConsumerConsultaStatusClass(consulta.status))}>
           {getConsumerConsultaStatusLabel(consulta.status)}
         </span>
       </div>

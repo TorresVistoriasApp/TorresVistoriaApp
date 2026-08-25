@@ -5,7 +5,10 @@ import { ROUTES } from "@/config/routes";
 import { getErrorMessage } from "@/core/errors/app-error";
 import { ConsumerConsultaForm } from "@/modules/torres-consulta/components/consumer-consulta-form";
 import { ConsumerPageHeader } from "@/modules/torres-consulta/components/consumer-app/consumer-page-header";
-import { ConsumerSurface } from "@/modules/torres-consulta/components/consumer-app/consumer-surface";
+import {
+  ConsumerSurface,
+  ConsumerSurfaceHeader,
+} from "@/modules/torres-consulta/components/consumer-app/consumer-surface";
 import { IntegrationPendingNotice } from "@/modules/torres-consulta/components/integration-pending-notice";
 import { useRequestConsumerConsulta } from "@/modules/torres-consulta/hooks/use-consumer-consultas";
 import { isConsultaAvailable } from "@/modules/torres-consulta/domain/services/consulta-availability";
@@ -54,21 +57,15 @@ export function ConsultaAppNovaConsultaPage() {
       />
 
       <ConsumerSurface padding="none">
-        <div className="border-b border-border/50 bg-gradient-to-r from-orange-50/80 to-white px-5 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Search className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="text-sm font-bold text-foreground">Consultar veículo</p>
-              <p className="text-xs text-muted-foreground">
-                {integrationAvailable
-                  ? "Informe placa ou chassi e finalize o pagamento."
-                  : "Registre agora — o relatório libera quando a integração estiver ativa."}
-              </p>
-            </div>
-          </div>
-        </div>
+        <ConsumerSurfaceHeader
+          icon={Search}
+          title="Consultar veículo"
+          description={
+            integrationAvailable
+              ? "Informe placa ou chassi e finalize o pagamento."
+              : "Registre agora — o relatório libera quando a integração estiver ativa."
+          }
+        />
 
         <div className="p-5 sm:p-6">
           <ConsumerConsultaForm
@@ -77,15 +74,15 @@ export function ConsultaAppNovaConsultaPage() {
             defaultPlanName={defaultPlanName}
           />
           {error && (
-            <p className="mt-4 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
+            <p className="mt-4 rounded-lg border border-destructive-border bg-destructive-subtle px-3 py-2.5 text-sm text-destructive">
               {error}
             </p>
           )}
         </div>
       </ConsumerSurface>
 
-      <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3.5">
-        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+      <div className="flex items-start gap-3 rounded-xl border border-success-border bg-success-subtle px-4 py-3.5">
+        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" />
         <p className="text-xs leading-relaxed text-muted-foreground">
           Compra avulsa por consulta. Pacotes com créditos são exclusivos para vistoriadores na Torres
           Vistoria — em breve.

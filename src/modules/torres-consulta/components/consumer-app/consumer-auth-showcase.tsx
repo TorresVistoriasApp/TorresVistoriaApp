@@ -20,9 +20,7 @@ export function ConsumerAuthShowcase({ className }: { className?: string }) {
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-elevated">
         <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-[0.09em] text-primary">
-              Torres Consulta
-            </p>
+            <p className="ui-eyebrow">Torres Consulta</p>
             <p className="mt-1 text-[17px] font-bold text-foreground">Conta do cliente</p>
             <p className="mt-0.5 text-sm text-muted-foreground">
               Relatórios salvos · novas consultas
@@ -50,7 +48,7 @@ export function ConsumerAuthShowcase({ className }: { className?: string }) {
           ))}
         </ul>
 
-        <div className="border-t border-border bg-muted/50 px-5 py-4 sm:px-6">
+        <div className="border-t border-border bg-muted px-5 py-4 sm:px-6">
           <p className="text-[11px] font-bold uppercase tracking-[0.09em] text-subtle-foreground">
             Na sua conta
           </p>

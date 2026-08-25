@@ -90,8 +90,8 @@ export function ConsumerAccountPrivacySection({
   if (isPendingDeletion) {
     return (
       <div className="space-y-4">
-        <div className="flex gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4 text-sm">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+        <div className="flex gap-3 rounded-lg border border-warning-border bg-warning-subtle p-4 text-sm">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
           <div className="space-y-2">
             <p className="font-semibold text-foreground">Conta inativa — exclusão programada</p>
             <p className="leading-relaxed text-muted-foreground">
@@ -115,11 +115,7 @@ export function ConsumerAccountPrivacySection({
           </div>
         </div>
 
-        <Button
-          className="rounded-full"
-          disabled={isReactivating}
-          onClick={() => void handleReactivate()}
-        >
+        <Button disabled={isReactivating} onClick={() => void handleReactivate()}>
           {isReactivating ? "Reativando..." : "Reativar minha conta"}
         </Button>
       </div>
@@ -138,14 +134,14 @@ export function ConsumerAccountPrivacySection({
         <Button
           type="button"
           variant="outline"
-          className="mt-auto w-full rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
+          className="mt-auto w-full border-destructive-border text-destructive hover:bg-destructive-subtle hover:text-destructive sm:w-auto"
           onClick={() => setConfirmDelete(true)}
         >
           <Trash2 className="h-4 w-4" />
           Solicitar exclusão da conta
         </Button>
       ) : (
-        <div className="space-y-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
+        <div className="space-y-3 rounded-lg border border-destructive-border bg-destructive-subtle p-4">
           <p className="text-sm text-destructive">
             Confirma a exclusão da conta <span className="font-medium">{profile.email}</span>? Ela
             ficará inativa por {DELETION_GRACE_DAYS} dias antes da remoção definitiva.
@@ -154,7 +150,6 @@ export function ConsumerAccountPrivacySection({
             <Button
               type="button"
               variant="destructive"
-              className="rounded-full"
               disabled={isDeleting}
               onClick={() => void handleRequestDeletion()}
             >
@@ -163,7 +158,6 @@ export function ConsumerAccountPrivacySection({
             <Button
               type="button"
               variant="outline"
-              className="rounded-full"
               disabled={isDeleting}
               onClick={() => setConfirmDelete(false)}
             >

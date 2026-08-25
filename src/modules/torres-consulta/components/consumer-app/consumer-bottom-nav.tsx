@@ -32,9 +32,11 @@ export function ConsumerBottomNav() {
             key={item.to}
             to={item.to}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-[10px] font-semibold transition-colors",
+              "flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-[10px] font-semibold transition-colors duration-150",
               index === 1 && "order-3",
-              isActive(pathname, item.to, item.match) ? "text-primary" : "text-muted-foreground",
+              isActive(pathname, item.to, item.match)
+                ? "text-brand-emphasis"
+                : "text-muted-foreground",
             )}
           >
             <span
@@ -55,7 +57,7 @@ export function ConsumerBottomNav() {
         <div className="order-2 flex justify-center">
           <Link
             to={ROUTES.consultaAppNovaConsulta}
-            className="-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow ring-4 ring-card transition-colors hover:bg-primary-hover"
+            className="-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-elevated ring-4 ring-card transition-colors hover:bg-primary-hover"
             aria-label="Nova consulta"
           >
             <Plus className="h-7 w-7" strokeWidth={2.25} />
