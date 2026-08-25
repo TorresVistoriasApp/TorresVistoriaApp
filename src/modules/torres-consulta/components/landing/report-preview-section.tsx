@@ -1,92 +1,109 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, FileSearch } from "lucide-react";
+import { ArrowRight, Check, FileSearch } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { Button } from "@/shared/ui/button";
 import { ScrollReveal } from "./scroll-reveal";
+import { SectionHeader } from "./section-header";
+import { LandingSection } from "./landing-ui";
 
-const PREVIEW_PAGES = [
-  {
-    title: "Resumo do Veículo",
-    lines: ["Volkswagen T Cross", "Placa BRA2E19", "Score 97 · Excelente"],
-    width: "w-[85%]",
-  },
-  {
-    title: "Verificações",
-    lines: ["Leilão: OK", "Sinistros: 1 registro", "Recall: Em dia"],
-    width: "w-[75%]",
-  },
-  {
-    title: "Linha do Tempo",
-    lines: ["2019 · 1º emplacamento", "2021 · Transferência", "2025 · Vistoria aprovada"],
-    width: "w-[80%]",
-  },
+const REPORT_CHECKS = [
+  { label: "Histórico de leilão", status: "Sem registros", ok: true },
+  { label: "Sinistros", status: "1 registro", ok: false },
+  { label: "Recall", status: "Em dia", ok: true },
+  { label: "Roubo e furto", status: "Sem ocorrências", ok: true },
+  { label: "Gravame", status: "Sem restrições", ok: true },
+] as const;
+
+const TIMELINE = [
+  { year: "2019", event: "Primeiro emplacamento" },
+  { year: "2021", event: "Transferência de propriedade" },
+  { year: "2025", event: "Vistoria aprovada" },
 ] as const;
 
 export function ReportPreviewSection() {
   return (
-    <section className="relative overflow-hidden bg-white py-20 sm:py-28" aria-labelledby="preview-title">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgb(234_88_12_/_0.05),transparent_45%)]" />
+    <LandingSection tone="surface" aria-labelledby="preview-title">
+      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+        <ScrollReveal>
+          <SectionHeader
+            align="left"
+            eyebrow="Antes de comprar"
+            title="Veja exatamente o que vem no relatório"
+            description="Tudo organizado e fácil de ler, do resumo de risco à linha do tempo do veículo. Nada de planilha crua ou sigla que ninguém entende."
+            titleId="preview-title"
+          />
+          <Button size="lg" className="mt-7" asChild>
+            <Link to={ROUTES.relatorioExemplo}>
+              <FileSearch className="h-4 w-4" aria-hidden />
+              Ver relatório de exemplo
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </Button>
+        </ScrollReveal>
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <ScrollReveal>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Antes de comprar</p>
-            <h2
-              id="preview-title"
-              className="mt-3 text-2xl font-black tracking-tight text-foreground sm:text-4xl"
-            >
-              Veja o que vem no seu relatório
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Tudo organizado e fácil de ler. Você sabe exatamente o que está comprando.
-            </p>
-            <Button size="lg" className="mt-8 rounded-xl" asChild>
-              <Link to={ROUTES.relatorioExemplo}>
-                <FileSearch className="h-4 w-4" />
-                Ver relatório completo
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </ScrollReveal>
-
-          <ScrollReveal delayMs={150}>
-            <div className="relative mx-auto max-w-md lg:max-w-none">
-              {/* Stacked pages */}
-              <div className="relative h-[320px] sm:h-[360px]">
-                {PREVIEW_PAGES.map((page, index) => (
-                  <div
-                    key={page.title}
-                    className={`absolute left-1/2 ${page.width} rounded-2xl border border-border/60 bg-white p-5 shadow-elevated transition-transform duration-300 hover:scale-[1.02]`}
-                    style={{
-                      top: `${index * 28}px`,
-                      zIndex: PREVIEW_PAGES.length - index,
-                      transform: `translateX(-50%) rotate(${index === 0 ? -2 : index === 1 ? 1 : 3}deg)`,
-                    }}
-                  >
-                    <div className="flex items-center justify-between border-b border-border/40 pb-3">
-                      <p className="text-xs font-bold uppercase tracking-wider text-primary">
-                        Torres Consulta
-                      </p>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-                        EXEMPLO
-                      </span>
-                    </div>
-                    <h3 className="mt-3 font-bold text-foreground">{page.title}</h3>
-                    <ul className="mt-2 space-y-1">
-                      {page.lines.map((line) => (
-                        <li key={line} className="text-sm text-muted-foreground">
-                          {line}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+        <ScrollReveal delayMs={80}>
+          <div className="mx-auto w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-elevated lg:max-w-none">
+            <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-[0.09em] text-primary">
+                  Torres Consulta
+                </p>
+                <p className="mt-1 truncate text-base font-bold text-foreground">
+                  Volkswagen T-Cross
+                </p>
+                <p className="font-mono text-[13px] tracking-[0.1em] text-muted-foreground">
+                  BRA2E19
+                </p>
               </div>
-              <div className="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-br from-primary/5 to-transparent" />
+              <div className="flex shrink-0 flex-col items-center rounded-lg border border-border bg-muted px-3 py-2">
+                <span className="tabular text-xl font-bold leading-none text-foreground">97</span>
+                <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.07em] text-subtle-foreground">
+                  Score
+                </span>
+              </div>
             </div>
-          </ScrollReveal>
-        </div>
+
+            <div className="px-5 py-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.09em] text-subtle-foreground">
+                Verificações
+              </p>
+              <ul className="mt-2.5 divide-y divide-border">
+                {REPORT_CHECKS.map((check) => (
+                  <li key={check.label} className="flex items-center justify-between gap-3 py-2">
+                    <span className="min-w-0 truncate text-sm text-muted-foreground">
+                      {check.label}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-foreground">
+                      {check.ok ? (
+                        <Check className="h-3.5 w-3.5 text-success" strokeWidth={2.5} aria-hidden />
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-warning" aria-hidden />
+                      )}
+                      {check.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="border-t border-border bg-muted/50 px-5 py-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.09em] text-subtle-foreground">
+                Linha do tempo
+              </p>
+              <ul className="mt-2.5 space-y-2">
+                {TIMELINE.map((item) => (
+                  <li key={item.year} className="flex items-baseline gap-3 text-sm">
+                    <span className="tabular w-10 shrink-0 font-bold text-foreground">
+                      {item.year}
+                    </span>
+                    <span className="text-muted-foreground">{item.event}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </ScrollReveal>
       </div>
-    </section>
+    </LandingSection>
   );
 }

@@ -23,7 +23,7 @@ export function ConsumerBottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-white/70 bg-white/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_32px_rgb(15_23_42_/_0.08)] backdrop-blur-xl md:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
       aria-label="Navegação principal"
     >
       <div className="mx-auto grid h-[4.25rem] max-w-lg grid-cols-3 items-end px-2">
@@ -32,16 +32,15 @@ export function ConsumerBottomNav() {
             key={item.to}
             to={item.to}
             className={cn(
-              "flex flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[10px] font-semibold transition-colors",
+              "flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-[10px] font-semibold transition-colors",
               index === 1 && "order-3",
               isActive(pathname, item.to, item.match) ? "text-primary" : "text-muted-foreground",
             )}
           >
             <span
               className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-2xl transition-all",
-                isActive(pathname, item.to, item.match) &&
-                  "bg-primary/10 shadow-[inset_0_0_0_1px_rgb(234_88_12_/_0.12)]",
+                "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
+                isActive(pathname, item.to, item.match) && "bg-brand-subtle",
               )}
             >
               <item.icon
@@ -56,7 +55,7 @@ export function ConsumerBottomNav() {
         <div className="order-2 flex justify-center">
           <Link
             to={ROUTES.consultaAppNovaConsulta}
-            className="group -mt-7 flex h-[3.75rem] w-[3.75rem] items-center justify-center rounded-[1.35rem] bg-gradient-to-br from-[#ea580c] via-[#f97316] to-[#fb923c] text-white shadow-[0_12px_28px_rgb(234_88_12_/_0.38)] ring-4 ring-[#f8fafc] transition-transform active:scale-95"
+            className="-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow ring-4 ring-card transition-colors hover:bg-primary-hover"
             aria-label="Nova consulta"
           >
             <Plus className="h-7 w-7" strokeWidth={2.25} />

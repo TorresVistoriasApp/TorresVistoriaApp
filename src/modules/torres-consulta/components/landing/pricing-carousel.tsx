@@ -1,39 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ArrowRight,
-  Car,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Crown,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { ArrowRight, Car, Check, Crown, ShieldCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/config/routes";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
 
-const ALL_FEATURES = [
-  "Consulta por placa ou chassi",
-  "Histórico básico do veículo",
-  "Relatório em PDF",
-  "Entrega imediata",
-  "Sinistros e leilão",
-  "Restrições financeiras",
-  "Score veicular",
-  "Suporte por e-mail",
-  "Decodificação VIN",
-  "Fotos históricas",
-  "Histórico de proprietários",
-  "Prioridade no suporte",
-] as const;
-
-const PLAN_FEATURE_KEYS: Record<string, readonly (typeof ALL_FEATURES)[number][]> = {
-  Básico: ALL_FEATURES.slice(0, 4),
-  Completo: ALL_FEATURES.slice(0, 8),
-  Premium: ALL_FEATURES,
+const PLAN_FEATURES: Record<string, readonly string[]> = {
+  Básico: [
+    "Consulta por placa ou chassi",
+    "Histórico básico do veículo",
+    "Relatório em PDF",
+    "Entrega imediata",
+  ],
+  Completo: [
+    "Tudo do plano Básico",
+    "Sinistros e leilão",
+    "Restrições financeiras",
+    "Score veicular",
+    "Suporte por e-mail",
+  ],
+  Premium: [
+    "Tudo do plano Completo",
+    "Decodificação do chassi",
+    "Fotos históricas",
+    "Histórico de proprietários",
+    "Prioridade no suporte",
+  ],
 };
 
 export const PRICING_PLANS = [
@@ -74,283 +67,182 @@ type Plan = (typeof PRICING_PLANS)[number];
 
 const DEFAULT_INDEX = Math.max(0, PRICING_PLANS.findIndex((plan) => plan.highlighted));
 
-const BILLING_OPTIONS = [
-  { id: "avulsa", label: "Avulsa", available: true },
-  { id: "pacote5", label: "5 consultas", available: false },
-  { id: "pacote10", label: "10 consultas", available: false },
-] as const;
-
-const CARD_WIDTH = 320;
-const CARD_GAP = 20;
-
-function PlanDivider() {
-  return (
-    <div className="relative my-6 flex items-center">
-      <div className="h-px flex-1 bg-white/10" />
-      <span className="mx-3 h-1.5 w-1.5 rotate-45 bg-primary/80" aria-hidden />
-      <div className="h-px flex-1 bg-white/10" />
-    </div>
-  );
+function toNumber(value: string) {
+  return Number.parseFloat(value.replace(",", "."));
 }
 
-function PlanSlide({
-  plan,
-  active,
-  onSelect,
-}: {
-  plan: Plan;
-  active: boolean;
-  onSelect: () => void;
-}) {
-  const included = new Set(PLAN_FEATURE_KEYS[plan.name] ?? []);
+function PlanCard({ plan }: { plan: Plan }) {
+  const features = PLAN_FEATURES[plan.name] ?? [];
   const Icon = plan.icon;
+  const discount = plan.originalPrice
+    ? (toNumber(plan.originalPrice) - toNumber(plan.price)).toFixed(2).replace(".", ",")
+    : null;
 
   return (
     <article
-      onClick={onSelect}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onSelect();
-        }
-      }}
-      role="button"
-      tabIndex={0}
       className={cn(
-        "relative flex h-full w-[20rem] shrink-0 cursor-pointer flex-col rounded-2xl border p-6 transition-all duration-300 sm:w-[20rem]",
+        "flex h-full flex-col overflow-hidden rounded-xl border bg-card",
         plan.highlighted
-          ? "border-primary/50 bg-slate-900/90 shadow-[0_0_40px_rgb(234_88_12_/_0.18)]"
-          : "border-white/10 bg-slate-900/60 hover:border-white/20",
-        active ? "scale-100 opacity-100" : "scale-[0.94] opacity-55",
-        plan.highlighted && active && "scale-[1.02]",
+          ? "border-primary/40 shadow-elevated"
+          : "border-border shadow-card",
       )}
     >
-      {plan.highlighted && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-          Recomendado
+      <div
+        className={cn(
+          "flex items-center justify-between gap-2 border-b px-5 py-3",
+          plan.highlighted ? "border-primary/20 bg-brand-subtle" : "border-border",
+        )}
+      >
+        <span className="flex items-center gap-2 text-sm font-bold text-foreground">
+          <Icon
+            className={cn("h-4 w-4", plan.highlighted ? "text-primary" : "text-subtle-foreground")}
+            strokeWidth={1.75}
+            aria-hidden
+          />
+          {plan.name}
         </span>
-      )}
-
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-primary">
-        <Icon className="h-5 w-5" strokeWidth={1.75} />
-      </div>
-
-      <h3 className="mt-5 text-lg font-bold text-white">{plan.name}</h3>
-
-      <div className="mt-4 flex items-end gap-1.5">
-        <span className="pb-1 text-sm text-slate-400">R$</span>
-        <span className="text-4xl font-black tracking-tight text-white">{plan.price}</span>
-        <span className="pb-1.5 text-sm text-slate-400">/ consulta</span>
-      </div>
-      {plan.originalPrice && (
-        <p className="mt-1 text-xs text-slate-500">
-          <span className="line-through">R$ {plan.originalPrice}</span>
-          <span className="ml-2 font-semibold text-emerald-400">
-            Economia de R${" "}
-            {(parseFloat(plan.originalPrice.replace(",", ".")) - parseFloat(plan.price.replace(",", ".")))
-              .toFixed(2)
-              .replace(".", ",")}
+        {plan.highlighted && (
+          <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.07em] text-primary-foreground">
+            Mais popular
           </span>
-        </p>
-      )}
-      <p className="mt-1 text-xs text-slate-500">Pagamento avulso</p>
+        )}
+      </div>
 
-      <PlanDivider />
+      <div className="flex flex-1 flex-col p-5">
+        <p className="text-sm leading-relaxed text-muted-foreground">{plan.description}</p>
 
-      <ul className="flex-1 space-y-2.5">
-        {ALL_FEATURES.map((feature) => {
-          const isIncluded = included.has(feature);
-          return (
-            <li
-              key={feature}
-              className={cn(
-                "flex items-start gap-2.5 text-sm",
-                isIncluded ? "text-slate-200" : "text-slate-600",
-              )}
-            >
-              <span
-                className={cn(
-                  "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
-                  isIncluded ? "bg-primary text-white" : "bg-white/5 text-slate-600",
-                )}
-              >
-                {isIncluded ? (
-                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                ) : (
-                  <X className="h-2.5 w-2.5" strokeWidth={2.5} />
-                )}
-              </span>
+        <div className="mt-4 flex items-end gap-1.5">
+          <span className="pb-1 text-sm font-medium text-muted-foreground">R$</span>
+          <span className="tabular text-[2rem] font-bold leading-none text-foreground">
+            {plan.price}
+          </span>
+          <span className="pb-1 text-sm text-muted-foreground">/ consulta</span>
+        </div>
+
+        {plan.originalPrice && (
+          <p className="mt-1.5 text-xs">
+            <span className="text-subtle-foreground line-through">R$ {plan.originalPrice}</span>
+            <span className="ml-2 font-semibold text-success">economize R$ {discount}</span>
+          </p>
+        )}
+
+        <ul className="mt-5 flex-1 space-y-2.5 border-t border-border pt-5">
+          {features.map((feature) => (
+            <li key={feature} className="flex items-start gap-2.5 text-sm text-foreground">
+              <Check
+                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"
+                strokeWidth={2.5}
+                aria-hidden
+              />
               {feature}
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
 
-      <Button
-        variant={plan.highlighted ? "default" : "outline"}
-        className={cn(
-          "mt-6 h-11 w-full rounded-full text-xs font-bold uppercase tracking-wider",
-          !plan.highlighted &&
-            "border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white",
-        )}
-        asChild
-        onClick={(event) => event.stopPropagation()}
-      >
-        <Link to={ROUTES.consultar}>
-          {plan.highlighted ? "Consultar agora" : "Ver plano"}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </Button>
+        <Button
+          variant={plan.highlighted ? "default" : "outline"}
+          className="mt-6 w-full"
+          asChild
+        >
+          <Link to={ROUTES.consultar}>
+            {plan.highlighted ? "Consultar agora" : "Escolher plano"}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </Button>
+      </div>
     </article>
   );
 }
 
-export function PricingCarousel() {
+/** Scroll-snap nativo: rolagem fluida no mobile sem cálculo de transform em JS. */
+function PricingScrollerMobile() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(DEFAULT_INDEX);
-  const [billing, setBilling] = useState<(typeof BILLING_OPTIONS)[number]["id"]>("avulsa");
-  const [trackOffset, setTrackOffset] = useState(0);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const planCount = PRICING_PLANS.length;
 
-  const goTo = useCallback(
-    (index: number) => {
-      setActiveIndex(Math.max(0, Math.min(planCount - 1, index)));
-    },
-    [planCount],
-  );
-
-  const goPrev = () => goTo(activeIndex - 1);
-  const goNext = () => goTo(activeIndex + 1);
-
-  const updateTrackOffset = useCallback(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    const viewportWidth = viewport.offsetWidth;
-    const slideStep = CARD_WIDTH + CARD_GAP;
-    const centerOffset = viewportWidth / 2 - CARD_WIDTH / 2;
-    setTrackOffset(centerOffset - activeIndex * slideStep);
-  }, [activeIndex]);
+  const scrollToIndex = useCallback((index: number) => {
+    const scroller = scrollerRef.current;
+    const slide = scroller?.children[index] as HTMLElement | undefined;
+    if (!scroller || !slide) return;
+    scroller.scrollTo({ left: slide.offsetLeft - scroller.offsetLeft, behavior: "smooth" });
+  }, []);
 
   useEffect(() => {
-    updateTrackOffset();
-    window.addEventListener("resize", updateTrackOffset);
-    return () => window.removeEventListener("resize", updateTrackOffset);
-  }, [updateTrackOffset]);
+    const scroller = scrollerRef.current;
+    const slide = scroller?.children[DEFAULT_INDEX] as HTMLElement | undefined;
+    if (!scroller || !slide) return;
+    scroller.scrollLeft = slide.offsetLeft - scroller.offsetLeft;
+  }, []);
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowLeft") {
-        setActiveIndex((index) => Math.max(0, index - 1));
+  const handleScroll = () => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const slides = Array.from(scroller.children) as HTMLElement[];
+    const center = scroller.scrollLeft + scroller.clientWidth / 2;
+    let nearest = 0;
+    let smallest = Number.POSITIVE_INFINITY;
+    slides.forEach((slide, index) => {
+      const distance = Math.abs(slide.offsetLeft - scroller.offsetLeft + slide.offsetWidth / 2 - center);
+      if (distance < smallest) {
+        smallest = distance;
+        nearest = index;
       }
-      if (event.key === "ArrowRight") {
-        setActiveIndex((index) => Math.min(planCount - 1, index + 1));
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [planCount]);
+    });
+    setActiveIndex(nearest);
+  };
 
   return (
-    <div className="relative mt-12">
-      <div className="mx-auto flex w-fit max-w-full rounded-full border border-white/10 bg-slate-900/80 p-1">
-        {BILLING_OPTIONS.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            disabled={!option.available}
-            onClick={() => option.available && setBilling(option.id)}
-            className={cn(
-              "rounded-full px-4 py-2 text-xs font-semibold transition-all sm:px-6 sm:text-sm",
-              billing === option.id && option.available
-                ? "bg-primary text-white shadow-glow"
-                : option.available
-                  ? "text-slate-400 hover:text-white"
-                  : "cursor-not-allowed text-slate-600",
-            )}
-          >
-            {option.label}
-            {!option.available && (
-              <span className="ml-1 hidden text-[10px] uppercase sm:inline">em breve</span>
-            )}
-          </button>
+    <div className="lg:hidden">
+      <div
+        ref={scrollerRef}
+        onScroll={handleScroll}
+        className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2"
+        aria-label="Planos de consulta veicular"
+      >
+        {PRICING_PLANS.map((plan) => (
+          <div key={plan.name} className="w-[19rem] max-w-[85vw] shrink-0 snap-center">
+            <PlanCard plan={plan} />
+          </div>
         ))}
       </div>
 
-      <div
-        ref={viewportRef}
-        className="relative mt-10 overflow-hidden py-6"
-        aria-roledescription="carrossel"
-        aria-label="Planos de consulta veicular"
-      >
-        <div
-          className="flex transition-transform duration-500 ease-out will-change-transform"
-          style={{
-            gap: `${CARD_GAP}px`,
-            transform: `translateX(${trackOffset}px)`,
-          }}
-        >
-          {PRICING_PLANS.map((plan, index) => (
-            <PlanSlide
-              key={plan.name}
-              plan={plan}
-              active={activeIndex === index}
-              onSelect={() => goTo(index)}
-            />
-          ))}
-        </div>
-
-        <div
-          className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-slate-950 to-transparent sm:w-24"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-slate-950 to-transparent sm:w-24"
-          aria-hidden
-        />
-      </div>
-
-      <div className="mt-2 flex items-center justify-center gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="h-10 w-10 rounded-full border-white/15 bg-slate-900/80 text-white hover:bg-white/10 hover:text-white"
-          onClick={goPrev}
-          disabled={activeIndex === 0}
-          aria-label="Plano anterior"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-
-        <div className="flex items-center gap-2">
-          {PRICING_PLANS.map((plan, index) => (
-            <button
-              key={plan.name}
-              type="button"
-              onClick={() => goTo(index)}
+      <div className="mt-4 flex items-center justify-center gap-2">
+        {PRICING_PLANS.map((plan, index) => (
+          <button
+            key={plan.name}
+            type="button"
+            onClick={() => scrollToIndex(index)}
+            className="flex h-8 min-h-8 w-6 items-center justify-center"
+            aria-label={`Ver plano ${plan.name}`}
+            aria-current={activeIndex === index}
+          >
+            <span
               className={cn(
-                "h-2 rounded-full transition-all duration-300",
-                activeIndex === index ? "w-6 bg-primary" : "w-2 bg-white/25 hover:bg-white/40",
+                "h-1.5 rounded-full transition-all duration-200",
+                activeIndex === index ? "w-5 bg-primary" : "w-1.5 bg-border-strong",
               )}
-              aria-label={`Ver plano ${plan.name}`}
-              aria-current={activeIndex === index}
             />
-          ))}
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="h-10 w-10 rounded-full border-white/15 bg-slate-900/80 text-white hover:bg-white/10 hover:text-white"
-          onClick={goNext}
-          disabled={activeIndex === planCount - 1}
-          aria-label="Próximo plano"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+          </button>
+        ))}
       </div>
+    </div>
+  );
+}
+
+function PricingGridDesktop() {
+  return (
+    <div className="hidden items-stretch lg:grid lg:grid-cols-3 lg:gap-5">
+      {PRICING_PLANS.map((plan) => (
+        <PlanCard key={plan.name} plan={plan} />
+      ))}
+    </div>
+  );
+}
+
+export function PricingCarousel() {
+  return (
+    <div className="mt-10 lg:mt-12">
+      <PricingGridDesktop />
+      <PricingScrollerMobile />
     </div>
   );
 }

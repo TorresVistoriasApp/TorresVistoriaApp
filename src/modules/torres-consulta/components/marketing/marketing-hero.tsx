@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
+import { LandingEyebrow } from "@/modules/torres-consulta/components/landing/landing-ui";
 
 interface MarketingHeroProps {
   eyebrow?: string;
@@ -21,36 +22,29 @@ export function MarketingHero({
   return (
     <section
       className={cn(
-        "relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-white via-slate-50/80 to-canvas",
+        "landing-hero-bg border-b border-border",
         compact ? "pt-24 pb-10 sm:pt-28 sm:pb-12" : "pt-24 pb-14 sm:pt-28 sm:pb-16",
         className,
       )}
     >
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgb(234_88_12_/_0.07),transparent_45%)]"
-        aria-hidden
-      />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {eyebrow && (
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>
-        )}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        {eyebrow && <LandingEyebrow className="mb-3">{eyebrow}</LandingEyebrow>}
         <h1
           className={cn(
-            "font-black tracking-tight text-foreground",
-            eyebrow ? "mt-3" : "",
+            "max-w-3xl text-balance font-bold leading-[1.08] text-foreground",
             compact
-              ? "text-2xl sm:text-3xl lg:text-4xl"
-              : "text-3xl sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]",
+              ? "text-[1.75rem] sm:text-[2rem] lg:text-[2.25rem]"
+              : "text-[2rem] sm:text-[2.5rem] lg:text-[2.875rem]",
           )}
         >
           {title}
         </h1>
         {description && (
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+          <p className="mt-4 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-[17px]">
             {description}
           </p>
         )}
-        {children && <div className="mt-6">{children}</div>}
+        {children && <div className="mt-7">{children}</div>}
       </div>
     </section>
   );

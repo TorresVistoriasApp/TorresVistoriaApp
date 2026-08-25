@@ -26,17 +26,15 @@ export function ConsumerConsultaListItem({
   return (
     <article
       className={cn(
-        "group relative overflow-hidden p-4 transition-all",
-        variant === "card"
-          ? "rounded-[1.25rem] border border-white/80 bg-white/90 shadow-[0_8px_24px_rgb(15_23_42_/_0.05)] backdrop-blur-sm active:scale-[0.99]"
-          : "hover:bg-muted/20",
+        "group p-4 transition-colors",
+        variant === "card" ? "landing-card" : "hover:bg-muted/50",
       )}
     >
-      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
-
-      <div className="relative flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-base font-bold tracking-wide text-foreground">{identifier}</p>
+          <p className="font-mono text-base font-bold tracking-[0.08em] text-foreground">
+            {identifier}
+          </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {formatConsumerConsultaDate(consulta.createdAt)} · {consulta.planName}
           </p>
@@ -51,23 +49,23 @@ export function ConsumerConsultaListItem({
         </span>
       </div>
 
-      <div className="relative mt-4 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2">
         <Link
           to={ROUTES.consultaAppConsultaDetail(consulta.id)}
-          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-slate-900/[0.04] px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-slate-900/[0.07]"
+          className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-muted px-3 text-sm font-semibold text-foreground transition-colors hover:bg-border"
         >
           Ver detalhes
-          <ChevronRight className="h-4 w-4 opacity-60" />
+          <ChevronRight className="h-4 w-4 text-subtle-foreground" aria-hidden />
         </Link>
         {downloadable && (
           <a
             href={consulta.documentUrl!}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-white text-primary shadow-sm transition-colors hover:bg-primary/5"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-primary transition-colors hover:bg-brand-subtle"
             aria-label={`Baixar relatório ${identifier}`}
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-4 w-4" aria-hidden />
           </a>
         )}
       </div>

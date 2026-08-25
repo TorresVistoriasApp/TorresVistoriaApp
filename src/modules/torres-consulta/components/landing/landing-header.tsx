@@ -59,13 +59,11 @@ export function LandingHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-          scrolled
-            ? "border-b border-border/60 bg-white/85 shadow-soft backdrop-blur-xl"
-            : "bg-transparent",
+          "fixed inset-x-0 top-0 z-50 border-b transition-colors duration-200",
+          scrolled ? "border-border bg-card" : "border-transparent bg-transparent",
         )}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link to={ROUTES.consultaLanding} aria-label="Torres Consulta, início">
             <ConsultaBrandLogo size="sm" showSubtitle={false} />
           </Link>
@@ -75,7 +73,7 @@ export function LandingHeader() {
               <Link
                 key={item.to}
                 to={item.to}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {item.label}
               </Link>
@@ -83,9 +81,6 @@ export function LandingHeader() {
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">
-            <Button variant="ghost" size="sm" asChild className="text-sky-600 hover:text-sky-700">
-              <Link to={ROUTES.vistoriaLogin}>Para Vistoriadores</Link>
-            </Button>
             <Button variant="outline" size="sm" asChild>
               <Link to={ROUTES.consultaLogin}>Entrar</Link>
             </Button>
@@ -96,7 +91,7 @@ export function LandingHeader() {
 
           <button
             type="button"
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-border/60 bg-white/80 text-foreground lg:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card text-foreground lg:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-controls="landing-mobile-menu"
@@ -110,14 +105,12 @@ export function LandingHeader() {
       {mobileOpen && (
         <div
           id="landing-mobile-menu"
-          className="fixed inset-0 z-[60] flex flex-col bg-white lg:hidden"
+          className="fixed inset-0 z-[60] flex flex-col bg-card lg:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Menu de navegação"
         >
-          <div className="landing-grid-bg pointer-events-none absolute inset-0 opacity-[0.05]" />
-
-          <div className="relative flex h-16 shrink-0 items-center justify-between border-b border-border/60 px-4">
+          <div className="relative flex h-16 shrink-0 items-center justify-between border-b border-border px-4">
             <Link
               to={ROUTES.consultaLanding}
               aria-label="Torres Consulta, início"
@@ -127,7 +120,7 @@ export function LandingHeader() {
             </Link>
             <button
               type="button"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-white text-foreground shadow-soft"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card text-foreground"
               onClick={closeMobileMenu}
               aria-label="Fechar menu"
             >
@@ -137,7 +130,7 @@ export function LandingHeader() {
 
           <div className="relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5">
             <nav className="flex flex-col gap-1" aria-label="Navegação mobile">
-              <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.1em] text-subtle-foreground">
                 Explorar
               </p>
               {MARKETING_PAGE_NAV.map((item) => {
@@ -151,28 +144,28 @@ export function LandingHeader() {
                     onClick={closeMobileMenu}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-2xl px-3 py-3 text-[15px] font-semibold transition-colors",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground hover:bg-muted/70",
+                      "flex items-center gap-3 rounded-lg px-3 py-3 text-[15px] font-semibold transition-colors",
+                      isActive ? "bg-brand-subtle text-primary" : "text-foreground hover:bg-muted",
                     )}
                   >
                     <span
                       className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-                        isActive ? "bg-primary/15" : "bg-muted/80",
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border",
+                        isActive
+                          ? "border-primary/20 bg-brand-subtle"
+                          : "border-border bg-muted",
                       )}
                     >
-                      <Icon className="h-5 w-5" strokeWidth={2} />
+                      <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
                     </span>
                     {item.label}
-                    <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40" />
+                    <ChevronRight className="ml-auto h-4 w-4 text-subtle-foreground" />
                   </Link>
                 );
               })}
             </nav>
 
-            <div className="mt-auto space-y-3 border-t border-border/60 pt-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div className="mt-auto space-y-2.5 border-t border-border pt-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <Button size="lg" className="h-12 w-full text-base" asChild>
                 <Link to={ROUTES.consultar} onClick={closeMobileMenu}>
                   <Search className="h-5 w-5" strokeWidth={2.25} />
@@ -188,7 +181,7 @@ export function LandingHeader() {
               <Link
                 to={ROUTES.vistoriaLogin}
                 onClick={closeMobileMenu}
-                className="flex min-h-11 items-center justify-center gap-1.5 text-sm font-semibold text-sky-600 transition-colors hover:text-sky-700"
+                className="flex min-h-11 items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 Sou vistoriador
                 <ChevronRight className="h-4 w-4" />
