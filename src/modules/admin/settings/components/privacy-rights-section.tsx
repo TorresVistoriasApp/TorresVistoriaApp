@@ -63,7 +63,7 @@ export function PrivacyRightsSection({ className }: { className?: string }) {
           </Button>
         </div>
 
-        <div className="border-t border-border/50 pt-5">
+        <div className="border-t border-border pt-5">
           <p className={SETTINGS_FIELD_LABEL_CLASS}>Excluir minha conta</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Anonimiza nome e avatar e marca o perfil como excluído. Esta ação não pode ser

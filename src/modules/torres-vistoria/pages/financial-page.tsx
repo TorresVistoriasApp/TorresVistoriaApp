@@ -183,42 +183,26 @@ export function FinancialPage() {
         ) : (
           <div
             className={cn(
-              "grid grid-cols-1 items-stretch gap-4 sm:gap-5",
-              isCompanyView
-                ? "sm:grid-cols-2 xl:grid-cols-4"
-                : "sm:grid-cols-2 xl:grid-cols-2",
+              "ui-grid-hairline",
+              isCompanyView ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-2",
             )}
           >
             <KpiCard
               label={isPersonalView ? "Suas receitas" : "Receitas"}
               value={formatCurrency(summary?.revenue ?? 0)}
-              themeIndex={0}
             />
             {isCompanyView && (
               <>
-                <KpiCard
-                  label="Despesas"
-                  value={formatCurrency(summary?.expenses ?? 0)}
-                  themeIndex={1}
-                />
-                <KpiCard
-                  label="Lucro líquido"
-                  value={formatCurrency(summary?.netProfit ?? 0)}
-                  themeIndex={2}
-                />
+                <KpiCard label="Despesas" value={formatCurrency(summary?.expenses ?? 0)} />
+                <KpiCard label="Lucro líquido" value={formatCurrency(summary?.netProfit ?? 0)} />
                 <KpiCard
                   label="Margem"
                   value={`${(summary?.margin ?? 0).toFixed(1)}%`}
-                  themeIndex={3}
                 />
               </>
             )}
             {isPersonalView && (
-              <KpiCard
-                label="Total líquido"
-                value={formatCurrency(summary?.netProfit ?? 0)}
-                themeIndex={2}
-              />
+              <KpiCard label="Total líquido" value={formatCurrency(summary?.netProfit ?? 0)} />
             )}
           </div>
         )}
@@ -291,7 +275,7 @@ export function FinancialPage() {
                       >
                         Anterior
                       </Button>
-                      <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-lg bg-primary/10 px-3 text-sm font-semibold text-primary">
+                      <span className="ui-icon-box ui-metric h-9 min-w-9 px-3 text-sm font-bold">
                         {currentPage}
                       </span>
                       <Button

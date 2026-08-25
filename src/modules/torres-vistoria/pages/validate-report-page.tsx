@@ -11,7 +11,7 @@ import { cn } from "@/shared/lib/utils";
 
 function ValidationField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-0.5 border-b border-border/60 py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-0.5 border-b border-border py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-semibold text-foreground sm:text-right">{value}</span>
     </div>
@@ -83,22 +83,24 @@ export function ValidateReportPage() {
   const hashLabel = result.hashStatus ?? "INDISPONIVEL";
 
   return (
-    <Card className="overflow-hidden border-green-600/20 shadow-lg">
+    <Card className="overflow-hidden">
       <div
         className={cn(
-          "px-6 py-10 text-center",
-          isIntegro ? "bg-green-600/10" : "bg-amber-500/10",
+          "border-b px-6 py-10 text-center",
+          isIntegro
+            ? "border-success-border bg-success-subtle"
+            : "border-warning-border bg-warning-subtle",
         )}
       >
         {isIntegro ? (
-          <CheckCircle className="mx-auto mb-3 h-14 w-14 text-green-600" />
+          <CheckCircle className="mx-auto mb-3 h-14 w-14 text-success" strokeWidth={1.75} />
         ) : (
-          <ShieldAlert className="mx-auto mb-3 h-14 w-14 text-amber-600" />
+          <ShieldAlert className="mx-auto mb-3 h-14 w-14 text-warning" strokeWidth={1.75} />
         )}
         <h1
           className={cn(
             "text-2xl font-bold tracking-wide",
-            isIntegro ? "text-green-700" : "text-amber-700",
+            isIntegro ? "text-success" : "text-warning",
           )}
         >
           {isIntegro ? "LAUDO VÁLIDO" : "LAUDO REGISTRADO"}
@@ -109,7 +111,7 @@ export function ValidateReportPage() {
       </div>
 
       <CardContent className="px-6 pb-8 pt-2">
-        <div className="rounded-lg border border-border/60 bg-muted/20 px-4">
+        <div className="rounded-lg border border-border bg-muted px-4">
           <ValidationField label="Empresa" value={result.companyName ?? "Torres Vistoria"} />
           <ValidationField label="Número" value={result.laudoNumber ?? result.verificationCode ?? "-"} />
           <ValidationField
@@ -126,8 +128,8 @@ export function ValidateReportPage() {
           />
         </div>
 
-        <div className="mt-6 flex items-start gap-2 rounded-lg border border-green-600/20 bg-green-600/5 p-4 text-xs text-muted-foreground">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+        <div className="mt-6 flex items-start gap-2 rounded-lg border border-success-border bg-success-subtle p-4 text-xs text-muted-foreground">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" />
           <p>
             A integridade do documento é verificada comparando o hash SHA-256 do arquivo PDF
             armazenado com o registro emitido no momento da geração do laudo.

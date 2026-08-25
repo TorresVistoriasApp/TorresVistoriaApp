@@ -10,25 +10,25 @@ export function PhotoCaptureProgressSummary({ stats, className }: PhotoCapturePr
   const { completedSlots, totalSlots, remainingSlots, percentComplete, totalPhotos } = stats;
 
   return (
-    <div className={cn("rounded-2xl border border-border/80 bg-card px-3 py-3 shadow-sm sm:px-4 sm:py-3.5", className)}>
+    <div className={cn("ui-panel px-3 py-3 sm:px-4 sm:py-3.5", className)}>
       <div className="flex items-end justify-between gap-3">
-        <div className="min-w-0 space-y-0.5">
-          <p className="text-xs font-medium text-muted-foreground">Progresso da vistoria</p>
-          <p className="text-base font-bold tabular-nums text-foreground sm:text-lg">
+        <div className="min-w-0 space-y-1">
+          <p className="ui-microlabel">Progresso da vistoria</p>
+          <p className="ui-metric text-base font-bold text-foreground sm:text-lg">
             {completedSlots} / {totalSlots}{" "}
             <span className="text-sm font-semibold text-muted-foreground sm:text-base">
               fotografias
             </span>
           </p>
         </div>
-        <p className="shrink-0 text-xl font-bold tabular-nums text-orange-600 sm:text-2xl">
+        <p className="ui-metric shrink-0 text-xl font-bold text-primary sm:text-2xl">
           {percentComplete}%
         </p>
       </div>
 
       <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-orange-500 to-orange-400 transition-all duration-500"
+          className="h-full rounded-full bg-primary transition-[width] duration-200 ease-out"
           style={{ width: `${percentComplete}%` }}
         />
       </div>

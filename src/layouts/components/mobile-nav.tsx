@@ -14,7 +14,7 @@ interface MobileNavProps {
 const MAX_SLOTS = 5;
 
 const slotClass =
-  "flex min-h-[52px] min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1.5 text-[10px] font-bold leading-tight transition-all duration-200";
+  "flex min-h-[52px] min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 py-1.5 text-[10px] font-bold leading-tight transition-colors duration-150";
 
 const labelClass = "block w-full truncate text-center";
 
@@ -31,7 +31,7 @@ export function MobileNav({ className }: MobileNavProps) {
       className={cn("fixed bottom-3 left-3 right-3 z-40 md:hidden", className)}
       aria-label="Navegação principal"
     >
-      <div className="flex items-stretch gap-0.5 rounded-2xl border border-border/50 bg-card/95 px-1 py-1 shadow-elevated backdrop-blur-xl safe-area-inset-bottom">
+      <div className="flex items-stretch gap-0.5 rounded-2xl border border-border bg-card px-1 py-1 shadow-elevated safe-area-inset-bottom">
         {visibleItems.map(({ to, shortLabel, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -41,7 +41,7 @@ export function MobileNav({ className }: MobileNavProps) {
               cn(
                 slotClass,
                 isActive
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-brand-subtle text-brand-emphasis"
                   : "text-muted-foreground hover:text-foreground",
               )
             }

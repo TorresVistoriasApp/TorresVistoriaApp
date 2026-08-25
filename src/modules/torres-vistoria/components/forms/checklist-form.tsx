@@ -77,7 +77,7 @@ export function ChecklistForm({
         <ChecklistSummary {...summary} />
       </div>
 
-      <details className="group rounded-xl border border-border bg-muted/20 md:hidden">
+      <details className="group rounded-lg border border-border bg-muted md:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3 text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
           <span className="flex items-center gap-2">
             <Scale className="size-4 shrink-0 text-primary" />
@@ -85,14 +85,14 @@ export function ChecklistForm({
           </span>
           <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
-        <p className="border-t border-border/60 px-3 pb-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="border-t border-border px-3 pb-3 text-xs leading-relaxed text-muted-foreground">
           Checklist técnico para vistoria cautelar com parâmetros exigidos pelo{" "}
           <strong className="text-foreground">DETRAN</strong>, seguradoras e{" "}
           <strong className="text-foreground">perícia judicial</strong>. Registre observações
           detalhadas em itens com apontamentos, pois são obrigatórias para a validade do laudo.
         </p>
       </details>
-      <div className="hidden rounded-xl border border-border bg-muted/20 p-4 text-xs leading-relaxed text-muted-foreground md:block">
+      <div className="hidden rounded-lg border border-border bg-muted p-4 text-xs leading-relaxed text-muted-foreground md:block">
         <div className="flex items-start gap-2">
           <Scale className="mt-0.5 size-4 shrink-0 text-primary" />
           <p>
@@ -138,7 +138,7 @@ export function ChecklistForm({
             id="checklist-section"
             value={activeCategory ?? ""}
             onChange={(e) => setActiveCategory(e.target.value || null)}
-            className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="h-11 w-full rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground transition-colors duration-150 focus-visible:border-primary"
           >
             <option value="">Todas as seções ({items.length} itens)</option>
             {grouped.map((g) => (
@@ -169,7 +169,7 @@ export function ChecklistForm({
                 "rounded-lg px-3 py-2 text-xs font-semibold transition-colors",
                 activeCategory === g.key
                   ? "bg-foreground text-background"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80",
+                  : "bg-muted text-muted-foreground hover:bg-brand-subtle hover:text-primary",
               )}
             >
               {getChecklistCategoryLabel(g.key)}
@@ -206,7 +206,7 @@ export function ChecklistForm({
           </span>
           <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" />
         </summary>
-        <p className="border-t border-border/60 px-3 pb-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="border-t border-border px-3 pb-3 text-xs leading-relaxed text-muted-foreground">
           Laudo gerado com base neste checklist possui valor probatório quando acompanhado de
           fotos georreferenciadas e assinatura do vistoriador credenciado. Itens não avaliados
           podem comprometer a aceitação pelo DETRAN ou em processos judiciais.

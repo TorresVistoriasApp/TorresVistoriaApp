@@ -16,7 +16,7 @@ export function CameraAngleIndicator({ camera, className }: CameraAngleIndicator
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-1 rounded-md border border-slate-200 bg-white p-1.5",
+        "flex flex-col items-center justify-center gap-1 rounded-md border border-border bg-card p-1.5",
         className,
       )}
     >
@@ -47,11 +47,11 @@ export function CameraAngleIndicator({ camera, className }: CameraAngleIndicator
           />
         </g>
       </svg>
-      <span className="text-center text-[8px] font-medium leading-tight text-slate-500">
+      <span className="text-center text-[8px] font-semibold leading-tight text-muted-foreground">
         {camera.distance}
       </span>
       {camera.targetLabel && (
-        <span className="line-clamp-2 text-center text-[7px] leading-tight text-blue-900/80">
+        <span className="line-clamp-2 text-center text-[7px] leading-tight text-muted-foreground">
           {camera.targetLabel}
         </span>
       )}

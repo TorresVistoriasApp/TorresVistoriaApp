@@ -118,7 +118,7 @@ export function InspectorRegisterPage() {
             "Você recebe o aviso de acesso liberado.",
           ].map((step, index) => (
             <li key={step} className="flex items-start gap-3 text-sm text-muted-foreground">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+              <span className="ui-icon-box ui-metric h-6 w-6 shrink-0 rounded-full text-xs font-bold">
                 {index + 1}
               </span>
               {step}
@@ -207,7 +207,7 @@ export function InspectorRegisterPage() {
           />
         </fieldset>
 
-        <fieldset className="space-y-4 border-t border-border/60 pt-6">
+        <fieldset className="space-y-4 border-t border-border pt-6">
           <SectionLabel>Acesso ao painel</SectionLabel>
 
           <PasswordStrengthInput
@@ -225,8 +225,8 @@ export function InspectorRegisterPage() {
           />
         </fieldset>
 
-        <div className="space-y-3 border-t border-border/60 pt-6">
-          <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border/70 bg-muted/25 p-4 text-sm leading-relaxed transition-colors hover:bg-muted/40">
+        <div className="space-y-3 border-t border-border pt-6">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted p-4 text-sm leading-relaxed transition-colors duration-150 hover:bg-brand-subtle">
             <input
               type="checkbox"
               className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"

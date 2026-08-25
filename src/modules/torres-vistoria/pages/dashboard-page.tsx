@@ -42,7 +42,7 @@ const MONTHLY_CHART_WINDOW_SIZE = 6;
 
 function ChartFallback() {
   return (
-    <div className="flex h-64 items-center justify-center">
+    <div className="flex h-[260px] items-center justify-center">
       <LoadingSpinner label="Carregando gráfico..." />
     </div>
   );
@@ -120,7 +120,7 @@ function DashboardCharts({
   const currentRevenueMonthStart = Math.min(revenueMonthStart, maxVisibleMonthStart);
 
   return (
-    <div className="grid gap-4 xl:grid-cols-12 xl:gap-5">
+    <div className="grid gap-4 lg:gap-5 xl:grid-cols-12">
       <ChartWrapper
         className="xl:col-span-6"
         title="Visão mensal"
@@ -215,13 +215,13 @@ export function DashboardPage() {
   const maxVisibleMonthStart = Math.max(monthly.length - MONTHLY_CHART_WINDOW_SIZE, 0);
 
   return (
-    <div className="min-w-0 space-y-6">
+    <div className="min-w-0 space-y-6 lg:space-y-8">
       <PageHeader
         title="Dashboard"
         badge={isCompanyView ? "Empresa" : "Pessoal"}
         description={headerDescription}
         actions={
-          <Button asChild className="touch-target w-full sm:w-auto" size="lg">
+          <Button asChild className="w-full sm:w-auto" size="lg">
             <Link to={ROUTES.inspectionNew}>
               <Plus className="h-4 w-4" />
               Nova vistoria

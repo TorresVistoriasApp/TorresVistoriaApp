@@ -46,13 +46,13 @@ export function NotificationBell() {
               aria-label="Fechar notificações"
               onClick={() => setOpen(false)}
             />
-            <div className="fixed right-3 top-14 z-50 mt-2 w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden rounded-2xl border border-border/60 bg-card text-card-foreground shadow-elevated sm:right-4">
-              <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
-                <p className="font-display text-sm font-normal tracking-tight">Notificações</p>
+            <div className="ui-panel-elevated fixed right-4 top-16 z-50 mt-2 w-[calc(100vw-2rem)] max-w-sm overflow-hidden">
+              <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+                <p className="text-sm font-bold tracking-tight">Notificações</p>
                 {unread > 0 && (
                   <button
                     type="button"
-                    className="shrink-0 text-xs font-medium text-accent hover:underline"
+                    className="shrink-0 text-xs font-semibold text-primary hover:underline"
                     onClick={() => void markAllRead.mutateAsync()}
                   >
                     Marcar todas como lidas
@@ -76,7 +76,7 @@ export function NotificationBell() {
                         key={n.id}
                         className={cn(
                           "border-b border-border px-4 py-3 text-sm last:border-0",
-                          !n.read_at && "bg-muted/40",
+                          !n.read_at && "bg-brand-subtle",
                         )}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -89,7 +89,7 @@ export function NotificationBell() {
                             {inspectionId && (
                               <Link
                                 to={ROUTES.inspection(inspectionId)}
-                                className="mt-1 inline-block text-xs font-medium text-accent hover:underline"
+                                className="mt-1 inline-block text-xs font-semibold text-primary hover:underline"
                                 onClick={() => {
                                   if (!n.read_at) void markRead.mutateAsync(n.id);
                                   setOpen(false);
@@ -102,7 +102,7 @@ export function NotificationBell() {
                           {!n.read_at && (
                             <button
                               type="button"
-                              className="shrink-0 text-xs font-medium text-accent hover:underline"
+                              className="shrink-0 text-xs font-semibold text-primary hover:underline"
                               onClick={() => void markRead.mutateAsync(n.id)}
                             >
                               Lida

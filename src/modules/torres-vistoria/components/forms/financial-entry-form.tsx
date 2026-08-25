@@ -15,20 +15,20 @@ const ENTRY_TYPE_OPTIONS = [
   {
     value: FinancialEntryType.RECEITA,
     label: "Receita",
-    active: "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/25",
-    idle: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+    active: "bg-success text-white shadow-soft",
+    idle: "bg-success-subtle text-success hover:bg-success-border",
   },
   {
     value: FinancialEntryType.DESPESA,
     label: "Despesa",
-    active: "bg-destructive text-white shadow-sm ring-2 ring-destructive/25",
-    idle: "bg-red-50 text-destructive hover:bg-red-100",
+    active: "bg-destructive text-white shadow-soft",
+    idle: "bg-destructive-subtle text-destructive hover:bg-destructive-border",
   },
   {
     value: FinancialEntryType.CUSTO,
     label: "Custo",
-    active: "bg-amber-600 text-white shadow-sm ring-2 ring-amber-600/25",
-    idle: "bg-amber-50 text-amber-800 hover:bg-amber-100",
+    active: "bg-warning text-white shadow-soft",
+    idle: "bg-warning-subtle text-warning hover:bg-warning-border",
   },
 ] as const;
 
@@ -89,7 +89,7 @@ export function FinancialEntryForm({
             name="entry_type"
             render={({ field }) => (
               <div
-                className="grid grid-cols-3 gap-2 rounded-xl border border-border/60 bg-muted/30 p-1"
+                className="grid grid-cols-3 gap-2 rounded-lg border border-border bg-muted p-1"
                 role="group"
                 aria-label="Tipo de lançamento"
               >
@@ -180,7 +180,7 @@ export function FinancialEntryForm({
       </div>
 
       {variant === "dialog" ? (
-        <DialogFooter className="sticky bottom-0 gap-3 border-t border-border/60 bg-card px-0 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-4 sm:static sm:border-0 sm:bg-transparent sm:pb-0">
+        <DialogFooter className="sticky bottom-0 gap-3 border-t border-border bg-card px-0 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-4 sm:static sm:border-0 sm:bg-transparent sm:pb-0">
           <Button
             type="button"
             variant="outline"

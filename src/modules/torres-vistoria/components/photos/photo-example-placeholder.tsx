@@ -16,13 +16,13 @@ export function PhotoExamplePlaceholder({
 }: PhotoExamplePlaceholderProps) {
   if (exampleImageUrl) {
     return (
-      <div className={cn("overflow-hidden rounded border border-slate-200 bg-white", className)}>
+      <div className={cn("overflow-hidden rounded border border-border bg-card", className)}>
         <img
           src={exampleImageUrl}
           alt={`Exemplo — ${categoryName}`}
           className="aspect-[16/9] w-full object-cover"
         />
-        <p className="border-t border-slate-100 px-2 py-1 text-[8px] font-medium text-slate-500">
+        <p className="border-t border-border px-2 py-1 text-[8px] font-semibold text-muted-foreground">
           Foto modelo de referência
         </p>
       </div>
@@ -32,13 +32,13 @@ export function PhotoExamplePlaceholder({
   return (
     <div
       className={cn(
-        "flex aspect-[16/9] flex-col items-center justify-center gap-1 rounded border border-dashed bg-slate-50/80",
+        "flex aspect-[16/9] flex-col items-center justify-center gap-1 rounded border border-dashed bg-muted",
         className,
       )}
       style={{ borderColor: GUIDE_COLORS.border }}
     >
-      <ImageIcon className="size-4 text-slate-400" strokeWidth={1.25} />
-      <span className="px-2 text-center text-[8px] font-medium leading-tight text-slate-400">
+      <ImageIcon className="size-4 text-subtle-foreground" strokeWidth={1.25} />
+      <span className="px-2 text-center text-[8px] font-semibold leading-tight text-subtle-foreground">
         Foto modelo — em breve
       </span>
     </div>

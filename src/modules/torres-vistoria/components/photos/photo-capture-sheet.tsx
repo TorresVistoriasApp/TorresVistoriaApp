@@ -46,7 +46,7 @@ export function PhotoCaptureSheet({
           <DialogTitle className="flex flex-wrap items-center gap-2">
             {category.name}
             {isPhotoRequirementActive(category.required) && (
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-800">
+              <span className="ui-chip-warning uppercase">
                 Obrigatória
               </span>
             )}
@@ -80,7 +80,7 @@ export function PhotoCaptureSheet({
           ) : (
             <Button
               type="button"
-              className="touch-target w-full gradient-primary sm:w-auto"
+              className="w-full sm:w-auto"
               onClick={onCapture}
               disabled={isUploading}
             >

@@ -3,8 +3,8 @@ import { getRoleLabel } from "@/core/rbac/roles";
 import { cn } from "@/shared/lib/utils";
 
 const ROLE_STYLES: Record<string, string> = {
-  [UserRole.SUPER_ADMIN]: "bg-primary/10 text-primary border-primary/20",
-  [UserRole.INSPECTOR]: "bg-muted text-muted-foreground border-border",
+  [UserRole.SUPER_ADMIN]: "border-brand-border bg-brand-subtle text-brand-emphasis",
+  [UserRole.INSPECTOR]: "border-border bg-muted text-muted-foreground",
 };
 
 type RoleBadgeProps = {

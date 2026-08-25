@@ -18,9 +18,9 @@ interface EvaluationSectionProps {
 }
 
 const toneClasses = {
-  default: "bg-primary/10 text-primary",
-  success: "bg-emerald-50 text-emerald-700",
-  warning: "bg-amber-50 text-amber-800",
+  default: "bg-brand-subtle text-brand-emphasis",
+  success: "bg-success-subtle text-success",
+  warning: "bg-warning-subtle text-warning",
   muted: "bg-muted text-muted-foreground",
 } as const;
 
@@ -51,9 +51,9 @@ export function EvaluationSection({
     <section
       id={id}
       className={cn(
-        "scroll-mt-24 overflow-hidden rounded-lg border border-border/80 bg-card transition-shadow",
+        "scroll-mt-24 overflow-hidden rounded-lg border border-border bg-card transition-colors duration-150",
         !dense && "shadow-soft",
-        open && "ring-1 ring-primary/10",
+        open && "border-border-strong",
         className,
       )}
     >
@@ -61,7 +61,7 @@ export function EvaluationSection({
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex w-full items-center gap-2.5 text-left transition-colors hover:bg-muted/20",
+          "flex w-full items-center gap-2.5 text-left transition-colors duration-150 hover:bg-brand-subtle",
           dense ? "px-3 py-2.5 sm:px-3.5" : "px-3.5 py-3.5 sm:px-4 sm:py-4",
         )}
         aria-expanded={open}
@@ -107,7 +107,7 @@ export function EvaluationSection({
         )}
       >
         <div className="overflow-hidden">
-          <div className="space-y-3 border-t border-border/50 px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3">
+          <div className="space-y-3 border-t border-border px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3">
             {children}
           </div>
         </div>

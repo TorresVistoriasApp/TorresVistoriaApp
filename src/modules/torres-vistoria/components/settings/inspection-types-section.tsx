@@ -169,7 +169,7 @@ export function InspectionTypesSection({
       {isLoading ? (
         <LoadingSpinner />
       ) : types.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border/70 bg-muted/15 px-4 py-8 text-center">
+        <div className="rounded-lg border border-dashed border-border bg-muted px-4 py-8 text-center">
           <p className="text-sm font-medium text-foreground">Nenhum tipo cadastrado</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {canEdit
@@ -180,7 +180,7 @@ export function InspectionTypesSection({
       ) : (
         <ul
           className={cn(
-            "divide-y divide-border/60 overflow-hidden rounded-xl border border-border/60 bg-card",
+            "divide-y divide-border overflow-hidden rounded-lg border border-border bg-card",
             fillHeight && "min-h-0 flex-1 overflow-y-auto",
           )}
         >

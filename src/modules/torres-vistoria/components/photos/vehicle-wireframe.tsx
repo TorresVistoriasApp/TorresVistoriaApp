@@ -122,7 +122,7 @@ export function VehicleWireframe({
       preserveAspectRatio="xMidYMid meet"
       className={cn(
         "h-full w-full",
-        isSlot ? "text-slate-400/70" : "text-muted-foreground/60",
+        "text-subtle-foreground",
         className,
       )}
       aria-hidden

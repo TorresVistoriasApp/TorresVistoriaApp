@@ -105,8 +105,8 @@ function CompactChecklistItemComponent({
         className={cn(
           "relative overflow-hidden rounded-lg border px-2.5 py-2 transition-colors duration-150",
           statusMeta.itemCard,
-          isActive && "shadow-sm ring-1 ring-primary/25",
-          needsIssue && "ring-1 ring-amber-400/50",
+          isActive && "border-primary shadow-soft",
+          needsIssue && "border-warning",
         )}
         onFocusCapture={() => onActivate?.(item.id)}
         onClick={() => onActivate?.(item.id)}

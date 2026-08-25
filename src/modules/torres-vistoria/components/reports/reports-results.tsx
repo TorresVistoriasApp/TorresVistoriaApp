@@ -14,13 +14,13 @@ type ReportsResultsProps = {
 
 function ResultsSkeleton() {
   return (
-    <div className="divide-y divide-border/50">
+    <div className="divide-y divide-border">
       {Array.from({ length: 4 }).map((_, index) => (
         <div key={index} className="flex items-center gap-4 px-5 py-4 md:px-6">
-          <div className="h-11 w-11 shrink-0 animate-pulse rounded-xl bg-muted" />
+          <div className="h-11 w-11 shrink-0 rounded-lg bg-muted" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-40 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-56 animate-pulse rounded bg-muted/80" />
+            <div className="h-4 w-40 rounded bg-muted" />
+            <div className="h-3 w-56 rounded bg-muted" />
           </div>
         </div>
       ))}
@@ -32,12 +32,12 @@ function InspectionRow({ inspection }: { inspection: Inspection }) {
   return (
     <Link
       to={ROUTES.inspection(inspection.id)}
-      className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-primary/[0.03] md:px-6"
+      className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors duration-150 hover:bg-brand-subtle md:px-6"
     >
       <div className="flex min-w-0 items-center gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted/80 text-xs font-bold text-primary">
+        <span className="ui-icon-box ui-metric h-11 w-11 text-[13px] font-bold">
           #{inspection.inspection_number}
-        </div>
+        </span>
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-bold">
@@ -46,7 +46,11 @@ function InspectionRow({ inspection }: { inspection: Inspection }) {
             <VistoriaStatusBadge status={inspection.status} />
           </div>
           <p className="truncate text-xs text-muted-foreground">
-            {inspection.plate} · {inspection.client_name}
+            <span className="font-mono font-semibold uppercase tracking-[0.08em] text-foreground">
+              {inspection.plate}
+            </span>
+            {" · "}
+            {inspection.client_name}
           </p>
           <p className="text-[11px] text-muted-foreground lg:hidden">
             {formatDate(inspection.inspection_date)}
@@ -62,15 +66,15 @@ export function ReportsResults({ inspections, isLoading }: ReportsResultsProps) 
   const countLabel = `${inspections.length} vistoria${inspections.length !== 1 ? "s" : ""}`;
 
   return (
-    <div className="surface-interactive overflow-hidden">
-      <div className="flex flex-col gap-3 border-b border-border/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between md:px-6">
+    <div className="ui-panel ui-panel-interactive overflow-hidden">
+      <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between md:px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <ListOrdered className="h-5 w-5" strokeWidth={2} />
-          </div>
+          <span className="ui-icon-box h-10 w-10">
+            <ListOrdered className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+          </span>
           <div>
-            <h3 className="text-base font-bold">Resultados</h3>
-            <p className="text-xs text-muted-foreground">
+            <h3 className="text-[17px] font-bold text-foreground">Resultados</h3>
+            <p className="mt-1 text-[13px] text-muted-foreground">
               {isLoading ? "Carregando registros..." : countLabel}
             </p>
           </div>
@@ -97,12 +101,12 @@ export function ReportsResults({ inspections, isLoading }: ReportsResultsProps) 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border/50 bg-muted/30">
+                  <tr className="border-b border-border bg-muted">
                     {["#", "Veículo", "Placa", "Cliente", "Data", "Status", ""].map((header) => (
                       <th
                         key={header || "action"}
                         className={cn(
-                          "px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground md:px-6",
+                          "ui-microlabel px-5 py-3.5 text-left md:px-6",
                           header === "" && "w-10",
                         )}
                       >
@@ -111,14 +115,14 @@ export function ReportsResults({ inspections, isLoading }: ReportsResultsProps) 
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/50">
+                <tbody className="divide-y divide-border">
                   {inspections.map((inspection) => (
                     <tr
                       key={inspection.id}
-                      className="group transition-colors hover:bg-primary/[0.03]"
+                      className="group transition-colors duration-150 hover:bg-brand-subtle"
                     >
                       <td className="px-5 py-4 md:px-6">
-                        <span className="inline-flex h-9 min-h-0 min-w-9 items-center justify-center rounded-lg bg-muted/80 text-xs font-bold text-primary">
+                        <span className="ui-icon-box ui-metric h-9 min-h-0 min-w-9 text-xs font-bold">
                           #{inspection.inspection_number}
                         </span>
                       </td>
@@ -149,7 +153,7 @@ export function ReportsResults({ inspections, isLoading }: ReportsResultsProps) 
                       <td className="px-3 py-4 md:px-4">
                         <Link
                           to={ROUTES.inspection(inspection.id)}
-                          className="inline-flex h-9 min-h-0 min-w-9 items-center justify-center rounded-lg text-muted-foreground opacity-0 transition-all group-hover:opacity-100 hover:bg-primary/10 hover:text-primary"
+                          className="inline-flex h-9 min-h-0 min-w-9 items-center justify-center rounded-lg text-muted-foreground opacity-0 transition-opacity duration-150 hover:text-primary group-hover:opacity-100"
                           aria-label={`Abrir vistoria #${inspection.inspection_number}`}
                         >
                           <ChevronRight className="h-4 w-4" />
@@ -162,7 +166,7 @@ export function ReportsResults({ inspections, isLoading }: ReportsResultsProps) 
             </div>
           </div>
 
-          <div className="divide-y divide-border/50 lg:hidden">
+          <div className="divide-y divide-border lg:hidden">
             {inspections.map((inspection) => (
               <InspectionRow key={inspection.id} inspection={inspection} />
             ))}
@@ -171,7 +175,7 @@ export function ReportsResults({ inspections, isLoading }: ReportsResultsProps) 
       )}
 
       {!isLoading && inspections.length > 0 && (
-        <div className="flex items-center gap-2 border-t border-border/50 bg-muted/20 px-5 py-3 text-[11px] text-muted-foreground md:px-6">
+        <div className="flex items-center gap-2 border-t border-border bg-muted px-5 py-3 text-[11px] text-muted-foreground md:px-6">
           <FileSearch className="h-3.5 w-3.5 shrink-0" />
           <span>
             Os arquivos exportados incluem marca, modelo e demais campos do laudo.

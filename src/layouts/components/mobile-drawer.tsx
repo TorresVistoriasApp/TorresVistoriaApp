@@ -69,7 +69,7 @@ export function MobileDrawer() {
       <button
         type="button"
         className={cn(
-          "mobile-drawer-overlay absolute inset-0 bg-black/55 backdrop-blur-[3px] transition-opacity duration-300 ease-out motion-reduce:transition-none",
+          "mobile-drawer-overlay absolute inset-0 bg-ink/60 transition-opacity duration-300 ease-out motion-reduce:transition-none",
           visible ? "opacity-100" : "opacity-0",
         )}
         aria-label="Fechar menu"
@@ -77,7 +77,7 @@ export function MobileDrawer() {
       />
       <div
         className={cn(
-          "mobile-drawer-panel absolute left-0 top-0 flex h-full w-[min(320px,88vw)] max-w-[320px] flex-col rounded-r-2xl border-r border-border/60 bg-sidebar p-5 shadow-elevated transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transition-none",
+          "mobile-drawer-panel absolute left-0 top-0 flex h-full w-[min(320px,88vw)] max-w-[320px] flex-col rounded-r-2xl border-r border-border bg-sidebar p-5 shadow-elevated transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transition-none",
           visible ? "translate-x-0" : "-translate-x-full",
         )}
       >

@@ -37,14 +37,18 @@ export const ACTION_LABELS: Record<AuditAction, string> = {
   EXPORT_EXCEL: "Exportação Excel",
 };
 
+/**
+ * Cor codifica a natureza do evento, não a identidade da ação — o rótulo já
+ * distingue as sete ações. Grupos: criação, alteração, exclusão, autenticação, exportação.
+ */
 export const ACTION_STYLES: Record<AuditAction, string> = {
-  INSERT: "bg-emerald-500/10 text-emerald-700 border-emerald-500/25",
-  UPDATE: "bg-amber-500/10 text-amber-700 border-amber-500/25",
-  DELETE: "bg-red-500/10 text-red-600 border-red-500/25",
-  LOGIN: "bg-sky-500/10 text-sky-700 border-sky-500/25",
-  LOGOUT: "bg-slate-500/10 text-slate-700 border-slate-500/25",
-  EXPORT_PDF: "bg-violet-500/10 text-violet-700 border-violet-500/25",
-  EXPORT_EXCEL: "bg-indigo-500/10 text-indigo-700 border-indigo-500/25",
+  INSERT: "border-success/25 bg-success/10 text-success",
+  UPDATE: "border-warning/25 bg-warning/10 text-warning",
+  DELETE: "border-destructive/25 bg-destructive/10 text-destructive",
+  LOGIN: "border-brand-border bg-brand-subtle text-brand-emphasis",
+  LOGOUT: "border-brand-border bg-brand-subtle text-brand-emphasis",
+  EXPORT_PDF: "border-border bg-muted text-muted-foreground",
+  EXPORT_EXCEL: "border-border bg-muted text-muted-foreground",
 };
 
 const FIELD_LABELS: Record<string, string> = {

@@ -26,8 +26,8 @@ export function Header() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-20 max-w-full overflow-x-clip border-b border-border/50 bg-card max-md:transform-gpu md:sticky md:bg-card/80 md:backdrop-blur-xl">
-        <div className="flex h-14 items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 lg:px-8">
+      <header className="fixed inset-x-0 top-0 z-20 max-w-full overflow-x-clip border-b border-border bg-card md:sticky">
+        <div className="flex h-16 items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
             <Button
               variant="ghost"
@@ -48,7 +48,7 @@ export function Header() {
             <ProductCrossLink
               to={ROUTES.consultaLanding}
               label="Conhecer Torres Consulta"
-              className="hidden rounded-xl border border-border/60 bg-muted/30 px-3 py-1.5 text-xs sm:inline-flex"
+              className="hidden rounded-lg border border-border bg-card px-3 py-1.5 text-xs sm:inline-flex"
             />
             <SyncStatusIndicator status={status} pendingCount={pendingCount} className="hidden sm:inline-flex" />
             <SyncStatusIndicator status={status} pendingCount={pendingCount} compact className="sm:hidden" />
@@ -59,9 +59,9 @@ export function Header() {
                   type="button"
                   aria-label="Abrir menu da conta"
                   className={cn(
-                    "group flex items-center gap-2 rounded-2xl border border-border/60 bg-muted/30 px-2 py-1.5 transition-colors",
-                    "hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-                    "data-[state=open]:border-primary/30 data-[state=open]:bg-muted/50",
+                    "group flex items-center gap-2 rounded-lg border border-border bg-card px-2 py-1.5",
+                    "transition-colors duration-150 hover:bg-muted",
+                    "data-[state=open]:bg-muted",
                     "sm:gap-3 sm:px-3",
                   )}
                 >
@@ -89,7 +89,7 @@ export function Header() {
           </div>
         </div>
       </header>
-      <div className="h-14 shrink-0 md:hidden" aria-hidden="true" />
+      <div className="h-16 shrink-0 md:hidden" aria-hidden="true" />
     </>
   );
 }

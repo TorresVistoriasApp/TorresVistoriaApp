@@ -17,7 +17,7 @@ export function PhotoVisualGuidePanel({
 }: PhotoVisualGuidePanelProps) {
   return (
     <div
-      className={cn("overflow-hidden rounded-lg border border-slate-200 bg-white", className)}
+      className={cn("overflow-hidden rounded-lg border border-border bg-card", className)}
       style={{ backgroundColor: GUIDE_COLORS.surfaceMuted }}
     >
       <div className="aspect-[3/2] p-3">
@@ -27,7 +27,7 @@ export function PhotoVisualGuidePanel({
           label={guide.highlightLabel ?? categoryName}
         />
       </div>
-      <p className="border-t border-slate-100 px-3 py-2 text-xs leading-snug text-slate-600">
+      <p className="border-t border-border px-3 py-2 text-xs leading-snug text-muted-foreground">
         {guide.instruction}
       </p>
     </div>

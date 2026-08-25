@@ -36,7 +36,7 @@ export function PhotoPaintTestActionSheet({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm gap-0 p-0 sm:rounded-2xl">
-        <DialogHeader className="space-y-1 border-b border-border/60 px-5 py-4 text-left">
+        <DialogHeader className="space-y-1 border-b border-border px-5 py-4 text-left">
           <DialogTitle className="text-base">Teste de pintura</DialogTitle>
           {categoryName && <DialogDescription>{categoryName}</DialogDescription>}
         </DialogHeader>
@@ -57,8 +57,8 @@ export function PhotoPaintTestActionSheet({
                     className={cn(
                       "flex items-start gap-3 rounded-xl border-2 px-3 py-3 text-left transition-colors",
                       isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-border bg-card hover:border-primary/30",
+                        ? "border-primary bg-brand-subtle"
+                        : "border-border bg-card hover:bg-brand-subtle",
                     )}
                   >
                     <Icon

@@ -31,7 +31,7 @@ export function AuditFiltersBar({
   );
 
   return (
-    <div className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-soft sm:p-5">
+    <div className="ui-panel space-y-4 p-4 sm:p-5">
       <div className="flex flex-wrap gap-2">
         {ACTION_GROUPS.map((group) => (
           <button
@@ -41,7 +41,7 @@ export function AuditFiltersBar({
             className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
               filters.action === group.value
                 ? "bg-primary text-primary-foreground"
-                : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                : "bg-muted text-muted-foreground hover:bg-brand-subtle hover:text-primary"
             }`}
           >
             {group.label}

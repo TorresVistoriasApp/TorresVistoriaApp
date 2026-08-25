@@ -2,11 +2,8 @@ import { Loader2 } from "lucide-react";
 
 export function LoadingSpinner({ label = "Carregando..." }: { label?: string }) {
   return (
-    <div className="flex flex-col items-center gap-4 py-12 text-muted-foreground">
-      <div className="relative">
-        <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
-        <Loader2 className="relative h-9 w-9 animate-spin text-primary" aria-hidden strokeWidth={2} />
-      </div>
+    <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
+      <Loader2 className="h-7 w-7 animate-spin text-primary" aria-hidden strokeWidth={2} />
       <p className="text-sm font-semibold">{label}</p>
     </div>
   );

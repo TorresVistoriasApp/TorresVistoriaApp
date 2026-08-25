@@ -150,9 +150,9 @@ export function LoginPage() {
 
       <Link
         to={ROUTES.vistoriaRegister}
-        className="group mt-6 flex items-center gap-4 rounded-2xl border border-primary/25 bg-primary/[0.06] p-4 transition-colors hover:border-primary/40 hover:bg-primary/[0.1]"
+        className="group mt-6 flex items-center gap-4 rounded-xl border border-brand-border bg-brand-subtle p-4 transition-colors duration-150 hover:bg-brand-muted"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary">
+        <span className="ui-icon-box h-11 w-11">
           <UserPlus className="h-5 w-5" strokeWidth={2.25} />
         </span>
         <span className="min-w-0 flex-1">

@@ -152,8 +152,10 @@ export function LaudoReadinessSummary({
         </div>
         <span
           className={cn(
-            "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold",
-            isReady ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800",
+            "ui-metric shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+            isReady
+              ? "border-success-border bg-success-subtle text-success"
+              : "border-warning-border bg-warning-subtle text-warning",
           )}
         >
           {readyCount}/{items.length}
@@ -162,8 +164,8 @@ export function LaudoReadinessSummary({
       <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-muted">
         <div
           className={cn(
-            "h-full rounded-full transition-all duration-500",
-            isReady ? "bg-emerald-500" : "bg-primary",
+            "h-full rounded-full transition-[width] duration-200 ease-out",
+            isReady ? "bg-success" : "bg-primary",
           )}
           style={{ width: `${progress}%` }}
         />
@@ -197,14 +199,14 @@ export function LaudoReadinessList({ items, onFix, compact = false }: LaudoReadi
             className={cn(
               "flex items-center gap-2.5 rounded-lg border px-2.5 py-2 sm:gap-3 sm:px-3 sm:py-2.5",
               item.ok
-                ? "border-emerald-200/70 bg-emerald-50/30"
-                : "border-amber-200/70 bg-amber-50/30",
+                ? "border-success-border bg-success-subtle"
+                : "border-warning-border bg-warning-subtle",
             )}
           >
             <span
               className={cn(
                 "flex size-7 shrink-0 items-center justify-center rounded-md",
-                item.ok ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800",
+                item.ok ? "text-success" : "text-warning",
               )}
             >
               {item.ok ? (
@@ -226,7 +228,7 @@ export function LaudoReadinessList({ items, onFix, compact = false }: LaudoReadi
               <button
                 type="button"
                 onClick={() => onFix(item.id)}
-                className="shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold text-primary hover:bg-primary/5"
+                className="shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold text-primary transition-colors duration-150 hover:bg-brand-subtle"
               >
                 Corrigir
               </button>

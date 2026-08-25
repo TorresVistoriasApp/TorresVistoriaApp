@@ -128,8 +128,8 @@ function ServiceCard({ service, selected, disabled, onClick }: ServiceCardProps)
         "group relative w-full rounded-xl border-2 p-4 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         "disabled:pointer-events-none disabled:opacity-50",
         selected
-          ? "border-primary bg-primary/5 shadow-sm"
-          : "border-border bg-card hover:border-primary/40 hover:bg-muted/40",
+          ? "border-primary bg-brand-subtle shadow-soft"
+          : "border-border bg-card hover:bg-brand-subtle",
       )}
     >
       <div className="flex items-start justify-between gap-4">

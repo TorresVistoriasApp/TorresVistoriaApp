@@ -13,9 +13,9 @@ export function LgpdConsentBanner() {
       role="dialog"
       aria-labelledby="lgpd-title"
       aria-describedby="lgpd-desc"
-      className="surface-elevated fixed inset-x-4 bottom-20 z-[100] p-5 md:bottom-6 md:left-6 md:right-auto md:max-w-md"
+      className="ui-panel-elevated fixed inset-x-4 bottom-20 z-[100] p-5 md:bottom-6 md:left-6 md:right-auto md:max-w-md"
     >
-      <h2 id="lgpd-title" className="font-display text-base font-normal tracking-tight">
+      <h2 id="lgpd-title" className="text-base font-normal tracking-tight">
         Privacidade e cookies
       </h2>
       <p id="lgpd-desc" className="mt-2 text-xs leading-relaxed text-muted-foreground">

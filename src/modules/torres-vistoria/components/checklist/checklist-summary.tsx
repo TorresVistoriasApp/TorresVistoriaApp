@@ -37,16 +37,12 @@ export function ChecklistSummary({
             {evaluated}/{total} avaliados
           </p>
           <div className="flex shrink-0 items-center gap-2 text-[11px] font-semibold">
-            <span className="inline-flex items-center gap-1 text-emerald-700">
-              {conforme}
-            </span>
+            <span className="inline-flex items-center gap-1 text-success">{conforme}</span>
             {naoConforme > 0 && (
-              <span className="inline-flex items-center gap-1 text-amber-700">
-                {naoConforme}
-              </span>
+              <span className="inline-flex items-center gap-1 text-warning">{naoConforme}</span>
             )}
             {pending > 0 && (
-              <span className="inline-flex items-center gap-1 text-amber-700">
+              <span className="inline-flex items-center gap-1 text-warning">
                 <Clock className="size-3" />
                 {pending}
               </span>
@@ -55,7 +51,7 @@ export function ChecklistSummary({
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full bg-primary transition-all duration-300"
+            className="h-full bg-primary transition-[width] duration-200 ease-out"
             style={{ width: `${evaluatedPct}%` }}
           />
         </div>
@@ -64,20 +60,18 @@ export function ChecklistSummary({
   }
 
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-soft sm:p-5">
+    <div className="ui-panel space-y-4 p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            Resumo do checklist
-          </h2>
-          <p className="mt-1 text-lg font-semibold">
+          <h2 className="ui-microlabel">Resumo do checklist</h2>
+          <p className="ui-metric mt-1 text-lg font-bold text-foreground">
             {evaluated} de {total} itens avaliados
             <span className="ml-1 text-sm font-normal text-muted-foreground">({evaluatedPct}%)</span>
           </p>
         </div>
         {pending > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-            <Clock className="size-3.5" />
+          <span className="ui-chip-warning">
+            <Clock className="size-3.5" aria-hidden />
             {pending} pendente{pending > 1 ? "s" : ""}
           </span>
         )}
@@ -105,7 +99,7 @@ export function ChecklistSummary({
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full bg-primary transition-all duration-300"
+            className="h-full bg-primary transition-[width] duration-200 ease-out"
             style={{ width: `${evaluatedPct}%` }}
           />
         </div>
@@ -128,19 +122,19 @@ function StatCard({
   sub?: string;
 }) {
   const tones = {
-    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    warning: "border-amber-200 bg-amber-50 text-amber-800",
-    muted: "border-slate-200 bg-slate-50 text-slate-600",
+    success: "text-success",
+    warning: "text-warning",
+    muted: "text-muted-foreground",
   };
 
   return (
-    <div className={cn("rounded-lg border p-3", tones[tone])}>
-      <div className="flex items-center gap-1.5 text-xs font-medium opacity-80">
-        {Icon ? <Icon className="size-3.5 shrink-0" /> : null}
-        <span className="leading-tight">{label}</span>
+    <div className="rounded-lg border border-border bg-card p-3">
+      <div className="flex items-center gap-1.5">
+        {Icon ? <Icon className={cn("size-3.5 shrink-0", tones[tone])} /> : null}
+        <span className="ui-microlabel leading-tight">{label}</span>
       </div>
-      <p className="mt-1 text-2xl font-bold tabular-nums">{value}</p>
-      {sub && <p className="mt-0.5 text-[10px] opacity-70">{sub}</p>}
+      <p className="ui-metric mt-1.5 text-2xl font-bold text-foreground">{value}</p>
+      {sub && <p className="mt-0.5 text-[10px] text-muted-foreground">{sub}</p>}
     </div>
   );
 }

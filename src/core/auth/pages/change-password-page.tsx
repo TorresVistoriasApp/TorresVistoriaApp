@@ -63,7 +63,7 @@ export function ChangePasswordPage() {
                   Por segurança, defina uma nova senha antes de continuar usando o painel.
                 </CardDescription>
               </div>
-              <div className="rounded-2xl border border-primary/15 bg-primary/10 p-3 text-primary">
+              <div className="ui-icon-box p-3">
                 <ShieldCheck className="h-5 w-5" />
               </div>
             </div>

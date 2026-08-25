@@ -148,7 +148,7 @@ export function UsersPage() {
           </Button>
         </div>
 
-        <div className="space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-soft sm:p-5">
+        <div className="ui-panel space-y-4 p-4 sm:p-5">
           <div className="flex flex-wrap gap-2">
             {ROLE_TABS.map((tab) => (
               <button
@@ -162,7 +162,7 @@ export function UsersPage() {
                   "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
                   roleFilter === tab.id
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
+                    : "bg-muted text-muted-foreground hover:bg-brand-subtle hover:text-primary",
                 )}
               >
                 {tab.label}
@@ -210,7 +210,7 @@ export function UsersPage() {
         {isLoading ? (
           <LoadingSpinner />
         ) : paginatedTeam.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 py-12 text-center">
+          <div className="rounded-xl border border-dashed border-border bg-muted px-6 py-12 text-center">
             <p className="text-sm text-muted-foreground">Nenhum usuário encontrado.</p>
           </div>
         ) : (
@@ -239,7 +239,7 @@ export function UsersPage() {
             >
               Anterior
             </Button>
-            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-lg bg-primary/10 px-3 text-sm font-semibold text-primary">
+            <span className="ui-icon-box ui-metric h-9 min-w-9 px-3 text-sm font-bold">
               {currentPage}
             </span>
             <Button

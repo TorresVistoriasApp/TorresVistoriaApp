@@ -99,7 +99,7 @@ export function InspectionWizardShell({
 
   return (
     <div className={cn("min-w-0 w-full space-y-4 lg:space-y-5", className)}>
-      <div className="page-header-strip lg:sticky lg:top-14 lg:z-10 lg:backdrop-blur-md lg:bg-card/95">
+      <div className="ui-panel px-5 py-4 sm:px-6 lg:sticky lg:top-16 lg:z-10">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <Button

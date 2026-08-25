@@ -7,23 +7,23 @@ const STATUS_CONFIG: Record<
 > = {
   synced: {
     label: "Sincronizado",
-    dotClass: "bg-emerald-500",
-    textClass: "text-emerald-800",
+    dotClass: "bg-success",
+    textClass: "text-success",
   },
   pending: {
     label: "Alterações pendentes",
-    dotClass: "bg-amber-400",
-    textClass: "text-amber-900",
+    dotClass: "bg-warning",
+    textClass: "text-warning",
   },
   saving: {
     label: "Salvando...",
-    dotClass: "bg-sky-500 animate-pulse",
-    textClass: "text-sky-900",
+    dotClass: "bg-primary",
+    textClass: "text-primary",
   },
   offline: {
     label: "Sem conexão",
-    dotClass: "bg-red-500",
-    textClass: "text-red-800",
+    dotClass: "bg-destructive",
+    textClass: "text-destructive",
   },
 };
 
@@ -45,7 +45,7 @@ export function SyncStatusIndicator({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-2.5 py-1 text-[11px] font-medium",
+        "inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-semibold",
         config.textClass,
         className,
       )}
@@ -56,7 +56,7 @@ export function SyncStatusIndicator({
       <span className={cn("size-2 shrink-0 rounded-full", config.dotClass)} aria-hidden />
       {!compact && <span>{config.label}</span>}
       {status === "pending" && pendingCount > 0 && (
-        <span className="rounded-full bg-amber-100 px-1.5 text-[10px] text-amber-900">
+        <span className="ui-metric rounded-full bg-muted px-1.5 text-[10px] font-bold">
           {pendingCount}
         </span>
       )}

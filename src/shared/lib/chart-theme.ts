@@ -1,29 +1,31 @@
 /** Paleta e estilos compartilhados dos gráficos Recharts */
 
+/** Espelha os tokens de src/styles/globals.css — não introduzir cor fora do @theme */
 export const CHART_COLORS = {
-  primary: "#EA580C",
-  primaryLight: "#FB923C",
-  primaryDark: "#C2410C",
-  primarySoft: "#FFEDD5",
-  neutral: "#292524",
-  neutralMid: "#57534E",
-  neutralLight: "#A8A29E",
-  amber: "#D97706",
-  grid: "#E2E8F0",
-  gridDark: "#334155",
-  tooltipBorder: "#FED7AA",
-  success: "#16A34A",
-  danger: "#DC2626",
+  primary: "#e2570c",
+  primaryLight: "#f97316",
+  primaryDark: "#b4400a",
+  primarySoft: "#fff5ed",
+  neutral: "#10151c",
+  neutralMid: "#5c6672",
+  neutralLight: "#8a939e",
+  amber: "#d97706",
+  grid: "#e4e7eb",
+  gridDark: "#2b3644",
+  tooltipBorder: "#e4e7eb",
+  surface: "#ffffff",
+  success: "#0f9d6e",
+  danger: "#dc2626",
 } as const;
 
-/** Cores distintas que harmonizam com o laranja da marca */
+/** Séries distinguíveis usando apenas a paleta da marca */
 export const CHART_SERIES_PALETTE = [
-  "#EA580C", // laranja principal
-  "#292524", // stone escuro
-  "#D97706", // âmbar
-  "#9A3412", // laranja queimado
-  "#78716C", // stone médio
-  "#F97316", // laranja vivo
+  "#e2570c", // primary
+  "#131a23", // ink
+  "#d97706", // warning
+  "#b4400a", // brand-emphasis
+  "#8a939e", // subtle-foreground
+  "#f97316", // accent
 ] as const;
 
 export function getSeriesColor(index: number): string {
@@ -32,20 +34,20 @@ export function getSeriesColor(index: number): string {
 
 export const chartTooltipStyle = {
   contentStyle: {
-    borderRadius: "14px",
+    borderRadius: "1.125rem",
     border: `1px solid ${CHART_COLORS.tooltipBorder}`,
-    backgroundColor: "#FFFFFF",
-    boxShadow: "0 12px 32px rgb(234 88 12 / 0.12)",
+    backgroundColor: CHART_COLORS.surface,
+    boxShadow: "0 2px 4px rgb(16 21 28 / 0.04), 0 12px 28px rgb(16 21 28 / 0.08)",
     fontSize: "13px",
-    padding: "12px 16px",
+    padding: "10px 14px",
   },
   labelStyle: { fontWeight: 700, color: CHART_COLORS.neutral, marginBottom: 4 },
   itemStyle: { color: CHART_COLORS.neutralMid, fontWeight: 600 },
-  cursor: { stroke: CHART_COLORS.primary, strokeWidth: 1, strokeDasharray: "4 4" },
+  cursor: { stroke: CHART_COLORS.neutralLight, strokeWidth: 1, strokeDasharray: "4 4" },
 };
 
 export const chartAxisStyle = {
-  tick: { fontSize: 11, fill: "#64748B", fontWeight: 500 },
+  tick: { fontSize: 11, fill: CHART_COLORS.neutralLight, fontWeight: 600 },
   axisLine: false as const,
   tickLine: false as const,
 };

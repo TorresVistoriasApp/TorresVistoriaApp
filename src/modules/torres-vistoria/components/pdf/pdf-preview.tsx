@@ -20,7 +20,7 @@ export function PdfPreview({
   inspector?: LaudoInspector | null;
 }) {
   return (
-    <div className="max-h-[min(60vh,520px)] overflow-y-auto rounded-lg border border-border/60 bg-muted/10 p-2 sm:p-3">
+    <div className="max-h-[min(60vh,520px)] overflow-y-auto rounded-lg border border-border bg-muted p-2 sm:p-3">
       <LaudoTemplate
         inspection={inspection}
         checklist={checklist}

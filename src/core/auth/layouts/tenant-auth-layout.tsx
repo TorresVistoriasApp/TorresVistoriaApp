@@ -10,7 +10,7 @@ export function TenantAuthLayout() {
       <TenantAuthShowcase className="hidden lg:sticky lg:top-0 lg:flex lg:h-dvh" />
 
       <div className="tenant-auth-form-side relative flex min-h-dvh min-w-0 flex-col">
-        <header className="relative border-b border-neutral-200/80 bg-white px-4 py-5 sm:px-6 lg:hidden">
+        <header className="relative border-b border-border bg-card px-4 py-5 sm:px-6 lg:hidden">
           <div className="flex flex-col items-center gap-3">
             <Link
               to={ROUTES.consultaLanding}

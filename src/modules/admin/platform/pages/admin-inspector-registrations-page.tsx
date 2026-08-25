@@ -142,7 +142,7 @@ export function AdminInspectorRegistrationsPage() {
                   </span>
                   {item.phone && <span className="text-muted-foreground">Tel: {item.phone}</span>}
                   {item.suggestedTenantName && (
-                    <span className="text-emerald-700">Sugestão: {item.suggestedTenantName}</span>
+                    <span className="text-success">Sugestão: {item.suggestedTenantName}</span>
                   )}
                 </div>
 

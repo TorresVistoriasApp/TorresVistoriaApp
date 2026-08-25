@@ -38,7 +38,7 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
   ].filter(Boolean).length;
 
   return (
-    <div className="surface overflow-hidden">
+    <div className="ui-panel overflow-hidden">
       <button
         type="button"
         className="flex w-full items-center justify-between px-4 py-3.5 text-left sm:px-5 lg:pointer-events-none lg:cursor-default"
@@ -49,7 +49,7 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
           <SlidersHorizontal className="h-4 w-4 text-primary" />
           <span className="text-sm font-bold">Filtros</span>
           {activeCount > 0 && (
-            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+            <span className="ui-metric rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
               {activeCount}
             </span>
           )}
@@ -59,7 +59,7 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
         />
       </button>
 
-      <div className={cn("border-t border-border/60 px-4 pb-4 sm:px-5 sm:pb-5", !open && "hidden lg:block")}>
+      <div className={cn("border-t border-border px-4 pb-4 sm:px-5 sm:pb-5", !open && "hidden lg:block")}>
         <div className="grid gap-4 pt-4 sm:grid-cols-2 xl:grid-cols-4">
           <div className="sm:col-span-2 xl:col-span-2">
             <Label htmlFor="filter-search" className="mb-2 block">
@@ -77,7 +77,7 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
           <div className="sm:col-span-2 xl:col-span-4">
             <Label className="mb-2 block">Status</Label>
             <div
-              className="grid grid-cols-2 gap-1.5 rounded-xl border border-border/60 bg-muted/30 p-1.5 sm:flex sm:flex-wrap sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0"
+              className="grid grid-cols-2 gap-1.5 rounded-lg border border-border bg-muted p-1.5 sm:flex sm:flex-wrap sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0"
               role="group"
               aria-label="Filtrar por status"
             >
@@ -94,10 +94,10 @@ export function VistoriaFilters({ filters, onChange }: VistoriaFiltersProps) {
                       })
                     }
                     className={cn(
-                      "touch-target rounded-lg px-3 py-2.5 text-xs font-semibold transition-all sm:rounded-full sm:py-1.5",
+                      "touch-target rounded-md px-3 py-2.5 text-xs font-semibold transition-colors duration-150 sm:rounded-full sm:py-1.5",
                       isActive
-                        ? "gradient-primary text-primary-foreground shadow-glow"
-                        : "bg-card text-muted-foreground hover:bg-muted/60 sm:border sm:border-border sm:hover:border-primary/30 sm:hover:text-foreground",
+                        ? "bg-primary text-primary-foreground shadow-soft"
+                        : "bg-card text-muted-foreground hover:bg-brand-subtle hover:text-primary sm:border sm:border-border",
                     )}
                   >
                     {opt.label}
