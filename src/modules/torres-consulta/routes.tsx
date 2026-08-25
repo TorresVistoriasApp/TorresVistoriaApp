@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { ROUTE_PATTERNS, ROUTES } from "@/config/routes";
 import { lazyRoute } from "@/routes/lazy-route";
 import { ConsumerAuthRoute } from "@/routes/guards/consumer-auth-route";
+import { PanelRedirect } from "@/routes/panel-redirect";
 import type { ModuleRoutes } from "@/routes/route-contract";
 import { ClienteLayout } from "@/modules/torres-consulta/layouts/cliente-layout";
 import { ConsumerAuthLayout } from "@/modules/torres-consulta/layouts/consumer-auth-layout";
@@ -28,7 +29,7 @@ export const torresConsultaRoutes: ModuleRoutes = {
       path: ROUTES.consultaLanding,
       element: lazyRoute(() => import("@/modules/torres-consulta/pages/landing-page"), "LandingPage"),
     },
-    { path: ROUTES.consulta, element: <Navigate to={ROUTES.consultaLanding} replace /> },
+    { path: ROUTES.consulta, element: <PanelRedirect entry="consulta" /> },
     {
       path: ROUTES.relatorioExemplo,
       element: lazyRoute(
@@ -187,7 +188,6 @@ export const torresConsultaRoutes: ModuleRoutes = {
   ],
 
   client: [
-    { path: ROUTES.consulta, element: <Navigate to={ROUTES.consultaNew} replace /> },
     {
       path: ROUTES.consultaNew,
       element: lazyRoute(

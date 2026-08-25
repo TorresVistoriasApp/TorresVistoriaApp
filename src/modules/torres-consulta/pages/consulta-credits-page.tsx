@@ -1,6 +1,10 @@
+import { Link } from "react-router-dom";
+import { ScanSearch } from "lucide-react";
 import { PageHeader } from "@/shared/components/page-header";
+import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { EmptyState } from "@/shared/components/empty-state";
+import { ROUTES } from "@/config/routes";
 import { isIntegrationAvailable } from "@/core/integrations/registry";
 import { CreditBalanceCard } from "@/modules/torres-consulta/components/credit-balance-card";
 import { QUERY_CATALOG } from "@/modules/torres-consulta/domain/query-catalog";
@@ -16,6 +20,14 @@ export function ConsultaCreditsPage() {
           badge="Torres Consulta"
           title="Créditos"
           description="Saldo, consumo por tipo de consulta e histórico de movimentações."
+          actions={
+            <Button asChild>
+              <Link to={ROUTES.consultaNew}>
+                <ScanSearch className="h-4 w-4" />
+                Nova consulta
+              </Link>
+            </Button>
+          }
         />
 
         {creditsEnabled ? (

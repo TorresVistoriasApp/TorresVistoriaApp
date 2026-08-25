@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { History } from "lucide-react";
 import { PageHeader } from "@/shared/components/page-header";
+import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { ROUTES } from "@/config/routes";
 import { getErrorMessage } from "@/core/errors/app-error";
@@ -37,6 +39,14 @@ export function ConsultaNewPage() {
           badge="Torres Consulta"
           title="Nova consulta"
           description="Consulte a situação de um veículo por placa ou chassi."
+          actions={
+            <Button variant="outline" asChild>
+              <Link to={ROUTES.consultaHistory}>
+                <History className="h-4 w-4" />
+                Histórico
+              </Link>
+            </Button>
+          }
         />
 
         {available ? (

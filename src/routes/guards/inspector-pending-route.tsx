@@ -1,9 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { ROUTES } from "@/config/routes";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { useSession } from "@/core/auth/session-context";
 import { PrincipalType } from "@/core/rbac/roles";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
+import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
 
 /** Área para vistoriador autenticado aguardando aprovação administrativa. */
 export function InspectorPendingRoute() {
@@ -19,16 +19,12 @@ export function InspectorPendingRoute() {
   }
 
   if (!session) {
-    return <Navigate to={ROUTES.login} replace />;
+    return <Navigate to={PANEL_AUTH.tenant} replace />;
   }
 
-  if (principalType === PrincipalType.TENANT_MEMBER) {
-    return <Navigate to={ROUTES.dashboard} replace />;
+  if (principalType === PrincipalType.PENDING_INSPECTOR) {
+    return <Outlet />;
   }
 
-  if (principalType !== PrincipalType.PENDING_INSPECTOR) {
-    return <Navigate to={ROUTES.login} replace />;
-  }
-
-  return <Outlet />;
+  return <Navigate to={homeForPrincipal(principalType)} replace />;
 }

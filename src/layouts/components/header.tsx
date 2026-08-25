@@ -1,6 +1,7 @@
 import { Car, ChevronDown, LogOut, Menu } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { ProductCrossLink } from "@/modules/torres-consulta/components/landing/product-cross-link";
+import { isEnabled } from "@/core/feature-flags";
 import { useAuth } from "@/core/auth/use-auth";
 import { useUser } from "@/core/auth/user-context";
 import { Button } from "@/shared/ui/button";
@@ -23,6 +24,7 @@ export function Header() {
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen);
   const { status, pendingCount } = useSyncStatus();
   const displayName = fullName ?? "Usuário";
+  const consultaEnabled = isEnabled("torres-consulta");
 
   return (
     <>
@@ -46,8 +48,8 @@ export function Header() {
 
           <div className="flex shrink-0 items-center gap-2">
             <ProductCrossLink
-              to={ROUTES.consultaLanding}
-              label="Conhecer Torres Consulta"
+              to={consultaEnabled ? ROUTES.consultaNew : ROUTES.consultaLanding}
+              label={consultaEnabled ? "Torres Consulta" : "Conhecer Torres Consulta"}
               className="hidden rounded-lg border border-border bg-card px-3 py-1.5 text-xs sm:inline-flex"
             />
             <SyncStatusIndicator status={status} pendingCount={pendingCount} className="hidden sm:inline-flex" />

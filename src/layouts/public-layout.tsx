@@ -6,7 +6,7 @@ export function PublicLayout() {
   return (
     <div className="gradient-mesh min-h-dvh">
       <header className="border-b border-border/60 glass px-4 py-4 lg:px-6">
-        <Link to={ROUTES.login}>
+        <Link to={ROUTES.consultaLanding}>
           <BrandLogo size="md" />
         </Link>
       </header>

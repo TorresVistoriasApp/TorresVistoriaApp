@@ -28,7 +28,7 @@ import {
   type ConsumerRegisterInput,
 } from "@/core/auth/schemas/consumer-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
-import { PrincipalType } from "@/core/rbac/roles";
+import { homeForPrincipal } from "@/routes/panel";
 import { FormField } from "@/shared/components/forms/form-field";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -139,8 +139,8 @@ export function ClienteRegisterPage() {
     );
   }
 
-  if (session && principalType === PrincipalType.CUSTOMER) {
-    return <Navigate to={ROUTES.consultaApp} replace />;
+  if (session && principalType) {
+    return <Navigate to={homeForPrincipal(principalType)} replace />;
   }
 
   return (

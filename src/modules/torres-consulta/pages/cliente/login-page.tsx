@@ -18,6 +18,7 @@ import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 import { ConsumerAuthPanel } from "@/modules/torres-consulta/components/consumer-app/consumer-auth-panel";
+import { resolvePostAuthPath } from "@/routes/panel";
 
 export function ClienteLoginPage() {
   const location = useLocation();
@@ -27,7 +28,8 @@ export function ClienteLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
+  const from = (location.state as { from?: { pathname: string; search?: string } } | null)?.from;
+  const postAuthPath = resolvePostAuthPath(principalType ?? PrincipalType.CUSTOMER, from);
 
   const {
     register,
@@ -46,8 +48,8 @@ export function ClienteLoginPage() {
     );
   }
 
-  if (!principalLoading && session && principalType === PrincipalType.CUSTOMER) {
-    return <Navigate to={from ?? ROUTES.consultaApp} replace />;
+  if (!principalLoading && session && principalType) {
+    return <Navigate to={resolvePostAuthPath(principalType, from)} replace />;
   }
 
   const onSubmit = handleSubmit(async (values) => {
@@ -55,7 +57,7 @@ export function ClienteLoginPage() {
     setIsSigningIn(true);
     try {
       await consumerAuthService.signIn(values);
-      navigate(from ?? ROUTES.consultaApp, { replace: true });
+      navigate(postAuthPath, { replace: true });
     } catch (err) {
       setError(
         err instanceof Error

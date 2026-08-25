@@ -13,6 +13,7 @@ import { registerSessionCleanup } from "@/core/auth/session-cleanup";
 import { offlineStore } from "@/modules/torres-vistoria/draft/lib/offline-store";
 import { clearActiveDraftLocalState } from "@/modules/torres-vistoria/draft/services/draft-service";
 import { useToast } from "@/shared/hooks/use-toast";
+import { ROUTES, ROUTE_SLUGS } from "@/config/routes";
 
 export function DraftSystemProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -50,12 +51,12 @@ export function DraftSystemProvider({ children }: { children: React.ReactNode })
     if (isLoading || !activeDraft || dismissed) return false;
 
     const onWizardRoute =
-      location.pathname.includes("/vistorias/") &&
-      (location.pathname.includes("/editar") ||
-        location.pathname.includes("/fotos") ||
-        location.pathname.includes("/checklist") ||
-        location.pathname.includes("/laudo") ||
-        location.pathname.endsWith("/nova"));
+      location.pathname.includes(`/${ROUTE_SLUGS.inspections}/`) &&
+      (location.pathname.includes(`/${ROUTE_SLUGS.edit}`) ||
+        location.pathname.includes(`/${ROUTE_SLUGS.photos}`) ||
+        location.pathname.includes(`/${ROUTE_SLUGS.checklist}`) ||
+        location.pathname.includes(`/${ROUTE_SLUGS.report}`) ||
+        location.pathname.endsWith(`/${ROUTE_SLUGS.new}`));
 
     if (onWizardRoute && location.pathname.includes(activeDraft.id)) {
       return false;
@@ -82,11 +83,10 @@ export function DraftSystemProvider({ children }: { children: React.ReactNode })
   const handleStartNew = async () => {
     if (!activeDraft) return;
     try {
-      // Descarta o draft atual e redireciona para /vistorias/nova,
-      // onde o ServiceSelectorModal será exibido para escolha do serviço.
+      // Descarta o draft atual e abre o fluxo canônico de nova vistoria.
       await deleteDraft.mutateAsync(activeDraft.id);
       setDismissed(true);
-      window.location.href = "/vistorias/nova";
+      window.location.assign(ROUTES.inspectionNew);
     } catch (error) {
       toast(error instanceof Error ? error.message : "Erro ao iniciar nova vistoria");
     }

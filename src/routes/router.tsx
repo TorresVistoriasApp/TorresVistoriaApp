@@ -17,6 +17,7 @@ import { complianceRoutes } from "@/core/compliance/routes";
 import { torresVistoriaRoutes } from "@/modules/torres-vistoria/routes";
 import { torresConsultaRoutes } from "@/modules/torres-consulta/routes";
 import { adminRoutes } from "@/modules/admin/routes";
+import { PanelRedirect } from "@/routes/panel-redirect";
 
 /**
  * Registro de módulos da aplicação.
@@ -87,7 +88,7 @@ export const router = createBrowserRouter([
         ],
       },
 
-      { path: "*", element: <Navigate to={ROUTES.consultaLanding} replace /> },
+      { path: "*", element: <PanelRedirect /> },
     ],
   },
 ]);
