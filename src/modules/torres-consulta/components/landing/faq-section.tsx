@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ScrollReveal } from "./scroll-reveal";
+import { SectionHeader } from "./section-header";
+import { LandingSection } from "./landing-ui";
 import { cn } from "@/shared/lib/utils";
 
 const FAQ_ITEMS = [
@@ -40,51 +42,57 @@ export function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="bg-canvas py-16 sm:py-20" aria-labelledby="faq-title">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+    <LandingSection id="faq" tone="surface" aria-labelledby="faq-title">
+      <div className="mx-auto max-w-3xl">
         <ScrollReveal>
-          <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Dúvidas</p>
-          <h2
-            id="faq-title"
-            className="mt-3 text-2xl font-black tracking-tight text-foreground sm:text-3xl"
-          >
-            Perguntas frequentes
-          </h2>
-          </div>
+          <SectionHeader
+            eyebrow="Dúvidas"
+            title="Perguntas frequentes"
+            titleId="faq-title"
+          />
         </ScrollReveal>
 
-        <ScrollReveal delayMs={100}>
-          <div className="mt-10 space-y-3">
+        <div className="mt-9 divide-y divide-border border-y border-border">
           {FAQ_ITEMS.map((item, index) => {
             const isOpen = openIndex === index;
+            const panelId = `faq-panel-${index}`;
+
             return (
-              <div
-                key={item.question}
-                className="overflow-hidden rounded-2xl border border-border/60 bg-white shadow-soft"
-              >
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-                  onClick={() => setOpenIndex(isOpen ? null : index)}
-                  aria-expanded={isOpen}
-                >
-                  <span className="font-semibold text-foreground">{item.question}</span>
-                  <ChevronDown
-                    className={cn(
-                      "h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200",
-                      isOpen && "rotate-180",
-                    )}
-                  />
-                </button>
+              <div key={item.question}>
+                <h3>
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between gap-4 py-4 text-left"
+                    onClick={() => setOpenIndex(isOpen ? null : index)}
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                  >
+                    <span
+                      className={cn(
+                        "text-[15px] font-semibold transition-colors sm:text-base",
+                        isOpen ? "text-primary" : "text-foreground",
+                      )}
+                    >
+                      {item.question}
+                    </span>
+                    <Plus
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-transform duration-200",
+                        isOpen ? "rotate-45 text-primary" : "text-subtle-foreground",
+                      )}
+                      aria-hidden
+                    />
+                  </button>
+                </h3>
                 <div
+                  id={panelId}
                   className={cn(
-                    "grid transition-all duration-200",
-                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                    "grid transition-[grid-template-rows] duration-200 ease-out",
+                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
                   )}
                 >
                   <div className="overflow-hidden">
-                    <p className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground">
+                    <p className="max-w-2xl pb-4 pr-8 text-sm leading-relaxed text-muted-foreground">
                       {item.answer}
                     </p>
                   </div>
@@ -92,9 +100,8 @@ export function FaqSection() {
               </div>
             );
           })}
-          </div>
-        </ScrollReveal>
+        </div>
       </div>
-    </section>
+    </LandingSection>
   );
 }

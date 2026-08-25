@@ -16,15 +16,7 @@ const paddingMap = {
 
 export function ConsumerSurface({ children, className, padding = "md" }: ConsumerSurfaceProps) {
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-[1.5rem] border border-white/80 bg-white/90 shadow-[0_12px_40px_rgb(15_23_42_/_0.06)] backdrop-blur-sm",
-        paddingMap[padding],
-        className,
-      )}
-    >
-      {children}
-    </div>
+    <div className={cn("landing-card", paddingMap[padding], className)}>{children}</div>
   );
 }
 
@@ -36,15 +28,13 @@ interface ConsumerSurfaceHeaderProps {
 
 export function ConsumerSurfaceHeader({ title, description, icon }: ConsumerSurfaceHeaderProps) {
   return (
-    <div className="flex items-start gap-3 border-b border-border/40 pb-4">
-      {icon && (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          {icon}
-        </span>
-      )}
-      <div>
-        <h2 className="text-base font-bold text-foreground">{title}</h2>
-        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+    <div className="flex items-start gap-3 border-b border-border pb-4">
+      {icon && <span className="landing-icon-box h-9 w-9 shrink-0">{icon}</span>}
+      <div className="min-w-0">
+        <h2 className="text-[15px] font-bold text-foreground">{title}</h2>
+        {description && (
+          <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
+        )}
       </div>
     </div>
   );

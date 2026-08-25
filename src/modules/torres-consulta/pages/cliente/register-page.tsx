@@ -22,10 +22,10 @@ import {
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
+import { ConsumerAuthPanel } from "@/modules/torres-consulta/components/consumer-app/consumer-auth-panel";
 
 export function ClienteRegisterPage() {
   const navigate = useNavigate();
@@ -105,36 +105,40 @@ export function ClienteRegisterPage() {
 
   if (successEmail) {
     return (
-      <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Confirme seu e-mail</CardTitle>
-            <CardDescription>
-              Enviamos um link de confirmação para <span className="font-medium">{successEmail}</span>.
-              Após confirmar, você poderá acessar sua conta.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full touch-target"
-              disabled={resendPending}
-              onClick={() => void handleResend()}
-            >
-              {resendPending ? "Reenviando..." : "Reenviar confirmação"}
-            </Button>
-            {resendMessage && <p className="text-sm text-muted-foreground">{resendMessage}</p>}
-            <Button asChild className="w-full touch-target">
-              <Link to={ROUTES.consultaLogin}>Voltar para login</Link>
-            </Button>
-          </CardContent>
-      </Card>
+      <ConsumerAuthPanel
+        title="Confirme seu e-mail"
+        description={
+          <>
+            Enviamos um link de confirmação para{" "}
+            <span className="font-semibold text-foreground">{successEmail}</span>. Após confirmar,
+            você poderá acessar sua conta.
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <Button asChild className="w-full" size="lg">
+            <Link to={ROUTES.consultaLogin}>Voltar para o login</Link>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={resendPending}
+            onClick={() => void handleResend()}
+          >
+            {resendPending ? "Reenviando..." : "Reenviar confirmação"}
+          </Button>
+          {resendMessage && (
+            <p className="text-sm leading-relaxed text-muted-foreground">{resendMessage}</p>
+          )}
+        </div>
+      </ConsumerAuthPanel>
     );
   }
 
   if (isFinalizingSignup) {
     return (
-      <div className="flex w-full max-w-md justify-center py-8">
+      <div className="flex w-full max-w-[26rem] justify-center py-8">
         <LoadingSpinner label="Finalizando cadastro..." />
       </div>
     );
@@ -150,103 +154,110 @@ export function ClienteRegisterPage() {
   }
 
   return (
-      <Card className="w-full max-w-md border-border/70 shadow-elevated">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Criar conta</CardTitle>
-          <CardDescription>Cadastro gratuito para consultas veiculares.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome completo</Label>
-              <div className="relative">
-                <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="name" className="pl-11 touch-target" {...register("name")} />
-              </div>
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-            </div>
-
-            <EmailField error={errors.email?.message} {...register("email")} />
-
-            <PasswordStrengthInput
-              id="password"
-              label="Senha"
-              value={password}
-              onChange={(v) => setValue("password", v, { shouldValidate: true })}
-              error={errors.password?.message}
+    <ConsumerAuthPanel
+      title="Criar conta grátis"
+      description="Leva menos de um minuto. Você só paga quando gerar um relatório."
+      footer={
+        <>
+          Já possui uma conta?{" "}
+          <Link to={ROUTES.consultaLogin} className="font-semibold text-primary hover:underline">
+            Entrar
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} className="space-y-4" noValidate>
+        <div className="space-y-2">
+          <Label htmlFor="name">Nome completo</Label>
+          <div className="relative">
+            <User
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle-foreground"
+              aria-hidden
             />
+            <Input id="name" autoComplete="name" className="pl-10" {...register("name")} />
+          </div>
+          {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+        </div>
 
-            <ConfirmPasswordField error={errors.confirmPassword?.message} {...register("confirmPassword")} />
+        <EmailField error={errors.email?.message} {...register("email")} />
 
-            <div className="space-y-2 border-t border-border/60 pt-4">
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/60 bg-muted/25 p-4 text-sm leading-relaxed transition-colors hover:bg-muted/40">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"
-                  {...register("acceptTerms")}
-                />
-                <span className="text-muted-foreground">
-                  Li e aceito os{" "}
-                  <Link
-                    to={ROUTES.termos}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-primary hover:underline"
-                  >
-                    Termos de Uso
-                  </Link>
-                  , a{" "}
-                  <Link
-                    to={ROUTES.privacy}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-primary hover:underline"
-                  >
-                    Política de Privacidade
-                  </Link>{" "}
-                  e consinto com o tratamento dos meus dados conforme a{" "}
-                  <Link
-                    to={ROUTES.lgpd}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-primary hover:underline"
-                  >
-                    LGPD
-                  </Link>
-                  .
-                </span>
-              </label>
-              {errors.acceptTerms && (
-                <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
-              )}
-            </div>
+        <PasswordStrengthInput
+          id="password"
+          label="Senha"
+          value={password}
+          onChange={(v) => setValue("password", v, { shouldValidate: true })}
+          error={errors.password?.message}
+        />
 
-            {error && isDuplicateEmailError(error) ? (
-              <DuplicateEmailAlert />
-            ) : error ? (
-              <FormError message={error} />
-            ) : null}
+        <ConfirmPasswordField
+          error={errors.confirmPassword?.message}
+          {...register("confirmPassword")}
+        />
 
-            <Button type="submit" className="w-full touch-target" size="lg" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <>
-                  <UserPlus className="h-4 w-4" />
-                  Criar conta
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-
-            <p className="text-center text-sm text-muted-foreground">
-              Já possui uma conta?{" "}
-              <Link to={ROUTES.consultaLogin} className="font-semibold text-primary hover:underline">
-                Entrar
+        <div className="space-y-2 border-t border-border pt-4">
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-muted/50 p-3.5 text-sm leading-relaxed transition-colors hover:bg-muted">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"
+              {...register("acceptTerms")}
+            />
+            <span className="text-muted-foreground">
+              Li e aceito os{" "}
+              <Link
+                to={ROUTES.termos}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline"
+              >
+                Termos de Uso
               </Link>
-            </p>
-          </form>
-        </CardContent>
-      </Card>
+              , a{" "}
+              <Link
+                to={ROUTES.privacy}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline"
+              >
+                Política de Privacidade
+              </Link>{" "}
+              e consinto com o tratamento dos meus dados conforme a{" "}
+              <Link
+                to={ROUTES.lgpd}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline"
+              >
+                LGPD
+              </Link>
+              .
+            </span>
+          </label>
+          {errors.acceptTerms && (
+            <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
+          )}
+        </div>
+
+        {error && isDuplicateEmailError(error) ? (
+          <DuplicateEmailAlert />
+        ) : error ? (
+          <FormError message={error} />
+        ) : null}
+
+        <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <span
+              className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+              aria-hidden
+            />
+          ) : (
+            <>
+              <UserPlus className="h-4 w-4" aria-hidden />
+              Criar conta
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </>
+          )}
+        </Button>
+      </form>
+    </ConsumerAuthPanel>
   );
 }

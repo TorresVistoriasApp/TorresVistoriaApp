@@ -37,13 +37,20 @@ export function MarketingShell({
   return (
     <>
       <PageSeo {...seo} />
-      <div className={cn("min-h-dvh bg-canvas", className)}>
+      <div className={cn("consulta-page", className)}>
+        <a
+          href="#conteudo"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground"
+        >
+          Ir para o conteúdo
+        </a>
         <LandingHeader />
         {hero && <MarketingHero {...hero} />}
         <main
+          id="conteudo"
           className={cn(
-            "mx-auto px-4 py-10 sm:px-6 sm:py-12",
-            fullWidth ? "max-w-7xl" : "max-w-5xl",
+            "mx-auto px-4 py-12 sm:px-6 sm:py-14 lg:px-8",
+            fullWidth ? "max-w-6xl" : "max-w-4xl",
             contentClassName,
           )}
         >

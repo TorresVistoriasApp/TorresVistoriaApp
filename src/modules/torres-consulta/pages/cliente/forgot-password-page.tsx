@@ -16,7 +16,7 @@ import {
   type ConsumerForgotPasswordInput,
 } from "@/core/auth/schemas/consumer-auth";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { ConsumerAuthPanel } from "@/modules/torres-consulta/components/consumer-app/consumer-auth-panel";
 
 export function ClienteForgotPasswordPage() {
   const [sent, setSent] = useState(false);
@@ -56,36 +56,36 @@ export function ClienteForgotPasswordPage() {
   });
 
   return (
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>Esqueci minha senha</CardTitle>
-          <CardDescription>
-            {sent
-              ? "Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha."
-              : "Informe seu e-mail para receber o link de recuperação."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!sent ? (
-            <form onSubmit={onSubmit} className="space-y-4">
-              <EmailField error={errors.email?.message} {...register("email")} />
-              {error && <FormError message={error} />}
-              <Button type="submit" className="w-full touch-target" disabled={isSubmitting}>
-                Enviar link
-              </Button>
-            </form>
-          ) : (
-            <Button asChild className="w-full touch-target">
-              <Link to={ROUTES.consultaLogin}>Voltar ao login</Link>
-            </Button>
-          )}
-          <Button variant="ghost" className="mt-4 w-full touch-target" asChild>
-            <Link to={ROUTES.consultaLogin}>
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Link>
+    <ConsumerAuthPanel
+      title="Recuperar acesso"
+      description={
+        sent
+          ? "Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha em instantes."
+          : "Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha."
+      }
+      footer={
+        <Link
+          to={ROUTES.consultaLogin}
+          className="inline-flex items-center gap-1.5 font-medium text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          Voltar para o login
+        </Link>
+      }
+    >
+      {!sent ? (
+        <form onSubmit={onSubmit} className="space-y-4" noValidate>
+          <EmailField error={errors.email?.message} {...register("email")} />
+          {error && <FormError message={error} />}
+          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Enviando..." : "Enviar link de recuperação"}
           </Button>
-        </CardContent>
-      </Card>
+        </form>
+      ) : (
+        <Button asChild size="lg" className="w-full">
+          <Link to={ROUTES.consultaLogin}>Voltar ao login</Link>
+        </Button>
+      )}
+    </ConsumerAuthPanel>
   );
 }

@@ -12,7 +12,7 @@ import {
   type ConsumerResetPasswordInput,
 } from "@/core/auth/schemas/consumer-auth";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { ConsumerAuthPanel } from "@/modules/torres-consulta/components/consumer-app/consumer-auth-panel";
 
 export function ClienteResetPasswordPage() {
   const navigate = useNavigate();
@@ -43,27 +43,27 @@ export function ClienteResetPasswordPage() {
   });
 
   return (
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>Redefinir senha</CardTitle>
-          <CardDescription>Defina uma nova senha para sua conta.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <PasswordStrengthInput
-              id="password"
-              label="Nova senha"
-              value={password}
-              onChange={(v) => setValue("password", v, { shouldValidate: true })}
-              error={errors.password?.message}
-            />
-            <ConfirmPasswordField error={errors.confirmPassword?.message} {...register("confirmPassword")} />
-            {error && <FormError message={error} />}
-            <Button type="submit" className="w-full touch-target" disabled={isSubmitting}>
-              Redefinir senha
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <ConsumerAuthPanel
+      title="Criar nova senha"
+      description="Escolha uma senha forte para proteger seus relatórios."
+    >
+      <form onSubmit={onSubmit} className="space-y-4" noValidate>
+        <PasswordStrengthInput
+          id="password"
+          label="Nova senha"
+          value={password}
+          onChange={(v) => setValue("password", v, { shouldValidate: true })}
+          error={errors.password?.message}
+        />
+        <ConfirmPasswordField
+          error={errors.confirmPassword?.message}
+          {...register("confirmPassword")}
+        />
+        {error && <FormError message={error} />}
+        <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "Salvando..." : "Redefinir senha"}
+        </Button>
+      </form>
+    </ConsumerAuthPanel>
   );
 }

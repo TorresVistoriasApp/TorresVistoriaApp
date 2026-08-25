@@ -1,38 +1,60 @@
 @import "tailwindcss";
 @source not "../shared/lib/public-images.ts";
 
+/*
+ * Sistema visual Torres — regras de performance:
+ * nunca usar backdrop-filter, filter: blur() ou animações infinitas.
+ * Apenas opacity/transform são animados; gradientes são estáticos.
+ */
+
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --color-primary: #ea580c;
+  --color-primary: #e2570c;
   --color-primary-foreground: #ffffff;
+  --color-primary-hover: #c74a08;
   --color-accent: #f97316;
   --color-accent-foreground: #ffffff;
-  --color-background: #eef2f7;
-  --color-canvas: #eef2f7;
+  --color-brand-subtle: #fff5ed;
+  --color-brand-muted: #ffe6d5;
+  --color-brand-emphasis: #b4400a;
+
+  --color-background: #f7f8f9;
+  --color-canvas: #f7f8f9;
   --color-sidebar: #ffffff;
-  --color-foreground: #0f172a;
+  --color-foreground: #10151c;
   --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
-  --color-border: #e2e8f0;
+  --color-card-foreground: #10151c;
+  --color-muted: #f1f3f5;
+  --color-muted-foreground: #5c6672;
+  --color-subtle-foreground: #8a939e;
+  --color-border: #e4e7eb;
+  --color-border-strong: #d3d8de;
   --color-destructive: #dc2626;
-  --color-success: #16a34a;
+  --color-success: #0f9d6e;
   --color-warning: #d97706;
-  --color-ring: #ea580c;
+  --color-ring: #e2570c;
 
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
-  --radius-2xl: 1.5rem;
+  --color-ink: #131a23;
+  --color-ink-soft: #1d2632;
+  --color-ink-foreground: #f4f5f7;
+  --color-ink-muted: #97a1ae;
+  --color-ink-border: #2b3644;
 
-  --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.04), 0 2px 8px rgb(15 23 42 / 0.04);
-  --shadow-elevated: 0 12px 40px rgb(15 23 42 / 0.1), 0 4px 12px rgb(15 23 42 / 0.05);
-  --shadow-glow: 0 0 0 1px rgb(234 88 12 / 0.1), 0 8px 24px rgb(234 88 12 / 0.15);
-  --shadow-card: 0 1px 3px rgb(15 23 42 / 0.04), 0 6px 20px rgb(15 23 42 / 0.05);
-  --shadow-sidebar: 4px 0 24px rgb(15 23 42 / 0.04);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.375rem;
+
+  --shadow-soft: 0 1px 2px rgb(16 21 28 / 0.05);
+  --shadow-card: 0 1px 2px rgb(16 21 28 / 0.04), 0 2px 6px rgb(16 21 28 / 0.04);
+  --shadow-elevated: 0 2px 4px rgb(16 21 28 / 0.04), 0 12px 28px rgb(16 21 28 / 0.08);
+  --shadow-glow: 0 1px 2px rgb(180 64 10 / 0.2), 0 6px 16px rgb(226 87 12 / 0.18);
+  --shadow-sidebar: 1px 0 0 rgb(16 21 28 / 0.05);
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -42,6 +64,7 @@
 
   html {
     @apply antialiased scroll-smooth overflow-x-clip;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -57,7 +80,12 @@
   h2,
   h3,
   h4 {
-    @apply font-sans font-bold tracking-tight text-foreground;
+    @apply font-sans font-bold text-foreground;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    letter-spacing: -0.035em;
   }
 
   button,
@@ -65,8 +93,13 @@
     min-height: 44px;
   }
 
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
   ::selection {
-    background-color: color-mix(in srgb, var(--color-primary) 25%, transparent);
+    background-color: rgb(226 87 12 / 0.2);
     color: var(--color-foreground);
   }
 }
@@ -100,75 +133,215 @@
 
   .sidebar-panel {
     background-color: var(--color-sidebar);
-    border-right: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-    box-shadow: var(--shadow-sidebar);
+    border-right: 1px solid var(--color-border);
   }
 
+  /* ---------- Superfícies base (app interno) ---------- */
+
   .surface {
-    @apply min-w-0 max-w-full rounded-2xl border border-border/60 bg-card text-card-foreground;
+    @apply min-w-0 max-w-full rounded-xl border border-border bg-card text-card-foreground;
     box-shadow: var(--shadow-card);
   }
 
   .surface-elevated {
-    @apply min-w-0 rounded-2xl border border-border/60 bg-card text-card-foreground;
+    @apply min-w-0 rounded-xl border border-border bg-card text-card-foreground;
     box-shadow: var(--shadow-elevated);
   }
 
   .surface-interactive {
-    @apply rounded-2xl border border-border/60 bg-card text-card-foreground transition-all duration-300;
+    @apply rounded-xl border border-border bg-card text-card-foreground;
     box-shadow: var(--shadow-card);
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
   }
 
   .surface-interactive:hover {
+    border-color: var(--color-border-strong);
     box-shadow: var(--shadow-elevated);
   }
 
   .gradient-brand {
-    background: linear-gradient(135deg, #c2410c 0%, #ea580c 45%, #f97316 100%);
+    background: linear-gradient(135deg, #b4400a 0%, #e2570c 100%);
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+    background-color: var(--color-primary);
+  }
+
+  /* ---------- Landing / marketing ---------- */
+
+  .consulta-page {
+    @apply relative isolate min-h-dvh bg-canvas text-foreground;
+  }
+
+  .landing-section {
+    @apply relative py-14 sm:py-18 lg:py-24;
+  }
+
+  /* Faixa clara sobre o canvas — separa blocos sem peso visual */
+  .landing-section-surface {
+    background-color: var(--color-card);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* Faixa escura sólida: contraste editorial, custo zero de render */
+  .landing-section-ink {
+    background-color: var(--color-ink);
+    color: var(--color-ink-foreground);
+  }
+
+  .landing-section-ink h2,
+  .landing-section-ink h3 {
+    color: var(--color-ink-foreground);
+  }
+
+  /* Gradiente estático do topo — pintado uma vez, sem blur */
+  .landing-hero-bg {
+    background-color: var(--color-canvas);
+    background-image:
+      linear-gradient(180deg, #ffffff 0%, rgb(255 255 255 / 0) 62%),
+      radial-gradient(60rem 28rem at 78% -10%, rgb(226 87 12 / 0.07), transparent 70%);
+  }
+
+  .landing-hairline-grid {
+    background-image:
+      linear-gradient(to right, rgb(16 21 28 / 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(16 21 28 / 0.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .landing-card {
+    @apply rounded-xl border border-border bg-card text-card-foreground;
+    box-shadow: var(--shadow-card);
+  }
+
+  .landing-card-interactive {
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      transform 0.18s var(--ease-out-quart);
+  }
+
+  @media (hover: hover) {
+    .landing-card-interactive:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-border-strong);
+      box-shadow: var(--shadow-elevated);
+    }
+  }
+
+  .landing-card-featured {
+    border-color: #f3b489;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .landing-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold;
+    border-color: #f7cdae;
+    background-color: var(--color-brand-subtle);
+    color: var(--color-brand-emphasis);
+    letter-spacing: -0.005em;
+  }
+
+  .landing-badge-neutral {
+    border-color: var(--color-border);
+    background-color: var(--color-muted);
+    color: var(--color-muted-foreground);
+  }
+
+  .landing-badge-ink {
+    border-color: var(--color-ink-border);
+    background-color: var(--color-ink-soft);
+    color: var(--color-ink-muted);
+  }
+
+  /* Eyebrow tipográfico — hierarquia sem caixa */
+  .landing-eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase;
+    letter-spacing: 0.09em;
+    color: var(--color-primary);
+  }
+
+  .landing-icon-box {
+    @apply flex shrink-0 items-center justify-center rounded-lg border;
+    border-color: #f9d7bf;
+    background-color: var(--color-brand-subtle);
+    color: var(--color-primary);
+  }
+
+  .landing-icon-box-neutral {
+    border-color: var(--color-border);
+    background-color: var(--color-muted);
+    color: var(--color-muted-foreground);
+  }
+
+  .landing-segment {
+    @apply relative flex rounded-lg border border-border p-1;
+    background-color: var(--color-muted);
+  }
+
+  .landing-segment-thumb {
+    @apply absolute top-1 bottom-1 rounded-md bg-card;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.2s var(--ease-out-quart);
+  }
+
+  .landing-divider {
+    height: 1px;
+    background-color: var(--color-border);
+  }
+
+  .text-gradient-brand {
+    color: var(--color-primary);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Auth (tenant) ---------- */
+
+  .tenant-auth-shell {
+    background-color: var(--color-canvas);
+  }
+
+  .tenant-auth-showcase {
+    background-color: var(--color-ink);
+    background-image:
+      radial-gradient(48rem 24rem at 0% 0%, rgb(226 87 12 / 0.16), transparent 68%),
+      linear-gradient(to right, rgb(255 255 255 / 0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+    background-size:
+      auto,
+      52px 52px,
+      52px 52px;
+  }
+
+  .tenant-auth-form-side {
+    background-color: var(--color-canvas);
   }
 
   .gradient-mesh {
     background-color: var(--color-canvas);
-    background-image:
-      radial-gradient(at 20% 0%, rgb(234 88 12 / 0.06) 0, transparent 50%),
-      radial-gradient(at 80% 20%, rgb(148 163 184 / 0.08) 0, transparent 45%);
+    background-image: radial-gradient(48rem 22rem at 12% -5%, rgb(226 87 12 / 0.05), transparent 70%);
   }
 
-  .tenant-auth-shell {
-    background-color: #f4f4f5;
-  }
-
-  .tenant-auth-showcase {
-    background-color: #090909;
-    background-image:
-      radial-gradient(ellipse 90% 60% at 0% 0%, rgb(234 88 12 / 0.14), transparent 58%),
-      linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
-    background-size:
-      auto,
-      48px 48px,
-      48px 48px;
-  }
-
-  .tenant-auth-form-side {
-    background-color: #f4f4f5;
-    background-image: radial-gradient(ellipse 80% 55% at 100% 0%, rgb(234 88 12 / 0.06), transparent 58%);
-  }
-
-  .text-gradient-brand {
-    background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .landing-section-alt {
+    @apply bg-card;
   }
 
   .glass {
-    @apply backdrop-blur-xl;
-    background: color-mix(in srgb, var(--color-card) 85%, transparent);
+    background-color: var(--color-card);
   }
 
   .chart-responsive {
@@ -176,48 +349,21 @@
   }
 
   .page-header-strip {
-    @apply overflow-hidden rounded-2xl border border-border/60 bg-card px-5 py-5 sm:px-6;
+    @apply overflow-hidden rounded-xl border border-border bg-card px-5 py-5 sm:px-6;
     box-shadow: var(--shadow-soft);
   }
 
   .kpi-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-2xl);
-    background:
-      linear-gradient(155deg, rgb(255 255 255 / 0.98) 0%, rgb(248 250 252 / 0.94) 48%, rgb(241 245 249 / 0.88) 100%);
-    box-shadow:
-      0 0 0 1px rgb(226 232 240 / 0.85),
-      0 1px 2px rgb(15 23 42 / 0.03),
-      0 10px 36px rgb(15 23 42 / 0.06),
-      inset 0 1px 0 rgb(255 255 255 / 0.95);
+    @apply rounded-xl border border-border bg-card;
+    box-shadow: var(--shadow-card);
     transition:
-      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 0.35s ease;
-  }
-
-  .kpi-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.12) 0.75px, transparent 0),
-      linear-gradient(180deg, rgb(255 255 255 / 0.35) 0%, transparent 42%);
-    background-size:
-      18px 18px,
-      100% 100%;
-    opacity: 0.45;
-    pointer-events: none;
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
   }
 
   .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 0 0 1px rgb(234 88 12 / 0.14),
-      0 4px 10px rgb(15 23 42 / 0.04),
-      0 20px 52px rgb(15 23 42 / 0.11),
-      inset 0 1px 0 rgb(255 255 255 / 1);
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-elevated);
   }
 
   .kpi-card-value {
@@ -225,93 +371,34 @@
     letter-spacing: -0.03em;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .mobile-drawer-overlay,
-    .mobile-drawer-panel,
-    .landing-float,
-    .landing-reveal {
-      transition-duration: 1ms !important;
-      animation: none !important;
-    }
-  }
-
-  .landing-grid-bg {
-    background-image:
-      linear-gradient(to right, rgb(15 23 42 / 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(15 23 42 / 0.04) 1px, transparent 1px);
-    background-size: 56px 56px;
-  }
-
-  .landing-float {
-    animation: landing-float 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-
-  .landing-float-delayed {
-    animation: landing-float 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) 2s infinite;
-  }
+  /* ---------- Movimento ---------- */
 
   .landing-reveal {
     opacity: 0;
-    transform: translate3d(0, 16px, 0);
+    transform: translate3d(0, 12px, 0);
     transition:
-      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 0.4s var(--ease-out-quart),
+      transform 0.4s var(--ease-out-quart);
   }
 
   .landing-reveal-visible {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: none;
   }
 
-  .landing-shimmer-border {
-    position: relative;
-  }
-
-  .landing-shimmer-border::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      120deg,
-      rgb(234 88 12 / 0.1),
-      rgb(234 88 12 / 0.55),
-      rgb(249 115 22 / 0.2),
-      rgb(234 88 12 / 0.1)
-    );
-    background-size: 200% 200%;
-    animation: landing-shimmer 8s ease-in-out infinite;
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-
-  @keyframes landing-float {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0);
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
-    50% {
-      transform: translate3d(0, -5px, 0);
-    }
-  }
 
-  @keyframes landing-shimmer {
-    0%,
-    100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
+    .landing-reveal {
+      opacity: 1;
+      transform: none;
     }
   }
 }

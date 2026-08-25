@@ -1,66 +1,98 @@
-import { CheckCircle2 } from "lucide-react";
+import { Check, ShieldCheck } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 const HERO_CAR_IMAGE = "/images/consultations/heroconsultations.webp?v=5";
 
-const FLOATING_CARDS = [
-  { label: "Leilão", value: "Sem registros", position: "left-[4%] top-[8%]", delay: 0 },
-  { label: "Sinistros", value: "Nenhum encontrado", position: "right-[0%] top-[18%]", delay: 1.4 },
-  { label: "Score", value: "97", position: "left-[4%] bottom-[32%]", delay: 2.8 },
-  { label: "Recall", value: "Em dia", position: "right-[4%] bottom-[42%]", delay: 0.7 },
-  { label: "Roubo/Furto", value: "Sem ocorrências", position: "left-[16%] bottom-[4%]", delay: 2.1 },
-] as const;
+/** Dados de exemplo alinhados à ilustração (Range Rover Evoque na imagem do hero). */
+const SAMPLE_VEHICLE = {
+  plate: "ABC1D23",
+  name: "Land Rover Range Rover Evoque",
+  year: "2019",
+  fuel: "Gasolina",
+} as const;
 
-export function HeroVehicleVisual() {
+const REPORT_ROWS: { label: string; value: string; hideOnCompact?: boolean }[] = [
+  { label: "Histórico de leilão", value: "Sem registros" },
+  { label: "Sinistro / indenização", value: "Nada consta" },
+  { label: "Roubo e furto", value: "Nada consta" },
+  { label: "Débitos e multas", value: "R$ 0,00" },
+  { label: "Recall pendente", value: "Em dia", hideOnCompact: true },
+];
+
+const SCORE = 97;
+
+interface HeroVehicleVisualProps {
+  compact?: boolean;
+}
+
+/** Amostra estática do relatório: comunica o produto sem custo de render. */
+export function HeroVehicleVisual({ compact = false }: HeroVehicleVisualProps) {
+  const rows = compact ? REPORT_ROWS.filter((row) => !row.hideOnCompact) : REPORT_ROWS;
+
   return (
-    <div className="relative isolate mx-auto w-full max-w-xl min-h-[280px] sm:min-h-[320px] lg:min-h-[360px]" aria-hidden>
-      {/* Camada de fundo — glow e linhas ficam ATRÁS do veículo */}
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle,rgb(234_88_12_/_0.14)_0%,transparent_68%)]" />
-        <div className="absolute inset-x-[10%] top-[32%] h-px bg-gradient-to-r from-transparent via-primary/35 to-transparent" />
-        <div className="absolute inset-x-[18%] top-[56%] h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-        <div className="absolute left-1/2 top-[42%] h-[24%] w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-primary/15 to-transparent" />
-      </div>
+    <div
+      className={cn("mx-auto w-full", compact ? "max-w-md" : "max-w-[27rem] lg:max-w-md")}
+      aria-hidden
+    >
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-elevated">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+          <span className="rounded-md border border-border-strong bg-muted px-2.5 py-1 font-mono text-[13px] font-bold tracking-[0.12em] text-foreground">
+            {SAMPLE_VEHICLE.plate}
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-success">
+            <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.25} />
+            Relatório completo
+          </span>
+        </div>
 
-      {/* Veículo — foto com fundo removido */}
-      <div className="relative z-10 flex h-full min-h-[inherit] flex-col items-center justify-center px-2 py-4">
-        <img
-          src={HERO_CAR_IMAGE}
-          alt=""
-          width={1432}
-          height={989}
-          decoding="async"
-          fetchPriority="high"
-          className="mx-auto block h-auto w-full max-h-[340px] max-w-md object-contain object-bottom drop-shadow-[0_20px_40px_rgb(15_23_42_/_0.14)] lg:max-h-[380px]"
-        />
-        <div
-          className="pointer-events-none mt-2 h-2.5 w-[38%] rounded-[100%] bg-slate-900/[0.08]"
-          aria-hidden
-        />
-      </div>
+        <div className="border-b border-border bg-muted/60 px-4 pt-2">
+          <img
+            src={HERO_CAR_IMAGE}
+            alt=""
+            width={1432}
+            height={989}
+            decoding="async"
+            fetchPriority="high"
+            className={cn(
+              "mx-auto block h-auto w-full object-contain",
+              compact ? "max-h-[130px]" : "max-h-[168px]",
+            )}
+          />
+          <p className="pb-3 text-center text-[13px] font-semibold text-foreground">
+            {SAMPLE_VEHICLE.name}
+            <span className="ml-1.5 font-medium text-muted-foreground">
+              {SAMPLE_VEHICLE.year} · {SAMPLE_VEHICLE.fuel}
+            </span>
+          </p>
+        </div>
 
-      {/* Cards de análise — acima do veículo */}
-      {FLOATING_CARDS.map((card) => (
-        <div
-          key={card.label}
-          className={cn(
-            "absolute z-20 max-w-[140px] rounded-xl border border-slate-200/80 bg-white px-3 py-2.5 shadow-[0_8px_24px_rgb(15_23_42_/_0.08)]",
-            "landing-float",
-            card.position,
-          )}
-          style={{ animationDelay: `${card.delay}s` }}
-        >
-          <div className="flex items-start gap-1.5">
-            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                {card.label}
-              </p>
-              <p className="truncate text-xs font-semibold text-foreground">{card.value}</p>
+        <ul className="divide-y divide-border">
+          {rows.map((row) => (
+            <li key={row.label} className="flex items-center gap-3 px-4 py-2.5">
+              <Check className="h-4 w-4 shrink-0 text-success" strokeWidth={2.5} />
+              <span className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
+                {row.label}
+              </span>
+              <span className="shrink-0 text-[13px] font-semibold text-foreground">{row.value}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="border-t border-border px-4 py-3.5">
+          <div className="flex items-baseline justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-[0.09em] text-subtle-foreground">
+              Score do veículo
+            </span>
+            <span className="text-[13px] font-semibold text-success">Risco baixo</span>
+          </div>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+              <div className="h-full rounded-full bg-success" style={{ width: `${SCORE}%` }} />
             </div>
+            <span className="tabular text-lg font-bold leading-none text-foreground">{SCORE}</span>
           </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
