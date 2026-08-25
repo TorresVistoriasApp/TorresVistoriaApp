@@ -1,4 +1,5 @@
 import { Controller, type Control, type FieldPath, type FieldValues } from "react-hook-form";
+import type { LucideIcon } from "lucide-react";
 import { FIELD_NA_VALUE, isFieldNA } from "@/shared/lib/field-na";
 import { MaskedInput } from "@/shared/ui/masked-input";
 import { Input } from "@/shared/ui/input";
@@ -90,6 +91,7 @@ interface MaskedFieldProps<T extends FieldValues> {
   disabled?: boolean;
   labelClassName?: string;
   optional?: boolean;
+  icon?: LucideIcon;
 }
 
 export function MaskedField<T extends FieldValues>({
@@ -105,6 +107,7 @@ export function MaskedField<T extends FieldValues>({
   disabled,
   labelClassName,
   optional,
+  icon: Icon,
 }: MaskedFieldProps<T>) {
   return (
     <Controller
@@ -119,15 +122,20 @@ export function MaskedField<T extends FieldValues>({
           labelClassName={labelClassName}
           optional={optional}
         >
-          <MaskedInput
-            mask={mask}
-            value={field.value ?? ""}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            placeholder={placeholder}
-            className={inputClassName}
-            disabled={disabled}
-          />
+          <div className={cn(Icon && "relative")}>
+            {Icon ? (
+              <Icon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            ) : null}
+            <MaskedInput
+              mask={mask}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder={placeholder}
+              className={cn(inputClassName, Icon && "pl-11")}
+              disabled={disabled}
+            />
+          </div>
         </FormField>
       )}
     />

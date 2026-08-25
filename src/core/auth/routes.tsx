@@ -4,6 +4,7 @@ import { TenantAuthRoute } from "@/routes/guards/tenant-auth-route";
 import { InspectorPendingRoute } from "@/routes/guards/inspector-pending-route";
 import type { ModuleRoutes } from "@/routes/route-contract";
 import { TenantAuthLayout } from "@/core/auth/layouts/tenant-auth-layout";
+import { TenantRegisterLayout } from "@/core/auth/layouts/tenant-register-layout";
 
 export const authRoutes: ModuleRoutes = {
   auth: [
@@ -31,6 +32,11 @@ export const authRoutes: ModuleRoutes = {
                 "ResetPasswordPage",
               ),
             },
+          ],
+        },
+        {
+          element: <TenantRegisterLayout />,
+          children: [
             {
               path: ROUTES.vistoriaRegister,
               element: lazyRoute(
