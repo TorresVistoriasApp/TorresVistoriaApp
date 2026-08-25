@@ -653,6 +653,17 @@ Foco visível: os inputs empilhavam `focus-visible:ring-2 ring-primary/20` sobre
 
 Fora de escopo por decisão: `components/pdf/laudo-template.tsx` (linguagem visual do documento impresso, não da interface) e `core/auth/components/tenant-auth-showcase.tsx` (superfície escura invertida, sem tokens correspondentes na paleta clara).
 
+#### Duas regressões que a Fase 8 introduziu na landing, e a correção
+
+A Fase 1 tinha isolado a landing por aliasing. A Fase 8 furou esse isolamento em dois pontos, porque `shared/ui` e `shared/components` são consumidos por `modules/torres-consulta` — inclusive pelo hero da landing:
+
+1. `--color-brand-border` (#f7cdae) foi aplicado ao bloco compartilhado `.ui-icon-box, .landing-icon-box`, trocando a borda da landing de #f9d7bf para #f7cdae em 9 pontos de `landing-ui.tsx` e em `consumer-surface.tsx`. **Correção:** `.landing-icon-box` recebeu uma sobrescrita explícita com #f9d7bf. O token continua governando o painel.
+2. `shared/ui/input.tsx` teve o placeholder trocado de `text-muted-foreground` (#5c6672, 5,8:1 sobre branco) para `text-subtle-foreground` (#8a939e, 3,1:1) — abaixo do mínimo de 4,5:1 do WCAG AA, e o `Input` é o campo do `hero-consulta-form`, acima da dobra da landing. **Correção:** revertido para `text-muted-foreground` no `Input` e no `textareaInputClass`.
+
+Mudança compartilhada mantida de propósito: a remoção do `focus-visible:ring-2 ring-primary/20` do `Input`. O `:focus-visible` global (`globals.css:103`) desenha `outline: 2px solid var(--color-primary)` com offset — indicador mais forte que o anel a 20% de opacidade, não mais fraco. O anel duplicado era o defeito.
+
+Lição para a Fase 9: `shared/ui/**` e `shared/components/**` **não** são território exclusivo do painel. Antes de editar qualquer um deles, verificar os consumidores em `modules/torres-consulta`.
+
 Efeito colateral mensurável: o CSS do bundle caiu de 133,19 kB para 115,33 kB (−13%), reflexo das utilitárias one-off que deixaram de ser geradas.
 
 ---
@@ -706,6 +717,7 @@ Checklist visual em 375px, 768px, 1280px e 1920px, para `/dashboard` e cada pág
 | Tokens `*-subtle` / `*-border` para success, warning e destructive | Estados tonais eram montados com opacidade arbitrária sobre a cor cheia; sem token, cada tela inventava a sua. |
 | Cor de badge de auditoria por grupo semântico, não por ação | Sete cores para sete ações viram decoração. O rótulo já identifica a ação; a cor deve dizer se é criação, alteração, exclusão, autenticação ou exportação. |
 | Um único indicador de foco | `ring` do componente + `outline` global de `:focus-visible` desenhavam dois anéis concêntricos. |
+| `.landing-icon-box` sobrescreve o token de borda | A landing é a referência aprovada. Onde o token divergir do valor original dela, a landing ganha e o token serve ao painel. |
 | `tabular-nums` obrigatório em métricas | Sem isso os dígitos mudam de largura e a comparação vertical entre KPIs falha. |
 | Cabeçalho de página sem caixa | A landing nunca encaixota títulos; o card de header competia com os cards de dados. |
 | Zero blur | Regra já declarada em `globals.css:4-8`, hoje violada em 5 arquivos. Blur em barra fixa mobile é custo de composição por frame. |
