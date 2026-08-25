@@ -27,7 +27,7 @@ export const selectInputClass = cn(
 
 export const textareaInputClass = cn(
   "w-full min-h-[120px] rounded-xl border border-border bg-card px-4 py-3 text-sm leading-relaxed shadow-soft",
-  "placeholder:text-subtle-foreground",
+  "placeholder:text-muted-foreground",
   "transition-colors duration-150 focus-visible:border-primary",
 );
 

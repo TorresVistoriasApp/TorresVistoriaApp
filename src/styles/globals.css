@@ -224,6 +224,11 @@
     color: var(--color-primary);
   }
 
+  /* A landing é referência aprovada: mantém o tom original da borda. */
+  .landing-icon-box {
+    border-color: #f9d7bf;
+  }
+
   .ui-icon-box-neutral,
   .landing-icon-box-neutral {
     border-color: var(--color-border);
