@@ -8,7 +8,7 @@ import {
   isValidPlate,
   normalizeChassis,
   normalizePlate,
-} from "@/modules/torres-consulta/utils/vehicle-identifier";
+} from "@/modules/torres-consulta/domain/value-objects";
 import { getConsumerPlanQueryType } from "@/modules/torres-consulta/domain/consumer-plan-catalog";
 import type { VehicleQueryType } from "@/core/integrations/ports/vehicle-lookup";
 

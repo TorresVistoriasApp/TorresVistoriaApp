@@ -84,13 +84,3 @@ export function useUploadTenantAsset() {
   });
 }
 
-/** @deprecated Use `useTenant`. Mantido só durante a transição de naming. */
-export const useCompany = useTenant;
-/** @deprecated Use `useTenantSettings`. */
-export const useCompanySettings = useTenantSettings;
-/** @deprecated Use `useUpdateTenant`. */
-export const useUpdateCompany = useUpdateTenant;
-/** @deprecated Use `useUpdateTenantSettings`. */
-export const useUpdateCompanySettings = useUpdateTenantSettings;
-/** @deprecated Use `useUploadTenantAsset`. */
-export const useUploadCompanyAsset = useUploadTenantAsset;

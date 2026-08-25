@@ -47,5 +47,5 @@ const header = `/**
 
 `;
 
-writeFileSync(join(root, "src/types/database.ts"), header + output, "utf8");
-console.log("src/types/database.ts atualizado");
+writeFileSync(join(root, "src/infra/supabase/database.types.ts"), header + output, "utf8");
+console.log("src/infra/supabase/database.types.ts atualizado");
