@@ -3,21 +3,20 @@ import { queries } from "@/infra/supabase/queries";
 import { mutations } from "@/modules/torres-vistoria/repositories/vistoria-mutations";
 import { STORAGE_BUCKET } from "@/infra/storage/buckets";
 import {
-  createThumbnailWebP,
-  extractImageMetadata,
   getDeviceInfo,
   preparePhotoForUpload,
+  prepareUploadAssets,
 } from "@/shared/lib/compress-image";
 import {
   buildInspectionPhotoPath,
   buildInspectionPhotoThumbnailPath,
 } from "@/infra/storage/paths";
-import { runPhotoUpload } from "@/modules/torres-vistoria/domain/photos/upload-queue";
+import { runPhotoPrepare, runPhotoUpload } from "@/modules/torres-vistoria/domain/photos/upload-queue";
 import { getPhotoCategory, normalizePhotoCategory } from "@/modules/torres-vistoria/domain/photos/photo-catalog";
 import { insertInspectionPhoto } from "@/modules/torres-vistoria/domain/photos/photo-insert";
 import type { PhotoCaptureMetadata, PhotoCaptureStatus } from "@/modules/torres-vistoria/domain/photos/types";
 import { withFreshSession } from "@/core/auth/ensure-session";
-import { extractStoragePath, getSignedUrl, getSignedUrls } from "@/infra/storage/signed-url";
+import { extractStoragePath, getSignedUrls } from "@/infra/storage/signed-url";
 import { AppError, getErrorMessage, throwIfError } from "@/core/errors/app-error";
 import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 
@@ -123,11 +122,10 @@ export const photoService = {
 
   async upload(file: File, params: PhotoUploadParams): Promise<InspectionPhoto> {
     try {
-      return await runPhotoUpload(async () => {
-        const webp = await preparePhotoForUpload(file);
+      const webp = await runPhotoPrepare(() => preparePhotoForUpload(file));
 
+      return await runPhotoUpload(async () => {
         return withFreshSession(async () => {
-          const imageMeta = await extractImageMetadata(webp);
           const device = getDeviceInfo();
           const categoryMeta = resolveCategoryMeta(params.category);
           const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
@@ -137,66 +135,65 @@ export const photoService = {
             categoryMeta.normalizedCategory,
             fileName,
           );
-
           const thumbPath = buildInspectionPhotoThumbnailPath(storagePath);
-          const thumbnail = await createThumbnailWebP(webp);
+          const { thumbnail, metadata: imageMeta } = await prepareUploadAssets(webp);
 
-          const { error: uploadError } = await db.storage
-            .from(STORAGE_BUCKET)
-            .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
-          if (uploadError) throw uploadError;
-
-          const { error: thumbError } = await db.storage
-            .from(STORAGE_BUCKET)
-            .upload(thumbPath, thumbnail, { contentType: "image/webp", upsert: false });
-          if (thumbError) throw thumbError;
-
-          // URLs assinadas só para a UI imediata; no banco guardamos paths estáveis.
-          const [signedUrl, signedThumb] = await Promise.all([
-            getSignedUrl(STORAGE_BUCKET, storagePath),
-            getSignedUrl(STORAGE_BUCKET, thumbPath),
+          const [fullUpload, thumbUpload] = await Promise.all([
+            db.storage
+              .from(STORAGE_BUCKET)
+              .upload(storagePath, webp, { contentType: "image/webp", upsert: false }),
+            db.storage
+              .from(STORAGE_BUCKET)
+              .upload(thumbPath, thumbnail, { contentType: "image/webp", upsert: false }),
           ]);
-          const now = new Date().toISOString();
+          if (fullUpload.error) throw fullUpload.error;
+          if (thumbUpload.error) throw thumbUpload.error;
 
-          const insertResult = await insertInspectionPhoto({
-            tenant_id: params.tenantId,
-            inspection_id: params.inspectionId,
-            category: categoryMeta.normalizedCategory,
-            section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,
-            subcategory: params.metadata?.subcategory ?? null,
-            display_name: params.metadata?.displayName ?? categoryMeta.displayName,
-            sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
-            is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
-            storage_path: storagePath,
-            public_url: storagePath,
-            thumbnail_url: thumbPath,
-            file_size: webp.size,
-            mime_type: "image/webp",
-            content_hash: imageMeta.contentHash,
-            width: imageMeta.width,
-            height: imageMeta.height,
-            resolution: imageMeta.resolution,
-            latitude: params.latitude ?? null,
-            longitude: params.longitude ?? null,
-            gps_accuracy: params.gpsAccuracy ?? null,
-            captured_at: params.metadata?.capturedAt ?? now,
-            device_model: params.metadata?.deviceModel ?? device.deviceModel,
-            device_os: params.metadata?.deviceOs ?? device.deviceOs,
-            uploaded_by: params.uploadedBy ?? null,
-            status: params.metadata?.status ?? "CAPTURED",
-            damage_location: params.metadata?.damageLocation ?? null,
-            damage_category: params.metadata?.damageCategory ?? null,
-            damage_severity: params.metadata?.damageSeverity ?? null,
-            complementary_name: params.metadata?.complementaryName ?? null,
-            complementary_category: params.metadata?.complementaryCategory ?? null,
-            ai_validation: params.metadata?.aiValidation ?? {},
-          });
+          const now = new Date().toISOString();
+          const [signed, insertResult] = await Promise.all([
+            getSignedUrls(STORAGE_BUCKET, [storagePath, thumbPath]),
+            insertInspectionPhoto({
+              tenant_id: params.tenantId,
+              inspection_id: params.inspectionId,
+              category: categoryMeta.normalizedCategory,
+              section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,
+              subcategory: params.metadata?.subcategory ?? null,
+              display_name: params.metadata?.displayName ?? categoryMeta.displayName,
+              sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
+              is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
+              storage_path: storagePath,
+              public_url: storagePath,
+              thumbnail_url: thumbPath,
+              file_size: webp.size,
+              mime_type: "image/webp",
+              content_hash: imageMeta.contentHash,
+              width: imageMeta.width,
+              height: imageMeta.height,
+              resolution: imageMeta.resolution,
+              latitude: params.latitude ?? null,
+              longitude: params.longitude ?? null,
+              gps_accuracy: params.gpsAccuracy ?? null,
+              captured_at: params.metadata?.capturedAt ?? now,
+              device_model: params.metadata?.deviceModel ?? device.deviceModel,
+              device_os: params.metadata?.deviceOs ?? device.deviceOs,
+              uploaded_by: params.uploadedBy ?? null,
+              status: params.metadata?.status ?? "CAPTURED",
+              damage_location: params.metadata?.damageLocation ?? null,
+              damage_category: params.metadata?.damageCategory ?? null,
+              damage_severity: params.metadata?.damageSeverity ?? null,
+              complementary_name: params.metadata?.complementaryName ?? null,
+              complementary_category: params.metadata?.complementaryCategory ?? null,
+              ai_validation: params.metadata?.aiValidation ?? {},
+            }),
+          ]);
 
           const row = throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
+          const signedUrl = signed.get(storagePath) ?? null;
+          const signedThumb = signed.get(thumbPath) ?? signedUrl;
           return {
             ...row,
             public_url: signedUrl,
-            thumbnail_url: signedThumb ?? signedUrl,
+            thumbnail_url: signedThumb,
           };
         });
       });

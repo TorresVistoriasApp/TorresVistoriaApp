@@ -69,6 +69,7 @@ export function PhotoGuideCard({
               alt={categoryName}
               className="h-full w-full object-cover"
               loading="lazy"
+              decoding="async"
             />
             {indexBadge != null ? (
               <span className="ui-metric absolute left-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
