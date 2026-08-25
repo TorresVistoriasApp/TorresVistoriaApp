@@ -379,6 +379,7 @@ export function PhotoSlotGrid({
       {visibleSections.map((section) => {
         const sectionProgress = captureProgress.sections.find((s) => s.sectionKey === section.key)!;
         const isComplete = isSectionUiComplete(section, photos, captureContext);
+        const open = isSectionOpen(section.key);
 
         return (
           <PhotoSectionCard
@@ -389,10 +390,10 @@ export function PhotoSlotGrid({
             guidance={resolveSectionGuidance(section.key, section.guidance)}
             isComplete={isComplete}
             photoCount={sectionProgress.totalPhotos}
-            open={isSectionOpen(section.key)}
-            onOpenChange={(open) => setSectionOpen(section.key, open)}
+            open={open}
+            onOpenChange={(nextOpen) => setSectionOpen(section.key, nextOpen)}
           >
-            {renderSectionCategories(section.key)}
+            {open ? renderSectionCategories(section.key) : null}
           </PhotoSectionCard>
         );
       })}

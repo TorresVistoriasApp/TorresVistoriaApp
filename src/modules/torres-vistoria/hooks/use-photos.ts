@@ -55,8 +55,8 @@ export function useUploadPhoto(inspectionId: string) {
     onMutate: async ({ file, category, latitude, longitude }) => {
       if (!tenantId) return;
 
-      const blobUrl = await createPreviewObjectUrl(file);
       const optimisticId = `pending-${category}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const preview = { url: null as string | null, cancelled: false };
       const optimistic: InspectionPhoto = {
         id: optimisticId,
         inspection_id: inspectionId,
@@ -68,8 +68,8 @@ export function useUploadPhoto(inspectionId: string) {
         sort_order: null,
         is_required: null,
         storage_path: "",
-        public_url: blobUrl,
-        thumbnail_url: blobUrl,
+        public_url: null,
+        thumbnail_url: null,
         file_size: file.size,
         mime_type: file.type || "image/jpeg",
         content_hash: null,
@@ -101,10 +101,35 @@ export function useUploadPhoto(inspectionId: string) {
         optimistic,
       ]);
 
-      return { blobUrl, optimisticId };
+      void createPreviewObjectUrl(file).then((url) => {
+        if (preview.cancelled) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+
+        const current = qc.getQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId));
+        if (!current?.some((photo) => photo.id === optimisticId)) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+
+        preview.url = url;
+        qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), (photos) =>
+          (photos ?? []).map((photo) =>
+            photo.id === optimisticId
+              ? { ...photo, public_url: url, thumbnail_url: url }
+              : photo,
+          ),
+        );
+      });
+
+      return { optimisticId, preview };
     },
     onSuccess: (data, _variables, context) => {
       if (!context?.optimisticId) return;
+
+      context.preview.cancelled = true;
+      const previewUrl = context.preview.url;
 
       qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), (current) => {
         const list = current ?? [];
@@ -113,7 +138,9 @@ export function useUploadPhoto(inspectionId: string) {
         return list.map((photo) => (photo.id === context.optimisticId ? data : photo));
       });
 
-      URL.revokeObjectURL(context.blobUrl);
+      if (previewUrl) {
+        window.setTimeout(() => URL.revokeObjectURL(previewUrl), 0);
+      }
     },
     onError: async (error, variables, context) => {
       const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
@@ -149,12 +176,16 @@ export function useUploadPhoto(inspectionId: string) {
         return;
       }
 
+      if (context?.preview) {
+        context.preview.cancelled = true;
+        if (context.preview.url) {
+          URL.revokeObjectURL(context.preview.url);
+        }
+      }
+
       qc.setQueryData<InspectionPhoto[]>(queryKeys.photos(inspectionId), (current) =>
         (current ?? []).filter((photo) => photo.id !== context?.optimisticId),
       );
-      if (context?.blobUrl) {
-        URL.revokeObjectURL(context.blobUrl);
-      }
 
       syncLogger.error("Falha no upload de foto", {
         inspectionId,

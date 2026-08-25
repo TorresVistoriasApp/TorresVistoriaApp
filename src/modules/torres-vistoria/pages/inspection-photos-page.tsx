@@ -48,8 +48,8 @@ export function InspectionPhotosPage() {
   const [searchParams] = useSearchParams();
   const isWizardFlow = searchParams.get("fluxo") === "nova";
   const { inspectionId, inspection, photos, isLoadingPhotos: isLoading } = useInspectionContext();
-  const upload = useUploadPhoto(inspectionId);
-  const deletePhoto = useDeletePhoto(inspectionId);
+  const { mutate: uploadPhoto } = useUploadPhoto(inspectionId);
+  const { mutate: removePhoto } = useDeletePhoto(inspectionId);
   const { toast } = useToast();
   const geoRef = useRef<GeoCoords | null>(null);
 
@@ -72,7 +72,7 @@ export function InspectionPhotosPage() {
     (file: File, category: string, metadata?: Partial<PhotoCaptureMetadata>) => {
       const coords = geoRef.current;
 
-      upload.mutate(
+      uploadPhoto(
         {
           file,
           category,
@@ -97,13 +97,13 @@ export function InspectionPhotosPage() {
         });
       }
     },
-    [toast, upload],
+    [toast, uploadPhoto],
   );
 
   const handleDelete = useCallback(
     (photo: InspectionPhoto) => {
       if (photo.id.startsWith("pending-")) return;
-      deletePhoto.mutate(
+      removePhoto(
         { id: photo.id, storagePath: photo.storage_path },
         {
           onError: (err) => {
@@ -112,7 +112,7 @@ export function InspectionPhotosPage() {
         },
       );
     },
-    [deletePhoto, toast],
+    [removePhoto, toast],
   );
 
   const goToAvaliacao = () => {
