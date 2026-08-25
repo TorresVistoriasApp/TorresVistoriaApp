@@ -3,7 +3,7 @@ import { useTenantBoot } from "@/core/tenant/use-tenant-boot";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
-import { ROUTES } from "@/config/routes";
+import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
 
 /**
  * Porta de entrada da área do tenant: garante sessão válida.
@@ -27,21 +27,17 @@ export function ProtectedRoute() {
   }
 
   if (!session) {
-    return <Navigate to={ROUTES.login} state={{ from: location }} replace />;
+    return <Navigate to={PANEL_AUTH.tenant} state={{ from: location }} replace />;
   }
 
-  if (principalType === PrincipalType.CUSTOMER) {
-    return <Navigate to={ROUTES.consultaApp} replace />;
-  }
-
-  if (principalType === PrincipalType.PENDING_INSPECTOR) {
-    return <Navigate to={ROUTES.vistoriaPendingApproval} replace />;
+  if (principalType && principalType !== PrincipalType.TENANT_MEMBER) {
+    return <Navigate to={homeForPrincipal(principalType)} replace />;
   }
 
   // Operador da plataforma não pertence a nenhuma empresa: nunca deve entrar
   // na área do tenant (que assume `profile` preenchido em toda a UI).
   if (isPlatformAdmin) {
-    return <Navigate to={ROUTES.adminCompanies} replace />;
+    return <Navigate to={homeForPrincipal(PrincipalType.PLATFORM_ADMIN)} replace />;
   }
 
   return <Outlet />;

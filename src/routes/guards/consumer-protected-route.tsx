@@ -5,7 +5,7 @@ import { usePrincipal } from "@/core/auth/use-principal";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import { PrincipalType } from "@/core/rbac/roles";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
-import { ROUTES } from "@/config/routes";
+import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
 
 /**
  * Porta de entrada da área do consumidor (B2C).
@@ -18,16 +18,22 @@ export function ConsumerProtectedRoute() {
   const isSigningOut = useRef(false);
 
   const loading = sessionLoading || principalLoading;
+  const isForeignPrincipal =
+    principalType === PrincipalType.TENANT_MEMBER ||
+    principalType === PrincipalType.PLATFORM_ADMIN ||
+    principalType === PrincipalType.PENDING_INSPECTOR;
 
   useEffect(() => {
-    if (loading || !session || principalType === PrincipalType.CUSTOMER) return;
+    if (loading || !session || principalType === PrincipalType.CUSTOMER || isForeignPrincipal) {
+      return;
+    }
     if (isSigningOut.current) return;
 
     isSigningOut.current = true;
     void consumerAuthService.signOut().finally(() => {
       isSigningOut.current = false;
     });
-  }, [loading, session, principalType]);
+  }, [loading, session, principalType, isForeignPrincipal]);
 
   if (loading) {
     return (
@@ -38,15 +44,11 @@ export function ConsumerProtectedRoute() {
   }
 
   if (!session) {
-    return <Navigate to={ROUTES.consultaLogin} state={{ from: location }} replace />;
+    return <Navigate to={PANEL_AUTH.consumer} state={{ from: location }} replace />;
   }
 
-  if (principalType === PrincipalType.TENANT_MEMBER) {
-    return <Navigate to={ROUTES.dashboard} replace />;
-  }
-
-  if (principalType === PrincipalType.PLATFORM_ADMIN) {
-    return <Navigate to={ROUTES.adminCompanies} replace />;
+  if (isForeignPrincipal && principalType) {
+    return <Navigate to={homeForPrincipal(principalType)} replace />;
   }
 
   if (principalType !== PrincipalType.CUSTOMER) {

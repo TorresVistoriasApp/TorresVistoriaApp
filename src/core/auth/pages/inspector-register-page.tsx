@@ -27,7 +27,7 @@ import {
   type InspectorRegisterInput,
 } from "@/core/auth/schemas/inspector-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
-import { PrincipalType } from "@/core/rbac/roles";
+import { homeForPrincipal } from "@/routes/panel";
 import type { InspectorDocumentType } from "@/core/auth/validators/document";
 import { FormField } from "@/shared/components/forms/form-field";
 import { MaskedField } from "@/shared/components/forms/masked-fields";
@@ -81,11 +81,8 @@ export function InspectorRegisterPage() {
       </div>
     );
   }
-  if (principalType === PrincipalType.TENANT_MEMBER) {
-    return <Navigate to={ROUTES.dashboard} replace />;
-  }
-  if (principalType === PrincipalType.PENDING_INSPECTOR) {
-    return <Navigate to={ROUTES.vistoriaPendingApproval} replace />;
+  if (principalType) {
+    return <Navigate to={homeForPrincipal(principalType)} replace />;
   }
 
   const onSubmit = handleSubmit(async (values) => {

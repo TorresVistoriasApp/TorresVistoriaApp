@@ -36,6 +36,7 @@ export const adminRoutes: ModuleRoutes = {
     { path: ROUTES.legacySettingsAudit, element: <Navigate to={ROUTES.audit} replace /> },
   ],
   platform: [
+    { path: ROUTES.admin, element: <Navigate to={ROUTES.adminCompanies} replace /> },
     {
       path: ROUTES.adminCompanies,
       element: lazyRoute(

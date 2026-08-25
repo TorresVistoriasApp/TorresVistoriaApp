@@ -5,7 +5,6 @@ import { Link, Navigate } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, UserPlus } from "lucide-react";
 import { useAuth } from "@/core/auth/use-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
-import { PrincipalType } from "@/core/rbac/roles";
 import { checkRateLimit, formatRetryAfter, resetRateLimit } from "@/core/auth/rate-limit";
 import { logger } from "@/core/observability/logger";
 import { saveLgpdConsent } from "@/core/compliance/lgpd";
@@ -17,6 +16,7 @@ import { TenantAuthPanel } from "@/core/auth/components/tenant-auth-panel";
 import { Button } from "@/shared/ui/button";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { ROUTES } from "@/config/routes";
+import { homeForPrincipal } from "@/routes/panel";
 
 export function LoginPage() {
   const { signIn, session, loading } = useAuth();
@@ -38,17 +38,8 @@ export function LoginPage() {
       </div>
     );
   }
-  if (session && principalType === PrincipalType.TENANT_MEMBER) {
-    return <Navigate to={ROUTES.dashboard} replace />;
-  }
-  if (session && principalType === PrincipalType.PLATFORM_ADMIN) {
-    return <Navigate to={ROUTES.adminCompanies} replace />;
-  }
-  if (session && principalType === PrincipalType.PENDING_INSPECTOR) {
-    return <Navigate to={ROUTES.vistoriaPendingApproval} replace />;
-  }
-  if (session && principalType === PrincipalType.CUSTOMER) {
-    return <Navigate to={ROUTES.consultaApp} replace />;
+  if (session && principalType) {
+    return <Navigate to={homeForPrincipal(principalType)} replace />;
   }
 
   const onSubmit = handleSubmit(async (values) => {

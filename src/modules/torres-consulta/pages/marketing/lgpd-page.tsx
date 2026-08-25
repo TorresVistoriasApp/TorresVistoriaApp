@@ -51,7 +51,7 @@ export function LgpdPage() {
         <LegalSectionBlock id="exercicio" title="Como exercer seus direitos">
           <p>
             Acesse{" "}
-            <Link to={ROUTES.clienteSettings} className="font-semibold text-primary hover:underline">
+            <Link to={ROUTES.consultaAppMinhaConta} className="font-semibold text-primary hover:underline">
               Configurações
             </Link>{" "}
             na área do cliente para solicitar exportação ou exclusão. Prazos conforme regulamentação

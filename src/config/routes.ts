@@ -3,6 +3,14 @@
  *
  * Camada de configuração: não importa nada de `modules/` nem de `core/`, para
  * que qualquer módulo possa referenciar rotas sem criar acoplamento reverso.
+ *
+ * Árvores canônicas (cada identidade só navega na sua):
+ * - Marketing B2C: `/`, `/sobre`, `/como-funciona`, ...
+ * - Consumidor (Torres Consulta): `/consulta/login`, `/consulta/app/*`
+ * - Empresa (Torres Vistoria): `/login`, `/dashboard`, `/vistorias/*`, `/consulta/nova`
+ * - Plataforma: `/admin/*`
+ *
+ * Destino por identidade: `@/routes/panel`.
  */
 
 export const ROUTE_SLUGS = {
@@ -29,8 +37,13 @@ export const ROUTE_SLUGS = {
   changePassword: "trocar-senha",
   admin: "admin",
   adminCompanies: "empresas",
+  adminInspectorRegistrations: "cadastros-pendentes",
+  dashboard: "dashboard",
   consulta: "consulta",
   consultaApp: "app",
+  consultaAppConsultas: "consultas",
+  consultaAppNovaConsulta: "nova-consulta",
+  consultaAppMinhaConta: "minha-conta",
   consultaNew: "nova",
   consultaHistory: "historico",
   consultaCredits: "creditos",
@@ -38,6 +51,7 @@ export const ROUTE_SLUGS = {
   consultaRegister: "cadastro",
   consultaForgotPassword: "esqueci-senha",
   consultaResetPassword: "redefinir-senha",
+  vistoriaPendingApproval: "aguardando-aprovacao",
   cliente: "cliente",
   clienteLogin: "login",
   clienteRegister: "cadastro",
@@ -75,8 +89,8 @@ export const ROUTES = {
   forgotPassword: route(ROUTE_SLUGS.forgotPassword),
   resetPassword: route(ROUTE_SLUGS.resetPassword),
   home: "/",
-  dashboard: route("dashboard"),
-  legacyDashboard: route("dashboard"),
+  dashboard: route(ROUTE_SLUGS.dashboard),
+  legacyDashboard: route(ROUTE_SLUGS.dashboard),
   privacy: route(ROUTE_SLUGS.privacy),
   validateReport: (code: string) => route(ROUTE_SLUGS.validate, encodeURIComponent(code)),
   inspections: route(ROUTE_SLUGS.inspections),
@@ -100,8 +114,9 @@ export const ROUTES = {
   legacySettingsUsers: settingsRoute(ROUTE_SLUGS.users),
   legacySettingsAudit: settingsRoute(ROUTE_SLUGS.audit),
   changePassword: route(ROUTE_SLUGS.changePassword),
+  admin: route(ROUTE_SLUGS.admin),
   adminCompanies: route(ROUTE_SLUGS.admin, ROUTE_SLUGS.adminCompanies),
-  adminInspectorRegistrations: route(ROUTE_SLUGS.admin, "cadastros-pendentes"),
+  adminInspectorRegistrations: route(ROUTE_SLUGS.admin, ROUTE_SLUGS.adminInspectorRegistrations),
   consulta: route(ROUTE_SLUGS.consulta),
   consultaNew: consultaRoute(ROUTE_SLUGS.consultaNew),
   consultaHistory: consultaRoute(ROUTE_SLUGS.consultaHistory),
@@ -113,14 +128,15 @@ export const ROUTES = {
   consultaForgotPassword: route(ROUTE_SLUGS.consulta, ROUTE_SLUGS.consultaForgotPassword),
   consultaResetPassword: route(ROUTE_SLUGS.consulta, ROUTE_SLUGS.consultaResetPassword),
   consultaApp: consultaAppRoute(),
-  consultaAppConsultas: consultaAppRoute("consultas"),
-  consultaAppNovaConsulta: consultaAppRoute("nova-consulta"),
-  consultaAppMinhaConta: consultaAppRoute("minha-conta"),
-  consultaAppConsultaDetail: (id: string) => consultaAppRoute("consultas", encodeURIComponent(id)),
+  consultaAppConsultas: consultaAppRoute(ROUTE_SLUGS.consultaAppConsultas),
+  consultaAppNovaConsulta: consultaAppRoute(ROUTE_SLUGS.consultaAppNovaConsulta),
+  consultaAppMinhaConta: consultaAppRoute(ROUTE_SLUGS.consultaAppMinhaConta),
+  consultaAppConsultaDetail: (id: string) =>
+    consultaAppRoute(ROUTE_SLUGS.consultaAppConsultas, encodeURIComponent(id)),
   cliente: route(ROUTE_SLUGS.cliente),
   vistoriaLogin: route(ROUTE_SLUGS.vistoria, ROUTE_SLUGS.login),
   vistoriaRegister: route(ROUTE_SLUGS.vistoria, ROUTE_SLUGS.consultaRegister),
-  vistoriaPendingApproval: route(ROUTE_SLUGS.vistoria, "aguardando-aprovacao"),
+  vistoriaPendingApproval: route(ROUTE_SLUGS.vistoria, ROUTE_SLUGS.vistoriaPendingApproval),
   clienteLogin: clienteRoute(ROUTE_SLUGS.clienteLogin),
   clienteRegister: clienteRoute(ROUTE_SLUGS.clienteRegister),
   clienteDashboard: clienteRoute(ROUTE_SLUGS.clienteDashboard),
@@ -155,7 +171,7 @@ export const ROUTE_PATTERNS = {
   consultaAppConsultaDetail: route(
     ROUTE_SLUGS.consulta,
     ROUTE_SLUGS.consultaApp,
-    "consultas",
+    ROUTE_SLUGS.consultaAppConsultas,
     ":id",
   ),
 } as const;

@@ -5,7 +5,7 @@ import { useTenantContext } from "@/core/tenant/tenant-context";
 import { resolveTenant } from "@/core/tenant/tenant-resolver";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { Button } from "@/shared/ui/button";
-import { ROUTES } from "@/config/routes";
+import { PANEL_AUTH, PANEL_HOME } from "@/routes/panel";
 
 /**
  * Garante que existe um tenant resolvido antes de renderizar a área da empresa.
@@ -37,11 +37,11 @@ export function TenantGuard() {
   }
 
   if (resolution.status === "anonymous") {
-    return <Navigate to={ROUTES.login} state={{ from: location }} replace />;
+    return <Navigate to={PANEL_AUTH.tenant} state={{ from: location }} replace />;
   }
 
   if (resolution.status === "platform-admin") {
-    return <Navigate to={ROUTES.adminCompanies} replace />;
+    return <Navigate to={PANEL_HOME.platform} replace />;
   }
 
   if (resolution.status === "missing-tenant") {
