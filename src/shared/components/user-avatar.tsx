@@ -30,11 +30,7 @@ export function UserAvatar({ name, avatarUrl, className, size = "md" }: UserAvat
       <img
         src={avatarUrl}
         alt={name ? `Foto de ${name}` : "Foto de perfil"}
-        className={cn(
-          "shrink-0 rounded-full object-cover shadow-sm ring-2 ring-white",
-          sizeMap[size],
-          className,
-        )}
+        className={cn("shrink-0 rounded-full object-cover ring-2 ring-card", sizeMap[size], className)}
       />
     );
   }
@@ -42,7 +38,7 @@ export function UserAvatar({ name, avatarUrl, className, size = "md" }: UserAvat
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-orange-600 font-bold text-white shadow-sm ring-2 ring-white",
+        "flex shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground",
         sizeMap[size],
         className,
       )}

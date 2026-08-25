@@ -12,16 +12,15 @@ export function getConsumerConsultaStatusLabel(status: ConsultaStatus): string {
   return CONSUMER_CONSULTA_STATUS_LABELS[status];
 }
 
+/** Chip de status pronto para uso: forma, cor e caixa alta vêm dos tokens. */
 export function getConsumerConsultaStatusClass(status: ConsultaStatus): string {
   switch (status) {
     case ConsultaStatus.COMPLETED:
-      return "bg-emerald-500/10 text-emerald-700";
+      return "ui-chip-positive uppercase tracking-wide";
     case ConsultaStatus.PROCESSING:
-      return "bg-amber-500/10 text-amber-700";
+      return "ui-chip-warning uppercase tracking-wide";
     case ConsultaStatus.FAILED:
-      return "bg-destructive/10 text-destructive";
-    default:
-      return "bg-slate-500/10 text-slate-600";
+      return "ui-chip-negative uppercase tracking-wide";
   }
 }
 

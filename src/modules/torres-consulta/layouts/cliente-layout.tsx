@@ -27,8 +27,12 @@ export function ClienteLayout() {
   return (
     <div className="consulta-page min-h-dvh text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-card">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6">
-          <Link to={ROUTES.consultaApp} className="shrink-0" aria-label="Torres Consulta, início">
+        <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 lg:px-8">
+          <Link
+            to={ROUTES.consultaApp}
+            className="justify-self-start"
+            aria-label="Torres Consulta, início"
+          >
             <ConsultaBrandLogo size="sm" showSubtitle={false} />
           </Link>
 
@@ -40,9 +44,9 @@ export function ClienteLayout() {
                 end={item.end}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold transition-colors",
+                    "flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors duration-150",
                     isActive
-                      ? "bg-brand-subtle text-primary"
+                      ? "bg-brand-subtle text-brand-emphasis"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )
                 }
@@ -53,7 +57,7 @@ export function ClienteLayout() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center justify-end gap-2 sm:gap-3">
             <Button size="sm" className="hidden sm:inline-flex" asChild>
               <Link to={ROUTES.consultaAppNovaConsulta}>
                 <Plus className="h-4 w-4" aria-hidden />
@@ -65,7 +69,7 @@ export function ClienteLayout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pb-28 pt-5 sm:px-6 sm:pb-12 sm:pt-8">
+      <main className="mx-auto max-w-6xl px-4 pb-28 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:px-8 lg:pt-10">
         <Outlet />
       </main>
 

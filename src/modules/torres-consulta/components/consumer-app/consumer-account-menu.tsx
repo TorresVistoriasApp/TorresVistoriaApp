@@ -26,9 +26,8 @@ export function ConsumerAccountMenu({ displayName, onSignOut }: ConsumerAccountM
           type="button"
           aria-label="Abrir menu da conta"
           className={cn(
-            "group flex items-center gap-2 rounded-2xl border border-border/60 bg-white/70 px-2 py-1.5 shadow-sm transition-colors",
-            "hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-            "data-[state=open]:border-primary/30 data-[state=open]:bg-white",
+            "group flex items-center gap-2 rounded-lg border border-border bg-card px-2 py-1.5",
+            "transition-colors duration-150 hover:bg-muted data-[state=open]:bg-muted",
             "sm:gap-2.5 sm:px-2.5",
           )}
         >
@@ -53,7 +52,7 @@ export function ConsumerAccountMenu({ displayName, onSignOut }: ConsumerAccountM
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => void onSignOut()}
-          className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+          className="cursor-pointer text-destructive focus:bg-destructive-subtle focus:text-destructive"
         >
           <LogOut className="h-4 w-4" />
           Sair

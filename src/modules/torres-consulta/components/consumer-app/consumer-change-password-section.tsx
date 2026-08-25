@@ -82,7 +82,7 @@ export function ConsumerChangePasswordSection() {
       </div>
 
       {formError && (
-        <p className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
+        <p className="rounded-lg border border-destructive-border bg-destructive-subtle px-3 py-2.5 text-sm text-destructive">
           {formError}
         </p>
       )}
@@ -90,7 +90,7 @@ export function ConsumerChangePasswordSection() {
       <Button
         type="submit"
         variant="outline"
-        className="mt-auto rounded-full"
+        className="mt-auto"
         disabled={isSubmitting}
       >
         {isSubmitting ? "Salvando..." : "Atualizar senha"}

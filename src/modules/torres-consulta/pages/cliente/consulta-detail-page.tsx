@@ -1,7 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { Download, FileText } from "lucide-react";
 import { ROUTES } from "@/config/routes";
-import { EmptyState } from "@/shared/components/empty-state";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { Button } from "@/shared/ui/button";
 import { ConsumerPageHeader } from "@/modules/torres-consulta/components/consumer-app/consumer-page-header";
@@ -37,13 +36,13 @@ export function ClienteConsultaDetailPage() {
           backTo={ROUTES.consultaAppConsultas}
           backLabel="Minhas consultas"
         />
-        <ConsumerSurface className="py-8">
-          <EmptyState
-            title="Nada por aqui"
-            description="Volte ao histórico para ver suas consultas."
-          />
-          <div className="mt-6 text-center">
-            <Button asChild variant="outline" className="rounded-full">
+        <ConsumerSurface className="border-dashed px-6 py-10 text-center">
+          <p className="text-[17px] font-bold text-foreground">Nada por aqui</p>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            Volte ao histórico para ver suas consultas.
+          </p>
+          <div className="mt-6">
+            <Button asChild variant="outline">
               <Link to={ROUTES.consultaAppConsultas}>Voltar ao histórico</Link>
             </Button>
           </div>
@@ -67,48 +66,46 @@ export function ClienteConsultaDetailPage() {
 
       <ConsumerSurface>
         <div className="flex items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <FileText className="h-5 w-5" />
+          <span className="ui-icon-box h-12 w-12 shrink-0">
+            <FileText className="h-5 w-5" strokeWidth={1.75} aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-lg font-black tracking-tight text-foreground">{identifier}</p>
+            <p className="font-mono text-lg font-bold uppercase tracking-[0.08em] text-foreground">
+              {identifier}
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">{consulta.planName}</p>
           </div>
-          <span
-            className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${getConsumerConsultaStatusClass(
-              consulta.status,
-            )}`}
-          >
+          <span className={`shrink-0 ${getConsumerConsultaStatusClass(consulta.status)}`}>
             {statusLabel}
           </span>
         </div>
 
-        <dl className="mt-6 grid grid-cols-2 gap-4 rounded-2xl border border-border/40 bg-muted/20 p-4 text-sm sm:grid-cols-3">
+        <dl className="mt-6 grid grid-cols-2 gap-4 rounded-xl border border-border bg-muted p-4 text-sm sm:grid-cols-3">
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Plano</dt>
-            <dd className="mt-1 font-semibold text-foreground">{consulta.planName}</dd>
+            <dt className="ui-microlabel">Plano</dt>
+            <dd className="mt-1.5 font-semibold text-foreground">{consulta.planName}</dd>
           </div>
           <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Data</dt>
-            <dd className="mt-1 font-semibold text-foreground">
+            <dt className="ui-microlabel">Data</dt>
+            <dd className="mt-1.5 font-semibold text-foreground">
               {formatConsumerConsultaDate(consulta.createdAt)}
             </dd>
           </div>
           <div className="col-span-2 sm:col-span-1">
-            <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</dt>
-            <dd className="mt-1 font-semibold text-foreground">{statusLabel}</dd>
+            <dt className="ui-microlabel">Status</dt>
+            <dd className="mt-1.5 font-semibold text-foreground">{statusLabel}</dd>
           </div>
         </dl>
 
         {consulta.status === ConsultaStatus.PROCESSING && (
-          <p className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-4 rounded-lg border border-warning-border bg-warning-subtle px-4 py-3 text-sm leading-relaxed text-foreground">
             Sua consulta está em processamento. O relatório será exibido aqui quando estiver
             disponível.
           </p>
         )}
 
         {consulta.status === ConsultaStatus.FAILED && (
-          <p className="mt-4 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <p className="mt-4 rounded-lg border border-destructive-border bg-destructive-subtle px-4 py-3 text-sm text-destructive">
             {consulta.failureReason ?? "A consulta não foi concluída."}
           </p>
         )}
@@ -121,7 +118,7 @@ export function ClienteConsultaDetailPage() {
         )}
 
         {canDownloadConsumerConsulta(consulta) && (
-          <Button asChild className="mt-5 w-full rounded-full sm:w-auto">
+          <Button asChild className="mt-5 w-full sm:w-auto">
             <a href={consulta.documentUrl!} target="_blank" rel="noopener noreferrer">
               <Download className="h-4 w-4" />
               Baixar relatório
