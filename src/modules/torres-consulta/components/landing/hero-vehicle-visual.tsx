@@ -23,15 +23,16 @@ const SCORE = 97;
 
 interface HeroVehicleVisualProps {
   compact?: boolean;
+  className?: string;
 }
 
 /** Amostra estática do relatório: comunica o produto sem custo de render. */
-export function HeroVehicleVisual({ compact = false }: HeroVehicleVisualProps) {
+export function HeroVehicleVisual({ compact = false, className }: HeroVehicleVisualProps) {
   const rows = compact ? REPORT_ROWS.filter((row) => !row.hideOnCompact) : REPORT_ROWS;
 
   return (
     <div
-      className={cn("mx-auto w-full", compact ? "max-w-md" : "max-w-[27rem] lg:max-w-md")}
+      className={cn("mx-auto w-full", compact ? "max-w-md" : "max-w-[27rem] lg:max-w-md", className)}
       aria-hidden
     >
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-elevated">
