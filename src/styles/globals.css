@@ -369,16 +369,10 @@
     background-color: var(--color-canvas);
   }
 
+  /* Mesma superfície sólida da faixa ink da landing — sem glow. */
   .tenant-auth-showcase {
     background-color: var(--color-ink);
-    background-image:
-      radial-gradient(48rem 24rem at 0% 0%, rgb(226 87 12 / 0.16), transparent 68%),
-      linear-gradient(to right, rgb(255 255 255 / 0.025) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(255 255 255 / 0.025) 1px, transparent 1px);
-    background-size:
-      auto,
-      52px 52px,
-      52px 52px;
+    color: var(--color-ink-foreground);
   }
 
   .tenant-auth-form-side {

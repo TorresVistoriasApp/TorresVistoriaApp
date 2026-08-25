@@ -26,14 +26,10 @@ import { FormField } from "@/shared/components/forms/form-field";
 import { MaskedField } from "@/shared/components/forms/masked-fields";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { LoadingScreen } from "@/shared/components/loading-spinner";
+import { LoadingSpinner } from "@/shared/components/loading-spinner";
 
 function SectionLabel({ children }: { children: string }) {
-  return (
-    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-      {children}
-    </p>
-  );
+  return <p className="ui-microlabel">{children}</p>;
 }
 
 export function InspectorRegisterPage() {
@@ -67,7 +63,13 @@ export function InspectorRegisterPage() {
   const password = watch("password");
   const documentType = watch("documentType") as InspectorDocumentType;
 
-  if (loading) return <LoadingScreen />;
+  if (loading) {
+    return (
+      <div className="lg:col-start-2 lg:row-start-2">
+        <LoadingSpinner />
+      </div>
+    );
+  }
   if (principalType === PrincipalType.TENANT_MEMBER) {
     return <Navigate to={ROUTES.dashboard} replace />;
   }
@@ -127,7 +129,7 @@ export function InspectorRegisterPage() {
         </ol>
 
         <div className="space-y-3">
-          <Button asChild className="h-12 w-full rounded-2xl text-base font-semibold">
+          <Button asChild className="w-full" size="lg">
             <Link to={ROUTES.login}>Voltar para login</Link>
           </Button>
           <Button
@@ -226,7 +228,7 @@ export function InspectorRegisterPage() {
         </fieldset>
 
         <div className="space-y-3 border-t border-border pt-6">
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted p-4 text-sm leading-relaxed transition-colors duration-150 hover:bg-brand-subtle">
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-muted p-4 text-sm leading-relaxed transition-colors duration-150 hover:bg-brand-subtle">
             <input
               type="checkbox"
               className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"
@@ -273,22 +275,20 @@ export function InspectorRegisterPage() {
             <FormError message={error} />
           ) : null}
 
-          <Button
-            type="submit"
-            className="h-12 w-full rounded-2xl text-base font-semibold"
-            size="lg"
-            disabled={isSubmitting}
-          >
+          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <span
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                  aria-hidden
+                />
                 Enviando...
               </>
             ) : (
               <>
-                <UserPlus className="h-4 w-4" />
+                <UserPlus className="h-4 w-4" aria-hidden />
                 Solicitar cadastro
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" aria-hidden />
               </>
             )}
           </Button>

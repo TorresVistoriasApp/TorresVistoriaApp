@@ -6,11 +6,11 @@ export function TenantAuthBadge({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "ui-badge gap-2 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em]",
+        "ui-badge gap-2 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em]",
         className,
       )}
     >
-      <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
+      <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
       Área do vistoriador
     </span>
   );

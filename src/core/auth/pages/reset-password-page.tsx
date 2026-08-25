@@ -46,11 +46,7 @@ export function ResetPasswordPage() {
         />
         <ConfirmPasswordField error={errors.confirmPassword?.message} {...register("confirmPassword")} />
         {error && <FormError message={error} />}
-        <Button
-          type="submit"
-          className="h-12 w-full rounded-2xl text-base font-semibold"
-          disabled={isSubmitting}
-        >
+        <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
           {isSubmitting ? "Salvando..." : "Salvar nova senha"}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
