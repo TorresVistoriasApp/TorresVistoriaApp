@@ -1,68 +1,42 @@
-import { Link, Outlet } from "react-router-dom";
-import { ArrowLeft, Check } from "lucide-react";
-import { ROUTES } from "@/config/routes";
-import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
+import { Outlet } from "react-router-dom";
+import { ConsumerAuthHeader } from "@/modules/torres-consulta/layouts/consumer-auth-header";
+import { ConsumerAuthShowcase } from "@/modules/torres-consulta/components/consumer-app/consumer-auth-showcase";
 
-const SELLING_POINTS = [
-  "Leilão, sinistro, roubo, débitos e restrições",
-  "Relatório em PDF disponível na hora",
-  "Histórico salvo na sua conta para consultar depois",
-] as const;
+function AuthBrandIntro() {
+  return (
+    <>
+      <p className="ui-eyebrow">Login Torres Consulta</p>
+      <h1 className="mt-2 text-balance text-[1.75rem] font-bold leading-[1.12] text-foreground sm:text-[2rem] lg:text-[2.125rem]">
+        Entre na sua conta de <span className="text-primary">cliente</span>
+      </h1>
+      <p className="mt-2 max-w-2xl text-pretty text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+        Acesse relatórios salvos e consulte novos veículos. Esta área é da Torres Consulta — não é o
+        painel da Torres Vistoria.
+      </p>
+    </>
+  );
+}
 
 export function ConsumerAuthLayout() {
   return (
-    <div className="flex min-h-dvh flex-col lg:grid lg:min-h-dvh lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,30rem)_minmax(0,1fr)]">
-      {/* Coluna de marca: só aparece a partir de lg para não pesar no mobile */}
-      <aside className="tenant-auth-showcase hidden flex-col justify-between p-10 text-ink-foreground lg:flex xl:p-12">
-        <Link
-          to={ROUTES.consultaLanding}
-          className="w-fit rounded-md"
-          aria-label="Torres Consulta, voltar para a página inicial"
-        >
-          <ConsultaBrandLogo size="lg" onDark />
-        </Link>
+    <div className="consulta-page flex min-h-dvh flex-col">
+      <ConsumerAuthHeader />
 
-        <div>
-          <h2 className="max-w-sm text-balance text-[1.75rem] font-bold leading-[1.15] text-ink-foreground">
-            Saiba tudo sobre o veículo antes de pagar por ele
-          </h2>
-          <ul className="mt-7 space-y-3.5">
-            {SELLING_POINTS.map((point) => (
-              <li key={point} className="flex items-start gap-3 text-sm text-ink-foreground/85">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} aria-hidden />
-                {point}
-              </li>
-            ))}
-          </ul>
+      <main className="landing-hero-bg relative flex flex-1 flex-col">
+        <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+          <div className="grid w-full items-start gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,24.5rem)] lg:gap-x-10">
+            <div className="lg:col-span-2">
+              <AuthBrandIntro />
+            </div>
+
+            <div className="hidden lg:col-start-1 lg:row-start-2 lg:block">
+              <ConsumerAuthShowcase />
+            </div>
+
+            <Outlet />
+          </div>
         </div>
-
-        <p className="text-xs text-ink-muted">
-          Seus dados são tratados conforme a LGPD. Parte do Ecossistema Torres.
-        </p>
-      </aside>
-
-      <div className="tenant-auth-form-side flex flex-1 flex-col">
-        <header className="flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-3 lg:border-0 lg:bg-transparent lg:px-8 lg:py-6">
-          <Link
-            to={ROUTES.consultaLanding}
-            className="lg:hidden"
-            aria-label="Torres Consulta, voltar para a página inicial"
-          >
-            <ConsultaBrandLogo size="sm" showSubtitle={false} />
-          </Link>
-          <Link
-            to={ROUTES.consultaLanding}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            Voltar ao site
-          </Link>
-        </header>
-
-        <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 lg:py-12">
-          <Outlet />
-        </main>
-      </div>
+      </main>
     </div>
   );
 }

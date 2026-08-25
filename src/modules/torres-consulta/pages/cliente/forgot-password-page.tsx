@@ -58,6 +58,7 @@ export function ClienteForgotPasswordPage() {
   return (
     <ConsumerAuthPanel
       title="Recuperar acesso"
+      meta="Torres Consulta"
       description={
         sent
           ? "Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha em instantes."

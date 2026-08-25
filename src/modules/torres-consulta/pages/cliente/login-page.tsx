@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, UserPlus } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
@@ -40,7 +40,7 @@ export function ClienteLoginPage() {
 
   if (sessionLoading || isSigningIn) {
     return (
-      <div className="flex w-full max-w-[26rem] justify-center py-8">
+      <div className="flex justify-center py-8 lg:col-start-2 lg:row-start-2">
         <LoadingSpinner label={isSigningIn ? "Entrando..." : "Carregando..."} />
       </div>
     );
@@ -69,45 +69,86 @@ export function ClienteLoginPage() {
 
   return (
     <ConsumerAuthPanel
-      title="Entrar na sua conta"
-      description="Acesse seus relatórios e consulte novos veículos."
+      title="Entrar na Torres Consulta"
+      meta="Conta de cliente"
+      trust={["Dados protegidos", "Conforme LGPD", "Relatório na hora"]}
+      cta={
+        <Link
+          to={ROUTES.consultaRegister}
+          className="group flex items-center gap-3 rounded-xl border border-brand-border bg-brand-subtle p-3.5 transition-colors duration-150 hover:bg-brand-muted"
+        >
+          <span className="ui-icon-box h-10 w-10">
+            <UserPlus className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="ui-eyebrow">Novo por aqui?</span>
+            <span className="mt-1 block text-sm font-bold text-foreground">Criar conta grátis</span>
+            <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+              Cadastro em um minuto. Você só paga ao gerar o relatório.
+            </span>
+          </span>
+          <ArrowRight
+            className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5"
+            aria-hidden
+          />
+        </Link>
+      }
       footer={
-        <>
-          Novo por aqui?{" "}
-          <Link to={ROUTES.consultaRegister} className="font-semibold text-primary hover:underline">
-            Criar conta grátis
-          </Link>
-        </>
+        <Link
+          to={ROUTES.consultar}
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-3.5 text-center text-sm text-muted-foreground shadow-card transition-colors duration-150 hover:text-foreground"
+        >
+          Ainda não quer criar conta?
+          <span className="font-semibold text-primary">Consultar veículo</span>
+          <ArrowUpRight className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+        </Link>
       }
     >
-      <form onSubmit={onSubmit} className="space-y-4" noValidate>
-        <EmailField error={errors.email?.message} {...register("email")} />
+      <form onSubmit={onSubmit} className="space-y-3.5" noValidate data-testid="consulta-login-form">
+        <EmailField
+          id="email"
+          placeholder="seu@email.com"
+          error={errors.email?.message}
+          {...register("email")}
+        />
 
-        <div>
-          <PasswordField error={errors.password?.message} {...register("password")} />
-          <div className="mt-2 flex justify-end">
+        <PasswordField
+          id="password"
+          error={errors.password?.message}
+          labelAction={
             <Link
               to={ROUTES.consultaForgotPassword}
-              className="text-sm font-medium text-primary hover:underline"
+              className="text-xs font-semibold text-primary hover:underline"
             >
               Esqueci minha senha
             </Link>
-          </div>
-        </div>
+          }
+          {...register("password")}
+        />
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-muted/50 p-3.5 text-sm leading-relaxed">
+        <label className="flex cursor-pointer items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
           <input
             type="checkbox"
             className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"
             {...register("acceptTerms")}
           />
-          <span className="text-muted-foreground">
+          <span>
             Li e concordo com os{" "}
-            <Link to={ROUTES.termos} className="font-semibold text-primary hover:underline">
+            <Link
+              to={ROUTES.termos}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary hover:underline"
+            >
               Termos de Uso
             </Link>{" "}
             e a{" "}
-            <Link to={ROUTES.privacy} className="font-semibold text-primary hover:underline">
+            <Link
+              to={ROUTES.privacy}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary hover:underline"
+            >
               Política de Privacidade
             </Link>
             .
@@ -119,12 +160,15 @@ export function ClienteLoginPage() {
 
         {error && <FormError message={error} />}
 
-        <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+        <Button type="submit" className="h-11 w-full" size="lg" disabled={isSubmitting}>
           {isSubmitting ? (
-            <span
-              className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-              aria-hidden
-            />
+            <>
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                aria-hidden
+              />
+              Entrando...
+            </>
           ) : (
             <>
               Entrar

@@ -45,6 +45,7 @@ export function ClienteResetPasswordPage() {
   return (
     <ConsumerAuthPanel
       title="Criar nova senha"
+      meta="Torres Consulta"
       description="Escolha uma senha forte para proteger seus relatórios."
     >
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
