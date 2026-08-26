@@ -658,10 +658,7 @@ function buildPaintSection(view: LaudoReportViewModel, payload: LaudoPayload): P
                       : []),
                   ],
                 },
-                statusBadge(
-                  checklistStatusDisplay(item.status),
-                  getChecklistStatusPdfColor(item.status),
-                ),
+                checklistStatusCell(item.status),
               ];
             }),
           ],
