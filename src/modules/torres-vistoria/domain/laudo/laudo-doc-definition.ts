@@ -180,7 +180,11 @@ function buildCover(payload: LaudoPayload, view: LaudoReportViewModel): PdfNode[
               characterSpacing: PDF_TRACKING.wider,
               margin: [0, PDF_SPACE.lg, 0, 3],
             },
-            resultBadge(view.opinionLabel, { accent, width: PDF_PAGE.contentWidth }),
+            resultBadge(view.opinionLabel, {
+              accent,
+              tone: view.opinionTone,
+              width: PDF_PAGE.contentWidth,
+            }),
           ],
         },
         {
@@ -708,8 +712,9 @@ function buildConclusionSection(view: LaudoReportViewModel): PdfNode[] {
       children: [
         resultBadge(view.opinionLabel, {
           accent: toneColor(view.opinionTone),
+          tone: view.opinionTone,
           width: INNER_WIDTH,
-          fontSize: PDF_FONT.result,
+          compact: true,
         }),
         metricRow(
           [
