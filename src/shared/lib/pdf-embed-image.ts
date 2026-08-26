@@ -275,6 +275,22 @@ function isFetchableUrl(url: string): boolean {
 /**
  * Carrega uma imagem (URL http(s), path relativo ou blob:) e gera data URL para pdfmake.
  */
+const DEFAULT_FETCH_TIMEOUT_MS = 30_000;
+
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = DEFAULT_FETCH_TIMEOUT_MS,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
 export async function imageUrlToPdfDataUrl(
   url: string,
   options: PdfEmbedImageOptions = {},
@@ -282,7 +298,8 @@ export async function imageUrlToPdfDataUrl(
   if (!url || !isFetchableUrl(url)) return undefined;
 
   try {
-    const response = await fetch(url, { cache: "no-store" });
+    const cache = url.startsWith("/") || url.startsWith("data:") ? "force-cache" : "no-store";
+    const response = await fetchWithTimeout(url, { cache });
     if (!response.ok) return undefined;
     const blob = await response.blob();
     return await blobToPdfDataUrl(blob, options);
@@ -306,6 +323,10 @@ export async function mapWithConcurrency<T, R>(
     while (nextIndex < items.length) {
       const index = nextIndex++;
       results[index] = await mapper(items[index]!, index);
+      // Cede a UI entre itens — evita spinner congelado ao embutir dezenas de fotos.
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 0);
+      });
     }
   }
 

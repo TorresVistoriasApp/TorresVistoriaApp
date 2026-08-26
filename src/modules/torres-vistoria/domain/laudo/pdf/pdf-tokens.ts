@@ -177,46 +177,46 @@ export const PDF_SPACE = {
   section: 14,
 } as const;
 
-/** Aliases tipográficos do brief + escala operacional. */
+/** Aliases tipográficos — escala pensada para leitura em A4. */
 export const PDF_TYPE = {
   title: 18,
   section: 13,
-  subtitle: 8.5,
-  label: 7,
-  body: 8.5,
-  caption: 6.5,
+  subtitle: 9,
+  label: 7.5,
+  body: 9.5,
+  caption: 7,
 } as const;
 
 /**
- * Escala tipográfica. Uma única família (Roboto, embutida no pdfmake) em
- * regular e bold; a hierarquia vem de tamanho, cor e espaçamento entre letras.
+ * Escala tipográfica. Família Source Sans 3 (ver `pdf-fonts.ts`).
+ * Hierarquia por tamanho, peso e cor — tracking amplo só em rótulos em caixa alta.
  */
 export const PDF_FONT = {
   display: PDF_TYPE.title,
   h1: PDF_TYPE.section,
-  h2: 10,
-  h3: 9,
+  h2: 10.5,
+  h3: 9.5,
   body: PDF_TYPE.body,
-  bodyLarge: 9.5,
-  small: 7.5,
+  bodyLarge: 10.5,
+  small: 8.5,
   micro: PDF_TYPE.caption,
   label: PDF_TYPE.label,
   kpi: 15,
-  result: 14,
+  result: 15,
   subtitle: PDF_TYPE.subtitle,
 } as const;
 
 export const PDF_TRACKING = {
-  tight: 0.15,
-  normal: 0.35,
-  wide: 0.7,
-  wider: 1.2,
+  tight: 0.1,
+  normal: 0.2,
+  wide: 0.55,
+  wider: 0.9,
 } as const;
 
 export const PDF_LINE_HEIGHT = {
-  tight: 1.1,
-  normal: 1.2,
-  relaxed: 1.32,
+  tight: 1.15,
+  normal: 1.3,
+  relaxed: 1.4,
 } as const;
 
 export const PDF_RADIUS = {

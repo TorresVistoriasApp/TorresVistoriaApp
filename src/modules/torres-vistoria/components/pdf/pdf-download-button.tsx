@@ -41,10 +41,14 @@ export function PdfDownloadButton({
         settings,
         inspector,
       });
-      await pdfService.downloadLaudo(
-        docDefinition,
+      const blob = await pdfService.createPdfBlob(docDefinition);
+      await pdfService.downloadPdfBlob(
+        blob,
         `laudo-${inspection.inspection_number}-${inspection.plate}.pdf`,
       );
+    } catch (error) {
+      console.error("[PdfDownloadButton]", error);
+      throw error;
     } finally {
       setLoading(false);
     }

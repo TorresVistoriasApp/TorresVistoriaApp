@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { LaudoReviewPanel } from "@/modules/torres-vistoria/components/laudo/laudo-review-panel";
 import { getLaudoBlockerMessages, buildLaudoReadiness } from "@/modules/torres-vistoria/components/laudo/laudo-readiness";
@@ -45,6 +45,12 @@ export function InspectionReportPage() {
     () => inspectorToLaudoInspector(inspection?.inspector),
     [inspection?.inspector],
   );
+
+  useEffect(() => {
+    void pdfService.prefetchAssets().catch(() => {
+      // Prefetch é best-effort — falha silenciosa não bloqueia a emissão.
+    });
+  }, []);
 
   const handleGenerate = async () => {
     if (!inspection) return;
