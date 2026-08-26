@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/button";
 import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
 import { ConsumerAccountMenu } from "@/modules/torres-consulta/components/consumer-app/consumer-account-menu";
 import { ConsumerBottomNav } from "@/modules/torres-consulta/components/consumer-app/consumer-bottom-nav";
+import { MAIN_CONTENT_ID, SkipLink } from "@/shared/components/skip-link";
 import { cn } from "@/shared/lib/utils";
 
 const DESKTOP_NAV = [
@@ -26,6 +27,7 @@ export function ClienteLayout() {
 
   return (
     <div className="consulta-page min-h-dvh text-foreground">
+      <SkipLink />
       <header className="sticky top-0 z-40 border-b border-border bg-card">
         <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 lg:px-8">
           <Link
@@ -69,7 +71,11 @@ export function ClienteLayout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pb-28 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:px-8 lg:pt-10">
+      <main
+        id={MAIN_CONTENT_ID}
+        className="mx-auto max-w-6xl px-4 pb-28 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:px-8 lg:pt-10"
+        tabIndex={-1}
+      >
         <Outlet />
       </main>
 

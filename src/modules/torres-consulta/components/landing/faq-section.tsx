@@ -86,6 +86,8 @@ export function FaqSection() {
                 </h3>
                 <div
                   id={panelId}
+                  role="region"
+                  aria-hidden={!isOpen}
                   className={cn(
                     "grid transition-[grid-template-rows] duration-200 ease-out",
                     isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",

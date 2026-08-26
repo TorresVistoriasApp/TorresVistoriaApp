@@ -66,23 +66,45 @@ function extractControlId(children: ReactNode): string | undefined {
   return found;
 }
 
-function injectControlId(children: ReactNode, controlId: string): ReactNode {
+function mergeDescribedBy(existing: unknown, nextId: string): string {
+  if (typeof existing === "string" && existing.trim().length > 0) {
+    const parts = existing.split(/\s+/).filter(Boolean);
+    if (parts.includes(nextId)) return existing;
+    return `${existing} ${nextId}`;
+  }
+  return nextId;
+}
+
+function injectControlA11y(
+  children: ReactNode,
+  options: { controlId: string; describedBy?: string; invalid: boolean },
+): ReactNode {
   return Children.map(children, (child) => {
     if (!isValidElement(child)) return child;
 
     const element = child as ReactElement<Record<string, unknown>>;
 
     if (isFormControlElement(element)) {
+      const nextProps: Record<string, unknown> = {};
       const elementId = element.props.id;
-      if (typeof elementId === "string" && elementId.length > 0) {
-        return element;
+      if (!(typeof elementId === "string" && elementId.length > 0)) {
+        nextProps.id = options.controlId;
       }
-      return cloneElement(element, { id: controlId });
+      if (options.invalid) {
+        nextProps["aria-invalid"] = true;
+      }
+      if (options.describedBy) {
+        nextProps["aria-describedby"] = mergeDescribedBy(
+          element.props["aria-describedby"],
+          options.describedBy,
+        );
+      }
+      return Object.keys(nextProps).length > 0 ? cloneElement(element, nextProps) : element;
     }
 
     const nested = element.props.children as ReactNode | undefined;
     if (nested) {
-      return cloneElement(element, {}, injectControlId(nested, controlId));
+      return cloneElement(element, {}, injectControlA11y(nested, options));
     }
 
     return element;
@@ -104,6 +126,9 @@ export function FormField({
   const autoId = useId();
   const explicitControlId = htmlFor ?? id ?? extractControlId(children);
   const controlId = explicitControlId ?? autoId;
+  const hintId = `${controlId}-hint`;
+  const errorId = `${controlId}-error`;
+  const describedBy = error ? errorId : hint ? hintId : undefined;
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -126,13 +151,19 @@ export function FormField({
             "[&_input]:border-destructive/70 [&_select]:border-destructive/70 [&_textarea]:border-destructive/70",
         )}
       >
-        {injectControlId(children, controlId)}
+        {injectControlA11y(children, {
+          controlId,
+          describedBy,
+          invalid: Boolean(error),
+        })}
       </div>
       {hint && !error && (
-        <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
+        <p id={hintId} className="text-xs leading-relaxed text-muted-foreground">
+          {hint}
+        </p>
       )}
       {error && (
-        <p className="text-xs font-medium text-destructive" role="alert">
+        <p id={errorId} className="text-xs font-medium text-destructive" role="alert">
           {error}
         </p>
       )}

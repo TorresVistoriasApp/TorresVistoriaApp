@@ -6,6 +6,7 @@ import { MobileNav } from "@/layouts/components/mobile-nav";
 import { MobileDrawer } from "@/layouts/components/mobile-drawer";
 import { Footer } from "@/layouts/components/footer";
 import { useUiStore } from "@/shared/stores/ui-store";
+import { MAIN_CONTENT_ID, SkipLink } from "@/shared/components/skip-link";
 import { cn } from "@/shared/lib/utils";
 
 export function AppShell({ children }: { children?: ReactNode }) {
@@ -13,6 +14,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
 
   return (
     <div className="min-h-dvh overflow-x-clip bg-canvas">
+      <SkipLink />
       <aside
         className={cn(
           "sidebar-panel fixed inset-y-0 left-0 z-30 hidden flex-col overflow-visible transition-[width] duration-200 ease-out md:flex",
@@ -36,7 +38,11 @@ export function AppShell({ children }: { children?: ReactNode }) {
         )}
       >
         <Header />
-        <main className="w-full min-w-0 max-w-full flex-1 overflow-x-clip px-4 py-6 pb-28 sm:px-6 md:pb-10 lg:px-8 lg:py-8">
+        <main
+          id={MAIN_CONTENT_ID}
+          className="w-full min-w-0 max-w-full flex-1 overflow-x-clip px-4 py-6 pb-28 sm:px-6 md:pb-10 lg:px-8 lg:py-8"
+          tabIndex={-1}
+        >
           {children ?? <Outlet />}
         </main>
         <Footer />

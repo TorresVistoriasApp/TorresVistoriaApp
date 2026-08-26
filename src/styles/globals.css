@@ -28,7 +28,7 @@
   --color-card-foreground: #10151c;
   --color-muted: #f1f3f5;
   --color-muted-foreground: #5c6672;
-  --color-subtle-foreground: #8a939e;
+  --color-subtle-foreground: #6b7480;
   --color-border: #e4e7eb;
   --color-border-strong: #d3d8de;
   --color-destructive: #dc2626;
@@ -72,6 +72,21 @@
   html {
     @apply antialiased scroll-smooth overflow-x-clip;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   body {

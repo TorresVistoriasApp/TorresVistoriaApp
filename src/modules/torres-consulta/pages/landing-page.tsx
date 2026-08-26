@@ -12,6 +12,7 @@ import { FaqSection } from "@/modules/torres-consulta/components/landing/faq-sec
 import { FinalCtaSection } from "@/modules/torres-consulta/components/landing/final-cta-section";
 import { ScrollToTopButton } from "@/modules/torres-consulta/components/landing/scroll-to-top-button";
 import { LANDING_SEO, PageSeo } from "@/modules/torres-consulta/components/seo/page-seo";
+import { MAIN_CONTENT_ID, SkipLink } from "@/shared/components/skip-link";
 import { ROUTES } from "@/config/routes";
 
 export function LandingPage() {
@@ -24,14 +25,9 @@ export function LandingPage() {
         schema={LANDING_SEO.schema}
       />
       <div className="consulta-page">
-        <a
-          href="#conteudo"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground"
-        >
-          Ir para o conteúdo
-        </a>
+        <SkipLink />
         <LandingHeader />
-        <main id="conteudo">
+        <main id={MAIN_CONTENT_ID} tabIndex={-1}>
           <HeroSection />
           <TrustStrip />
           <AudienceSection />

@@ -7,6 +7,7 @@ import {
   type BreadcrumbItem,
 } from "@/modules/torres-consulta/components/marketing/marketing-breadcrumb";
 import { MarketingHero } from "@/modules/torres-consulta/components/marketing/marketing-hero";
+import { MAIN_CONTENT_ID, SkipLink } from "@/shared/components/skip-link";
 import { cn } from "@/shared/lib/utils";
 
 interface MarketingShellProps {
@@ -38,16 +39,12 @@ export function MarketingShell({
     <>
       <PageSeo {...seo} />
       <div className={cn("consulta-page", className)}>
-        <a
-          href="#conteudo"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground"
-        >
-          Ir para o conteúdo
-        </a>
+        <SkipLink />
         <LandingHeader />
         {hero && <MarketingHero {...hero} />}
         <main
-          id="conteudo"
+          id={MAIN_CONTENT_ID}
+          tabIndex={-1}
           className={cn(
             "mx-auto px-4 py-12 sm:px-6 sm:py-14 lg:px-8",
             fullWidth ? "max-w-6xl" : "max-w-4xl",
