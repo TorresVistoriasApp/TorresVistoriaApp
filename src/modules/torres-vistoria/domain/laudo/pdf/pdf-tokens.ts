@@ -241,13 +241,15 @@ export const PDF_BORDER = {
 
 /** Ritmo da grade fotográfica — gap igual na horizontal e na vertical. */
 export const PDF_PHOTO = {
-  gap: 8,
-  captionGap: 3,
-  rowGap: 10,
-  groupGap: 12,
+  gap: 6,
+  captionGap: 2,
+  rowGap: 8,
+  groupGap: 10,
   /** Foto única: evidência em destaque, sem ocupar meia página. */
   singleWidthRatio: 0.52,
   singleMaxHeight: 176,
+  /** Grade 3 cols: mais baixa para caber ~2 linhas por página. */
+  gridMaxHeight: 128,
 } as const;
 
 /** Métricas da capa — logo compacto para o documento liderar, não a marca. */
