@@ -441,9 +441,10 @@ export function PhotoSlotGrid({
             variant="ghost"
             size="icon"
             className="absolute right-4 top-4 z-10 text-white hover:bg-white/20"
+            aria-label="Fechar visualização"
             onClick={() => setPreview(null)}
           >
-            <X className="size-5" />
+            <X className="size-5" aria-hidden />
           </Button>
           <figure className="relative z-10 flex max-h-[75vh] w-full max-w-lg flex-col items-center">
             <img

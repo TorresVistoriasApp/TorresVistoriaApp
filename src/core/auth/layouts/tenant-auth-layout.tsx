@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { TenantAuthHeader } from "@/core/auth/layouts/tenant-auth-header";
 import { TenantAuthShowcase } from "@/core/auth/components/tenant-auth-showcase";
+import { MAIN_CONTENT_ID, SkipLink } from "@/shared/components/skip-link";
 
 function AuthBrandIntro() {
   return (
@@ -20,9 +21,10 @@ function AuthBrandIntro() {
 export function TenantAuthLayout() {
   return (
     <div className="consulta-page flex min-h-dvh flex-col">
+      <SkipLink />
       <TenantAuthHeader />
 
-      <main className="landing-hero-bg relative flex flex-1 flex-col">
+      <main id={MAIN_CONTENT_ID} tabIndex={-1} className="landing-hero-bg relative flex flex-1 flex-col">
         <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
           <div className="grid w-full items-start gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,24.5rem)] lg:gap-x-10">
             <div className="lg:col-span-2">

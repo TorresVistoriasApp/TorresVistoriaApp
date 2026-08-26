@@ -2,6 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/core/auth/use-auth";
 import { Button } from "@/shared/ui/button";
+import { MAIN_CONTENT_ID, SkipLink } from "@/shared/components/skip-link";
 import { ROUTES } from "@/config/routes";
 
 export function AdminLayout() {
@@ -15,6 +16,7 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-dvh bg-canvas">
+      <SkipLink />
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div>
@@ -28,13 +30,13 @@ export function AdminLayout() {
               </span>
             )}
             <Button variant="outline" size="sm" onClick={() => void handleSignOut()}>
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4" aria-hidden />
               Sair
             </Button>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+      <main id={MAIN_CONTENT_ID} className="mx-auto max-w-5xl px-4 py-6 sm:px-6" tabIndex={-1}>
         <Outlet />
       </main>
     </div>

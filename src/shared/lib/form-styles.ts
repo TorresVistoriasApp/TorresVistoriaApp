@@ -21,14 +21,16 @@ export const evaluationSpan3 = "lg:col-span-3 sm:col-span-2";
 
 export const selectInputClass = cn(
   "flex h-11 w-full min-h-[44px] rounded-xl border border-border bg-card px-4 text-sm shadow-soft touch-target",
-  "transition-colors duration-150 focus-visible:border-primary",
+  "transition-colors duration-150 focus-visible:border-primary focus-visible:outline-none",
+  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
   "disabled:cursor-not-allowed disabled:opacity-60",
 );
 
 export const textareaInputClass = cn(
   "w-full min-h-[120px] rounded-xl border border-border bg-card px-4 py-3 text-sm leading-relaxed shadow-soft",
   "placeholder:text-muted-foreground",
-  "transition-colors duration-150 focus-visible:border-primary",
+  "transition-colors duration-150 focus-visible:border-primary focus-visible:outline-none",
+  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
 );
 
 export const formIntroClass =
