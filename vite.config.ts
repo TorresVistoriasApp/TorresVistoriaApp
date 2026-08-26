@@ -133,6 +133,14 @@ export default defineConfig({
     target: "es2020",
     sourcemap: false,
     cssCodeSplit: true,
+    modulePreload: {
+      resolveDependencies(_filename, deps) {
+        // Landing/marketing não precisa pré-carregar charts/compress no first paint.
+        return deps.filter(
+          (dep) => !dep.includes("charts-") && !dep.includes("compress-image-"),
+        );
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {

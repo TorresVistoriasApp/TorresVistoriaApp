@@ -1,7 +1,10 @@
 import { Check, ShieldCheck } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
-const HERO_CAR_IMAGE = "/images/consultations/heroconsultations.webp?v=5";
+const HERO_CAR_IMAGE = "/images/consultations/heroconsultations-800.webp";
+const HERO_CAR_SRCSET =
+  "/images/consultations/heroconsultations-400.webp 400w, /images/consultations/heroconsultations-800.webp 800w";
+const HERO_CAR_SIZES = "(max-width: 640px) 90vw, 432px";
 
 /** Dados de exemplo alinhados à ilustração (Range Rover Evoque na imagem do hero). */
 const SAMPLE_VEHICLE = {
@@ -49,9 +52,11 @@ export function HeroVehicleVisual({ compact = false, className }: HeroVehicleVis
         <div className="border-b border-border bg-muted/60 px-4 pt-2">
           <img
             src={HERO_CAR_IMAGE}
+            srcSet={HERO_CAR_SRCSET}
+            sizes={HERO_CAR_SIZES}
             alt=""
-            width={1432}
-            height={989}
+            width={800}
+            height={472}
             decoding="async"
             fetchPriority="high"
             className={cn(
