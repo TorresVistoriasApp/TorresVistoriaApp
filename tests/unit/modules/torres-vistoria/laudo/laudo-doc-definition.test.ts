@@ -314,7 +314,7 @@ describe("buildLaudoDocDefinition", () => {
     const serialized = JSON.stringify(def);
 
     expect(serialized).toContain('"qr":"https://app.torres.app/validar/TV-K7M2-9XQH-4NWP"');
-    expect(collectTexts(def).join(" | ")).toContain("AUTENTICIDADE DO LAUDO");
+    expect(collectTexts(def).join(" | ")).toContain("Autenticidade do laudo");
     expect(collectTexts(def).join(" | ")).toContain("CÓDIGO DE AUTENTICIDADE");
   });
 
@@ -381,6 +381,6 @@ describe("paint silhouette", () => {
     );
     const serialized = JSON.stringify(def);
     expect(serialized).toContain("data:image/webp;base64,AAAA");
-    expect(serialized).toContain("ANÁLISE DE PINTURA E ESTRUTURA");
+    expect(serialized).toContain("Análise de pintura e estrutura");
   });
 });

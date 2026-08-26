@@ -20,6 +20,12 @@ export const PDF_LAYOUT = {
   metrics: "laudoMetrics",
   code: "laudoCode",
   plate: "laudoPlate",
+  /** Moldura editorial de seção — borda fina sem padding externo. */
+  sectionFrame: "laudoSectionFrame",
+  /** Seção premium: rail + conteúdo com borda perceptível. */
+  premiumSection: "laudoPremiumSection",
+  /** Badge de status com soft fill. */
+  statusChip: "laudoStatusChip",
 } as const;
 
 export type PdfLayoutName = (typeof PDF_LAYOUT)[keyof typeof PDF_LAYOUT];
@@ -128,6 +134,29 @@ export const PDF_TABLE_LAYOUTS = {
       columnIndex === 0 || columnIndex === node.table.widths.length ? PLATE_BORDER_WIDTH : 0,
     hLineColor: () => PLATE_BORDER,
     vLineColor: () => PLATE_BORDER,
+    ...ZERO_PADDING,
+  },
+
+  [PDF_LAYOUT.sectionFrame]: {
+    hLineWidth: () => PDF_STROKE.hairline,
+    vLineWidth: () => PDF_STROKE.hairline,
+    hLineColor: () => PDF_COLOR.borderStrong,
+    vLineColor: () => PDF_COLOR.borderStrong,
+    ...ZERO_PADDING,
+  },
+
+  /** Moldura premium: traço visível (~1pt), sem parecer card de dashboard. */
+  [PDF_LAYOUT.premiumSection]: {
+    hLineWidth: () => PDF_STROKE.medium,
+    vLineWidth: () => PDF_STROKE.medium,
+    hLineColor: () => PDF_COLOR.borderStrong,
+    vLineColor: () => PDF_COLOR.borderStrong,
+    ...ZERO_PADDING,
+  },
+
+  [PDF_LAYOUT.statusChip]: {
+    hLineWidth: () => 0,
+    vLineWidth: () => 0,
     ...ZERO_PADDING,
   },
 } as const;
