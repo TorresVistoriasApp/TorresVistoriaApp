@@ -56,6 +56,7 @@ export type PremiumSectionOptions = {
   subtitle?: string;
   /** Rótulo da barra colorida do card (ex.: "Detalhes", "Fotos"). */
   barLabel?: string;
+  /** @deprecated Ícone da barra removido — a intro já carrega a imagem do segmento. */
   barIcon?: PdfIconName;
   accent?: string;
   status?: PremiumStatus;
@@ -210,7 +211,6 @@ export function premiumSectionIntro(options: {
 /** Barra horizontal colorida do card (equivalente ao vermelho da referência → laranja Torres). */
 function cardHeaderBar(options: {
   label: string;
-  icon: PdfIconName;
   accent: string;
   width: number;
 }): PdfNode {
@@ -223,16 +223,8 @@ function cardHeaderBar(options: {
         [
           {
             fillColor: options.accent,
-            margin: [10, 4, 10, 4],
+            margin: [10, 5, 10, 5],
             columns: [
-              {
-                width: 14,
-                ...pdfIcon(options.icon, {
-                  size: 12,
-                  color: PDF_COLOR.white,
-                  stroke: 1.35,
-                }),
-              },
               {
                 width: "*",
                 text: options.label.toUpperCase(),
@@ -240,10 +232,8 @@ function cardHeaderBar(options: {
                 fontSize: PDF_FONT.small,
                 color: PDF_COLOR.white,
                 characterSpacing: PDF_TRACKING.wide,
-                margin: [4, 1, 0, 0],
               },
             ],
-            columnGap: 4,
           },
         ],
       ],
@@ -258,7 +248,6 @@ function cardHeaderBar(options: {
  */
 export function premiumCard(options: {
   barLabel: string;
-  barIcon?: PdfIconName;
   accent?: string;
   children: PdfNode[];
   margin?: PdfMargin;
@@ -277,7 +266,6 @@ export function premiumCard(options: {
             stack: [
               cardHeaderBar({
                 label: options.barLabel,
-                icon: options.barIcon ?? "document",
                 accent,
                 width,
               }),
@@ -319,7 +307,6 @@ export function premiumSection(options: PremiumSectionOptions): PdfNode {
       }),
       premiumCard({
         barLabel,
-        barIcon: options.barIcon ?? options.icon,
         accent,
         children,
       }),
@@ -356,6 +343,7 @@ export function premiumSectionBody(
   options: {
     accent?: string;
     barLabel?: string;
+    /** Ignorado — barra só com texto (ícone fica na intro). */
     barIcon?: PdfIconName;
     margin?: PdfMargin;
   } = {},
@@ -363,7 +351,6 @@ export function premiumSectionBody(
   if (children.length === 0) return { text: "" };
   return premiumCard({
     barLabel: options.barLabel ?? "Detalhes",
-    barIcon: options.barIcon ?? "document",
     accent: options.accent,
     children,
     margin: options.margin ?? [0, 0, 0, 0],
