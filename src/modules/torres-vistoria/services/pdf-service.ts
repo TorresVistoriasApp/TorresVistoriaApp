@@ -5,6 +5,7 @@ import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
 import { withSignedPhotoUrls } from "@/modules/torres-vistoria/services/photo-service";
 import { PDF_TABLE_LAYOUTS } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
+import { ensureLaudoPdfFonts, resolveLaudoPdfFont } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-fonts";
 import { buildLaudoDocDefinition } from "@/modules/torres-vistoria/domain/laudo/laudo-doc-definition";
 import type { LaudoCompany, LaudoInspector, LaudoPayload, LaudoPhoto, LaudoSettings } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
 import { SILHOUETTE_HEIGHT, SILHOUETTE_WIDTH } from "@/modules/torres-vistoria/domain/laudo/pdf/paint-silhouette";
@@ -34,38 +35,105 @@ import {
  */
 const LOGO_PRINT_WIDTH_PX = 448;
 const VEHICLE_TOP_VIEW_PRINT_WIDTH_PX = 704;
-const SECTION_ICON_PRINT_PX = 320;
+/** Intro no PDF é ~48pt — 192px basta (~4×) sem inflar o payload. */
+const SECTION_ICON_PRINT_PX = 192;
+
+/** Poucas em paralelo: decode WebP+canvas em massa falhava em parte das fotos. */
+const PHOTO_EMBED_CONCURRENCY = 4;
+
+const PHOTO_EMBED_OPTIONS = {
+  maxWidth: 560,
+  maxHeight: 420,
+  preferAlpha: false,
+  jpegQuality: 0.72,
+} as const;
+
+type StaticLaudoAssets = {
+  logoDataUrl?: string;
+  vehicleTopViewDataUrl?: string;
+  sectionIconDataUrls: LaudoSectionIconDataUrls;
+};
+
+let staticAssetsCache: Promise<StaticLaudoAssets> | null = null;
+/** Evita re-embed ao clicar nos dois botões ou reemitir na mesma sessão. */
+const photoEmbedCache = new Map<string, string>();
+
+function photoEmbedCacheKey(photo: InspectionPhoto): string {
+  return photo.id || photo.storage_path || photo.public_url || "";
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      reject(new Error(`${label} excedeu ${Math.round(ms / 1000)}s`));
+    }, ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
 
 async function loadSectionIconDataUrls(): Promise<LaudoSectionIconDataUrls> {
-  const entries = await mapWithConcurrency(
-    Object.entries(LAUDO_SECTION_ICON_PATHS) as Array<[PdfIconName, string]>,
-    4,
-    async ([key, path]) => {
-      const dataUrl = await imageUrlToPdfDataUrl(path, {
-        maxWidth: SECTION_ICON_PRINT_PX,
-        maxHeight: SECTION_ICON_PRINT_PX,
-        preferAlpha: true,
-      });
-      return [key, dataUrl] as const;
-    },
-  );
+  // Carrega cada arquivo uma vez e replica nas chaves lógicas (shield→authenticity…).
+  const uniquePaths = [...new Set(Object.values(LAUDO_SECTION_ICON_PATHS))];
+  const byPath = new Map<string, string>();
+
+  await mapWithConcurrency(uniquePaths, 4, async (path) => {
+    const dataUrl = await imageUrlToPdfDataUrl(path, {
+      maxWidth: SECTION_ICON_PRINT_PX,
+      maxHeight: SECTION_ICON_PRINT_PX,
+      preferAlpha: true,
+    });
+    if (dataUrl) byPath.set(path, dataUrl);
+  });
 
   const icons: LaudoSectionIconDataUrls = {};
-  for (const [key, dataUrl] of entries) {
+  for (const [key, path] of Object.entries(LAUDO_SECTION_ICON_PATHS) as Array<
+    [PdfIconName, string]
+  >) {
+    const dataUrl = byPath.get(path);
     if (dataUrl) icons[key] = dataUrl;
   }
   return icons;
 }
 
-/** Poucas em paralelo: decode WebP+canvas em massa falhava em parte das fotos. */
-const PHOTO_EMBED_CONCURRENCY = 2;
-
-const PHOTO_EMBED_OPTIONS = {
-  maxWidth: 960,
-  maxHeight: 720,
-  preferAlpha: false,
-  jpegQuality: 0.82,
-} as const;
+async function loadStaticLaudoAssets(): Promise<StaticLaudoAssets> {
+  if (!staticAssetsCache) {
+    staticAssetsCache = (async () => {
+      const [logoDataUrl, vehicleTopViewDataUrl, sectionIconDataUrls] = await Promise.all([
+        imageUrlToPdfDataUrl(PUBLIC_IMAGES.brand.lockup, {
+          maxWidth: LOGO_PRINT_WIDTH_PX,
+          maxHeight: LOGO_PRINT_WIDTH_PX,
+          preferAlpha: true,
+        }),
+        imageUrlToPdfDataUrl(PUBLIC_IMAGES.laudo.vehicleTopView, {
+          maxWidth: VEHICLE_TOP_VIEW_PRINT_WIDTH_PX,
+          maxHeight: Math.round(
+            VEHICLE_TOP_VIEW_PRINT_WIDTH_PX * (SILHOUETTE_HEIGHT / SILHOUETTE_WIDTH),
+          ),
+          preferAlpha: true,
+        }),
+        loadSectionIconDataUrls(),
+      ]);
+      return {
+        logoDataUrl,
+        vehicleTopViewDataUrl,
+        sectionIconDataUrls,
+      };
+    })().catch((error) => {
+      staticAssetsCache = null;
+      throw error;
+    });
+  }
+  return staticAssetsCache;
+}
 
 async function sha256Bytes(data: Blob | string): Promise<string> {
   const buffer = typeof data === "string" ? new TextEncoder().encode(data) : await data.arrayBuffer();
@@ -73,6 +141,36 @@ async function sha256Bytes(data: Blob | string): Promise<string> {
   return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+/**
+ * Hash estável do conteúdo da vistoria (exibido no PDF).
+ * Diferente do hash do arquivo PDF, usado na validação pública.
+ */
+async function buildContentIntegrityHash(input: {
+  verificationCode: string;
+  inspection: Inspection;
+  checklist: ChecklistItem[];
+  photos: InspectionPhoto[];
+}): Promise<string> {
+  const fingerprint = {
+    verificationCode: input.verificationCode,
+    inspectionId: input.inspection.id,
+    inspectionNumber: input.inspection.inspection_number,
+    opinion: input.inspection.opinion,
+    plate: input.inspection.plate,
+    checklist: input.checklist.map((item) => ({
+      id: item.id,
+      status: item.status,
+      notes: item.notes,
+    })),
+    photos: input.photos.map((photo) => ({
+      id: photo.id,
+      category: photo.category,
+      path: photo.storage_path,
+    })),
+  };
+  return sha256Bytes(JSON.stringify(fingerprint));
 }
 
 /** Reutiliza o código ativo em reemissões; senão gera um opaco. */
@@ -92,7 +190,11 @@ async function resolveVerificationCode(inspectionId: string): Promise<string> {
 
 async function downloadStorageBlob(path: string): Promise<Blob | null> {
   try {
-    const { data, error } = await db.storage.from(STORAGE_BUCKET).download(path);
+    const { data, error } = await withTimeout(
+      db.storage.from(STORAGE_BUCKET).download(path),
+      30_000,
+      `Download da foto ${path}`,
+    );
     if (error || !data || data.size < 32) return null;
     return data;
   } catch {
@@ -156,6 +258,12 @@ async function loadPhotoDataUrls(photos: InspectionPhoto[]): Promise<LaudoPhoto[
     const existing = (photo as LaudoPhoto).dataUrl;
     if (existing) return { ...photo, dataUrl: existing };
 
+    const cacheKey = photoEmbedCacheKey(photo);
+    if (cacheKey) {
+      const cached = photoEmbedCache.get(cacheKey);
+      if (cached) return { ...photo, dataUrl: cached };
+    }
+
     let dataUrl: string | undefined;
 
     if (isUsablePhotoUrl(photo.public_url)) {
@@ -184,6 +292,10 @@ async function loadPhotoDataUrls(photos: InspectionPhoto[]): Promise<LaudoPhoto[
       if (thumb) dataUrl = await embedBlobWithRetry(thumb, photo.mime_type);
     }
 
+    if (dataUrl && cacheKey) {
+      photoEmbedCache.set(cacheKey, dataUrl);
+    }
+
     return { ...photo, dataUrl };
   });
 }
@@ -192,10 +304,22 @@ async function getPdfMake() {
   const pdfMake = await import("pdfmake/build/pdfmake");
   const pdfFonts = await import("pdfmake/build/vfs_fonts");
   const pdfDoc = pdfMake.default ?? pdfMake;
-  const fonts = (pdfFonts as { default?: { pdfMake?: { vfs: unknown } } }).default?.pdfMake?.vfs;
+  const fontsModule = pdfFonts as {
+    default?: { pdfMake?: { vfs: Record<string, string> }; vfs?: Record<string, string> };
+    pdfMake?: { vfs: Record<string, string> };
+    vfs?: Record<string, string>;
+  };
+  const fonts =
+    fontsModule.default?.pdfMake?.vfs ??
+    fontsModule.default?.vfs ??
+    fontsModule.pdfMake?.vfs ??
+    fontsModule.vfs;
   if (fonts) {
     (pdfDoc as { vfs?: unknown }).vfs = fonts;
   }
+  const sourceSansReady = await ensureLaudoPdfFonts(
+    pdfDoc as Parameters<typeof ensureLaudoPdfFonts>[0],
+  );
   const engine = pdfDoc as {
     tableLayouts?: Record<string, unknown>;
     createPdf: (
@@ -207,7 +331,7 @@ async function getPdfMake() {
     };
   };
   engine.tableLayouts = { ...engine.tableLayouts, ...PDF_TABLE_LAYOUTS };
-  return engine;
+  return { engine, sourceSansReady };
 }
 
 function reportFileName(inspection: Inspection): string {
@@ -215,17 +339,12 @@ function reportFileName(inspection: Inspection): string {
   return `laudo-${inspection.inspection_number}-${safePlate}.pdf`;
 }
 
-/** pdfmake mutates image nodes in-place; clone before a second render pass. */
-function cloneDocDefinition(docDefinition: Record<string, unknown>): Record<string, unknown> {
-  const header = docDefinition.header;
-  const footer = docDefinition.footer;
-  const cloned = JSON.parse(JSON.stringify(docDefinition)) as Record<string, unknown>;
-  if (typeof header === "function") cloned.header = header;
-  if (typeof footer === "function") cloned.footer = footer;
-  return cloned;
-}
-
 export const pdfService = {
+  /** Aquece assets estáticos (chame na tela de revisão). Fontes custom ficam desligadas por padrão. */
+  async prefetchAssets(): Promise<void> {
+    await loadStaticLaudoAssets();
+  },
+
   async fetchInspectionPayload(inspectionId: string) {
     try {
       const { data, error } = await db.functions.invoke("generate-pdf", {
@@ -276,6 +395,10 @@ export const pdfService = {
       verificationCode?: string;
       integrityHash?: string;
       validationUrl?: string;
+      /** Assets já embutidos — evita refetch na 2ª passagem do laudo. */
+      staticAssets?: StaticLaudoAssets;
+      /** Fotos já com dataUrl — evita re-embed. */
+      photosAlreadyEmbedded?: boolean;
     } = {},
   ): Promise<{
     verificationCode: string;
@@ -293,10 +416,25 @@ export const pdfService = {
       options.integrityHash ??
       (await sha256Bytes(JSON.stringify({ inspection, checklist, photos, verificationCode })));
     const brandLogoPath = getBrandLogoPath(inspection.brand);
+
+    const [staticAssets, embeddedPhotos, brandLogoDataUrl] = await Promise.all([
+      options.staticAssets ?? loadStaticLaudoAssets(),
+      options.photosAlreadyEmbedded
+        ? Promise.resolve(photos as LaudoPhoto[])
+        : loadPhotoDataUrls(photos),
+      brandLogoPath
+        ? imageUrlToPdfDataUrl(brandLogoPath, {
+            maxWidth: 240,
+            maxHeight: 120,
+            preferAlpha: true,
+          })
+        : Promise.resolve(undefined),
+    ]);
+
     const payload: LaudoPayload = {
       inspection,
       checklist,
-      photos: await loadPhotoDataUrls(photos),
+      photos: embeddedPhotos,
       company: options.company,
       settings: options.settings,
       inspector: options.inspector,
@@ -304,24 +442,10 @@ export const pdfService = {
       verificationCode,
       integrityHash: baseHash,
       validationUrl: options.validationUrl,
-      logoDataUrl: await imageUrlToPdfDataUrl(PUBLIC_IMAGES.brand.lockup, {
-        maxWidth: LOGO_PRINT_WIDTH_PX,
-        maxHeight: LOGO_PRINT_WIDTH_PX,
-        preferAlpha: true,
-      }),
-      brandLogoDataUrl: brandLogoPath
-        ? await imageUrlToPdfDataUrl(brandLogoPath, {
-            maxWidth: 240,
-            maxHeight: 120,
-            preferAlpha: true,
-          })
-        : undefined,
-      vehicleTopViewDataUrl: await imageUrlToPdfDataUrl(PUBLIC_IMAGES.laudo.vehicleTopView, {
-        maxWidth: VEHICLE_TOP_VIEW_PRINT_WIDTH_PX,
-        maxHeight: Math.round(VEHICLE_TOP_VIEW_PRINT_WIDTH_PX * (SILHOUETTE_HEIGHT / SILHOUETTE_WIDTH)),
-        preferAlpha: true,
-      }),
-      sectionIconDataUrls: await loadSectionIconDataUrls(),
+      logoDataUrl: staticAssets.logoDataUrl,
+      brandLogoDataUrl,
+      vehicleTopViewDataUrl: staticAssets.vehicleTopViewDataUrl,
+      sectionIconDataUrls: staticAssets.sectionIconDataUrls,
       generatedAt: new Date(),
     };
 
@@ -355,13 +479,53 @@ export const pdfService = {
     }
   },
 
-  async createPdfBlob(docDefinition: Record<string, unknown>): Promise<Blob> {
+  async createPdfBlob(
+    docDefinition: Record<string, unknown>,
+    options: { optimize?: boolean } = {},
+  ): Promise<Blob> {
     try {
-      const pdfDoc = await getPdfMake();
-      const rawBlob = await new Promise<Blob>((resolve) => {
-        pdfDoc.createPdf(cloneDocDefinition(docDefinition), PDF_TABLE_LAYOUTS).getBlob(resolve);
+      const { engine, sourceSansReady } = await getPdfMake();
+      const fontFamily = resolveLaudoPdfFont(sourceSansReady);
+      const defaultStyle = {
+        ...((docDefinition.defaultStyle as Record<string, unknown> | undefined) ?? {}),
+        font: fontFamily,
+      };
+      const definition = { ...docDefinition, defaultStyle };
+
+      // Cede à UI antes do layout síncrono pesado do pdfmake.
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 0);
       });
-      return optimizePdfBlob(rawBlob);
+
+      const rawBlob = await withTimeout(
+        new Promise<Blob>((resolve, reject) => {
+          let settled = false;
+          const fail = (error: unknown) => {
+            if (settled) return;
+            settled = true;
+            reject(error instanceof Error ? error : new Error(String(error)));
+          };
+          try {
+            const pdfDoc = engine.createPdf(definition, PDF_TABLE_LAYOUTS);
+            pdfDoc.getBlob((blob) => {
+              if (settled) return;
+              settled = true;
+              if (!blob || blob.size === 0) {
+                reject(new Error("PDF vazio — falha na geração"));
+                return;
+              }
+              resolve(blob);
+            });
+          } catch (error) {
+            fail(error);
+          }
+        }),
+        180_000,
+        "Geração do PDF",
+      );
+
+      if (options.optimize !== true) return rawBlob;
+      return withTimeout(optimizePdfBlob(rawBlob), 45_000, "Otimização do PDF");
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
@@ -379,10 +543,19 @@ export const pdfService = {
     try {
       const verificationCode = await resolveVerificationCode(params.inspection.id);
       const validationUrl = `${params.validationBaseUrl ?? window.location.origin}/validar/${encodeURIComponent(verificationCode)}`;
-      // Embed uma vez e reutiliza na 2ª passagem (hash de integridade) — evita
-      // recarregar/dezenas de WebP e falhas intermitentes na segunda rodada.
-      const photosWithEmbeds = await loadPhotoDataUrls(params.photos);
-      const firstPass = await this.generateLaudoPayload(
+
+      const [staticAssets, photosWithEmbeds, contentHash] = await Promise.all([
+        loadStaticLaudoAssets(),
+        loadPhotoDataUrls(params.photos),
+        buildContentIntegrityHash({
+          verificationCode,
+          inspection: params.inspection,
+          checklist: params.checklist,
+          photos: params.photos,
+        }),
+      ]);
+
+      const { docDefinition } = await this.generateLaudoPayload(
         params.inspection,
         params.checklist,
         photosWithEmbeds,
@@ -392,53 +565,60 @@ export const pdfService = {
           inspector: params.inspector,
           verificationCode,
           validationUrl,
+          integrityHash: contentHash,
+          staticAssets,
+          photosAlreadyEmbedded: true,
         },
       );
-      const firstBlob = await this.createPdfBlob(firstPass.docDefinition);
-      const integrityHash = await sha256Bytes(firstBlob);
-      const finalPass = await this.generateLaudoPayload(
-        params.inspection,
-        params.checklist,
-        photosWithEmbeds,
-        {
-          company: params.company,
-          settings: params.settings,
-          inspector: params.inspector,
-          verificationCode,
-          integrityHash,
-          validationUrl,
-        },
-      );
-      const finalBlob = await this.createPdfBlob(finalPass.docDefinition);
+
+      const finalBlob = await this.createPdfBlob(docDefinition);
+      const fileIntegrityHash = await sha256Bytes(finalBlob);
+      const fileName = reportFileName(params.inspection);
+
+      // Baixa primeiro — libera o loading mesmo se upload/edge demorarem.
+      await this.downloadPdfBlob(finalBlob, fileName);
+
       const storagePath = buildReportStoragePath(
         params.inspection.tenant_id,
         params.inspection.id,
-        `${Date.now()}-${reportFileName(params.inspection)}`,
+        `${Date.now()}-${fileName}`,
       );
 
-      const { error: uploadError } = await db.storage
-        .from(REPORTS_BUCKET)
-        .upload(storagePath, finalBlob, { contentType: "application/pdf", upsert: false });
-      if (uploadError) throw uploadError;
+      try {
+        await withTimeout(
+          (async () => {
+            const { error: uploadError } = await db.storage
+              .from(REPORTS_BUCKET)
+              .upload(storagePath, finalBlob, { contentType: "application/pdf", upsert: false });
+            if (uploadError) throw uploadError;
 
-      // O bucket de laudos é privado: o download sai do blob em memória e a
-      // validação pública lê pelo storage_path no servidor. Uma URL pública aqui
-      // só serviria para expor o PDF completo sem autenticação.
-      const { error: reportError } = await db.functions.invoke("create-report", {
-        body: {
-          inspectionId: params.inspection.id,
-          storagePath,
-          verificationCode,
-          integrityHash,
-          qrCodeData: validationUrl,
-          publicUrl: null,
-        },
-      });
-      if (reportError) throw new AppError(await getEdgeErrorMessage(reportError));
+            const { error: reportError } = await db.functions.invoke("create-report", {
+              body: {
+                inspectionId: params.inspection.id,
+                storagePath,
+                verificationCode,
+                integrityHash: fileIntegrityHash,
+                qrCodeData: validationUrl,
+                publicUrl: null,
+              },
+            });
+            if (reportError) throw new AppError(await getEdgeErrorMessage(reportError));
+          })(),
+          90_000,
+          "Registro do laudo",
+        );
+      } catch (registerError) {
+        // PDF já foi baixado — não manter spinner infinito por falha de registro.
+        throw new AppError(
+          `PDF baixado, mas o registro falhou: ${getErrorMessage(registerError)}`,
+        );
+      }
 
-      await this.downloadPdfBlob(finalBlob, reportFileName(params.inspection));
-
-      return { verificationCode, integrityHash, storagePath };
+      return {
+        verificationCode,
+        integrityHash: fileIntegrityHash,
+        storagePath,
+      };
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

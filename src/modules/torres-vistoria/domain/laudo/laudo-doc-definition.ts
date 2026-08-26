@@ -66,6 +66,7 @@ import {
   premiumSectionLead,
   setActiveSectionIcons,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-premium-section";
+import { PDF_FONT_FALLBACK } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-fonts";
 import { buildConsultaSections } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-consulta-slots";
 import { buildPhotoGrid } from "@/modules/torres-vistoria/domain/laudo/pdf/photo-grid";
 import {
@@ -1085,8 +1086,10 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
         ],
       }),
       defaultStyle: {
+        font: PDF_FONT_FALLBACK,
         fontSize: PDF_FONT.body,
         color: PDF_COLOR.text,
+        lineHeight: PDF_LINE_HEIGHT.normal,
       },
     };
   } finally {

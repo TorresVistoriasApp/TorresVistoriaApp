@@ -154,11 +154,11 @@ const payload: LaudoPayload = {
 
 async function main() {
   const fonts = {
-    Roboto: {
-      normal: "Helvetica",
-      bold: "Helvetica-Bold",
-      italics: "Helvetica-Oblique",
-      bolditalics: "Helvetica-BoldOblique",
+    SourceSans3: {
+      normal: join(process.cwd(), "public/fonts/laudo/SourceSans3-Regular.ttf"),
+      bold: join(process.cwd(), "public/fonts/laudo/SourceSans3-Bold.ttf"),
+      italics: join(process.cwd(), "public/fonts/laudo/SourceSans3-It.ttf"),
+      bolditalics: join(process.cwd(), "public/fonts/laudo/SourceSans3-BoldIt.ttf"),
     },
   };
 

@@ -151,7 +151,7 @@ export function LaudoReviewPanel({
           <PdfDownloadButton
             className="touch-target h-11 w-full sm:h-12"
             variant="outline"
-            disabled={!isReady}
+            disabled={generating || !isReady}
             inspection={inspection}
             checklist={checklist}
             photos={photos}
