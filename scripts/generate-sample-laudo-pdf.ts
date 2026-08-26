@@ -2,7 +2,7 @@
  * Gera um PDF de amostra do laudo redesenhado (Node) para revisão visual.
  * Uso: npx tsx scripts/generate-sample-laudo-pdf.ts
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import PdfPrinter from "pdfmake";
 import { ChecklistStatus, InspectionOpinion } from "../src/modules/torres-vistoria/domain/enums";
@@ -12,6 +12,27 @@ import type { ChecklistItem } from "../src/modules/torres-vistoria/services/chec
 import type { LaudoPayload, LaudoPhoto } from "../src/modules/torres-vistoria/domain/laudo/laudo-model";
 import { buildLaudoDocDefinition } from "../src/modules/torres-vistoria/domain/laudo/laudo-doc-definition";
 import { PDF_TABLE_LAYOUTS } from "../src/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
+import {
+  LAUDO_SECTION_ICON_PATHS,
+  type LaudoSectionIconDataUrls,
+} from "../src/modules/torres-vistoria/domain/laudo/pdf/section-icons";
+import type { PdfIconName } from "../src/modules/torres-vistoria/domain/laudo/pdf/pdf-icons";
+
+function loadSectionIconDataUrls(): LaudoSectionIconDataUrls {
+  const icons: LaudoSectionIconDataUrls = {};
+  for (const [key, publicPath] of Object.entries(LAUDO_SECTION_ICON_PATHS) as Array<
+    [PdfIconName, string]
+  >) {
+    const filePath = join(process.cwd(), "public", publicPath.replace(/^\//, ""));
+    try {
+      const buf = readFileSync(filePath);
+      icons[key] = `data:image/png;base64,${buf.toString("base64")}`;
+    } catch {
+      // Sem asset: PDF cai no outline.
+    }
+  }
+  return icons;
+}
 
 function makeInspection(overrides: Record<string, unknown> = {}): LaudoPayload["inspection"] {
   return {
@@ -127,6 +148,7 @@ const payload: LaudoPayload = {
   verificationCode: "TV-K7M2-9XQH-4NWP",
   integrityHash: "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
   validationUrl: "https://app.torres.app/validar/TV-K7M2-9XQH-4NWP",
+  sectionIconDataUrls: loadSectionIconDataUrls(),
   generatedAt: new Date("2026-08-13T15:09:00"),
 };
 

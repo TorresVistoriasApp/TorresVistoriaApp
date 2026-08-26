@@ -29,5 +29,20 @@ export const PUBLIC_IMAGES = {
   laudo: {
     /** Vista superior do veículo — análise de pintura no PDF. */
     vehicleTopView: "/images/laudo/vehicle-top-view.webp",
+    /** Imagens pictóricas por segmento (intro das seções do PDF). */
+    sections: {
+      vehicle: "/images/laudo/sections/vehicle.png",
+      inspection: "/images/laudo/sections/inspection.png",
+      camera: "/images/laudo/sections/camera.png",
+      checklist: "/images/laudo/sections/checklist.png",
+      damage: "/images/laudo/sections/damage.png",
+      authenticity: "/images/laudo/sections/authenticity.png",
+      conclusion: "/images/laudo/sections/conclusion.png",
+      paint: "/images/laudo/sections/paint.png",
+      opinion: "/images/laudo/sections/opinion.png",
+      legal: "/images/laudo/sections/legal.png",
+      market: "/images/laudo/sections/market.png",
+      structure: "/images/laudo/sections/structure.png",
+    },
   },
 } as const;

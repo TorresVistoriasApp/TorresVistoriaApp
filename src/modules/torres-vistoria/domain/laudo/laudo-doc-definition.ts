@@ -64,6 +64,7 @@ import {
   premiumSection,
   premiumSectionBody,
   premiumSectionLead,
+  setActiveSectionIcons,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-premium-section";
 import { buildConsultaSections } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-consulta-slots";
 import { buildPhotoGrid } from "@/modules/torres-vistoria/domain/laudo/pdf/photo-grid";
@@ -967,102 +968,108 @@ export function buildLaudoDocDefinition(payload: LaudoPayload): Record<string, u
   const company = payload.company;
   const footerBrand = company?.name?.trim() || "Torres Vistoria";
 
-  const content: PdfNode[] = [
-    ...buildCover(payload, view),
-    ...buildInspectionDataSection(payload, view),
-    ...buildVehicleDataSection(payload, view),
-    ...buildSaleMarketSection(payload.inspection, view),
-    // Slots futuros de Torres Consulta — só aparecem com dados reais.
-    ...buildConsultaSections(payload.consultaSlots ?? [], { accent: view.primaryColor }),
-    ...buildApontamentosSection(view),
-    ...buildDamagesSection(view),
-    ...buildChecklistSection(view),
-    ...buildPhotoSection(payload, view),
-    ...buildPaintSection(view, payload),
-    ...buildOpinionSection(payload.inspection, view),
-    ...buildConclusionSection(view),
-    ...buildAuthenticitySection(payload, view),
-    ...buildLegalSection(view),
-    buildSignatureRow(payload),
-  ];
+  setActiveSectionIcons(payload.sectionIconDataUrls);
 
-  return {
-    pageSize: PDF_PAGE.size,
-    pageMargins: PDF_PAGE.margins,
-    content,
-    header: () => ({
-      columns: [
-        {
-          text: footerBrand.toUpperCase(),
-          fontSize: PDF_FONT.micro,
-          bold: true,
-          color: PDF_COLOR.navy,
-          characterSpacing: PDF_TRACKING.wide,
-          margin: [PDF_PAGE.margins[0], 10, 0, 0],
-        },
-        {
-          canvas: [
-            {
-              type: "rect",
-              x: 0,
-              y: 12,
-              w: 22,
-              h: 2,
-              color: view.primaryColor,
-            },
-          ],
-          width: 28,
-        },
-        {
-          text: `Laudo ${payload.laudoNumber}`,
-          fontSize: PDF_FONT.micro,
-          color: PDF_COLOR.muted,
-          alignment: "right",
-          margin: [0, 10, PDF_PAGE.margins[2], 0],
-        },
-      ],
-    }),
-    footer: (currentPage: number, pageCount: number) => ({
-      columns: [
-        {
-          stack: [
-            {
-              canvas: [
-                {
-                  type: "line",
-                  x1: 0,
-                  y1: 0,
-                  x2: PDF_PAGE.contentWidth,
-                  y2: 0,
-                  lineWidth: PDF_STROKE.hairline,
-                  lineColor: PDF_COLOR.border,
-                },
-              ],
-            },
-            {
-              columns: [
-                {
-                  text: payload.laudoNumber,
-                  fontSize: PDF_FONT.micro,
-                  color: PDF_COLOR.muted,
-                },
-                {
-                  text: `Página ${currentPage}/${pageCount}`,
-                  fontSize: PDF_FONT.micro,
-                  color: PDF_COLOR.muted,
-                  alignment: "right",
-                },
-              ],
-              margin: [0, 3, 0, 0],
-            },
-          ],
-          margin: [PDF_PAGE.margins[0], 3, PDF_PAGE.margins[2], 0],
-        },
-      ],
-    }),
-    defaultStyle: {
-      fontSize: PDF_FONT.body,
-      color: PDF_COLOR.text,
-    },
-  };
+  try {
+    const content: PdfNode[] = [
+      ...buildCover(payload, view),
+      ...buildInspectionDataSection(payload, view),
+      ...buildVehicleDataSection(payload, view),
+      ...buildSaleMarketSection(payload.inspection, view),
+      // Slots futuros de Torres Consulta — só aparecem com dados reais.
+      ...buildConsultaSections(payload.consultaSlots ?? [], { accent: view.primaryColor }),
+      ...buildApontamentosSection(view),
+      ...buildDamagesSection(view),
+      ...buildChecklistSection(view),
+      ...buildPhotoSection(payload, view),
+      ...buildPaintSection(view, payload),
+      ...buildOpinionSection(payload.inspection, view),
+      ...buildConclusionSection(view),
+      ...buildAuthenticitySection(payload, view),
+      ...buildLegalSection(view),
+      buildSignatureRow(payload),
+    ];
+
+    return {
+      pageSize: PDF_PAGE.size,
+      pageMargins: PDF_PAGE.margins,
+      content,
+      header: () => ({
+        columns: [
+          {
+            text: footerBrand.toUpperCase(),
+            fontSize: PDF_FONT.micro,
+            bold: true,
+            color: PDF_COLOR.navy,
+            characterSpacing: PDF_TRACKING.wide,
+            margin: [PDF_PAGE.margins[0], 10, 0, 0],
+          },
+          {
+            canvas: [
+              {
+                type: "rect",
+                x: 0,
+                y: 12,
+                w: 22,
+                h: 2,
+                color: view.primaryColor,
+              },
+            ],
+            width: 28,
+          },
+          {
+            text: `Laudo ${payload.laudoNumber}`,
+            fontSize: PDF_FONT.micro,
+            color: PDF_COLOR.muted,
+            alignment: "right",
+            margin: [0, 10, PDF_PAGE.margins[2], 0],
+          },
+        ],
+      }),
+      footer: (currentPage: number, pageCount: number) => ({
+        columns: [
+          {
+            stack: [
+              {
+                canvas: [
+                  {
+                    type: "line",
+                    x1: 0,
+                    y1: 0,
+                    x2: PDF_PAGE.contentWidth,
+                    y2: 0,
+                    lineWidth: PDF_STROKE.hairline,
+                    lineColor: PDF_COLOR.border,
+                  },
+                ],
+              },
+              {
+                columns: [
+                  {
+                    text: payload.laudoNumber,
+                    fontSize: PDF_FONT.micro,
+                    color: PDF_COLOR.muted,
+                  },
+                  {
+                    text: `Página ${currentPage}/${pageCount}`,
+                    fontSize: PDF_FONT.micro,
+                    color: PDF_COLOR.muted,
+                    alignment: "right",
+                  },
+                ],
+                margin: [0, 3, 0, 0],
+              },
+            ],
+            margin: [PDF_PAGE.margins[0], 3, PDF_PAGE.margins[2], 0],
+          },
+        ],
+      }),
+      defaultStyle: {
+        fontSize: PDF_FONT.body,
+        color: PDF_COLOR.text,
+      },
+    };
+  } finally {
+    setActiveSectionIcons(undefined);
+  }
 }

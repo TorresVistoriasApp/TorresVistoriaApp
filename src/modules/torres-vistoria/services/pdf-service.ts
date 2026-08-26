@@ -17,6 +17,11 @@ import {
 import { optimizePdfBlob } from "@/shared/lib/optimize-pdf";
 import { getBrandLogoPath } from "@/modules/torres-vistoria/domain/vehicle-brand-logos";
 import { buildVerificationCode, formatLaudoNumber } from "@/modules/torres-vistoria/domain/laudo/verification-code";
+import {
+  LAUDO_SECTION_ICON_PATHS,
+  type LaudoSectionIconDataUrls,
+} from "@/modules/torres-vistoria/domain/laudo/pdf/section-icons";
+import type { PdfIconName } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-icons";
 import { REPORTS_BUCKET, STORAGE_BUCKET } from "@/infra/storage/buckets";
 import {
   buildInspectionPhotoThumbnailPath,
@@ -29,6 +34,28 @@ import {
  */
 const LOGO_PRINT_WIDTH_PX = 448;
 const VEHICLE_TOP_VIEW_PRINT_WIDTH_PX = 704;
+const SECTION_ICON_PRINT_PX = 160;
+
+async function loadSectionIconDataUrls(): Promise<LaudoSectionIconDataUrls> {
+  const entries = await mapWithConcurrency(
+    Object.entries(LAUDO_SECTION_ICON_PATHS) as Array<[PdfIconName, string]>,
+    4,
+    async ([key, path]) => {
+      const dataUrl = await imageUrlToPdfDataUrl(path, {
+        maxWidth: SECTION_ICON_PRINT_PX,
+        maxHeight: SECTION_ICON_PRINT_PX,
+        preferAlpha: true,
+      });
+      return [key, dataUrl] as const;
+    },
+  );
+
+  const icons: LaudoSectionIconDataUrls = {};
+  for (const [key, dataUrl] of entries) {
+    if (dataUrl) icons[key] = dataUrl;
+  }
+  return icons;
+}
 
 /** Poucas em paralelo: decode WebP+canvas em massa falhava em parte das fotos. */
 const PHOTO_EMBED_CONCURRENCY = 2;
@@ -294,6 +321,7 @@ export const pdfService = {
         maxHeight: Math.round(VEHICLE_TOP_VIEW_PRINT_WIDTH_PX * (SILHOUETTE_HEIGHT / SILHOUETTE_WIDTH)),
         preferAlpha: true,
       }),
+      sectionIconDataUrls: await loadSectionIconDataUrls(),
       generatedAt: new Date(),
     };
 
