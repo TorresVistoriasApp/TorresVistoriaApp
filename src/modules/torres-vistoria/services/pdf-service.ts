@@ -34,7 +34,7 @@ import {
  */
 const LOGO_PRINT_WIDTH_PX = 448;
 const VEHICLE_TOP_VIEW_PRINT_WIDTH_PX = 704;
-const SECTION_ICON_PRINT_PX = 160;
+const SECTION_ICON_PRINT_PX = 320;
 
 async function loadSectionIconDataUrls(): Promise<LaudoSectionIconDataUrls> {
   const entries = await mapWithConcurrency(
