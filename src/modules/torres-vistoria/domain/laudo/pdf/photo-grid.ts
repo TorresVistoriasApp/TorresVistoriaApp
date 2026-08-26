@@ -25,8 +25,8 @@ import { PDF_LAYOUT } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table
 
 export const PHOTO_GRID_GAP = PDF_PHOTO.gap;
 
-/** Célula próxima do quadrado, para a linha caber com a legenda. */
-const CELL_ASPECT_RATIO = 0.92;
+/** Célula paisagem leve — prioriza densidade (mais fotos por página). */
+const CELL_ASPECT_RATIO = 0.72;
 const SINGLE_PHOTO_ASPECT = 0.72;
 
 /**
@@ -39,13 +39,13 @@ export function photoCellWidth(columns: number, contentWidth: number): number {
   return Math.floor((contentWidth - PHOTO_GRID_GAP * (columns - 1)) / columns);
 }
 
-/** Altura da moldura: proporcional, mas limitada para caber com a legenda. */
+/** Altura da moldura: proporcional, mas limitada para caber mais linhas/página. */
 export function photoCellHeight(columns: number, contentWidth: number): number {
   const width = photoCellWidth(columns, contentWidth);
   const ratio = columns <= 1 ? SINGLE_PHOTO_ASPECT : CELL_ASPECT_RATIO;
   const height = Math.round(width * ratio);
   if (columns <= 1) return Math.min(height, PDF_PHOTO.singleMaxHeight);
-  return height;
+  return Math.min(height, PDF_PHOTO.gridMaxHeight);
 }
 
 /**

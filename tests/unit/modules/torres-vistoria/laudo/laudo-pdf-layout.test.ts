@@ -46,9 +46,11 @@ describe("planPhotoRows", () => {
 });
 
 describe("photo cell metrics", () => {
-  it("usa o mesmo tamanho de célula na grade de três colunas", () => {
+  it("mantém células compactas na grade de três colunas", () => {
     const three = photoCellWidth(3, PDF_PAGE.contentWidth);
-    expect(photoCellHeight(3, PDF_PAGE.contentWidth)).toBeGreaterThan(three * 0.9);
+    const height = photoCellHeight(3, PDF_PAGE.contentWidth);
+    expect(height).toBeLessThanOrEqual(three * 0.85);
+    expect(height).toBeGreaterThan(three * 0.55);
     expect(photoCellWidth(1, PDF_PAGE.contentWidth)).toBeGreaterThan(three);
   });
 

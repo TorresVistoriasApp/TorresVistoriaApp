@@ -563,32 +563,7 @@ function buildPhotoSection(payload: LaudoPayload, view: LaudoReportViewModel): P
   }
 
   const grouped = groupPhotosBySection(photos);
-  const bodyChildren: PdfNode[] = [];
-  let firstGroup = true;
-
-  for (const section of PHOTO_CATALOG) {
-    const sectionPhotos = grouped.get(section.key);
-    if (!sectionPhotos?.length) continue;
-
-    const heading = subsectionHeading(section.name, {
-      accent: view.primaryColor,
-      width: INNER_WIDTH,
-      margin: [0, firstGroup ? 0 : PDF_SPACE.lg, 0, PDF_SPACE.sm],
-    });
-    const grid = buildPhotoGrid(sectionPhotos, {
-      accent: view.primaryColor,
-      contentWidth: INNER_WIDTH,
-    });
-
-    bodyChildren.push({
-      unbreakable: true,
-      stack: [heading, ...(grid[0] ? [grid[0]] : [])],
-    });
-    bodyChildren.push(...grid.slice(1));
-    firstGroup = false;
-  }
-
-  return [
+  const nodes: PdfNode[] = [
     premiumSectionLead({
       icon: "camera",
       title: "Registro fotográfico",
@@ -596,12 +571,52 @@ function buildPhotoSection(payload: LaudoPayload, view: LaudoReportViewModel): P
       accent: view.primaryColor,
       status: { tone: "info" },
     }),
-    premiumSectionBody(bodyChildren, {
-      accent: view.primaryColor,
-      barLabel: "Fotos",
-      barIcon: "camera",
-    }),
   ];
+
+  let firstGroup = true;
+  for (const section of PHOTO_CATALOG) {
+    const sectionPhotos = grouped.get(section.key);
+    if (!sectionPhotos?.length) continue;
+
+    const grid = buildPhotoGrid(sectionPhotos, {
+      accent: view.primaryColor,
+      contentWidth: INNER_WIDTH,
+    });
+
+    if (firstGroup) {
+      // Primeiro grupo no card "Fotos"; demais fluem na página (evita meio-vazio).
+      nodes.push(
+        premiumSectionBody(
+          [
+            subsectionHeading(section.name, {
+              accent: view.primaryColor,
+              width: INNER_WIDTH,
+              margin: [0, 0, 0, PDF_SPACE.sm],
+            }),
+            ...grid,
+          ],
+          {
+            accent: view.primaryColor,
+            barLabel: "Fotos",
+            barIcon: "camera",
+          },
+        ),
+      );
+      firstGroup = false;
+      continue;
+    }
+
+    nodes.push(
+      subsectionHeading(section.name, {
+        accent: view.primaryColor,
+        width: INNER_WIDTH,
+        margin: [0, PDF_SPACE.md, 0, PDF_SPACE.sm],
+      }),
+      ...grid,
+    );
+  }
+
+  return nodes;
 }
 
 function buildPaintSection(view: LaudoReportViewModel, payload: LaudoPayload): PdfNode[] {
