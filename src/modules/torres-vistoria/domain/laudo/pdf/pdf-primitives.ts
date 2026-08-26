@@ -16,6 +16,7 @@ import {
   PDF_TRACKING,
   type PdfMargin,
   type PdfNode,
+  type PdfTone,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
 import { PDF_LAYOUT } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
 import {
@@ -515,25 +516,75 @@ export function statusBadge(label: string, color: string, options: { soft?: stri
   };
 }
 
-/** Resultado em tipografia — destaque com filete de acento e badge. */
+/** Linhas de exibição do parecer — títulos longos quebram com hierarquia. */
+function resultDisplayLines(label: string): string[] {
+  const upper = label.trim().toUpperCase();
+  if (upper.includes("APONTAMENTO") || upper.includes("OBSERVA")) {
+    return ["APROVADO", "COM APONTAMENTOS"];
+  }
+  return [upper];
+}
+
+/**
+ * Resultado do laudo — tipografia editorial (sem caixa/fundo).
+ * Cor por status: aprovado verde, apontamentos âmbar, reprovado vermelho.
+ */
 export function resultBadge(
   label: string,
-  options: { accent: string; width: number; height?: number; fontSize?: number },
+  options: {
+    accent: string;
+    width: number;
+    height?: number;
+    fontSize?: number;
+    tone?: PdfTone;
+    compact?: boolean;
+  },
 ): PdfNode {
-  const fontSize =
-    options.fontSize ?? (label.length > 22 ? PDF_FONT.h1 : label.length > 14 ? PDF_FONT.result : PDF_FONT.display);
+  const lines = resultDisplayLines(label);
+  const compact = options.compact === true;
+  const primarySize =
+    options.fontSize ??
+    (compact ? PDF_FONT.result : lines.length > 1 ? 15 : 20);
+  const secondarySize = Math.max(9, primarySize - 4);
+  const ruleWidth = Math.min(42, options.width * 0.18);
 
   return {
+    unbreakable: true,
     stack: [
-      { canvas: [{ type: "rect", x: 0, y: 0, w: 36, h: 2.5, color: options.accent }] },
       {
-        text: label.toUpperCase(),
+        canvas: [
+          {
+            type: "rect",
+            x: 0,
+            y: 0,
+            w: ruleWidth,
+            h: compact ? 2 : 2.5,
+            color: options.accent,
+          },
+        ],
+      },
+      {
+        text: lines[0],
         color: options.accent,
         bold: true,
-        fontSize,
+        fontSize: primarySize,
         characterSpacing: PDF_TRACKING.wider,
-        margin: [0, PDF_SPACE.xs, 0, 0],
+        lineHeight: PDF_LINE_HEIGHT.tight,
+        margin: [0, compact ? 3 : 4, 0, 0],
       },
+      ...(lines[1]
+        ? [
+            {
+              text: lines[1],
+              color: options.accent,
+              bold: true,
+              fontSize: secondarySize,
+              characterSpacing: PDF_TRACKING.wide,
+              lineHeight: PDF_LINE_HEIGHT.tight,
+              margin: [0, 1, 0, 0] as PdfMargin,
+            },
+          ]
+        : []),
     ],
   };
 }
