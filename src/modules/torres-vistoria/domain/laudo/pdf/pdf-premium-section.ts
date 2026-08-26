@@ -362,7 +362,7 @@ export function premiumContentWidth(pageWidth = PDF_PAGE.contentWidth): number {
   return pageWidth - PDF_SECTION.paddingX * 2;
 }
 
-/** Chip de destaque (placa, renavam…) — caixinhas da referência. */
+/** Chip de destaque (placa, renavam…) — só tipografia; sem ícone outline minúsculo. */
 export function premiumMetaChip(options: {
   label: string;
   value: string;
@@ -375,39 +375,27 @@ export function premiumMetaChip(options: {
     margin: [0, 0, 0, 0],
     stack: [
       {
-        columns: [
-          ...(options.icon
-            ? [
-                {
-                  width: 11,
-                  ...pdfIcon(options.icon, { size: 10, color: accent, stroke: 1.2 }),
-                },
-              ]
-            : []),
-          {
-            width: "*",
-            text: options.label.toUpperCase(),
-            fontSize: 5.8,
-            bold: true,
-            color: accent,
-            characterSpacing: PDF_TRACKING.normal,
-          },
-        ],
-        columnGap: 3,
-        margin: [6, 5, 6, 0],
+        text: options.label.toUpperCase(),
+        fontSize: PDF_FONT.micro,
+        bold: true,
+        color: accent,
+        characterSpacing: PDF_TRACKING.wide,
+        margin: [7, 5, 7, 0],
       },
       {
         text: options.value,
         bold: true,
         fontSize: PDF_FONT.small,
         color: PDF_COLOR.navy,
-        margin: [6, 2, 6, 5],
+        margin: [7, 2, 7, 5],
       },
     ],
   };
 }
 
-/** Grade 2 colunas label | valor com filetes — estilo referência. */
+/**
+ * Grade 2 colunas — rótulo + valor lado a lado (valor à esquerda, junto do rótulo).
+ */
 export function premiumKvGrid(
   rows: [string, string][],
   options: { columns?: number; margin?: PdfMargin } = {},
@@ -422,7 +410,7 @@ export function premiumKvGrid(
       ...slice.map(([label, value]) => ({
         columns: [
           {
-            width: "42%",
+            width: "auto",
             text: label,
             bold: true,
             fontSize: PDF_FONT.small,
@@ -433,11 +421,11 @@ export function premiumKvGrid(
             text: value,
             fontSize: PDF_FONT.small,
             color: PDF_COLOR.text,
-            alignment: "right" as const,
+            alignment: "left" as const,
           },
         ],
-        columnGap: 4,
-        margin: [0, 3, 0, 3],
+        columnGap: 6,
+        margin: [0, 3.5, 0, 3.5],
       })),
       ...Array.from({ length: columns - slice.length }, () => ({ text: "" })),
     ]);
