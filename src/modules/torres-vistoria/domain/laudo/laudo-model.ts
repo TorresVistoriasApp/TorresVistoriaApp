@@ -4,6 +4,7 @@ import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-s
 import { ChecklistStatus } from "@/modules/torres-vistoria/domain/enums";
 import { getInspectionOpinionLabel } from "@/modules/torres-vistoria/domain/inspection-opinion-labels";
 import { PDF_DEFAULT_PRIMARY } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
+import type { ConsultaSlot } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-consulta-slots";
 import { formatDocument } from "@/shared/lib/formatters";
 
 export type LaudoCompany = {
@@ -51,6 +52,11 @@ export type LaudoPayload = {
   brandLogoDataUrl?: string;
   /** Vista superior técnica usada na análise de pintura. */
   vehicleTopViewDataUrl?: string;
+  /**
+   * Slots de consulta veicular (Torres Consulta / APIs externas).
+   * Só entram no PDF quando preenchidos — ver `buildConsultaSections`.
+   */
+  consultaSlots?: ConsultaSlot[];
   generatedAt: Date;
 };
 

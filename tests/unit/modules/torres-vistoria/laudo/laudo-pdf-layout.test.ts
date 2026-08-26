@@ -119,13 +119,13 @@ describe("buildPhotoGrid", () => {
     expect(first).toBe(last);
   });
 
-  it("preenche a célula com cover, sem faixa branca ao redor da foto", () => {
+  it("encaixa a foto com fit, preservando proporção sem cortar", () => {
     const nodes = buildPhotoGrid([photo("a")], {
       accent: "#ea580c",
       contentWidth: PDF_PAGE.contentWidth,
     });
-    expect(JSON.stringify(nodes)).toContain("cover");
-    expect(JSON.stringify(nodes)).not.toContain("\"fit\"");
+    expect(JSON.stringify(nodes)).toContain("\"fit\"");
+    expect(JSON.stringify(nodes)).not.toContain("\"cover\"");
   });
 });
 

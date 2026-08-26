@@ -206,14 +206,13 @@ function gaugeCanvasOps(
 }
 
 /**
- * Texto central sobre o canvas. O espaçador restaura a altura do gráfico
- * para o overlay não colapsar o fluxo nem deixar faixa vazia embaixo.
+ * Rótulo do gráfico: abaixo do canvas, centralizado.
+ * Overlay com margem negativa quebra no pdfmake (texto “flutua” na borda do anel).
  */
 function chartWithCenterLabel(
   canvasOps: unknown[],
   box: { width: number; height: number },
   options: DonutChartOptions,
-  captionTop: number,
 ): PdfNode {
   const value = options.centerValue ?? "";
   const label = (options.centerLabel ?? "").toUpperCase();
@@ -223,31 +222,35 @@ function chartWithCenterLabel(
 
   const valueSize = options.centerValueFontSize ?? CENTER_VALUE_FONT;
   const labelSize = options.centerLabelFontSize ?? CENTER_LABEL_FONT;
-  const captionHeight = (value ? valueSize * 1.12 : 0) + (label ? labelSize * 1.2 + 1 : 0);
-  const pull = box.height - captionTop;
-  const spacer = Math.max(pull - captionHeight, 0);
 
   return {
     width: box.width,
     stack: [
-      { canvas: canvasOps },
-      {
-        text: value,
-        fontSize: valueSize,
-        bold: true,
-        color: PDF_COLOR.navy,
-        alignment: "center",
-        margin: [0, -pull, 0, 0],
-      },
-      {
-        text: label,
-        fontSize: labelSize,
-        color: PDF_COLOR.muted,
-        characterSpacing: label.length > 14 ? PDF_TRACKING.tight : PDF_TRACKING.wide,
-        alignment: "center",
-        margin: [0, 1, 0, 0],
-      },
-      { text: "", fontSize: 1, margin: [0, spacer, 0, 0] },
+      { canvas: canvasOps, width: box.width },
+      ...(value
+        ? [
+            {
+              text: value,
+              fontSize: valueSize,
+              bold: true,
+              color: PDF_COLOR.navy,
+              alignment: "center" as const,
+              margin: [0, 5, 0, 0] as [number, number, number, number],
+            },
+          ]
+        : []),
+      ...(label
+        ? [
+            {
+              text: label,
+              fontSize: labelSize,
+              color: PDF_COLOR.muted,
+              characterSpacing: label.length > 14 ? PDF_TRACKING.tight : PDF_TRACKING.wide,
+              alignment: "center" as const,
+              margin: [0, 1, 0, 0] as [number, number, number, number],
+            },
+          ]
+        : []),
     ],
   };
 }
@@ -260,15 +263,12 @@ export function buildDonutChartNode(slices: DonutSlice[], options: DonutChartOpt
   const innerRadius = Math.max(outerRadius - thickness, 1);
   const geometry = { cx: outerRadius, cy: outerRadius, outerRadius, innerRadius };
   const ops = donutCanvasOps(slices, geometry, options.emptyColor ?? PDF_COLOR.border);
-  const valueSize = options.centerValueFontSize ?? CENTER_VALUE_FONT;
-  const captionTop = size / 2 - valueSize * 0.75;
 
-  return chartWithCenterLabel(ops, { width: size, height: size }, options, captionTop);
+  return chartWithCenterLabel(ops, { width: size, height: size }, options);
 }
 
 /**
- * Gauge em ferradura. Tampas circulares nas extremidades e texto no oco,
- * sem a faixa vazia da metade inferior de um círculo completo.
+ * Gauge em ferradura. Tampas circulares nas extremidades e texto abaixo do arco.
  */
 export function buildGaugeChartNode(slices: DonutSlice[], options: DonutChartOptions = {}): PdfNode {
   const size = options.size ?? 156;
@@ -278,9 +278,8 @@ export function buildGaugeChartNode(slices: DonutSlice[], options: DonutChartOpt
   const geometry = { cx: outerRadius, cy: outerRadius, outerRadius, innerRadius };
   const height = outerRadius + thickness / 2;
   const ops = gaugeCanvasOps(slices, geometry, options.emptyColor ?? PDF_COLOR.surfaceAlt);
-  const captionTop = outerRadius * 0.42;
 
-  return chartWithCenterLabel(ops, { width: size, height }, options, captionTop);
+  return chartWithCenterLabel(ops, { width: size, height }, options);
 }
 
 function legendSwatch(color: string): PdfNode {

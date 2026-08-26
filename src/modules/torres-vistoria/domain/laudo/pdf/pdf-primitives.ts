@@ -7,6 +7,7 @@
 import {
   PDF_COLOR,
   PDF_FONT,
+  PDF_ICON,
   PDF_LINE_HEIGHT,
   PDF_PAGE,
   PDF_RADIUS,
@@ -17,6 +18,11 @@ import {
   type PdfNode,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
 import { PDF_LAYOUT } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
+import {
+  brazilFlagIcon,
+  pdfIconBadge,
+  type PdfIconName,
+} from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-icons";
 
 /** Filete horizontal fino — separador discreto entre blocos. */
 export function ruleNode(
@@ -45,28 +51,44 @@ export function spacer(height: number): PdfNode {
 }
 
 /**
- * Barra de seção: acento fino da marca + título navy + filete.
- * Sem bloco preenchido — a hierarquia vem da tipografia, não de faixas sólidas.
+ * Cabeçalho editorial de seção: ícone + título bold + subtítulo cinza + filete.
+ * Substitui a barra sólida de sistemas genéricos por hierarquia tipográfica.
  */
-export function sectionBar(
+export function sectionHeader(
   title: string,
   options: {
     accent: string;
     width: number;
+    icon?: PdfIconName;
+    subtitle?: string;
     kicker?: string;
     margin?: PdfMargin;
     pageBreak?: "before";
   },
 ): PdfNode {
+  const subtitle = options.subtitle ?? options.kicker;
+  const icon = options.icon
+    ? pdfIconBadge(options.icon, {
+        size: PDF_ICON.badgeSize,
+        color: options.accent,
+        fill: PDF_COLOR.orangeSoft,
+      })
+    : {
+        width: 2.5,
+        canvas: [{ type: "rect", x: 0, y: 2, w: 2.5, h: 14, color: options.accent }],
+      };
+
   return {
     ...(options.pageBreak ? { pageBreak: options.pageBreak } : {}),
-    margin: options.margin ?? [0, PDF_SPACE.xl, 0, PDF_SPACE.sm],
+    unbreakable: true,
+    margin: options.margin ?? [0, PDF_SPACE.section, 0, PDF_SPACE.md],
     stack: [
       {
         columns: [
-          { width: 2.5, canvas: [{ type: "rect", x: 0, y: 1, w: 2.5, h: 10, color: options.accent }] },
+          { width: PDF_ICON.badgeSize, ...icon },
           {
             width: "*",
+            margin: [0, 1, 0, 0] as PdfMargin,
             stack: [
               {
                 text: title.toUpperCase(),
@@ -75,56 +97,150 @@ export function sectionBar(
                 fontSize: PDF_FONT.h1,
                 characterSpacing: PDF_TRACKING.wide,
               },
-              ...(options.kicker
+              ...(subtitle
                 ? [
                     {
-                      text: options.kicker,
+                      text: subtitle,
                       color: PDF_COLOR.muted,
-                      fontSize: PDF_FONT.micro,
+                      fontSize: PDF_FONT.subtitle,
                       margin: [0, 2, 0, 0] as PdfMargin,
+                      lineHeight: PDF_LINE_HEIGHT.tight,
                     },
                   ]
                 : []),
             ],
           },
         ],
-        columnGap: PDF_SPACE.md,
+        columnGap: PDF_SPACE.lg,
       },
-      ruleNode(options.width, { margin: [0, 3, 0, 0], thickness: PDF_STROKE.hairline, color: PDF_COLOR.borderStrong }),
+      {
+        canvas: [
+          {
+            type: "rect",
+            x: 0,
+            y: 0,
+            w: 28,
+            h: 1.5,
+            color: options.accent,
+          },
+          {
+            type: "line",
+            x1: 28,
+            y1: 0.75,
+            x2: options.width,
+            y2: 0.75,
+            lineWidth: PDF_STROKE.hairline,
+            lineColor: PDF_COLOR.borderStrong,
+          },
+        ],
+        margin: [0, PDF_SPACE.md, 0, 0],
+      },
     ],
   };
 }
 
+/** Compatível com builders legados — delega ao cabeçalho editorial. */
+export function sectionBar(
+  title: string,
+  options: {
+    accent: string;
+    width: number;
+    kicker?: string;
+    subtitle?: string;
+    icon?: PdfIconName;
+    margin?: PdfMargin;
+    pageBreak?: "before";
+  },
+): PdfNode {
+  return sectionHeader(title, options);
+}
+
 /**
- * Título de categoria (H3): uppercase, negrito e filete.
- * Sem barra de acento — a barra fica reservada às seções principais.
+ * Moldura editorial: borda fina + acento laranja lateral.
+ * Para seções curtas/médias. Seções longas usam só o cabeçalho.
+ */
+export function sectionFrame(
+  content: PdfNode[],
+  options: {
+    accent: string;
+    padding?: number;
+    margin?: PdfMargin;
+    fill?: string;
+  },
+): PdfNode {
+  const padding = options.padding ?? PDF_SPACE.lg;
+
+  return {
+    margin: options.margin ?? [0, 0, 0, 0],
+    table: {
+      widths: [2.5, "*"],
+      body: [
+        [
+          { fillColor: options.accent, text: "" },
+          {
+            stack: content,
+            fillColor: options.fill ?? PDF_COLOR.white,
+            margin: [padding, padding, padding, padding],
+          },
+        ],
+      ],
+    },
+    layout: PDF_LAYOUT.sectionFrame,
+  };
+}
+
+/**
+ * Título de categoria: uppercase bold + filete com acento laranja.
+ * Sem ícone pequeno — a identidade visual fica na rail da seção pai.
  */
 export function subsectionHeading(
   title: string,
-  options: { accent?: string; description?: string; margin?: PdfMargin; width?: number } = {},
+  options: {
+    accent?: string;
+    description?: string;
+    margin?: PdfMargin;
+    width?: number;
+    icon?: PdfIconName;
+  } = {},
 ): PdfNode {
   const width = options.width ?? PDF_PAGE.contentWidth;
+  const accent = options.accent ?? PDF_COLOR.orange;
 
   return {
+    unbreakable: true,
     margin: options.margin ?? [0, PDF_SPACE.xl, 0, PDF_SPACE.md],
     stack: [
       {
-        text: title.toUpperCase(),
-        bold: true,
-        fontSize: PDF_FONT.h2,
-        color: PDF_COLOR.navy,
-        characterSpacing: PDF_TRACKING.wide,
+        columns: [
+          {
+            width: 3,
+            canvas: [{ type: "rect", x: 0, y: 1, w: 3, h: 11, color: accent }],
+          },
+          {
+            width: "*",
+            stack: [
+              {
+                text: title.toUpperCase(),
+                bold: true,
+                fontSize: PDF_FONT.h2,
+                color: PDF_COLOR.navy,
+                characterSpacing: PDF_TRACKING.wide,
+              },
+              ...(options.description
+                ? [
+                    {
+                      text: options.description,
+                      fontSize: PDF_FONT.micro,
+                      color: PDF_COLOR.muted,
+                      margin: [0, 1, 0, 0] as PdfMargin,
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ],
+        columnGap: PDF_SPACE.sm,
       },
-      ...(options.description
-        ? [
-            {
-              text: options.description,
-              fontSize: PDF_FONT.micro,
-              color: PDF_COLOR.muted,
-              margin: [0, 1, 0, 0] as PdfMargin,
-            },
-          ]
-        : []),
       ruleNode(width, {
         margin: [0, 4, 0, 0],
         thickness: PDF_STROKE.hairline,
@@ -348,7 +464,58 @@ export function kpiCardRow(
   };
 }
 
-/** Resultado em tipografia — destaque sem bloco sólido de cor. */
+/** Marcador circular de status, alinhado ao texto da mesma linha. */
+export function statusDot(color: string, diameter = 5): PdfNode {
+  const radius = diameter / 2;
+  return {
+    width: diameter + 1,
+    canvas: [{ type: "ellipse", x: radius, y: radius + 2, r1: radius, r2: radius, color }],
+  };
+}
+
+/** Badge de status visual — soft fill + tipografia colorida, reconhecível em segundos. */
+export function statusBadge(label: string, color: string, options: { soft?: string } = {}): PdfNode {
+  const soft =
+    options.soft ??
+    (color === PDF_COLOR.success
+      ? PDF_COLOR.successSoft
+      : color === PDF_COLOR.warning
+        ? PDF_COLOR.warningSoft
+        : color === PDF_COLOR.danger
+          ? PDF_COLOR.dangerSoft
+          : color === PDF_COLOR.info
+            ? PDF_COLOR.infoSoft
+            : PDF_COLOR.neutralSoft);
+
+  return {
+    table: {
+      widths: ["auto"],
+      body: [
+        [
+          {
+            columns: [
+              statusDot(color, 4.5),
+              {
+                text: label.toUpperCase(),
+                fontSize: PDF_FONT.micro,
+                bold: true,
+                color,
+                characterSpacing: PDF_TRACKING.normal,
+                width: "auto",
+              },
+            ],
+            columnGap: 3,
+            fillColor: soft,
+            margin: [5, 3, 6, 3],
+          },
+        ],
+      ],
+    },
+    layout: PDF_LAYOUT.statusChip,
+  };
+}
+
+/** Resultado em tipografia — destaque com filete de acento e badge. */
 export function resultBadge(
   label: string,
   options: { accent: string; width: number; height?: number; fontSize?: number },
@@ -358,7 +525,7 @@ export function resultBadge(
 
   return {
     stack: [
-      { canvas: [{ type: "rect", x: 0, y: 0, w: 32, h: 2.5, color: options.accent }] },
+      { canvas: [{ type: "rect", x: 0, y: 0, w: 36, h: 2.5, color: options.accent }] },
       {
         text: label.toUpperCase(),
         color: options.accent,
@@ -371,25 +538,66 @@ export function resultBadge(
   };
 }
 
-/** Marcador circular de status, alinhado ao texto da mesma linha. */
-export function statusDot(color: string, diameter = 5): PdfNode {
-  const radius = diameter / 2;
-  return {
-    width: diameter + 1,
-    canvas: [{ type: "ellipse", x: radius, y: radius + 2, r1: radius, r2: radius, color }],
-  };
-}
+/** Faixa de identidade do veículo: logo + origem + marca/modelo/ano. */
+export function vehicleIdentityStrip(options: {
+  brand: string;
+  model: string;
+  year: string;
+  brandLogoDataUrl?: string | null;
+  originLabel?: string | null;
+  originCountryCode?: string | null;
+  accent: string;
+}): PdfNode {
+  const originNodes: PdfNode[] = [];
+  if (options.originLabel) {
+    originNodes.push({
+      columns: [
+        ...(options.originCountryCode === "BR" ? [{ width: 18, ...brazilFlagIcon(11) }] : []),
+        {
+          text: options.originLabel.toUpperCase(),
+          fontSize: PDF_FONT.micro,
+          bold: true,
+          color: PDF_COLOR.navy,
+          characterSpacing: PDF_TRACKING.wide,
+          width: "auto",
+        },
+      ],
+      columnGap: 4,
+      margin: [0, 0, 0, PDF_SPACE.sm],
+    });
+  }
 
-/** Badge de status — tipografia colorida, sem caixa interna. */
-export function statusBadge(label: string, color: string): PdfNode {
   return {
-    text: label.toUpperCase(),
-    fontSize: PDF_FONT.micro,
-    bold: true,
-    color,
-    alignment: "left",
-    verticalAlignment: "middle",
-    characterSpacing: PDF_TRACKING.normal,
+    unbreakable: true,
+    margin: [0, 0, 0, PDF_SPACE.md],
+    columns: [
+      {
+        width: 64,
+        stack: [
+          ...(options.brandLogoDataUrl
+            ? [{ image: options.brandLogoDataUrl, fit: [56, 28], margin: [0, 0, 0, PDF_SPACE.xs] }]
+            : [
+                {
+                  text: options.brand.slice(0, 12).toUpperCase(),
+                  bold: true,
+                  fontSize: PDF_FONT.h2,
+                  color: options.accent,
+                },
+              ]),
+          ...originNodes,
+        ],
+      },
+      {
+        width: "*",
+        columns: [
+          labelValueBlock("Fabricante", options.brand, { valueSize: PDF_FONT.h2 }),
+          labelValueBlock("Modelo", options.model, { valueSize: PDF_FONT.h2 }),
+          labelValueBlock("Ano", options.year, { valueSize: PDF_FONT.h2 }),
+        ],
+        columnGap: PDF_SPACE.lg,
+      },
+    ],
+    columnGap: PDF_SPACE.xl,
   };
 }
 
@@ -569,7 +777,7 @@ export function tableHeaderCell(text: string): PdfNode {
   };
 }
 
-/** Fotografia: fit + filete cinza 0.5pt. Sem caixa navy, sem matting branco. */
+/** Fotografia: fit + filete cinza. Moldura premium discreta, sem matting pesado. */
 export function framedImage(
   dataUrl: string,
   options: { width: number; height: number; fill?: string },
@@ -582,9 +790,9 @@ export function framedImage(
         [
           {
             image: dataUrl,
-            // `fit` é mais estável que `cover` no pdfmake 0.2 com dezenas de JPEGs.
             fit: [options.width, options.height],
             alignment: "center",
+            fillColor: options.fill ?? PDF_COLOR.surface,
           },
         ],
       ],
