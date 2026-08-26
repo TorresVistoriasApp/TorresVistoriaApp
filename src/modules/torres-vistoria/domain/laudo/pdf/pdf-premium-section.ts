@@ -209,13 +209,14 @@ export function premiumSectionIntro(options: {
 }
 
 /** Barra horizontal colorida do card (equivalente ao vermelho da referência → laranja Torres). */
-function cardHeaderBar(options: {
+export function cardHeaderBar(options: {
   label: string;
   accent: string;
   width: number;
 }): PdfNode {
   const barH = 22;
   return {
+    unbreakable: true,
     table: {
       widths: ["*"],
       heights: [barH],
@@ -242,6 +243,29 @@ function cardHeaderBar(options: {
   };
 }
 
+/** Corpo branco do card — pode paginar; a barra colorida fica sempre acima, intacta. */
+function premiumCardContent(options: {
+  children: PdfNode[];
+  width?: number;
+}): PdfNode {
+  const width = options.width ?? PDF_PAGE.contentWidth;
+  return {
+    table: {
+      widths: [width],
+      body: [
+        [
+          {
+            fillColor: PDF_COLOR.white,
+            margin: [PDF_SECTION.paddingX, PDF_SECTION.paddingY, PDF_SECTION.paddingX, PDF_SECTION.paddingY],
+            stack: options.children,
+          },
+        ],
+      ],
+    },
+    layout: PDF_LAYOUT.premiumSection,
+  };
+}
+
 /**
  * Card com barra colorida no topo + conteúdo.
  * É a "moldura" da referência — não um rail vertical.
@@ -258,28 +282,17 @@ export function premiumCard(options: {
 
   return {
     margin: options.margin ?? [0, 0, 0, 0],
-    table: {
-      widths: [width],
-      body: [
-        [
-          {
-            stack: [
-              cardHeaderBar({
-                label: options.barLabel,
-                accent,
-                width,
-              }),
-              {
-                fillColor: PDF_COLOR.white,
-                margin: [PDF_SECTION.paddingX, PDF_SECTION.paddingY, PDF_SECTION.paddingX, PDF_SECTION.paddingY],
-                stack: options.children,
-              },
-            ],
-          },
-        ],
-      ],
-    },
-    layout: PDF_LAYOUT.premiumSection,
+    stack: [
+      cardHeaderBar({
+        label: options.barLabel,
+        accent,
+        width,
+      }),
+      premiumCardContent({
+        children: options.children,
+        width,
+      }),
+    ],
   };
 }
 
@@ -291,26 +304,44 @@ export function premiumSection(options: PremiumSectionOptions): PdfNode {
   const accent = options.accent ?? PDF_COLOR.orange;
   const barLabel = options.barLabel ?? options.title;
   const children = options.children ?? [];
+  const width = PDF_PAGE.contentWidth;
+
+  const introBlock = premiumSectionIntro({
+    icon: options.icon,
+    iconDataUrl: options.iconDataUrl,
+    title: options.title,
+    subtitle: options.subtitle,
+    accent,
+    status: options.status,
+  });
+
+  const headerBar = cardHeaderBar({
+    label: barLabel,
+    accent,
+    width,
+  });
+
+  const contentBlock = premiumCardContent({ children, width });
+
+  /** Intro + barra colorida nunca se separam — evita faixa cortada entre páginas. */
+  const sectionHead = {
+    unbreakable: true,
+    stack: [introBlock, headerBar],
+  };
+
+  const body = options.unbreakable
+    ? {
+        unbreakable: true,
+        stack: [sectionHead, contentBlock],
+      }
+    : {
+        stack: [sectionHead, contentBlock],
+      };
 
   return {
     ...(options.pageBreak ? { pageBreak: options.pageBreak } : {}),
-    ...(options.unbreakable ? { unbreakable: true } : {}),
     margin: options.margin ?? [0, PDF_SECTION.gap + 2, 0, 0],
-    stack: [
-      premiumSectionIntro({
-        icon: options.icon,
-        iconDataUrl: options.iconDataUrl,
-        title: options.title,
-        subtitle: options.subtitle,
-        accent,
-        status: options.status,
-      }),
-      premiumCard({
-        barLabel,
-        accent,
-        children,
-      }),
-    ],
+    ...body,
   };
 }
 
