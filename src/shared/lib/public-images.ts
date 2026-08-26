@@ -14,7 +14,8 @@ export const PUBLIC_IMAGES = {
   },
   vehicleBrands: (slug: string) => `/images/vehicle-brands/${slug}.webp` as const,
   consultations: {
-    hero: "/images/consultations/heroconsultations.webp",
+    /** Fallback genérico; o hero da landing usa srcset 400/800. */
+    hero: "/images/consultations/heroconsultations-800.webp",
     sampleReport: {
       front: "/images/consultations/sample-report/front.webp",
       rear: "/images/consultations/sample-report/rear.webp",

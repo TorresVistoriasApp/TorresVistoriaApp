@@ -1,7 +1,6 @@
 import { db } from "@/infra/supabase/client";
 import { queries } from "@/infra/supabase/queries";
 import { AppError, getErrorMessage, throwIfError } from "@/core/errors/app-error";
-import { compressToWebP } from "@/shared/lib/compress-image";
 import { COMPANY_ASSETS_BUCKET } from "@/infra/storage/buckets";
 import { getSignedUrl, resolveStorageUrl, extractStoragePath } from "@/infra/storage/signed-url";
 import { buildCompanyAddress, buildCompanyLocation } from "@/core/tenant/company-address";
@@ -142,6 +141,7 @@ export const companyService = {
     kind: "logo" | "signature",
   ): Promise<string> {
     try {
+      const { compressToWebP } = await import("@/shared/lib/compress-image");
       const compressed = await compressToWebP(file);
       const path = `${tenantId}/${kind}.webp`;
       const { error: uploadError } = await db.storage
