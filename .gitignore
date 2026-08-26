@@ -50,6 +50,8 @@ playwright/.cache
 # Local experiment artifacts
 tmp-*.pdf
 /tmp-*
+.tmp-ref-pages/
+.tmp-ref-*.pdf
 
 # Supabase
 .supabase

@@ -18,6 +18,14 @@ import {
 } from "../src/modules/torres-vistoria/domain/laudo/pdf/section-icons";
 import type { PdfIconName } from "../src/modules/torres-vistoria/domain/laudo/pdf/pdf-icons";
 
+function imageMimeFromPublicPath(publicPath: string): string {
+  if (publicPath.endsWith(".webp")) return "image/webp";
+  if (publicPath.endsWith(".png")) return "image/png";
+  if (publicPath.endsWith(".jpg") || publicPath.endsWith(".jpeg")) return "image/jpeg";
+  if (publicPath.endsWith(".svg")) return "image/svg+xml";
+  return "application/octet-stream";
+}
+
 function loadSectionIconDataUrls(): LaudoSectionIconDataUrls {
   const icons: LaudoSectionIconDataUrls = {};
   for (const [key, publicPath] of Object.entries(LAUDO_SECTION_ICON_PATHS) as Array<
@@ -26,7 +34,8 @@ function loadSectionIconDataUrls(): LaudoSectionIconDataUrls {
     const filePath = join(process.cwd(), "public", publicPath.replace(/^\//, ""));
     try {
       const buf = readFileSync(filePath);
-      icons[key] = `data:image/png;base64,${buf.toString("base64")}`;
+      const mime = imageMimeFromPublicPath(publicPath);
+      icons[key] = `data:${mime};base64,${buf.toString("base64")}`;
     } catch {
       // Sem asset: PDF cai no outline.
     }

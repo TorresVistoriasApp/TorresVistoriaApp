@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @source not "../shared/lib/public-images.ts";
+@source not "../modules/torres-vistoria/domain/laudo/pdf/section-icons.ts";
 
 /*
  * Sistema visual Torres — regras de performance:
