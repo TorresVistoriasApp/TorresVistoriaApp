@@ -419,6 +419,7 @@ export function premiumKvGrid(
           {
             width: "*",
             text: value,
+            bold: false,
             fontSize: PDF_FONT.small,
             color: PDF_COLOR.text,
             alignment: "left" as const,
