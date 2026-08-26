@@ -474,19 +474,21 @@ export function statusDot(color: string, diameter = 5): PdfNode {
   };
 }
 
+/** Mapeia a cor do texto do status para o fundo suave correspondente. */
+function resolveStatusSoftFill(color: string): string {
+  const c = color.toLowerCase();
+  if (c === PDF_COLOR.success || c === "#0f9d6e") return PDF_COLOR.successSoft;
+  if (c === PDF_COLOR.warning || c === "#d97706") return PDF_COLOR.warningSoft;
+  if (c === PDF_COLOR.danger) return PDF_COLOR.dangerSoft;
+  if (c === PDF_COLOR.info) return PDF_COLOR.infoSoft;
+  if (c === "#e2570c") return PDF_COLOR.orangeSoft;
+  if (c === "#5c6672" || c === PDF_COLOR.neutral) return PDF_COLOR.surfaceAlt;
+  return PDF_COLOR.neutralSoft;
+}
+
 /** Badge de status visual — soft fill + tipografia colorida, reconhecível em segundos. */
 export function statusBadge(label: string, color: string, options: { soft?: string } = {}): PdfNode {
-  const soft =
-    options.soft ??
-    (color === PDF_COLOR.success
-      ? PDF_COLOR.successSoft
-      : color === PDF_COLOR.warning
-        ? PDF_COLOR.warningSoft
-        : color === PDF_COLOR.danger
-          ? PDF_COLOR.dangerSoft
-          : color === PDF_COLOR.info
-            ? PDF_COLOR.infoSoft
-            : PDF_COLOR.neutralSoft);
+  const soft = options.soft ?? resolveStatusSoftFill(color);
 
   return {
     table: {
