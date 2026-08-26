@@ -5,6 +5,7 @@ import { ChecklistStatus } from "@/modules/torres-vistoria/domain/enums";
 import { getInspectionOpinionLabel } from "@/modules/torres-vistoria/domain/inspection-opinion-labels";
 import { PDF_DEFAULT_PRIMARY } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-tokens";
 import type { ConsultaSlot } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-consulta-slots";
+import type { LaudoSectionIconDataUrls } from "@/modules/torres-vistoria/domain/laudo/pdf/section-icons";
 import { formatDocument } from "@/shared/lib/formatters";
 
 export type LaudoCompany = {
@@ -57,6 +58,8 @@ export type LaudoPayload = {
    * Só entram no PDF quando preenchidos — ver `buildConsultaSections`.
    */
   consultaSlots?: ConsultaSlot[];
+  /** Imagens pictóricas das seções (intro) — embutidas no pdf-service. */
+  sectionIconDataUrls?: LaudoSectionIconDataUrls;
   generatedAt: Date;
 };
 

@@ -254,7 +254,8 @@ export const PDF_PHOTO = {
 export const PDF_COVER = {
   logoWidth: 78,
   logoHeight: 28,
-  qrSize: 40,
+  /** Alinhado à largura da placa (~108pt) — preenche o espaço já reservado à direita. */
+  qrSize: 88,
 } as const;
 
 export const PDF_AUTHENTICITY = {

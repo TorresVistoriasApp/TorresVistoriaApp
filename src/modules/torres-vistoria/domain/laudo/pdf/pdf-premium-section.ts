@@ -30,6 +30,18 @@ import {
 import { PDF_LAYOUT } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-table-layouts";
 import { pdfIcon, type PdfIconName } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-icons";
 import { statusDot } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-primitives";
+import type { LaudoSectionIconDataUrls } from "@/modules/torres-vistoria/domain/laudo/pdf/section-icons";
+
+/** Ícones pictóricos do payload atual — preenchidos em `buildLaudoDocDefinition`. */
+let activeSectionIcons: LaudoSectionIconDataUrls | undefined;
+
+export function setActiveSectionIcons(icons: LaudoSectionIconDataUrls | undefined): void {
+  activeSectionIcons = icons;
+}
+
+function resolveIconDataUrl(icon: PdfIconName, explicit?: string): string | undefined {
+  return explicit ?? activeSectionIcons?.[icon];
+}
 
 export type PremiumStatus = {
   tone: PdfTone;
@@ -38,6 +50,8 @@ export type PremiumStatus = {
 
 export type PremiumSectionOptions = {
   icon: PdfIconName;
+  /** Imagem pictórica do segmento (preferida sobre outline). */
+  iconDataUrl?: string;
   title: string;
   subtitle?: string;
   /** Rótulo da barra colorida do card (ex.: "Detalhes", "Fotos"). */
@@ -51,7 +65,7 @@ export type PremiumSectionOptions = {
   pageBreak?: "before";
 };
 
-const INTRO_ICON = 44;
+const INTRO_ICON = 48;
 
 function statusBadgeNode(status: PremiumStatus): PdfNode {
   const color =
@@ -112,11 +126,12 @@ function statusBadgeNode(status: PremiumStatus): PdfNode {
 }
 
 /**
- * Intro da seção: ícone grande à esquerda + título + subtítulo.
- * O ícone NÃO fica dentro do card — fica acima, como na referência.
+ * Intro da seção: imagem do segmento à esquerda + título + subtítulo.
+ * Prefere asset pictórico; cai no outline só se a imagem não estiver disponível.
  */
 export function premiumSectionIntro(options: {
   icon: PdfIconName;
+  iconDataUrl?: string;
   title: string;
   subtitle?: string;
   accent?: string;
@@ -124,24 +139,32 @@ export function premiumSectionIntro(options: {
   margin?: PdfMargin;
 }): PdfNode {
   const accent = options.accent ?? PDF_COLOR.orange;
+  const iconDataUrl = resolveIconDataUrl(options.icon, options.iconDataUrl);
+
+  const iconNode: PdfNode = iconDataUrl
+    ? {
+        image: iconDataUrl,
+        fit: [INTRO_ICON, INTRO_ICON],
+        width: INTRO_ICON,
+        alignment: "center",
+      }
+    : pdfIcon(options.icon, {
+        size: INTRO_ICON,
+        color: accent,
+        stroke: 1.7,
+      });
 
   return {
     unbreakable: true,
     margin: options.margin ?? [0, 0, 0, PDF_SPACE.md],
     columns: [
       {
-        width: INTRO_ICON + 8,
-        stack: [
-          pdfIcon(options.icon, {
-            size: INTRO_ICON,
-            color: accent,
-            stroke: 1.7,
-          }),
-        ],
+        width: INTRO_ICON + 10,
+        stack: [iconNode],
       },
       {
         width: "*",
-        margin: [PDF_SPACE.sm, 2, 0, 0] as PdfMargin,
+        margin: [PDF_SPACE.sm, 4, 0, 0] as PdfMargin,
         stack: [
           {
             columns: [
@@ -288,6 +311,7 @@ export function premiumSection(options: PremiumSectionOptions): PdfNode {
     stack: [
       premiumSectionIntro({
         icon: options.icon,
+        iconDataUrl: options.iconDataUrl,
         title: options.title,
         subtitle: options.subtitle,
         accent,
@@ -313,6 +337,7 @@ export function premiumSectionLead(
     stack: [
       premiumSectionIntro({
         icon: options.icon,
+        iconDataUrl: options.iconDataUrl,
         title: options.title,
         subtitle: options.subtitle,
         accent: options.accent,
