@@ -17,21 +17,22 @@ const PERKS = [
 ] as const;
 
 /**
- * Layout de autenticação do consumidor — visual próprio, com foto dedicada.
- * Desktop: imagem à esquerda (visível) + formulário à direita.
+ * Layout de autenticação do consumidor.
+ * Desktop/tablet: imagem à esquerda + formulário preenchendo a lateral direita.
+ * Mobile: faixa de imagem no topo + formulário em largura total.
  */
 export function ConsumerAuthLayout() {
   return (
     <div className="consulta-page relative min-h-dvh bg-[#0e0c0a]">
       <SkipLink />
 
-      {/* Desktop: imagem de fundo full-bleed + painel de formulário */}
-      <div className="hidden min-h-dvh lg:grid lg:grid-cols-[1.05fr_minmax(24rem,28rem)] xl:grid-cols-[1.15fr_minmax(26rem,30rem)]">
-        <section className="relative isolate overflow-hidden">
+      {/* Tablet+: split full-bleed nas laterais */}
+      <div className="hidden min-h-dvh md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(22rem,1fr)] xl:grid-cols-[minmax(0,1.25fr)_minmax(26rem,0.95fr)]">
+        <section className="relative isolate min-h-dvh overflow-hidden">
           <img
             src={AUTH_IMAGE}
             srcSet={AUTH_SRCSET}
-            sizes="(min-width: 1280px) 60vw, 55vw"
+            sizes="(min-width: 1280px) 55vw, 50vw"
             alt=""
             width={1600}
             height={1066}
@@ -43,7 +44,6 @@ export function ConsumerAuthLayout() {
               if (el.src !== AUTH_IMAGE_FALLBACK) el.src = AUTH_IMAGE_FALLBACK;
             }}
           />
-          {/* Véu leve — a foto precisa aparecer */}
           <div
             className="absolute inset-0"
             aria-hidden
@@ -53,7 +53,7 @@ export function ConsumerAuthLayout() {
             }}
           />
 
-          <div className="relative z-10 flex h-full min-h-dvh flex-col justify-between p-10 xl:p-14">
+          <div className="relative z-10 flex h-full min-h-dvh flex-col justify-between p-8 lg:p-12 xl:p-14">
             <Link
               to={ROUTES.consultaLanding}
               aria-label="Torres Consulta, início"
@@ -66,11 +66,11 @@ export function ConsumerAuthLayout() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
                 Área do cliente Torres
               </p>
-              <h1 className="mt-4 text-balance text-[2.25rem] font-bold leading-[1.08] tracking-[-0.03em] text-white xl:text-[2.75rem]">
+              <h1 className="mt-4 text-balance text-[2rem] font-bold leading-[1.08] tracking-[-0.03em] text-white lg:text-[2.5rem] xl:text-[2.75rem]">
                 Consulte com segurança.
                 <span className="mt-1 block text-white/90">Decida com clareza.</span>
               </h1>
-              <p className="mt-4 text-pretty text-base font-medium leading-[1.7] text-white/70">
+              <p className="mt-4 text-pretty text-[15px] font-medium leading-[1.7] text-white/70 lg:text-base">
                 Histórico veicular completo na sua conta: leilão, sinistro, restrições e score.
               </p>
 
@@ -103,8 +103,8 @@ export function ConsumerAuthLayout() {
           </div>
         </section>
 
-        <aside className="relative flex min-h-dvh flex-col border-l border-white/5 bg-[#f6f4f1]">
-          <header className="flex items-center justify-end px-8 pt-7 xl:px-10">
+        <aside className="relative flex min-h-dvh w-full flex-col border-l border-white/5 bg-[#f6f4f1]">
+          <header className="flex shrink-0 items-center justify-end px-6 pt-6 lg:px-10 lg:pt-8">
             <Link
               to={ROUTES.consultaLanding}
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold tracking-wide text-muted-foreground transition-colors hover:bg-black/[0.04] hover:text-foreground"
@@ -117,12 +117,12 @@ export function ConsumerAuthLayout() {
           <main
             id={MAIN_CONTENT_ID}
             tabIndex={-1}
-            className="mx-auto flex w-full max-w-[24.5rem] flex-1 flex-col justify-center px-8 py-8 xl:px-10"
+            className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-8 lg:max-w-xl lg:px-10 lg:py-10"
           >
             <Outlet />
           </main>
 
-          <footer className="px-8 pb-7 text-center text-xs text-muted-foreground xl:px-10">
+          <footer className="shrink-0 px-6 pb-6 text-center text-xs text-muted-foreground lg:px-10 lg:pb-8">
             Precisa consultar agora?{" "}
             <Link to={ROUTES.consultar} className="font-semibold text-primary hover:underline">
               Ir para consulta
@@ -131,9 +131,9 @@ export function ConsumerAuthLayout() {
         </aside>
       </div>
 
-      {/* Mobile */}
-      <div className="flex min-h-dvh flex-col lg:hidden">
-        <div className="relative h-[13.5rem] shrink-0 overflow-hidden sm:h-60">
+      {/* Mobile: formulário em largura total, sem card flutuante */}
+      <div className="flex min-h-dvh flex-col md:hidden">
+        <div className="relative h-44 shrink-0 overflow-hidden sm:h-52">
           <img
             src={AUTH_IMAGE}
             srcSet={AUTH_SRCSET}
@@ -179,11 +179,9 @@ export function ConsumerAuthLayout() {
               Voltar ao site
             </Link>
           </div>
-          <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-6">
-            <div className="rounded-2xl border border-[rgb(16_21_28_/_0.06)] bg-white p-5 shadow-[0_16px_40px_rgb(16_21_28_/_0.07)] sm:p-6">
-              <Outlet />
-            </div>
-            <p className="mt-5 text-center text-xs text-muted-foreground">
+          <main className="flex w-full flex-1 flex-col px-5 py-5 sm:px-6">
+            <Outlet />
+            <p className="mt-8 pb-[max(1rem,env(safe-area-inset-bottom))] text-center text-xs text-muted-foreground">
               Precisa consultar agora?{" "}
               <Link to={ROUTES.consultar} className="font-semibold text-primary hover:underline">
                 Ir para consulta
