@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
@@ -72,9 +72,7 @@ export function ClienteLoginPage() {
   return (
     <ConsumerAuthPanel
       title="Boas vindas de volta"
-      meta="Conta Torres Consulta"
       description="Entre para consultar veículos, baixar relatórios e comprar com mais segurança."
-      trust={["Dados protegidos", "Conforme LGPD", "Relatório na hora"]}
       cta={
         <Link
           to={ROUTES.consultaRegister}
@@ -113,6 +111,16 @@ export function ClienteLoginPage() {
               </p>
             </div>
           </div>
+        </Link>
+      }
+      footer={
+        <Link
+          to={ROUTES.vistoriaLogin}
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-[rgb(16_21_28_/_0.08)] bg-white/60 px-4 py-3.5 text-center text-sm text-muted-foreground transition-colors duration-150 hover:border-primary/25 hover:text-foreground"
+        >
+          É vistoriador?
+          <span className="font-semibold text-primary">Acesse a Torres Vistoria</span>
+          <ArrowUpRight className="h-4 w-4 shrink-0 text-primary" aria-hidden />
         </Link>
       }
     >

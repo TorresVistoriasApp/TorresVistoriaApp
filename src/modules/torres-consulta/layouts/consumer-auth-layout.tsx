@@ -1,5 +1,5 @@
 import { Link, Outlet } from "react-router-dom";
-import { ArrowLeft, Check, ShieldCheck } from "lucide-react";
+import { Check, ShieldCheck } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { PUBLIC_IMAGES } from "@/shared/lib/public-images";
 import { ConsultaBrandLogo } from "@/modules/torres-consulta/components/landing/consulta-brand-logo";
@@ -18,7 +18,7 @@ const PERKS = [
 
 /**
  * Layout de autenticação do consumidor.
- * Desktop/tablet: imagem à esquerda + formulário preenchendo a lateral direita.
+ * Tablet+: imagem à esquerda + formulário na lateral direita.
  * Mobile: faixa de imagem no topo + formulário em largura total.
  */
 export function ConsumerAuthLayout() {
@@ -26,7 +26,6 @@ export function ConsumerAuthLayout() {
     <div className="consulta-page relative min-h-dvh bg-[#0e0c0a]">
       <SkipLink />
 
-      {/* Tablet+: split full-bleed nas laterais */}
       <div className="hidden min-h-dvh md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(22rem,1fr)] xl:grid-cols-[minmax(0,1.25fr)_minmax(26rem,0.95fr)]">
         <section className="relative isolate min-h-dvh overflow-hidden">
           <img
@@ -64,7 +63,7 @@ export function ConsumerAuthLayout() {
 
             <div className="max-w-lg">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                Área do cliente Torres
+                Área do cliente
               </p>
               <h1 className="mt-4 text-balance text-[2rem] font-bold leading-[1.08] tracking-[-0.03em] text-white lg:text-[2.5rem] xl:text-[2.75rem]">
                 Consulte com segurança.
@@ -90,48 +89,20 @@ export function ConsumerAuthLayout() {
                 Dados protegidos, conforme a LGPD
               </p>
             </div>
-
-            <p className="text-xs text-white/40">
-              Emite laudo cautelar?{" "}
-              <Link
-                to={ROUTES.vistoriaLogin}
-                className="font-semibold text-primary transition-colors hover:text-[#ffb087]"
-              >
-                Acesse a Torres Vistoria
-              </Link>
-            </p>
           </div>
         </section>
 
         <aside className="relative flex min-h-dvh w-full flex-col border-l border-white/5 bg-[#f6f4f1]">
-          <header className="flex shrink-0 items-center justify-end px-6 pt-6 lg:px-10 lg:pt-8">
-            <Link
-              to={ROUTES.consultaLanding}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-semibold tracking-wide text-muted-foreground transition-colors hover:bg-black/[0.04] hover:text-foreground"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-              Voltar ao site
-            </Link>
-          </header>
-
           <main
             id={MAIN_CONTENT_ID}
             tabIndex={-1}
-            className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-8 lg:max-w-xl lg:px-10 lg:py-10"
+            className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-10 lg:max-w-xl lg:px-10 lg:py-12"
           >
             <Outlet />
           </main>
-
-          <footer className="shrink-0 px-6 pb-6 text-center text-xs text-muted-foreground lg:px-10 lg:pb-8">
-            Precisa consultar agora?{" "}
-            <Link to={ROUTES.consultar} className="font-semibold text-primary hover:underline">
-              Ir para consulta
-            </Link>
-          </footer>
         </aside>
       </div>
 
-      {/* Mobile: formulário em largura total, sem card flutuante */}
       <div className="flex min-h-dvh flex-col md:hidden">
         <div className="relative h-44 shrink-0 overflow-hidden sm:h-52">
           <img
@@ -157,10 +128,12 @@ export function ConsumerAuthLayout() {
             }}
           />
           <div className="relative z-10 flex h-full flex-col justify-between p-5">
-            <ConsultaBrandLogo size="sm" showSubtitle={false} onDark />
+            <Link to={ROUTES.consultaLanding} aria-label="Torres Consulta, início" className="w-fit">
+              <ConsultaBrandLogo size="sm" showSubtitle={false} onDark />
+            </Link>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-                Área do cliente Torres
+                Área do cliente
               </p>
               <h1 className="mt-1.5 text-[1.375rem] font-bold tracking-[-0.02em] text-white">
                 Consulte com segurança
@@ -170,23 +143,8 @@ export function ConsumerAuthLayout() {
         </div>
 
         <div className="flex flex-1 flex-col bg-[#f6f4f1]">
-          <div className="flex justify-end px-5 pt-4">
-            <Link
-              to={ROUTES.consultaLanding}
-              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted-foreground"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-              Voltar ao site
-            </Link>
-          </div>
-          <main className="flex w-full flex-1 flex-col px-5 py-5 sm:px-6">
+          <main className="flex w-full flex-1 flex-col px-5 py-5 sm:px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <Outlet />
-            <p className="mt-8 pb-[max(1rem,env(safe-area-inset-bottom))] text-center text-xs text-muted-foreground">
-              Precisa consultar agora?{" "}
-              <Link to={ROUTES.consultar} className="font-semibold text-primary hover:underline">
-                Ir para consulta
-              </Link>
-            </p>
           </main>
         </div>
       </div>
