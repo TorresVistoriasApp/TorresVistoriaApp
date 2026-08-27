@@ -19,7 +19,7 @@ export function PricingSection() {
         <PricingCarousel />
       </ScrollReveal>
 
-      <p className="mt-8 text-center text-sm text-muted-foreground">
+      <p className="mt-8 text-center text-sm font-medium tracking-wide text-muted-foreground">
         Todos os planos incluem download na hora e cópia salva na sua conta.
       </p>
     </LandingSection>

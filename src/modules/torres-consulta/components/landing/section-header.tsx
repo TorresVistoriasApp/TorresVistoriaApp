@@ -26,12 +26,12 @@ export function SectionHeader({
       <h2
         id={titleId}
         className={cn(
-          "text-balance font-bold leading-[1.12] tracking-tight",
+          "text-balance font-bold leading-[1.1] tracking-[-0.025em]",
           onDark ? "text-white" : "text-foreground",
-          eyebrow && "mt-3",
+          eyebrow && "mt-3.5",
           align === "center"
-            ? "text-[1.75rem] sm:text-[2rem] lg:text-[2.375rem]"
-            : "text-[1.625rem] sm:text-[1.875rem] lg:text-[2.125rem]",
+            ? "text-[1.875rem] sm:text-[2.125rem] lg:text-[2.5rem]"
+            : "text-[1.75rem] sm:text-[2rem] lg:text-[2.25rem]",
         )}
       >
         {title}
@@ -39,8 +39,9 @@ export function SectionHeader({
       {description && (
         <p
           className={cn(
-            "mt-3.5 text-pretty text-[15px] leading-relaxed sm:text-base",
-            onDark ? "text-white/65" : "text-muted-foreground",
+            "mt-4 max-w-xl text-pretty text-[15px] font-medium leading-[1.7] sm:text-base",
+            align === "center" && "mx-auto",
+            onDark ? "text-white/55" : "text-muted-foreground",
           )}
         >
           {description}

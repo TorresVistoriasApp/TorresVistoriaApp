@@ -42,22 +42,22 @@ export function BenefitsSection() {
         />
       </ScrollReveal>
 
-      <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-border bg-border lg:mt-12 lg:grid-cols-3">
+      <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-[rgb(16_21_28_/_0.08)] bg-[rgb(16_21_28_/_0.08)] lg:mt-14 lg:grid-cols-3">
         {CATEGORIES.map((category, index) => (
           <ScrollReveal key={category.title} delayMs={index * 60} className="bg-card">
-            <div className="flex h-full flex-col p-6 sm:p-7">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/60 text-foreground">
-                <category.icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+            <div className="flex h-full flex-col p-7 sm:p-8">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[rgb(16_21_28_/_0.08)] bg-muted/40 text-foreground">
+                <category.icon className="h-5 w-5" strokeWidth={1.5} aria-hidden />
               </span>
-              <h3 className="mt-5 text-[17px] font-bold tracking-tight text-foreground">
+              <h3 className="mt-6 text-lg font-bold tracking-[-0.02em] text-foreground">
                 {category.title}
               </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-2 text-[15px] leading-[1.65] text-muted-foreground">
                 {category.description}
               </p>
-              <ul className="mt-5 flex flex-1 flex-col gap-2.5 border-t border-border pt-5">
+              <ul className="mt-6 flex flex-1 flex-col gap-3 border-t border-[rgb(16_21_28_/_0.06)] pt-6">
                 {category.items.map((item) => (
-                  <li key={item} className="flex items-center gap-2.5 text-sm text-foreground">
+                  <li key={item} className="flex items-center gap-3 text-sm font-medium text-foreground">
                     <span className="h-1 w-1 shrink-0 rounded-full bg-primary" aria-hidden />
                     {item}
                   </li>

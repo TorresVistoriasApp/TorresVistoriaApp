@@ -206,8 +206,8 @@
 
   .ui-eyebrow,
   .landing-eyebrow {
-    @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase sm:text-xs;
-    letter-spacing: 0.12em;
+    @apply inline-flex items-center gap-2 text-[10px] font-semibold uppercase sm:text-[11px];
+    letter-spacing: 0.16em;
     color: var(--color-primary);
   }
 
@@ -300,26 +300,27 @@
 
   .consulta-page {
     @apply relative isolate min-h-dvh bg-canvas text-foreground;
+    letter-spacing: -0.011em;
   }
 
   .landing-section {
-    @apply relative py-14 sm:py-18 lg:py-24;
+    @apply relative py-16 sm:py-20 lg:py-28;
   }
 
   /* Faixa clara sobre o canvas — separa blocos sem peso visual */
   .landing-section-surface {
-    background-color: var(--color-card);
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
+    background-color: #ffffff;
+    border-top: 1px solid rgb(16 21 28 / 0.06);
+    border-bottom: 1px solid rgb(16 21 28 / 0.06);
   }
 
   /* Faixa escura sólida: contraste editorial, custo zero de render */
   .landing-section-ink {
-    background-color: #0f141c;
+    background-color: #0c1017;
     background-image: radial-gradient(
-      42rem 22rem at 85% 0%,
-      rgb(226 87 12 / 0.1),
-      transparent 70%
+      48rem 26rem at 88% -10%,
+      rgb(226 87 12 / 0.09),
+      transparent 68%
     );
     color: var(--color-ink-foreground);
   }
@@ -331,23 +332,46 @@
 
   /* Bloco cinematográfico (CTA final) — mesma família do hero/header */
   .landing-section-cinematic {
-    background-color: #0a0e14;
+    background-color: #080b10;
     background-image:
-      radial-gradient(50rem 24rem at 50% 120%, rgb(226 87 12 / 0.14), transparent 65%),
-      radial-gradient(36rem 18rem at 20% 0%, rgb(226 87 12 / 0.06), transparent 70%);
+      radial-gradient(56rem 28rem at 50% 120%, rgb(226 87 12 / 0.12), transparent 62%),
+      radial-gradient(40rem 20rem at 12% -5%, rgb(226 87 12 / 0.05), transparent 70%);
     color: #f4f5f7;
   }
 
   .landing-panel-glass {
-    border: 1px solid rgb(255 255 255 / 0.12);
-    background-color: rgb(12 16 22 / 0.72);
-    box-shadow: 0 20px 48px rgb(0 0 0 / 0.35);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background-color: rgb(10 14 20 / 0.78);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.04) inset,
+      0 24px 56px rgb(0 0 0 / 0.4);
   }
 
   .landing-panel-soft {
-    border: 1px solid var(--color-border);
+    border: 1px solid rgb(16 21 28 / 0.08);
     background-color: var(--color-card);
     box-shadow: none;
+  }
+
+  .landing-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(16 21 28 / 0.1) 20%,
+      rgb(16 21 28 / 0.1) 80%,
+      transparent
+    );
+  }
+
+  .landing-divider-on-dark {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.12) 20%,
+      rgb(255 255 255 / 0.12) 80%,
+      transparent
+    );
   }
 
   /* Gradiente estático do topo — pintado uma vez, sem blur */
@@ -360,50 +384,50 @@
 
   /* Hero cinematográfico da home — foto full-bleed + véu de legibilidade */
   .landing-hero-cinematic {
-    background-color: #0a0e14;
+    background-color: #080b10;
   }
 
   .landing-hero-photo {
-    animation: landing-hero-photo-in 1.1s var(--ease-out-expo) both;
+    animation: landing-hero-photo-in 1.2s var(--ease-out-expo) both;
   }
 
   .landing-hero-cinematic-veil {
     background-image:
       linear-gradient(
         180deg,
-        rgb(8 12 18 / 0.78) 0%,
-        rgb(8 12 18 / 0.55) 28%,
-        rgb(8 12 18 / 0.42) 48%,
-        rgb(8 12 18 / 0.58) 72%,
-        rgb(8 12 18 / 0.88) 100%
+        rgb(6 9 14 / 0.82) 0%,
+        rgb(6 9 14 / 0.58) 26%,
+        rgb(6 9 14 / 0.38) 48%,
+        rgb(6 9 14 / 0.55) 72%,
+        rgb(6 9 14 / 0.92) 100%
       ),
-      radial-gradient(70% 55% at 50% 100%, rgb(226 87 12 / 0.12), transparent 70%);
+      radial-gradient(70% 50% at 50% 100%, rgb(226 87 12 / 0.1), transparent 68%);
   }
 
   .landing-hero-enter {
-    animation: landing-hero-enter 0.7s var(--ease-out-quart) both;
+    animation: landing-hero-enter 0.75s var(--ease-out-quart) both;
   }
 
   .landing-hero-enter-delay-1 {
-    animation-delay: 0.05s;
+    animation-delay: 0.06s;
   }
 
   .landing-hero-enter-delay-2 {
-    animation-delay: 0.12s;
+    animation-delay: 0.14s;
   }
 
   .landing-hero-enter-delay-3 {
-    animation-delay: 0.2s;
+    animation-delay: 0.22s;
   }
 
   .landing-hero-enter-delay-4 {
-    animation-delay: 0.28s;
+    animation-delay: 0.3s;
   }
 
   @keyframes landing-hero-photo-in {
     from {
       opacity: 0;
-      transform: scale(1.06);
+      transform: scale(1.05);
     }
     to {
       opacity: 1;
@@ -414,7 +438,7 @@
   @keyframes landing-hero-enter {
     from {
       opacity: 0;
-      transform: translate3d(0, 14px, 0);
+      transform: translate3d(0, 16px, 0);
     }
     to {
       opacity: 1;
@@ -441,9 +465,13 @@
   }
 
   .landing-badge-ink {
-    border-color: var(--color-ink-border);
-    background-color: var(--color-ink-soft);
-    color: var(--color-ink-muted);
+    border-color: rgb(255 255 255 / 0.1);
+    background-color: rgb(255 255 255 / 0.04);
+    color: rgb(255 255 255 / 0.7);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: 600;
   }
 
   .landing-segment {
@@ -455,11 +483,6 @@
     @apply absolute top-1 bottom-1 rounded-md bg-card;
     box-shadow: var(--shadow-soft);
     transition: transform 0.2s var(--ease-out-quart);
-  }
-
-  .landing-divider {
-    height: 1px;
-    background-color: var(--color-border);
   }
 
   .text-gradient-brand {

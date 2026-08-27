@@ -82,51 +82,55 @@ function PlanCard({ plan }: { plan: Plan }) {
     <article
       className={cn(
         "flex h-full flex-col overflow-hidden rounded-2xl border bg-card",
-        plan.highlighted ? "border-primary/35 shadow-elevated" : "border-border",
+        plan.highlighted
+          ? "border-primary/30 shadow-[0_20px_48px_rgb(16_21_28_/_0.08)]"
+          : "border-[rgb(16_21_28_/_0.08)]",
       )}
     >
       <div
         className={cn(
-          "flex items-center justify-between gap-2 border-b px-5 py-3.5",
-          plan.highlighted ? "border-primary/15 bg-brand-subtle/70" : "border-border",
+          "flex items-center justify-between gap-2 border-b px-6 py-4",
+          plan.highlighted
+            ? "border-primary/10 bg-brand-subtle/50"
+            : "border-[rgb(16_21_28_/_0.06)]",
         )}
       >
-        <span className="flex items-center gap-2 text-sm font-bold text-foreground">
+        <span className="flex items-center gap-2.5 text-sm font-bold tracking-tight text-foreground">
           <Icon
             className={cn("h-4 w-4", plan.highlighted ? "text-primary" : "text-subtle-foreground")}
-            strokeWidth={1.75}
+            strokeWidth={1.5}
             aria-hidden
           />
           {plan.name}
         </span>
         {plan.highlighted && (
-          <span className="rounded-md bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-primary-foreground">
+          <span className="rounded-md bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-primary-foreground">
             Mais popular
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <p className="text-sm leading-relaxed text-muted-foreground">{plan.description}</p>
+      <div className="flex flex-1 flex-col p-6 sm:p-7">
+        <p className="text-[15px] leading-[1.65] text-muted-foreground">{plan.description}</p>
 
-        <div className="mt-5 flex items-end gap-1.5">
-          <span className="pb-1 text-sm font-medium text-muted-foreground">R$</span>
-          <span className="tabular text-[2.125rem] font-bold leading-none tracking-tight text-foreground">
+        <div className="mt-6 flex items-end gap-1.5">
+          <span className="pb-1.5 text-sm font-medium text-muted-foreground">R$</span>
+          <span className="tabular text-[2.375rem] font-bold leading-none tracking-[-0.03em] text-foreground">
             {plan.price}
           </span>
-          <span className="pb-1 text-sm text-muted-foreground">/ consulta</span>
+          <span className="pb-1.5 text-sm text-muted-foreground">/ consulta</span>
         </div>
 
         {plan.originalPrice && (
-          <p className="mt-1.5 text-xs">
+          <p className="mt-2 text-xs">
             <span className="text-subtle-foreground line-through">R$ {plan.originalPrice}</span>
             <span className="ml-2 font-semibold text-success">economize R$ {discount}</span>
           </p>
         )}
 
-        <ul className="mt-5 flex-1 space-y-2.5 border-t border-border pt-5">
+        <ul className="mt-6 flex-1 space-y-3 border-t border-[rgb(16_21_28_/_0.06)] pt-6">
           {features.map((feature) => (
-            <li key={feature} className="flex items-start gap-2.5 text-sm text-foreground">
+            <li key={feature} className="flex items-start gap-2.5 text-sm font-medium text-foreground">
               <Check
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"
                 strokeWidth={2.5}
@@ -139,7 +143,7 @@ function PlanCard({ plan }: { plan: Plan }) {
 
         <Button
           variant={plan.highlighted ? "default" : "outline"}
-          className={cn("mt-6 w-full", plan.highlighted && "shadow-glow")}
+          className={cn("mt-7 w-full tracking-wide", plan.highlighted && "shadow-glow")}
           asChild
         >
           <Link to={ROUTES.consultar}>
