@@ -43,18 +43,18 @@ export function InspectorSection() {
           <LandingBadge tone="ink">Torres Vistoria</LandingBadge>
           <h2
             id="vistoriadores-title"
-            className="mt-4 text-balance text-[1.75rem] font-bold leading-[1.12] sm:text-[2rem] lg:text-[2.375rem]"
+            className="mt-4 text-balance text-[1.75rem] font-bold leading-[1.12] tracking-tight sm:text-[2rem] lg:text-[2.375rem]"
           >
             A plataforma de quem emite laudo cautelar
           </h2>
-          <p className="mt-4 text-pretty text-[15px] leading-relaxed text-ink-muted sm:text-base">
+          <p className="mt-4 text-pretty text-[15px] leading-relaxed text-white/65 sm:text-base">
             Se você é vistoriador ou tem uma empresa de vistoria, a Torres Vistoria reúne o que você
             precisa em campo: registro da inspeção, fotos, checklist e laudo em PDF para o cliente.
           </p>
 
           <ul className="mt-6 space-y-3">
             {HIGHLIGHTS.map((item) => (
-              <li key={item} className="flex items-start gap-2.5 text-sm text-ink-foreground">
+              <li key={item} className="flex items-start gap-2.5 text-sm text-white/90">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} aria-hidden />
                 {item}
               </li>
@@ -62,7 +62,7 @@ export function InspectorSection() {
           </ul>
 
           <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
-            <Button size="lg" asChild>
+            <Button size="lg" className="shadow-glow" asChild>
               <Link to={ROUTES.vistoriaLogin}>
                 Acessar plataforma
                 <ArrowRight className="h-4 w-4" aria-hidden />
@@ -71,7 +71,7 @@ export function InspectorSection() {
             <Button
               size="lg"
               variant="outline"
-              className="border-ink-border bg-ink-soft text-ink-foreground hover:bg-ink-border"
+              className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
               asChild
             >
               <Link to={ROUTES.vistoriaRegister}>
@@ -81,23 +81,21 @@ export function InspectorSection() {
             </Button>
           </div>
 
-          <p className="mt-5 text-xs leading-relaxed text-ink-muted">
+          <p className="mt-5 text-xs leading-relaxed text-white/40">
             A Torres Consulta é para quem vai comprar um carro. Esta é a área de quem faz e emite
             vistorias.
           </p>
         </ScrollReveal>
 
         <ScrollReveal delayMs={80}>
-          <div className="grid gap-px overflow-hidden rounded-xl border border-ink-border bg-ink-border sm:grid-cols-2">
+          <div className="grid gap-px overflow-hidden rounded-2xl border border-white/12 bg-white/12 sm:grid-cols-2">
             {FEATURES.map((feature) => (
               <div key={feature.title} className="bg-ink-soft p-5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-border bg-ink text-primary">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
                   <feature.icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
                 </span>
-                <p className="mt-3.5 text-sm font-bold text-ink-foreground">{feature.title}</p>
-                <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">
-                  {feature.description}
-                </p>
+                <p className="mt-3.5 text-sm font-bold text-white">{feature.title}</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-white/50">{feature.description}</p>
               </div>
             ))}
           </div>

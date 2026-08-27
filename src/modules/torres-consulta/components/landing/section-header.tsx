@@ -22,12 +22,12 @@ export function SectionHeader({
 }: SectionHeaderProps) {
   return (
     <div className={cn("max-w-2xl", align === "center" && "mx-auto text-center", className)}>
-      {eyebrow && <LandingEyebrow>{eyebrow}</LandingEyebrow>}
+      {eyebrow && <LandingEyebrow onDark={onDark}>{eyebrow}</LandingEyebrow>}
       <h2
         id={titleId}
         className={cn(
-          "text-balance font-bold leading-[1.12]",
-          onDark ? "text-ink-foreground" : "text-foreground",
+          "text-balance font-bold leading-[1.12] tracking-tight",
+          onDark ? "text-white" : "text-foreground",
           eyebrow && "mt-3",
           align === "center"
             ? "text-[1.75rem] sm:text-[2rem] lg:text-[2.375rem]"
@@ -40,7 +40,7 @@ export function SectionHeader({
         <p
           className={cn(
             "mt-3.5 text-pretty text-[15px] leading-relaxed sm:text-base",
-            onDark ? "text-ink-muted" : "text-muted-foreground",
+            onDark ? "text-white/65" : "text-muted-foreground",
           )}
         >
           {description}

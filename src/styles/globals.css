@@ -189,7 +189,6 @@
     }
 
     .landing-card-interactive:hover {
-      transform: translateY(-2px);
       border-color: var(--color-border-strong);
       box-shadow: var(--shadow-elevated);
     }
@@ -207,8 +206,12 @@
 
   .ui-eyebrow,
   .landing-eyebrow {
-    @apply inline-flex items-center gap-2 text-xs font-bold uppercase;
-    letter-spacing: 0.09em;
+    @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase sm:text-xs;
+    letter-spacing: 0.12em;
+    color: var(--color-primary);
+  }
+
+  .landing-eyebrow-on-dark {
     color: var(--color-primary);
   }
 
@@ -250,6 +253,12 @@
     border-color: var(--color-border);
     background-color: var(--color-muted);
     color: var(--color-muted-foreground);
+  }
+
+  .landing-icon-box-ghost {
+    border-color: rgb(16 21 28 / 0.08);
+    background-color: rgb(16 21 28 / 0.03);
+    color: var(--color-foreground);
   }
 
   .ui-badge,
@@ -306,13 +315,39 @@
 
   /* Faixa escura sólida: contraste editorial, custo zero de render */
   .landing-section-ink {
-    background-color: var(--color-ink);
+    background-color: #0f141c;
+    background-image: radial-gradient(
+      42rem 22rem at 85% 0%,
+      rgb(226 87 12 / 0.1),
+      transparent 70%
+    );
     color: var(--color-ink-foreground);
   }
 
   .landing-section-ink h2,
   .landing-section-ink h3 {
     color: var(--color-ink-foreground);
+  }
+
+  /* Bloco cinematográfico (CTA final) — mesma família do hero/header */
+  .landing-section-cinematic {
+    background-color: #0a0e14;
+    background-image:
+      radial-gradient(50rem 24rem at 50% 120%, rgb(226 87 12 / 0.14), transparent 65%),
+      radial-gradient(36rem 18rem at 20% 0%, rgb(226 87 12 / 0.06), transparent 70%);
+    color: #f4f5f7;
+  }
+
+  .landing-panel-glass {
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background-color: rgb(12 16 22 / 0.72);
+    box-shadow: 0 20px 48px rgb(0 0 0 / 0.35);
+  }
+
+  .landing-panel-soft {
+    border: 1px solid var(--color-border);
+    background-color: var(--color-card);
+    box-shadow: none;
   }
 
   /* Gradiente estático do topo — pintado uma vez, sem blur */
