@@ -81,16 +81,14 @@ function PlanCard({ plan }: { plan: Plan }) {
   return (
     <article
       className={cn(
-        "flex h-full flex-col overflow-hidden rounded-xl border bg-card",
-        plan.highlighted
-          ? "border-primary/40 shadow-elevated"
-          : "border-border shadow-card",
+        "flex h-full flex-col overflow-hidden rounded-2xl border bg-card",
+        plan.highlighted ? "border-primary/35 shadow-elevated" : "border-border",
       )}
     >
       <div
         className={cn(
-          "flex items-center justify-between gap-2 border-b px-5 py-3",
-          plan.highlighted ? "border-primary/20 bg-brand-subtle" : "border-border",
+          "flex items-center justify-between gap-2 border-b px-5 py-3.5",
+          plan.highlighted ? "border-primary/15 bg-brand-subtle/70" : "border-border",
         )}
       >
         <span className="flex items-center gap-2 text-sm font-bold text-foreground">
@@ -102,18 +100,18 @@ function PlanCard({ plan }: { plan: Plan }) {
           {plan.name}
         </span>
         {plan.highlighted && (
-          <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.07em] text-primary-foreground">
+          <span className="rounded-md bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-primary-foreground">
             Mais popular
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
         <p className="text-sm leading-relaxed text-muted-foreground">{plan.description}</p>
 
-        <div className="mt-4 flex items-end gap-1.5">
+        <div className="mt-5 flex items-end gap-1.5">
           <span className="pb-1 text-sm font-medium text-muted-foreground">R$</span>
-          <span className="tabular text-[2rem] font-bold leading-none text-foreground">
+          <span className="tabular text-[2.125rem] font-bold leading-none tracking-tight text-foreground">
             {plan.price}
           </span>
           <span className="pb-1 text-sm text-muted-foreground">/ consulta</span>
@@ -141,7 +139,7 @@ function PlanCard({ plan }: { plan: Plan }) {
 
         <Button
           variant={plan.highlighted ? "default" : "outline"}
-          className="mt-6 w-full"
+          className={cn("mt-6 w-full", plan.highlighted && "shadow-glow")}
           asChild
         >
           <Link to={ROUTES.consultar}>

@@ -8,13 +8,14 @@ export function LandingSection({
   className,
   tone,
   ...props
-}: { children: ReactNode; tone?: "surface" | "ink" } & HTMLAttributes<HTMLElement>) {
+}: { children: ReactNode; tone?: "surface" | "ink" | "cinematic" } & HTMLAttributes<HTMLElement>) {
   return (
     <section
       className={cn(
         "landing-section",
         tone === "surface" && "landing-section-surface",
         tone === "ink" && "landing-section-ink",
+        tone === "cinematic" && "landing-section-cinematic",
         className,
       )}
       {...props}
@@ -61,20 +62,30 @@ export function LandingBadge({
   );
 }
 
-export function LandingEyebrow({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("landing-eyebrow", className)} {...props} />;
+export function LandingEyebrow({
+  className,
+  onDark = false,
+  ...props
+}: HTMLAttributes<HTMLParagraphElement> & { onDark?: boolean }) {
+  return (
+    <p
+      className={cn("landing-eyebrow", onDark && "landing-eyebrow-on-dark", className)}
+      {...props}
+    />
+  );
 }
 
 export function LandingIconBox({
   className,
   tone = "brand",
   ...props
-}: HTMLAttributes<HTMLSpanElement> & { tone?: "brand" | "neutral" }) {
+}: HTMLAttributes<HTMLSpanElement> & { tone?: "brand" | "neutral" | "ghost" }) {
   return (
     <span
       className={cn(
         "landing-icon-box",
         tone === "neutral" && "landing-icon-box-neutral",
+        tone === "ghost" && "landing-icon-box-ghost",
         className,
       )}
       {...props}

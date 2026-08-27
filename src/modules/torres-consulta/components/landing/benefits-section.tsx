@@ -2,7 +2,7 @@ import { Gavel, Shield, Star } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { ScrollReveal } from "./scroll-reveal";
 import { SectionHeader } from "./section-header";
-import { LandingIconBox, LandingSection } from "./landing-ui";
+import { LandingSection } from "./landing-ui";
 
 const CATEGORIES: {
   title: string;
@@ -42,14 +42,16 @@ export function BenefitsSection() {
         />
       </ScrollReveal>
 
-      <div className="mt-10 grid gap-px overflow-hidden rounded-xl border border-border bg-border lg:mt-12 lg:grid-cols-3">
+      <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-border bg-border lg:mt-12 lg:grid-cols-3">
         {CATEGORIES.map((category, index) => (
           <ScrollReveal key={category.title} delayMs={index * 60} className="bg-card">
             <div className="flex h-full flex-col p-6 sm:p-7">
-              <LandingIconBox className="h-10 w-10">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/60 text-foreground">
                 <category.icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
-              </LandingIconBox>
-              <h3 className="mt-4 text-[17px] font-bold text-foreground">{category.title}</h3>
+              </span>
+              <h3 className="mt-5 text-[17px] font-bold tracking-tight text-foreground">
+                {category.title}
+              </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                 {category.description}
               </p>

@@ -5,7 +5,7 @@ import { LandingSection } from "./landing-ui";
 
 export function PricingSection() {
   return (
-    <LandingSection id="planos" aria-labelledby="planos-title">
+    <LandingSection id="planos" tone="surface" aria-labelledby="planos-title">
       <ScrollReveal>
         <SectionHeader
           eyebrow="Planos"

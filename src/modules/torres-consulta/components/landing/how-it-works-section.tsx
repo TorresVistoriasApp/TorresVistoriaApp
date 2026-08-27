@@ -49,23 +49,24 @@ export function HowItWorksSection() {
         />
       </ScrollReveal>
 
-      <ol className="mt-10 grid gap-8 lg:mt-12 lg:grid-cols-3 lg:gap-10">
+      <ol className="mt-10 grid gap-8 lg:mt-12 lg:grid-cols-3 lg:gap-8">
         {STEPS.map((step, index) => (
           <ScrollReveal key={step.step} delayMs={index * 60}>
-            <li className="relative flex h-full flex-col">
-              <div className="flex items-center gap-3">
-                <span className="tabular flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+            <li className="relative flex h-full flex-col rounded-2xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between gap-3">
+                <span className="tabular flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-sm font-bold text-foreground">
                   {step.step}
                 </span>
-                <span className="h-px flex-1 bg-border" aria-hidden />
                 <step.icon
-                  className="h-[18px] w-[18px] shrink-0 text-subtle-foreground"
+                  className="h-[18px] w-[18px] shrink-0 text-primary"
                   strokeWidth={1.75}
                   aria-hidden
                 />
               </div>
 
-              <h3 className="mt-5 text-[17px] font-bold text-foreground">{step.title}</h3>
+              <h3 className="mt-5 text-[17px] font-bold tracking-tight text-foreground">
+                {step.title}
+              </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                 {step.description}
               </p>
@@ -85,7 +86,7 @@ export function HowItWorksSection() {
 
       <ScrollReveal delayMs={90} className="mt-11">
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button size="lg" asChild>
+          <Button size="lg" className="shadow-glow" asChild>
             <Link to={ROUTES.consultar}>
               Começar consulta
               <ArrowRight className="h-4 w-4" aria-hidden />

@@ -45,24 +45,23 @@ export function FaqSection() {
     <LandingSection id="faq" tone="surface" aria-labelledby="faq-title">
       <div className="mx-auto max-w-3xl">
         <ScrollReveal>
-          <SectionHeader
-            eyebrow="Dúvidas"
-            title="Perguntas frequentes"
-            titleId="faq-title"
-          />
+          <SectionHeader eyebrow="Dúvidas" title="Perguntas frequentes" titleId="faq-title" />
         </ScrollReveal>
 
-        <div className="mt-9 divide-y divide-border border-y border-border">
+        <div className="mt-9 overflow-hidden rounded-2xl border border-border bg-card">
           {FAQ_ITEMS.map((item, index) => {
             const isOpen = openIndex === index;
             const panelId = `faq-panel-${index}`;
 
             return (
-              <div key={item.question}>
+              <div
+                key={item.question}
+                className={cn(index > 0 && "border-t border-border")}
+              >
                 <h3>
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between gap-4 py-4 text-left"
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
                     onClick={() => setOpenIndex(isOpen ? null : index)}
                     aria-expanded={isOpen}
                     aria-controls={panelId}
@@ -70,7 +69,7 @@ export function FaqSection() {
                     <span
                       className={cn(
                         "text-[15px] font-semibold transition-colors sm:text-base",
-                        isOpen ? "text-primary" : "text-foreground",
+                        isOpen ? "text-foreground" : "text-foreground/90",
                       )}
                     >
                       {item.question}
@@ -94,7 +93,7 @@ export function FaqSection() {
                   )}
                 >
                   <div className="overflow-hidden">
-                    <p className="max-w-2xl pb-4 pr-8 text-sm leading-relaxed text-muted-foreground">
+                    <p className="max-w-2xl px-5 pb-4 pr-12 text-sm leading-relaxed text-muted-foreground sm:px-6">
                       {item.answer}
                     </p>
                   </div>
