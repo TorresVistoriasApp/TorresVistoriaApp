@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
@@ -76,22 +76,44 @@ export function ClienteLoginPage() {
       description="Entre para consultar veículos, baixar relatórios e comprar com mais segurança."
       trust={["Dados protegidos", "Conforme LGPD", "Relatório na hora"]}
       cta={
-        <div className="rounded-xl border border-[rgb(16_21_28_/_0.08)] bg-[#faf9f7] p-4">
-          <p className="text-[12px] font-medium text-muted-foreground">Ainda não tem conta?</p>
-          <Link
-            to={ROUTES.consultaRegister}
-            className="group mt-1.5 inline-flex items-center gap-1.5 text-sm font-bold tracking-tight text-foreground transition-colors hover:text-primary"
-          >
-            Criar conta grátis
-            <ArrowRight
-              className="h-4 w-4 text-primary transition-transform group-hover:translate-x-0.5"
-              aria-hidden
-            />
-          </Link>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Cadastro em um minuto, você só paga ao gerar o relatório
-          </p>
-        </div>
+        <Link
+          to={ROUTES.consultaRegister}
+          className="group relative block w-full overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-white via-[#fff8f3] to-primary/[0.08] p-4 shadow-[0_10px_28px_rgb(16_21_28_/_0.06)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_16px_36px_rgb(232_104_42_/_0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:p-5"
+        >
+          <span
+            className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary via-[#ff9a5c] to-primary/70"
+            aria-hidden
+          />
+          <span
+            className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
+            aria-hidden
+          />
+          <span
+            className="pointer-events-none absolute inset-0 translate-x-[-120%] bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-0 transition-[transform,opacity] duration-700 group-hover:translate-x-[120%] group-hover:opacity-100"
+            aria-hidden
+          />
+
+          <div className="relative flex items-start gap-3.5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-[0_0_0_4px_rgb(232_104_42_/_0.06)] transition-transform duration-300 group-hover:scale-105">
+              <Sparkles className="h-4 w-4" strokeWidth={2} aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary/80">
+                Novo por aqui?
+              </p>
+              <p className="mt-1.5 inline-flex items-center gap-1.5 text-[15px] font-bold tracking-tight text-foreground">
+                Criar conta grátis
+                <ArrowRight
+                  className="h-4 w-4 text-primary transition-transform duration-300 group-hover:translate-x-1"
+                  aria-hidden
+                />
+              </p>
+              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted-foreground">
+                Cadastro em um minuto. Você só paga ao gerar o relatório.
+              </p>
+            </div>
+          </div>
+        </Link>
       }
     >
       <form onSubmit={onSubmit} className="space-y-4" noValidate data-testid="consulta-login-form">
