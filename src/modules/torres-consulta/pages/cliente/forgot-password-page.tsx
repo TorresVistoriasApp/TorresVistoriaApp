@@ -67,7 +67,7 @@ export function ClienteForgotPasswordPage() {
       footer={
         <Link
           to={ROUTES.consultaLogin}
-          className="inline-flex items-center gap-1.5 font-medium text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center justify-center gap-1.5 text-sm font-medium tracking-wide text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           Voltar para o login

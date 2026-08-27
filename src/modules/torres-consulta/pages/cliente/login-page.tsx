@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, UserPlus } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
@@ -42,7 +42,7 @@ export function ClienteLoginPage() {
 
   if (sessionLoading || isSigningIn) {
     return (
-      <div className="flex justify-center py-8 lg:col-start-2 lg:row-start-2">
+      <div className="flex flex-1 justify-center py-12">
         <LoadingSpinner label={isSigningIn ? "Entrando..." : "Carregando..."} />
       </div>
     );
@@ -71,45 +71,34 @@ export function ClienteLoginPage() {
 
   return (
     <ConsumerAuthPanel
-      title="Entrar na Torres Consulta"
+      title="Bem-vindo de volta"
       meta="Conta de cliente"
+      description="Entre para ver seus relatórios e fazer novas consultas."
       trust={["Dados protegidos", "Conforme LGPD", "Relatório na hora"]}
       cta={
-        <Link
-          to={ROUTES.consultaRegister}
-          className="group flex items-center gap-3 rounded-xl border border-brand-border bg-brand-subtle p-3.5 transition-colors duration-150 hover:bg-brand-muted"
-        >
-          <span className="ui-icon-box h-10 w-10">
-            <UserPlus className="h-4 w-4" strokeWidth={2.25} aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="ui-eyebrow">Novo por aqui?</span>
-            <span className="mt-1 block text-sm font-bold text-foreground">Criar conta grátis</span>
-            <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-              Cadastro em um minuto. Você só paga ao gerar o relatório.
-            </span>
-          </span>
-          <ArrowRight
-            className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5"
-            aria-hidden
-          />
-        </Link>
-      }
-      footer={
-        <Link
-          to={ROUTES.consultar}
-          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-3.5 text-center text-sm text-muted-foreground shadow-card transition-colors duration-150 hover:text-foreground"
-        >
-          Ainda não quer criar conta?
-          <span className="font-semibold text-primary">Consultar veículo</span>
-          <ArrowUpRight className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-        </Link>
+        <div className="rounded-xl border border-[rgb(16_21_28_/_0.08)] bg-[#faf9f7] p-4">
+          <p className="text-[12px] font-medium text-muted-foreground">Ainda não tem conta?</p>
+          <Link
+            to={ROUTES.consultaRegister}
+            className="group mt-1.5 inline-flex items-center gap-1.5 text-sm font-bold tracking-tight text-foreground transition-colors hover:text-primary"
+          >
+            Criar conta grátis
+            <ArrowRight
+              className="h-4 w-4 text-primary transition-transform group-hover:translate-x-0.5"
+              aria-hidden
+            />
+          </Link>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Cadastro em um minuto · você só paga ao gerar o relatório
+          </p>
+        </div>
       }
     >
-      <form onSubmit={onSubmit} className="space-y-3.5" noValidate data-testid="consulta-login-form">
+      <form onSubmit={onSubmit} className="space-y-4" noValidate data-testid="consulta-login-form">
         <EmailField
           id="email"
           placeholder="seu@email.com"
+          autoFocus
           error={errors.email?.message}
           {...register("email")}
         />
@@ -120,7 +109,7 @@ export function ClienteLoginPage() {
           labelAction={
             <Link
               to={ROUTES.consultaForgotPassword}
-              className="text-xs font-semibold text-primary hover:underline"
+              className="text-xs font-semibold tracking-wide text-primary hover:underline"
             >
               Esqueci minha senha
             </Link>
@@ -128,21 +117,21 @@ export function ClienteLoginPage() {
           {...register("password")}
         />
 
-        <label className="flex cursor-pointer items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
+        <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-transparent px-0.5 py-1 text-[13px] leading-relaxed text-muted-foreground transition-colors hover:text-foreground">
           <input
             type="checkbox"
-            className="mt-0.5 h-4 w-4 shrink-0 rounded accent-primary"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border accent-primary"
             {...register("acceptTerms")}
           />
           <span>
-            Li e concordo com os{" "}
+            Concordo com os{" "}
             <Link
               to={ROUTES.termos}
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-primary hover:underline"
             >
-              Termos de Uso
+              Termos
             </Link>{" "}
             e a{" "}
             <Link
@@ -151,9 +140,8 @@ export function ClienteLoginPage() {
               rel="noopener noreferrer"
               className="font-semibold text-primary hover:underline"
             >
-              Política de Privacidade
+              Privacidade
             </Link>
-            .
           </span>
         </label>
         {errors.acceptTerms && (
@@ -162,7 +150,12 @@ export function ClienteLoginPage() {
 
         {error && <FormError message={error} />}
 
-        <Button type="submit" className="h-11 w-full" size="lg" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="mt-1 h-12 w-full text-[15px] tracking-wide shadow-glow"
+          size="lg"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? (
             <>
               <span
@@ -173,7 +166,7 @@ export function ClienteLoginPage() {
             </>
           ) : (
             <>
-              Entrar
+              Entrar na conta
               <ArrowRight className="h-4 w-4" aria-hidden />
             </>
           )}
