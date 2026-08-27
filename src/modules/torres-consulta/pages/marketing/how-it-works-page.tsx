@@ -16,13 +16,13 @@ const STEPS = [
     icon: Search,
     title: "1. Informe placa ou chassi",
     description:
-      "Digite o identificador do veículo na página inicial. Validamos o formato antes de prosseguir.",
+      "Digite o identificador do veículo na página inicial. Validamos o formato antes de seguir.",
   },
   {
     icon: UserPlus,
     title: "2. Crie sua conta",
     description:
-      "Cadastro gratuito com e-mail. Você precisa estar logado para acessar e baixar relatórios.",
+      "Cadastro grátis com email. Você precisa estar logado para acessar e baixar relatórios.",
   },
   {
     icon: FileText,
@@ -34,19 +34,19 @@ const STEPS = [
     icon: CreditCard,
     title: "4. Realize o pagamento",
     description:
-      "Pagamento seguro via cartão ou PIX. Confirmação imediata após aprovação.",
+      "Pagamento seguro via cartão ou PIX. Confirmação na hora após a aprovação.",
   },
   {
     icon: Download,
     title: "5. Acesse o relatório",
     description:
-      "O relatório fica disponível na hora na área do cliente, com opção de download em PDF.",
+      "O relatório fica disponível na hora na área do cliente, com download em PDF.",
   },
   {
     icon: Mail,
-    title: "6. Receba por e-mail",
+    title: "6. Receba por email",
     description:
-      "Enviamos um e-mail com o link de acesso e resumo da consulta para seu registro.",
+      "Enviamos um email com o link de acesso e o resumo da consulta para o seu registro.",
   },
 ];
 
@@ -56,7 +56,7 @@ export function HowItWorksPage() {
       seo={{
         title: "Como Funciona",
         description:
-          "Entenda o passo a passo da consulta veicular na Torres Consulta: da busca pelo veículo ao download do relatório completo.",
+          "Entenda como consultar um veículo na Torres Consulta: da busca ao download do relatório completo em poucos minutos.",
         canonicalPath: ROUTES.comoFunciona,
         schema: {
           "@context": "https://schema.org",
@@ -70,12 +70,12 @@ export function HowItWorksPage() {
           })),
         },
       }}
-      breadcrumb={[{ label: "Como Funciona" }]}
+      breadcrumb={[{ label: "Como funciona" }]}
       hero={{
         eyebrow: "Simples e transparente",
         title: "Do cadastro ao relatório em minutos",
         description:
-          "Um fluxo pensado para quem quer segurança na compra do carro usado, sem burocracia.",
+          "Um fluxo pensado para quem quer segurança na compra do carro usado, sem burocracia e com a clareza da Torres.",
       }}
       fullWidth
     >
@@ -101,13 +101,15 @@ export function HowItWorksPage() {
         </p>
         <Link
           to={ROUTES.relatorioExemplo}
-          className="mt-4 inline-flex font-semibold text-primary hover:underline"
+          className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline"
         >
-          Ver Exemplo de Relatório →
+          Ver relatório de exemplo
         </Link>
       </div>
 
-      <ConversionCta className="mt-12" />
+      <div className="mt-12">
+        <ConversionCta />
+      </div>
     </MarketingShell>
   );
 }

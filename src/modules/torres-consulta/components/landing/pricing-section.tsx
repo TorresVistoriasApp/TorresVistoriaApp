@@ -8,9 +8,9 @@ export function PricingSection() {
     <LandingSection id="planos" tone="surface" aria-labelledby="planos-title">
       <ScrollReveal>
         <SectionHeader
-          eyebrow="Planos"
+          eyebrow="Investimento que evita prejuízo"
           title="Pague só pela consulta que precisar"
-          description="Sem assinatura e sem fidelidade. Compare o que cada plano inclui e escolha o nível de análise."
+          description="Sem assinatura e sem fidelidade. Escolha o nível de análise e compre com a segurança que a Torres entrega."
           titleId="planos-title"
         />
       </ScrollReveal>

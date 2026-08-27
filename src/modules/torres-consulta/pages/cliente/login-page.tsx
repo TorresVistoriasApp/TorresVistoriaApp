@@ -72,8 +72,8 @@ export function ClienteLoginPage() {
   return (
     <ConsumerAuthPanel
       title="Bem-vindo de volta"
-      meta="Conta de cliente"
-      description="Entre para ver seus relatórios e fazer novas consultas."
+      meta="Conta Torres Consulta"
+      description="Entre para consultar veículos, baixar relatórios e comprar com mais segurança."
       trust={["Dados protegidos", "Conforme LGPD", "Relatório na hora"]}
       cta={
         <div className="rounded-xl border border-[rgb(16_21_28_/_0.08)] bg-[#faf9f7] p-4">
@@ -89,7 +89,7 @@ export function ClienteLoginPage() {
             />
           </Link>
           <p className="mt-1 text-xs text-muted-foreground">
-            Cadastro em um minuto · você só paga ao gerar o relatório
+            Cadastro em um minuto, você só paga ao gerar o relatório
           </p>
         </div>
       }

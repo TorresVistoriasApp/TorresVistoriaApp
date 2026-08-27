@@ -66,7 +66,7 @@ export function LandingHeader() {
           scrolled
             ? "border-border/80 bg-card/95 shadow-soft"
             : onDarkHero
-              ? "border-white/[0.08] bg-black/30"
+              ? "border-white/15 bg-black/55"
               : "border-transparent bg-transparent",
         )}
       >
@@ -81,9 +81,9 @@ export function LandingHeader() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "rounded-lg px-3.5 py-2 text-[13px] font-medium tracking-wide transition-colors",
+                  "rounded-lg px-3.5 py-2 text-[13px] font-semibold tracking-wide transition-colors",
                   onDarkHero
-                    ? "text-white/60 hover:bg-white/[0.06] hover:text-white"
+                    ? "text-white/90 hover:bg-white/10 hover:text-white"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -98,7 +98,7 @@ export function LandingHeader() {
               size="sm"
               className={
                 onDarkHero
-                  ? "h-9 border-white/20 bg-transparent px-4 text-[13px] font-medium tracking-wide text-white hover:border-white/35 hover:bg-white/[0.08] hover:text-white"
+                  ? "h-9 border-white/45 bg-white/10 px-4 text-[13px] font-semibold tracking-wide text-white hover:border-white/70 hover:bg-white/15 hover:text-white"
                   : "h-9 text-[13px] font-medium tracking-wide"
               }
               asChild
@@ -106,7 +106,7 @@ export function LandingHeader() {
               <Link to={ROUTES.consultaLogin}>Entrar</Link>
             </Button>
             <Button size="sm" className="h-9 px-4 text-[13px] font-semibold tracking-wide shadow-glow" asChild>
-              <Link to={ROUTES.consultar}>Consultar Veículo</Link>
+              <Link to={ROUTES.consultar}>Consultar veículo</Link>
             </Button>
           </div>
 
@@ -115,7 +115,7 @@ export function LandingHeader() {
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-lg border lg:hidden",
               onDarkHero
-                ? "border-white/15 bg-white/[0.06] text-white"
+                ? "border-white/35 bg-white/10 text-white"
                 : "border-border bg-card text-foreground",
             )}
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -195,7 +195,7 @@ export function LandingHeader() {
               <Button size="lg" className="h-12 w-full text-base" asChild>
                 <Link to={ROUTES.consultar} onClick={closeMobileMenu}>
                   <Search className="h-5 w-5" strokeWidth={2.25} />
-                  Consultar Veículo
+                  Consultar veículo
                 </Link>
               </Button>
               <Button variant="outline" size="lg" className="h-12 w-full text-base" asChild>

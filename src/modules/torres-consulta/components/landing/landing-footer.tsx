@@ -47,8 +47,8 @@ export function LandingFooter() {
           <div className="sm:col-span-2">
             <ConsultaBrandLogo size="md" onDark />
             <p className="mt-5 max-w-xs text-sm font-medium leading-[1.7] text-white/45">
-              Consulta veicular completa para pessoa física. Tecnologia, segurança e transparência
-              na hora de comprar seu veículo.
+              Consulta veicular completa para quem compra com responsabilidade. Dados claros,
+              resultado na hora e a confiança da marca Torres.
             </p>
             <div className="mt-6 flex gap-2">
               {SOCIAL.map(({ icon: Icon, label, href }) => (

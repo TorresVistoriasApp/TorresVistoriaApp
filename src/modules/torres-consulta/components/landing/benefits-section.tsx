@@ -12,19 +12,19 @@ const CATEGORIES: {
 }[] = [
   {
     title: "Passado do veículo",
-    description: "Entenda a história do carro antes de fechar negócio.",
+    description: "Descubra a história real do carro antes de pagar.",
     icon: Gavel,
     items: ["Leilão e sinistros", "Histórico de proprietários", "Recall e manutenções"],
   },
   {
     title: "Pendências e bloqueios",
-    description: "Descubra se há algo que impede a transferência.",
+    description: "Saiba o que pode travar a transferência ou gerar custo.",
     icon: Shield,
     items: ["Roubo e furto", "Restrições financeiras", "Gravames e débitos"],
   },
   {
-    title: "Visão completa",
-    description: "Dados técnicos e score para decidir com calma.",
+    title: "Visão completa para decidir",
+    description: "Score e dados técnicos para comprar com confiança.",
     icon: Star,
     items: ["Score veicular", "Decodificação do chassi", "Fotos históricas"],
   },
@@ -35,9 +35,9 @@ export function BenefitsSection() {
     <LandingSection tone="surface" aria-labelledby="beneficios-title">
       <ScrollReveal>
         <SectionHeader
-          eyebrow="O que você descobre"
+          eyebrow="Por que a Torres Consulta"
           title="Compre sabendo o que o carro esconde"
-          description="Informações de fontes oficiais reunidas num relatório direto, para você decidir com segurança."
+          description="Reunimos dados de fontes oficiais em um relatório direto e legível. Assim você decide com segurança, sem surpresa depois da compra."
           titleId="beneficios-title"
         />
       </ScrollReveal>

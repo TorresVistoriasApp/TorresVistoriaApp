@@ -34,10 +34,10 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 
-const REGISTER_STEPS = ["Crie a conta", "Confirme o e-mail", "Consulte veículos"] as const;
+const REGISTER_STEPS = ["Crie a conta", "Confirme o email", "Consulte veículos"] as const;
 
 const SUCCESS_STEPS = [
-  "Confirme o e-mail pelo link que enviamos.",
+  "Confirme o email pelo link que enviamos.",
   "Entre na sua conta Torres Consulta.",
   "Consulte veículos e salve os relatórios.",
 ] as const;
@@ -108,10 +108,10 @@ export function ClienteRegisterPage() {
     setResendMessage(null);
     try {
       await consumerAuthService.resendVerificationEmail(successEmail);
-      setResendMessage("Link de confirmação reenviado. Verifique seu e-mail.");
+      setResendMessage("Link de confirmação reenviado. Verifique seu email.");
     } catch (err) {
       setResendMessage(
-        err instanceof Error ? err.message : "Não foi possível reenviar o e-mail de confirmação.",
+        err instanceof Error ? err.message : "Não foi possível reenviar o email de confirmação.",
       );
     } finally {
       setResendPending(false);
@@ -146,13 +146,13 @@ export function ClienteRegisterPage() {
   return (
     <AuthRegisterFrame
       backTo={ROUTES.consultaLogin}
-      eyebrow="Cadastro de cliente"
+      eyebrow="Comece na Torres Consulta"
       title={
         <>
-          Crie sua conta na <span className="text-primary">Torres Consulta</span>
+          Crie sua conta e proteja sua próxima compra
         </>
       }
-      description="Gratuito. Você só paga ao gerar um relatório."
+      description="Cadastro grátis. Você só paga quando gerar um relatório."
       steps={REGISTER_STEPS}
     >
       <form onSubmit={onSubmit} noValidate data-testid="consulta-register-form" aria-busy={isSubmitting}>

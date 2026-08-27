@@ -9,7 +9,7 @@ export function SampleReportPage() {
       seo={{
         title: "Exemplo de Relatório Veicular",
         description:
-          "Veja exatamente o que você recebe ao consultar um veículo na Torres Consulta. Relatório completo com score, histórico, sinistros e muito mais.",
+          "Veja exatamente o que você recebe ao consultar um veículo na Torres Consulta. Relatório completo com score, histórico, sinistros e restrições.",
         canonicalPath: ROUTES.relatorioExemplo,
         schema: {
           "@context": "https://schema.org",
@@ -20,10 +20,10 @@ export function SampleReportPage() {
       }}
       breadcrumb={[{ label: "Exemplo de Relatório" }]}
       hero={{
-        eyebrow: "Antes de comprar",
+        eyebrow: "Transparência Torres",
         title: "Veja o relatório antes de contratar",
         description:
-          "Exemplo real de como fica o documento depois da consulta. Os dados abaixo são fictícios.",
+          "Exemplo de como fica o documento depois da consulta. Os dados abaixo são fictícios, o formato é o mesmo que você recebe.",
         compact: true,
       }}
       fullWidth

@@ -9,16 +9,16 @@ import { cn } from "@/shared/lib/utils";
 const PLAN_FEATURES: Record<string, readonly string[]> = {
   Básico: [
     "Consulta por placa ou chassi",
-    "Histórico básico do veículo",
+    "Histórico essencial do veículo",
     "Relatório em PDF",
-    "Entrega imediata",
+    "Entrega na hora",
   ],
   Completo: [
     "Tudo do plano Básico",
     "Sinistros e leilão",
     "Restrições financeiras",
     "Score veicular",
-    "Suporte por e-mail",
+    "Suporte por email",
   ],
   Premium: [
     "Tudo do plano Completo",
@@ -35,7 +35,7 @@ export const PRICING_PLANS = [
     icon: Car,
     price: "19,90",
     originalPrice: null,
-    description: "Para a primeira checagem do carro.",
+    description: "Ideal para uma checagem rápida antes de visitar o carro.",
     highlighted: false,
   },
   {
@@ -43,7 +43,7 @@ export const PRICING_PLANS = [
     icon: ShieldCheck,
     price: "39,90",
     originalPrice: "59,90",
-    description: "O favorito de quem não quer correr risco.",
+    description: "O mais escolhido por quem quer comprar sem surpresa.",
     highlighted: true,
   },
   {
@@ -51,7 +51,7 @@ export const PRICING_PLANS = [
     icon: Crown,
     price: "69,90",
     originalPrice: "99,90",
-    description: "Tudo que existe para analisar antes de fechar.",
+    description: "Análise máxima para fechar negócio com total clareza.",
     highlighted: false,
   },
 ] as const satisfies ReadonlyArray<{
@@ -118,7 +118,7 @@ function PlanCard({ plan }: { plan: Plan }) {
           <span className="tabular text-[2.375rem] font-bold leading-none tracking-[-0.03em] text-foreground">
             {plan.price}
           </span>
-          <span className="pb-1.5 text-sm text-muted-foreground">/ consulta</span>
+          <span className="pb-1.5 text-sm text-muted-foreground">por consulta</span>
         </div>
 
         {plan.originalPrice && (
@@ -147,7 +147,7 @@ function PlanCard({ plan }: { plan: Plan }) {
           asChild
         >
           <Link to={ROUTES.consultar}>
-            {plan.highlighted ? "Consultar agora" : "Escolher plano"}
+            {plan.highlighted ? "Quero este plano" : "Escolher este plano"}
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>

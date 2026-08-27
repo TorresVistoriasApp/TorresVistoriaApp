@@ -64,14 +64,14 @@ export function ConsumerAuthLayout() {
 
             <div className="max-w-lg">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-                Área do cliente
+                Área do cliente Torres
               </p>
               <h1 className="mt-4 text-balance text-[2.25rem] font-bold leading-[1.08] tracking-[-0.03em] text-white xl:text-[2.75rem]">
                 Consulte com segurança.
                 <span className="mt-1 block text-white/90">Decida com clareza.</span>
               </h1>
               <p className="mt-4 text-pretty text-base font-medium leading-[1.7] text-white/70">
-                Histórico veicular completo na sua conta — leilão, sinistro, restrições e score.
+                Histórico veicular completo na sua conta: leilão, sinistro, restrições e score.
               </p>
 
               <ul className="mt-8 space-y-3">
@@ -87,7 +87,7 @@ export function ConsumerAuthLayout() {
 
               <p className="mt-10 flex items-center gap-2 text-xs text-white/45">
                 <ShieldCheck className="h-3.5 w-3.5 text-success" strokeWidth={2.25} aria-hidden />
-                Dados protegidos · conforme LGPD
+                Dados protegidos, conforme a LGPD
               </p>
             </div>
 
@@ -160,7 +160,7 @@ export function ConsumerAuthLayout() {
             <ConsultaBrandLogo size="sm" showSubtitle={false} onDark />
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-                Área do cliente
+                Área do cliente Torres
               </p>
               <h1 className="mt-1.5 text-[1.375rem] font-bold tracking-[-0.02em] text-white">
                 Consulte com segurança

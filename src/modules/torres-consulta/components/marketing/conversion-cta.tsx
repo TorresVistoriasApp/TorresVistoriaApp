@@ -12,8 +12,9 @@ interface ConversionCtaProps {
 }
 
 export function ConversionCta({
-  title = "Pronto para consultar o veículo?",
-  description = "Veja o histórico completo em poucos minutos e feche a compra com mais tranquilidade.",
+  title = "Não feche negócio no escuro",
+  description =
+    "Na Torres Consulta você vê o histórico completo em poucos minutos e compra com mais tranquilidade.",
   className,
   showSampleLink = true,
 }: ConversionCtaProps) {
@@ -32,7 +33,7 @@ export function ConversionCta({
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Button size="lg" asChild>
             <Link to={ROUTES.consultaLanding}>
-              Consultar Agora
+              Consultar meu veículo
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -40,7 +41,7 @@ export function ConversionCta({
             <Button variant="outline" size="lg" asChild>
               <Link to={ROUTES.relatorioExemplo}>
                 <FileSearch className="h-4 w-4" />
-                Ver Exemplo de Relatório
+                Ver relatório de exemplo
               </Link>
             </Button>
           )}
