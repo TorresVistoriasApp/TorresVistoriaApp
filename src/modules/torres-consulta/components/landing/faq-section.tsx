@@ -48,7 +48,7 @@ export function FaqSection() {
           <SectionHeader eyebrow="Dúvidas" title="Perguntas frequentes" titleId="faq-title" />
         </ScrollReveal>
 
-        <div className="mt-9 overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="mt-10 overflow-hidden rounded-2xl border border-[rgb(16_21_28_/_0.08)] bg-card lg:mt-12">
           {FAQ_ITEMS.map((item, index) => {
             const isOpen = openIndex === index;
             const panelId = `faq-panel-${index}`;
@@ -56,22 +56,17 @@ export function FaqSection() {
             return (
               <div
                 key={item.question}
-                className={cn(index > 0 && "border-t border-border")}
+                className={cn(index > 0 && "border-t border-[rgb(16_21_28_/_0.06)]")}
               >
                 <h3>
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6"
+                    className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
                     onClick={() => setOpenIndex(isOpen ? null : index)}
                     aria-expanded={isOpen}
                     aria-controls={panelId}
                   >
-                    <span
-                      className={cn(
-                        "text-[15px] font-semibold transition-colors sm:text-base",
-                        isOpen ? "text-foreground" : "text-foreground/90",
-                      )}
-                    >
+                    <span className="text-[15px] font-semibold tracking-tight text-foreground sm:text-base">
                       {item.question}
                     </span>
                     <Plus
@@ -93,7 +88,7 @@ export function FaqSection() {
                   )}
                 >
                   <div className="overflow-hidden">
-                    <p className="max-w-2xl px-5 pb-4 pr-12 text-sm leading-relaxed text-muted-foreground sm:px-6">
+                    <p className="max-w-2xl px-6 pb-5 pr-14 text-[15px] leading-[1.7] text-muted-foreground">
                       {item.answer}
                     </p>
                   </div>

@@ -26,21 +26,21 @@ export function HeroSection() {
         <div className="landing-hero-cinematic-veil absolute inset-0" />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 pb-16 pt-24 text-center sm:px-6 sm:pb-20 sm:pt-28">
-        <p className="landing-hero-enter landing-hero-enter-delay-1 text-[1.375rem] font-bold tracking-tight text-white sm:text-[1.625rem]">
-          Torres <span className="text-primary">Consulta</span>
+      <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 pb-20 pt-28 text-center sm:px-6 sm:pb-24 sm:pt-32">
+        <p className="landing-hero-enter landing-hero-enter-delay-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary sm:text-[11px]">
+          Torres Consulta
         </p>
 
-        <h1 className="landing-hero-enter landing-hero-enter-delay-2 mt-5 max-w-2xl text-balance text-[1.875rem] font-bold leading-[1.12] tracking-tight text-white sm:mt-6 sm:text-[2.5rem] lg:text-[2.875rem]">
+        <h1 className="landing-hero-enter landing-hero-enter-delay-2 mt-5 max-w-2xl text-balance text-[2rem] font-bold leading-[1.08] tracking-[-0.03em] text-white sm:mt-6 sm:text-[2.75rem] lg:text-[3.25rem]">
           Todo o histórico do veículo antes de fechar negócio
         </h1>
 
-        <p className="landing-hero-enter landing-hero-enter-delay-3 mt-4 max-w-md text-pretty text-[15px] leading-relaxed text-white/70 sm:text-base">
+        <p className="landing-hero-enter landing-hero-enter-delay-3 mt-5 max-w-md text-pretty text-[15px] font-medium leading-[1.65] text-white/60 sm:text-base">
           Leilão, sinistro, roubo e restrições em um relatório único. Informe a placa ou o chassi e
           receba o resultado na hora.
         </p>
 
-        <div className="landing-hero-enter landing-hero-enter-delay-4 mt-8 w-full max-w-xl sm:mt-10">
+        <div className="landing-hero-enter landing-hero-enter-delay-4 mt-10 w-full max-w-xl sm:mt-12">
           <HeroConsultaForm />
         </div>
       </div>

@@ -42,30 +42,32 @@ export function AudienceSection() {
         />
       </ScrollReveal>
 
-      <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-border bg-border lg:mt-12 sm:grid-cols-2">
+      <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-[rgb(16_21_28_/_0.08)] bg-[rgb(16_21_28_/_0.08)] lg:mt-14 sm:grid-cols-2">
         {PATHS.map((path, index) => (
           <ScrollReveal key={path.id} delayMs={index * 60} className="bg-card">
             <Link
               to={path.to}
-              className="group flex h-full flex-col p-6 transition-colors hover:bg-muted/40 sm:p-7"
+              className="group flex h-full flex-col p-7 transition-colors hover:bg-muted/30 sm:p-8"
             >
               <span
                 className={
                   path.accent
-                    ? "flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-brand-subtle text-primary"
-                    : "flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted text-foreground"
+                    ? "flex h-11 w-11 items-center justify-center rounded-xl border border-primary/15 bg-brand-subtle text-primary"
+                    : "flex h-11 w-11 items-center justify-center rounded-xl border border-[rgb(16_21_28_/_0.08)] bg-muted/50 text-foreground"
                 }
               >
-                <path.icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+                <path.icon className="h-5 w-5" strokeWidth={1.5} aria-hidden />
               </span>
-              <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.1em] text-subtle-foreground">
+              <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle-foreground">
                 {path.eyebrow}
               </p>
-              <h3 className="mt-1.5 text-lg font-bold tracking-tight text-foreground">{path.title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+              <h3 className="mt-2 text-xl font-bold tracking-[-0.02em] text-foreground">
+                {path.title}
+              </h3>
+              <p className="mt-2.5 flex-1 text-[15px] leading-[1.65] text-muted-foreground">
                 {path.description}
               </p>
-              <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+              <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-primary">
                 {path.cta}
                 <ArrowRight
                   className="h-4 w-4 transition-transform group-hover:translate-x-0.5"

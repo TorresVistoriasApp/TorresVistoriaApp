@@ -62,28 +62,28 @@ export function LandingHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-200",
+          "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-300",
           scrolled
-            ? "border-border bg-card shadow-soft"
+            ? "border-border/80 bg-card/95 shadow-soft"
             : onDarkHero
-              ? "border-white/10 bg-black/25"
+              ? "border-white/[0.08] bg-black/30"
               : "border-transparent bg-transparent",
         )}
       >
-        <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link to={ROUTES.consultaLanding} aria-label="Torres Consulta, início">
             <ConsultaBrandLogo size="sm" showSubtitle={false} onDark={onDarkHero} />
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegação principal">
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navegação principal">
             {MARKETING_HEADER_NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "rounded-md px-3.5 py-2 text-[13px] font-medium tracking-wide transition-colors",
+                  "rounded-lg px-3.5 py-2 text-[13px] font-medium tracking-wide transition-colors",
                   onDarkHero
-                    ? "text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "text-white/60 hover:bg-white/[0.06] hover:text-white"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -98,14 +98,14 @@ export function LandingHeader() {
               size="sm"
               className={
                 onDarkHero
-                  ? "h-9 border-white/25 bg-transparent px-4 text-white hover:border-white/40 hover:bg-white/10 hover:text-white"
-                  : undefined
+                  ? "h-9 border-white/20 bg-transparent px-4 text-[13px] font-medium tracking-wide text-white hover:border-white/35 hover:bg-white/[0.08] hover:text-white"
+                  : "h-9 text-[13px] font-medium tracking-wide"
               }
               asChild
             >
               <Link to={ROUTES.consultaLogin}>Entrar</Link>
             </Button>
-            <Button size="sm" className="h-9 px-4 shadow-glow" asChild>
+            <Button size="sm" className="h-9 px-4 text-[13px] font-semibold tracking-wide shadow-glow" asChild>
               <Link to={ROUTES.consultar}>Consultar Veículo</Link>
             </Button>
           </div>
@@ -113,9 +113,9 @@ export function LandingHeader() {
           <button
             type="button"
             className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-md border lg:hidden",
+              "flex h-10 w-10 items-center justify-center rounded-lg border lg:hidden",
               onDarkHero
-                ? "border-white/20 bg-white/10 text-white"
+                ? "border-white/15 bg-white/[0.06] text-white"
                 : "border-border bg-card text-foreground",
             )}
             onClick={() => setMobileOpen(!mobileOpen)}

@@ -38,30 +38,30 @@ const HIGHLIGHTS = [
 export function InspectorSection() {
   return (
     <LandingSection id="vistoriadores" tone="ink" aria-labelledby="vistoriadores-title">
-      <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+      <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
         <ScrollReveal>
           <LandingBadge tone="ink">Torres Vistoria</LandingBadge>
           <h2
             id="vistoriadores-title"
-            className="mt-4 text-balance text-[1.75rem] font-bold leading-[1.12] tracking-tight sm:text-[2rem] lg:text-[2.375rem]"
+            className="mt-5 text-balance text-[1.875rem] font-bold leading-[1.1] tracking-[-0.025em] sm:text-[2.125rem] lg:text-[2.5rem]"
           >
             A plataforma de quem emite laudo cautelar
           </h2>
-          <p className="mt-4 text-pretty text-[15px] leading-relaxed text-white/65 sm:text-base">
+          <p className="mt-4 text-pretty text-[15px] font-medium leading-[1.7] text-white/55 sm:text-base">
             Se você é vistoriador ou tem uma empresa de vistoria, a Torres Vistoria reúne o que você
             precisa em campo: registro da inspeção, fotos, checklist e laudo em PDF para o cliente.
           </p>
 
-          <ul className="mt-6 space-y-3">
+          <ul className="mt-7 space-y-3.5">
             {HIGHLIGHTS.map((item) => (
-              <li key={item} className="flex items-start gap-2.5 text-sm text-white/90">
+              <li key={item} className="flex items-start gap-3 text-sm font-medium text-white/85">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} aria-hidden />
                 {item}
               </li>
             ))}
           </ul>
 
-          <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button size="lg" className="shadow-glow" asChild>
               <Link to={ROUTES.vistoriaLogin}>
                 Acessar plataforma
@@ -71,7 +71,7 @@ export function InspectorSection() {
             <Button
               size="lg"
               variant="outline"
-              className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+              className="border-white/15 bg-transparent text-white hover:bg-white/[0.06] hover:text-white"
               asChild
             >
               <Link to={ROUTES.vistoriaRegister}>
@@ -81,21 +81,23 @@ export function InspectorSection() {
             </Button>
           </div>
 
-          <p className="mt-5 text-xs leading-relaxed text-white/40">
+          <p className="mt-6 text-xs leading-relaxed tracking-wide text-white/35">
             A Torres Consulta é para quem vai comprar um carro. Esta é a área de quem faz e emite
             vistorias.
           </p>
         </ScrollReveal>
 
         <ScrollReveal delayMs={80}>
-          <div className="grid gap-px overflow-hidden rounded-2xl border border-white/12 bg-white/12 sm:grid-cols-2">
+          <div className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.08] sm:grid-cols-2">
             {FEATURES.map((feature) => (
-              <div key={feature.title} className="bg-ink-soft p-5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
-                  <feature.icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+              <div key={feature.title} className="bg-ink-soft p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-primary">
+                  <feature.icon className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
                 </span>
-                <p className="mt-3.5 text-sm font-bold text-white">{feature.title}</p>
-                <p className="mt-1 text-[13px] leading-relaxed text-white/50">{feature.description}</p>
+                <p className="mt-4 text-sm font-bold tracking-tight text-white">{feature.title}</p>
+                <p className="mt-1.5 text-[13px] leading-[1.65] text-white/45">
+                  {feature.description}
+                </p>
               </div>
             ))}
           </div>
