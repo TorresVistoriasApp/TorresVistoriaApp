@@ -48,7 +48,7 @@ export function ForgotPasswordPage() {
   });
 
   return (
-    <TenantAuthPanel title="Recuperar senha" description="Informe seu e-mail cadastrado.">
+    <TenantAuthPanel title="Recuperar senha" description="Informe seu email cadastrado.">
       <form onSubmit={onSubmit} className="space-y-4">
         <EmailField
           placeholder="seu@email.com"
