@@ -2,16 +2,16 @@ import { Clock, Database, FileCheck, Shield } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const TRUST_ITEMS: { icon: LucideIcon; label: string; value: string }[] = [
-  { icon: Database, label: "Fontes oficiais", value: "Bases nacionais" },
-  { icon: Clock, label: "Entrega", value: "Na hora" },
-  { icon: FileCheck, label: "Relatório", value: "PDF completo" },
-  { icon: Shield, label: "Privacidade", value: "Conforme LGPD" },
+  { icon: Database, label: "Origem dos dados", value: "Bases oficiais" },
+  { icon: Clock, label: "Velocidade", value: "Resultado na hora" },
+  { icon: FileCheck, label: "Entrega", value: "PDF completo" },
+  { icon: Shield, label: "Privacidade", value: "Conforme a LGPD" },
 ];
 
 export function TrustStrip() {
   return (
     <section
-      aria-label="Diferenciais da consulta"
+      aria-label="Por que escolher a Torres Consulta"
       className="border-y border-white/[0.06] bg-[#080b10]"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

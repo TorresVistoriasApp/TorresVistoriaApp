@@ -45,11 +45,12 @@ export function InspectorSection() {
             id="vistoriadores-title"
             className="mt-5 text-balance text-[1.875rem] font-bold leading-[1.1] tracking-[-0.025em] sm:text-[2.125rem] lg:text-[2.5rem]"
           >
-            A plataforma de quem emite laudo cautelar
+            A plataforma feita para quem vive de vistoria
           </h2>
           <p className="mt-4 text-pretty text-[15px] font-medium leading-[1.7] text-white/55 sm:text-base">
-            Se você é vistoriador ou tem uma empresa de vistoria, a Torres Vistoria reúne o que você
-            precisa em campo: registro da inspeção, fotos, checklist e laudo em PDF para o cliente.
+            Se você é vistoriador ou tem uma empresa de vistoria, a Torres Vistoria reúne checklist,
+            fotos, laudo em PDF e gestão da operação no mesmo lugar. Mais agilidade no campo e mais
+            confiança para o seu cliente.
           </p>
 
           <ul className="mt-7 space-y-3.5">
@@ -64,7 +65,7 @@ export function InspectorSection() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button size="lg" className="shadow-glow" asChild>
               <Link to={ROUTES.vistoriaLogin}>
-                Acessar plataforma
+                Entrar na Torres Vistoria
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </Button>
@@ -76,13 +77,13 @@ export function InspectorSection() {
             >
               <Link to={ROUTES.vistoriaRegister}>
                 <Users className="h-4 w-4" aria-hidden />
-                Criar conta
+                Criar conta profissional
               </Link>
             </Button>
           </div>
 
           <p className="mt-6 text-xs leading-relaxed tracking-wide text-white/35">
-            A Torres Consulta é para quem vai comprar um carro. Esta é a área de quem faz e emite
+            A Torres Consulta é para quem vai comprar um carro. Esta área é para quem faz e emite
             vistorias.
           </p>
         </ScrollReveal>

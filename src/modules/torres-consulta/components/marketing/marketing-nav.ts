@@ -1,8 +1,8 @@
 import { ROUTES } from "@/config/routes";
 
-/** Páginas de conteúdo — usadas no menu mobile (sem duplicar ações). */
+/** Páginas de conteúdo usadas no menu mobile (sem duplicar ações). */
 export const MARKETING_PAGE_NAV = [
-  { label: "Como Funciona", to: ROUTES.comoFunciona },
+  { label: "Como funciona", to: ROUTES.comoFunciona },
   { label: "Planos", to: ROUTES.planos },
   { label: "Exemplo", to: ROUTES.relatorioExemplo },
 ] as const;
@@ -10,7 +10,7 @@ export const MARKETING_PAGE_NAV = [
 /** Navegação completa da barra desktop. */
 export const MARKETING_HEADER_NAV = [
   ...MARKETING_PAGE_NAV,
-  { label: "Para Vistoriadores", to: ROUTES.vistoriaLogin },
+  { label: "Para vistoriadores", to: ROUTES.vistoriaLogin },
 ] as const;
 
 export const MARKETING_FOOTER = {
@@ -20,10 +20,10 @@ export const MARKETING_FOOTER = {
     { label: "Ajuda", to: ROUTES.ajuda },
   ],
   produto: [
-    { label: "Como Funciona", to: ROUTES.comoFunciona },
+    { label: "Como funciona", to: ROUTES.comoFunciona },
     { label: "Planos", to: ROUTES.planos },
-    { label: "Para Vistoriadores", to: ROUTES.vistoriaLogin },
-    { label: "Relatório Exemplo", to: ROUTES.relatorioExemplo },
+    { label: "Para vistoriadores", to: ROUTES.vistoriaLogin },
+    { label: "Relatório de exemplo", to: ROUTES.relatorioExemplo },
   ],
   legal: [
     { label: "LGPD", to: ROUTES.lgpd },
@@ -32,7 +32,7 @@ export const MARKETING_FOOTER = {
     { label: "Cookies", to: ROUTES.cookies },
   ],
   suporte: [
-    { label: "Área do Cliente", to: ROUTES.consultaLogin },
-    { label: "Área do Vistoriador", to: ROUTES.vistoriaLogin },
+    { label: "Área do cliente", to: ROUTES.consultaLogin },
+    { label: "Área do vistoriador", to: ROUTES.vistoriaLogin },
   ],
 } as const;

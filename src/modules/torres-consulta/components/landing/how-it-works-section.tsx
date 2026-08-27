@@ -17,23 +17,23 @@ const STEPS: {
   {
     step: "01",
     icon: Search,
-    title: "Informe placa ou chassi",
-    description: "Digite os dados do carro e crie sua conta grátis em seguida.",
+    title: "Informe a placa ou o chassi",
+    description: "Digite os dados do carro e crie sua conta grátis em poucos segundos.",
     details: ["Validamos o formato na hora", "Cadastro rápido, sem burocracia"],
   },
   {
     step: "02",
     icon: CreditCard,
     title: "Escolha o plano e pague",
-    description: "Básico, Completo ou Premium. Pague com cartão ou PIX.",
-    details: ["Pagamento seguro", "Confirmação na hora"],
+    description: "Básico, Completo ou Premium. Pague com cartão ou PIX com segurança.",
+    details: ["Pagamento protegido", "Confirmação na hora"],
   },
   {
     step: "03",
     icon: Download,
-    title: "Baixe o relatório",
-    description: "O PDF fica disponível na hora e salvo na sua conta.",
-    details: ["Acesso quando quiser", "Cópia enviada por e-mail"],
+    title: "Baixe o relatório e decida",
+    description: "O PDF fica pronto na hora e salvo na sua conta para consultar depois.",
+    details: ["Acesso quando quiser", "Cópia enviada por email"],
   },
 ];
 
@@ -42,9 +42,9 @@ export function HowItWorksSection() {
     <LandingSection id="como-funciona" aria-labelledby="como-funciona-title">
       <ScrollReveal>
         <SectionHeader
-          eyebrow="Passo a passo"
+          eyebrow="Simples e rápido"
           title="Do zero ao relatório em 3 passos"
-          description="Leva menos de cinco minutos. Sem ligação, sem cadastro longo, sem espera."
+          description="Em poucos minutos você sabe se vale a pena fechar negócio. Sem ligação, sem cadastro longo e sem espera."
           titleId="como-funciona-title"
         />
       </ScrollReveal>
@@ -91,12 +91,12 @@ export function HowItWorksSection() {
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button size="lg" className="shadow-glow" asChild>
             <Link to={ROUTES.consultar}>
-              Começar consulta
+              Começar minha consulta
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </Button>
           <Button variant="outline" size="lg" asChild>
-            <Link to={ROUTES.comoFunciona}>Ver detalhes do fluxo</Link>
+            <Link to={ROUTES.comoFunciona}>Ver como funciona</Link>
           </Button>
         </div>
       </ScrollReveal>

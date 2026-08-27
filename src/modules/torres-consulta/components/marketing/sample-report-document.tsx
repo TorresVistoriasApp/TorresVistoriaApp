@@ -42,7 +42,7 @@ export function SampleReportDocument() {
               Relatório Veicular Completo
             </h2>
             <p className="mt-1 text-sm text-slate-300">
-              Protocolo {vehicle.protocolo} · {vehicle.consultaEm}
+              Protocolo {vehicle.protocolo}, {vehicle.consultaEm}
             </p>
           </div>
           <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-300">

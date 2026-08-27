@@ -10,21 +10,21 @@ const PATHS = [
     id: "comprador",
     icon: Car,
     eyebrow: "Vou comprar um carro",
-    title: "Consultar o histórico",
+    title: "Consulte o histórico com a Torres",
     description:
-      "Leilão, sinistro, recall e restrições em um relatório claro. Informe a placa ou o chassi e receba o resultado na hora.",
-    cta: "Consultar veículo",
+      "Evite surpresa na transferência. Veja leilão, sinistro, recall e restrições em um relatório fácil de entender, com resultado na hora.",
+    cta: "Consultar veículo agora",
     to: ROUTES.consultar,
     accent: true,
   },
   {
     id: "vistoriador",
     icon: ClipboardCheck,
-    eyebrow: "Trabalho com vistoria",
-    title: "Emitir laudo cautelar",
+    eyebrow: "Sou vistoriador ou empresa",
+    title: "Emita laudos com a Torres Vistoria",
     description:
-      "Fotos, checklist e laudo em PDF no mesmo sistema. A plataforma que a equipe Torres usa no dia a dia das vistorias.",
-    cta: "Conhecer Torres Vistoria",
+      "Fotos, checklist e laudo em PDF no mesmo sistema. A plataforma que a equipe Torres usa no campo, feita para quem vive de vistoria.",
+    cta: "Conhecer a Torres Vistoria",
     to: ROUTES.vistoriaLogin,
     accent: false,
   },
@@ -35,9 +35,9 @@ export function AudienceSection() {
     <LandingSection id="para-quem" aria-labelledby="audience-title">
       <ScrollReveal>
         <SectionHeader
-          eyebrow="Para quem é"
-          title="O que você precisa fazer hoje?"
-          description="Compradores consultam o histórico do veículo. Vistoriadores emitem laudos na plataforma profissional do ecossistema Torres."
+          eyebrow="Escolha o seu caminho"
+          title="Uma marca, duas soluções certas para você"
+          description="Comprador consulta o passado do veículo. Vistoriador emite laudo profissional. Em ambos os casos, você conta com a confiança do ecossistema Torres."
           titleId="audience-title"
         />
       </ScrollReveal>

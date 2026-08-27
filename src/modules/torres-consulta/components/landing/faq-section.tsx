@@ -7,6 +7,11 @@ import { cn } from "@/shared/lib/utils";
 
 const FAQ_ITEMS = [
   {
+    question: "Por que consultar na Torres antes de comprar?",
+    answer:
+      "Porque um carro bonito pode esconder leilão, sinistro, roubo ou restrição. A Torres Consulta junta essas informações em um relatório claro para você decidir com segurança.",
+  },
+  {
     question: "Quanto tempo demora para sair o relatório?",
     answer:
       "Assim que o pagamento é confirmado, o relatório já fica disponível para download na sua conta.",
@@ -19,7 +24,7 @@ const FAQ_ITEMS = [
   {
     question: "Posso confiar nos dados?",
     answer:
-      "Trabalhamos com bases oficiais e parceiros do setor. As informações são atualizadas com frequência.",
+      "Trabalhamos com bases oficiais e parceiros do setor. As informações são atualizadas com frequência para você comprar com mais tranquilidade.",
   },
   {
     question: "Preciso criar conta?",
@@ -45,7 +50,12 @@ export function FaqSection() {
     <LandingSection id="faq" tone="surface" aria-labelledby="faq-title">
       <div className="mx-auto max-w-3xl">
         <ScrollReveal>
-          <SectionHeader eyebrow="Dúvidas" title="Perguntas frequentes" titleId="faq-title" />
+          <SectionHeader
+            eyebrow="Tire suas dúvidas"
+            title="Perguntas frequentes"
+            description="Respostas diretas para você entender o valor da Torres e comprar com confiança."
+            titleId="faq-title"
+          />
         </ScrollReveal>
 
         <div className="mt-10 overflow-hidden rounded-2xl border border-[rgb(16_21_28_/_0.08)] bg-card lg:mt-12">

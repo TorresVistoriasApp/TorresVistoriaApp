@@ -80,7 +80,7 @@ export function PageSeo({
 export const LANDING_SEO = {
   title: "Consulta Veicular Completa",
   description:
-    "Vai comprar um carro usado? Consulte leilão, sinistro, recall e restrições pela placa ou chassi e receba o relatório na hora.",
+    "Vai comprar um carro usado? Na Torres Consulta você vê leilão, sinistro, recall e restrições pela placa ou chassi e recebe o relatório na hora.",
   schema: {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -94,6 +94,6 @@ export const LANDING_SEO = {
       price: "19.90",
     },
     description:
-      "Plataforma de consulta veicular para pessoa física. Histórico de leilão, sinistros, recalls e muito mais.",
+      "Plataforma de consulta veicular para pessoa física. Histórico de leilão, sinistros, recalls e restrições em um relatório claro.",
   },
 } as const;

@@ -39,7 +39,7 @@ export function AboutPage() {
         eyebrow: "Quem somos",
         title: "Tecnologia que protege quem compra veículo",
         description:
-          "A Torres Consulta nasceu dentro do Ecossistema Torres, referência em vistoria cautelar, para levar a mesma seriedade ao consumidor que vai comprar um carro.",
+          "A Torres Consulta nasceu no Ecossistema Torres, referência em vistoria cautelar, para levar a mesma seriedade a quem vai comprar um carro.",
       }}
       fullWidth
     >

@@ -50,7 +50,7 @@ export function ConsultaBrandLogo({
               s.sub,
             )}
           >
-            Consulta veicular para você
+            Consulta veicular com confiança
           </span>
         )}
       </div>

@@ -28,9 +28,9 @@ export function ReportPreviewSection() {
           <SectionHeader
             align="left"
             onDark
-            eyebrow="Antes de comprar"
-            title="Veja exatamente o que vem no relatório"
-            description="Tudo organizado e fácil de ler, do resumo de risco à linha do tempo do veículo. Nada de planilha crua ou sigla que ninguém entende."
+            eyebrow="Transparência na compra"
+            title="Veja o que você recebe no relatório Torres"
+            description="Resumo de risco, checagens críticas e linha do tempo do veículo em linguagem clara. Assim você entende o passado do carro antes de assinar."
             titleId="preview-title"
           />
           <Button size="lg" className="mt-8 shadow-glow" asChild>
@@ -50,7 +50,7 @@ export function ReportPreviewSection() {
                   Torres Consulta
                 </p>
                 <p className="mt-1.5 truncate text-base font-bold tracking-tight text-white">
-                  Volkswagen T-Cross
+                  Volkswagen Polo
                 </p>
                 <p className="mt-0.5 font-mono text-[12px] tracking-[0.14em] text-white/40">
                   BRA2E19
