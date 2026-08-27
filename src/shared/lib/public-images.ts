@@ -14,7 +14,8 @@ export const PUBLIC_IMAGES = {
   },
   vehicleBrands: (slug: string) => `/images/vehicle-brands/${slug}.webp` as const,
   consultations: {
-    hero: "/images/consultations/heroconsultations-800.webp",
+    /** Hero full-bleed (Unsplash License) — landscape cinematográfico. */
+    hero: "/images/consultations/hero-bg-1920.webp",
     sampleReport: {
       front: "/images/consultations/sample-report/front.webp",
       rear: "/images/consultations/sample-report/rear.webp",

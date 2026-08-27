@@ -30,6 +30,9 @@ export function LandingHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  /** Hero escuro só na home; demais páginas de marketing ficam claras. */
+  const onDarkHero = pathname === ROUTES.consultaLanding && !scrolled;
+
   const closeMobileMenu = () => setMobileOpen(false);
 
   useEffect(() => {
@@ -59,39 +62,62 @@ export function LandingHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b transition-colors duration-200",
-          scrolled ? "border-border bg-card" : "border-transparent bg-transparent",
+          "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-200",
+          scrolled
+            ? "border-border bg-card shadow-soft"
+            : onDarkHero
+              ? "border-white/10 bg-black/25"
+              : "border-transparent bg-transparent",
         )}
       >
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link to={ROUTES.consultaLanding} aria-label="Torres Consulta, início">
-            <ConsultaBrandLogo size="sm" showSubtitle={false} />
+            <ConsultaBrandLogo size="sm" showSubtitle={false} onDark={onDarkHero} />
           </Link>
 
-          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navegação principal">
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegação principal">
             {MARKETING_HEADER_NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className={cn(
+                  "rounded-md px-3.5 py-2 text-[13px] font-medium tracking-wide transition-colors",
+                  onDarkHero
+                    ? "text-white/70 hover:bg-white/10 hover:text-white"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div className="hidden items-center gap-2 md:flex">
-            <Button variant="outline" size="sm" asChild>
+          <div className="hidden items-center gap-2.5 md:flex">
+            <Button
+              variant="outline"
+              size="sm"
+              className={
+                onDarkHero
+                  ? "h-9 border-white/25 bg-transparent px-4 text-white hover:border-white/40 hover:bg-white/10 hover:text-white"
+                  : undefined
+              }
+              asChild
+            >
               <Link to={ROUTES.consultaLogin}>Entrar</Link>
             </Button>
-            <Button size="sm" asChild>
+            <Button size="sm" className="h-9 px-4 shadow-glow" asChild>
               <Link to={ROUTES.consultar}>Consultar Veículo</Link>
             </Button>
           </div>
 
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card text-foreground lg:hidden"
+            className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-md border lg:hidden",
+              onDarkHero
+                ? "border-white/20 bg-white/10 text-white"
+                : "border-border bg-card text-foreground",
+            )}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-controls="landing-mobile-menu"
