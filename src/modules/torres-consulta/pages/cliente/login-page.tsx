@@ -71,7 +71,7 @@ export function ClienteLoginPage() {
 
   return (
     <ConsumerAuthPanel
-      title="Bem-vindo de volta"
+      title="Boas vindas de volta"
       meta="Conta Torres Consulta"
       description="Entre para consultar veículos, baixar relatórios e comprar com mais segurança."
       trust={["Dados protegidos", "Conforme LGPD", "Relatório na hora"]}
