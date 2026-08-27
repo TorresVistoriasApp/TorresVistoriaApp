@@ -50,7 +50,7 @@ export function ConsumerAuthPanel({
       <div>{children}</div>
 
       {trust && trust.length > 0 ? (
-        <ul className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1.5">
+        <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           {trust.map((item) => (
             <li
               key={item}
