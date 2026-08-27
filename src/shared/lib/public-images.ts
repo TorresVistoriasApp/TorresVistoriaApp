@@ -5,7 +5,7 @@ export const PUBLIC_IMAGES = {
     lockup: "/images/brand/logo-lockup.svg",
     /** Monograma vetorial já recortado no bounding box da marca. */
     mark: "/images/brand/logo-mark.svg",
-    /** Rasters mantidos para contextos sem suporte a SVG (og:image, PDF, Excel). */
+    /** Raster para og:image, PDF e Excel. */
     trim: "/images/brand/official-trim.webp",
     full: "/images/brand/official-full.webp",
   },
@@ -14,7 +14,6 @@ export const PUBLIC_IMAGES = {
   },
   vehicleBrands: (slug: string) => `/images/vehicle-brands/${slug}.webp` as const,
   consultations: {
-    /** Fallback genérico; o hero da landing usa srcset 400/800. */
     hero: "/images/consultations/heroconsultations-800.webp",
     sampleReport: {
       front: "/images/consultations/sample-report/front.webp",
@@ -27,9 +26,7 @@ export const PUBLIC_IMAGES = {
     logo: "/images/placeholders/logo.svg",
   },
   laudo: {
-    /** Vista superior do veículo — análise de pintura no PDF. */
-    vehicleTopView: "/images/laudo/vehicle-top-view-sedan.webp",
-    /** Imagens pictóricas por segmento (intro das seções do PDF) — WebP com alpha. */
+    vehicleTopView: "/images/laudo/vehicle-top-view.webp",
     sections: {
       vehicle: "/images/laudo/sections/vehicle.webp",
       inspection: "/images/laudo/sections/inspection.webp",
