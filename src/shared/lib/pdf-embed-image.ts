@@ -7,6 +7,8 @@ export type PdfEmbedImageOptions = {
   jpegQuality?: number;
   /** MIME sugerido quando o blob vem sem Content-Type (ex.: download do Storage). */
   mimeHint?: string;
+  /** Cache do fetch. Assets locais usam no-cache para pegar arquivo novo no disco. */
+  cache?: RequestCache;
 };
 
 type Size = { width: number; height: number };
@@ -39,6 +41,9 @@ function encodeCanvas(
   canvas.height = size.height;
   const ctx = canvas.getContext("2d");
   if (!ctx) return undefined;
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
   if (preferAlpha) {
     ctx.clearRect(0, 0, size.width, size.height);
@@ -298,7 +303,9 @@ export async function imageUrlToPdfDataUrl(
   if (!url || !isFetchableUrl(url)) return undefined;
 
   try {
-    const cache = url.startsWith("/") || url.startsWith("data:") ? "force-cache" : "no-store";
+    const cache =
+      options.cache ??
+      (url.startsWith("/") || url.startsWith("data:") ? "no-cache" : "no-store");
     const response = await fetchWithTimeout(url, { cache });
     if (!response.ok) return undefined;
     const blob = await response.blob();
