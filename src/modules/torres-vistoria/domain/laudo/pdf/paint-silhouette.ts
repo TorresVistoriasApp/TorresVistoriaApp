@@ -19,7 +19,7 @@ import {
   type LaudoPaintZone,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/laudo-report-view-model";
 
-/** Proporção da silhueta real (134×241 após recorte), escala compacta. */
+/** Proporção da silhueta no PDF — igual ao asset 704×1269 (frente no topo). */
 export const SILHOUETTE_WIDTH = 132;
 export const SILHOUETTE_HEIGHT = 238;
 
