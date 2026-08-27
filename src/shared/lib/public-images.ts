@@ -28,7 +28,7 @@ export const PUBLIC_IMAGES = {
   },
   laudo: {
     /** Vista superior do veículo — análise de pintura no PDF. */
-    vehicleTopView: "/images/laudo/vehicle-top-view.webp",
+    vehicleTopView: "/images/laudo/vehicle-top-view-sedan.webp",
     /** Imagens pictóricas por segmento (intro das seções do PDF) — WebP com alpha. */
     sections: {
       vehicle: "/images/laudo/sections/vehicle.webp",

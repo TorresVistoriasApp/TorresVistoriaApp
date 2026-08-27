@@ -34,7 +34,8 @@ import {
  * vetor a 4x garante ~288 DPI na impressão.
  */
 const LOGO_PRINT_WIDTH_PX = 448;
-const VEHICLE_TOP_VIEW_PRINT_WIDTH_PX = 704;
+/** Silhueta 132pt — 10× (~720 DPI) para o traço ficar nítido na impressão. */
+const VEHICLE_TOP_VIEW_PRINT_WIDTH_PX = 1320;
 /** Intro no PDF é ~48pt — 192px basta (~4×) sem inflar o payload. */
 const SECTION_ICON_PRINT_PX = 192;
 
@@ -119,6 +120,7 @@ async function loadStaticLaudoAssets(): Promise<StaticLaudoAssets> {
             VEHICLE_TOP_VIEW_PRINT_WIDTH_PX * (SILHOUETTE_HEIGHT / SILHOUETTE_WIDTH),
           ),
           preferAlpha: true,
+          cache: "reload",
         }),
         loadSectionIconDataUrls(),
       ]);

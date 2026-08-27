@@ -19,7 +19,7 @@ import {
   type LaudoPaintZone,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/laudo-report-view-model";
 
-/** Proporção da silhueta no PDF — igual ao asset 704×1269 (frente no topo). */
+/** Proporção da silhueta no PDF — igual ao asset 1320×2380 (frente no topo). */
 export const SILHOUETTE_WIDTH = 132;
 export const SILHOUETTE_HEIGHT = 238;
 
