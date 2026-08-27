@@ -168,7 +168,7 @@ export function LandingHeader() {
             <Button
               size="sm"
               className={cn(
-                "group/cta relative h-9 overflow-hidden px-3.5 text-[13px] font-semibold tracking-wide shadow-glow sm:px-4",
+                "group/cta relative hidden h-9 overflow-hidden px-4 text-[13px] font-semibold tracking-wide shadow-glow lg:inline-flex",
                 "transition-transform duration-200 hover:scale-[1.02]",
               )}
               asChild
@@ -178,9 +178,7 @@ export function LandingHeader() {
                   className="pointer-events-none absolute inset-0 translate-x-[-120%] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover/cta:translate-x-[120%]"
                   aria-hidden
                 />
-                <Search className="relative h-3.5 w-3.5 sm:hidden" strokeWidth={2.5} aria-hidden />
-                <span className="relative hidden sm:inline">Consultar veículo</span>
-                <span className="relative sm:hidden">Consultar</span>
+                <span className="relative">Consultar veículo</span>
               </Link>
             </Button>
 
