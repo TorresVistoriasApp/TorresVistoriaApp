@@ -16,6 +16,8 @@ export const PUBLIC_IMAGES = {
   consultations: {
     /** Hero full-bleed (Unsplash License) — landscape cinematográfico. */
     hero: "/images/consultations/hero-bg-1920.webp",
+    /** Auth login — imagem exclusiva (Unsplash License). */
+    auth: "/images/consultations/auth-bg-1600.webp",
     sampleReport: {
       front: "/images/consultations/sample-report/front.webp",
       rear: "/images/consultations/sample-report/rear.webp",
