@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Navigate } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, UserPlus } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react";
 import { useAuth } from "@/core/auth/use-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { checkRateLimit, formatRetryAfter, resetRateLimit } from "@/core/auth/rate-limit";
@@ -33,7 +33,7 @@ export function LoginPage() {
 
   if (loading || (session && principalLoading)) {
     return (
-      <div className="lg:col-start-2 lg:row-start-2">
+      <div className="flex flex-1 justify-center py-12">
         <LoadingSpinner />
       </div>
     );
@@ -61,35 +61,53 @@ export function LoginPage() {
 
   return (
     <TenantAuthPanel
-      title="Entrar no painel"
-      meta="Use sua conta Torres Vistorias"
+      title="Acesse o painel Torres"
+      meta="Conta Torres Vistoria"
+      description="Entre para emitir laudos, gerenciar vistorias e acompanhar sua operação."
       cta={
         <Link
           to={ROUTES.vistoriaRegister}
-          className="group flex items-center gap-3 rounded-xl border border-brand-border bg-brand-subtle p-3.5 transition-colors duration-150 hover:bg-brand-muted"
+          className="group relative block w-full overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-white via-[#fff8f3] to-primary/[0.08] p-4 shadow-[0_10px_28px_rgb(16_21_28_/_0.06)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_16px_36px_rgb(232_104_42_/_0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:p-5"
         >
-          <span className="ui-icon-box h-10 w-10">
-            <UserPlus className="h-4 w-4" strokeWidth={2.25} aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="ui-eyebrow">Ainda não tem cadastro?</span>
-            <span className="mt-1 block text-sm font-bold text-foreground">
-              Criar conta de vistoriador
-            </span>
-            <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-              Cadastro gratuito, liberado após aprovação da equipe.
-            </span>
-          </span>
-          <ArrowRight
-            className="h-5 w-5 shrink-0 text-primary transition-transform group-hover:translate-x-0.5"
+          <span
+            className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary via-[#ff9a5c] to-primary/70"
             aria-hidden
           />
+          <span
+            className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
+            aria-hidden
+          />
+          <span
+            className="pointer-events-none absolute inset-0 translate-x-[-120%] bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-0 transition-[transform,opacity] duration-700 group-hover:translate-x-[120%] group-hover:opacity-100"
+            aria-hidden
+          />
+
+          <div className="relative flex items-start gap-3.5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-[0_0_0_4px_rgb(232_104_42_/_0.06)] transition-transform duration-300 group-hover:scale-105">
+              <Sparkles className="h-4 w-4" strokeWidth={2} aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary/80">
+                Novo vistoriador?
+              </p>
+              <p className="mt-1.5 inline-flex items-center gap-1.5 text-[15px] font-bold tracking-tight text-foreground">
+                Criar conta profissional
+                <ArrowRight
+                  className="h-4 w-4 text-primary transition-transform duration-300 group-hover:translate-x-1"
+                  aria-hidden
+                />
+              </p>
+              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted-foreground">
+                Cadastro grátis. Acesso liberado após aprovação da equipe Torres.
+              </p>
+            </div>
+          </div>
         </Link>
       }
       footer={
         <Link
           to={ROUTES.consultaLanding}
-          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-4 py-3.5 text-center text-sm text-muted-foreground shadow-card transition-colors duration-150 hover:text-foreground"
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-[rgb(16_21_28_/_0.08)] bg-white/60 px-4 py-3.5 text-center text-sm text-muted-foreground transition-colors duration-150 hover:border-primary/25 hover:text-foreground"
         >
           Não é vistoriador?
           <span className="font-semibold text-primary">Consultar veículo</span>
@@ -97,7 +115,7 @@ export function LoginPage() {
         </Link>
       }
     >
-      <form onSubmit={onSubmit} className="space-y-3.5" data-testid="login-form" aria-busy={isSubmitting}>
+      <form onSubmit={onSubmit} className="space-y-4" data-testid="login-form" aria-busy={isSubmitting}>
         <EmailField
           id="email"
           placeholder="seu@email.com"
@@ -116,7 +134,7 @@ export function LoginPage() {
           labelAction={
             <Link
               to={ROUTES.forgotPassword}
-              className="text-xs font-semibold text-primary hover:underline"
+              className="text-xs font-semibold tracking-wide text-primary hover:underline"
             >
               Esqueci minha senha
             </Link>
@@ -158,7 +176,7 @@ export function LoginPage() {
 
         {error && <FormError message={error} />}
 
-        <Button type="submit" className="h-12 w-full" size="lg" disabled={isSubmitting}>
+        <Button type="submit" className="h-12 w-full shadow-glow" size="lg" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <span
@@ -169,7 +187,7 @@ export function LoginPage() {
             </>
           ) : (
             <>
-              Entrar
+              Entrar no painel
               <ArrowRight className="h-4 w-4" aria-hidden />
             </>
           )}
