@@ -332,7 +332,7 @@ export async function mapWithConcurrency<T, R>(
       results[index] = await mapper(items[index]!, index);
       // Cede a UI entre itens — evita spinner congelado ao embutir dezenas de fotos.
       await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 0);
+        globalThis.setTimeout(resolve, 0);
       });
     }
   }
