@@ -431,6 +431,10 @@
     animation-delay: 0.3s;
   }
 
+  .landing-hero-enter-delay-5 {
+    animation-delay: 0.38s;
+  }
+
   @keyframes landing-hero-photo-in {
     from {
       opacity: 0;
