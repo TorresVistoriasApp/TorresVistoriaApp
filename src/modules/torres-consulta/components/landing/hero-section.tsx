@@ -1,53 +1,47 @@
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
-import { ROUTES } from "@/config/routes";
+import { PUBLIC_IMAGES } from "@/shared/lib/public-images";
 import { HeroConsultaForm } from "./hero-consulta-form";
-import { HeroVehicleVisual } from "./hero-vehicle-visual";
-import { LandingEyebrow } from "./landing-ui";
+
+const HERO_IMAGE = PUBLIC_IMAGES.consultations.hero;
+const HERO_SRCSET =
+  "/images/consultations/hero-bg-768.webp 768w, /images/consultations/hero-bg-1280.webp 1280w, /images/consultations/hero-bg-1920.webp 1920w";
 
 export function HeroSection() {
   return (
-    <section id="inicio" className="landing-hero-bg relative pt-24 pb-14 sm:pt-28 sm:pb-16 lg:pt-32 lg:pb-20">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-14">
-          <div className="flex flex-col">
-            <LandingEyebrow>Consulta veicular completa</LandingEyebrow>
+    <section
+      id="inicio"
+      className="landing-hero-cinematic relative flex min-h-[100svh] flex-col overflow-hidden"
+    >
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <img
+          src={HERO_IMAGE}
+          srcSet={HERO_SRCSET}
+          sizes="100vw"
+          alt=""
+          width={1920}
+          height={1280}
+          decoding="async"
+          fetchPriority="high"
+          className="landing-hero-photo absolute inset-0 h-full w-full object-cover object-[center_42%]"
+        />
+        <div className="landing-hero-cinematic-veil absolute inset-0" />
+      </div>
 
-            <h1 className="mt-4 text-balance text-[2.125rem] font-bold leading-[1.05] text-foreground sm:text-[2.75rem] lg:text-[3.125rem]">
-              Todo o histórico do veículo antes de fechar negócio
-            </h1>
+      <div className="relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 pb-16 pt-24 text-center sm:px-6 sm:pb-20 sm:pt-28">
+        <p className="landing-hero-enter landing-hero-enter-delay-1 text-[1.375rem] font-bold tracking-tight text-white sm:text-[1.625rem]">
+          Torres <span className="text-primary">Consulta</span>
+        </p>
 
-            <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-[17px]">
-              Leilão, sinistro, roubo, débitos e restrições em um relatório único e fácil de ler.
-              Informe a placa ou o chassi e receba o resultado na hora.
-            </p>
+        <h1 className="landing-hero-enter landing-hero-enter-delay-2 mt-5 max-w-2xl text-balance text-[1.875rem] font-bold leading-[1.12] tracking-tight text-white sm:mt-6 sm:text-[2.5rem] lg:text-[2.875rem]">
+          Todo o histórico do veículo antes de fechar negócio
+        </h1>
 
-            <div className="mt-7 lg:mt-8">
-              <HeroConsultaForm />
-            </div>
+        <p className="landing-hero-enter landing-hero-enter-delay-3 mt-4 max-w-md text-pretty text-[15px] leading-relaxed text-white/70 sm:text-base">
+          Leilão, sinistro, roubo e restrições em um relatório único. Informe a placa ou o chassi e
+          receba o resultado na hora.
+        </p>
 
-            <div className="mt-6 lg:hidden">
-              <HeroVehicleVisual compact />
-            </div>
-
-            <p className="mt-6 text-sm text-muted-foreground">
-              Trabalha com vistoria cautelar?{" "}
-              <Link
-                to={ROUTES.vistoriaLogin}
-                className="group inline-flex items-center gap-1 font-semibold text-foreground underline decoration-border decoration-2 underline-offset-4 transition-colors hover:text-primary hover:decoration-primary/40"
-              >
-                Conheça a Torres Vistoria
-                <ArrowRight
-                  className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
-                  aria-hidden
-                />
-              </Link>
-            </p>
-          </div>
-
-          <div className="hidden lg:block lg:pt-2">
-            <HeroVehicleVisual />
-          </div>
+        <div className="landing-hero-enter landing-hero-enter-delay-4 mt-8 w-full max-w-xl sm:mt-10">
+          <HeroConsultaForm />
         </div>
       </div>
     </section>
