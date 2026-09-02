@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   computeAuditStats,
+  getAuditChanges,
   getAuditMetadataEntries,
   getAuditSummary,
 } from "@/modules/admin/audit/utils/audit-presentation";
@@ -64,5 +65,18 @@ describe("audit-utils", () => {
     expect(stats.logins).toBe(1);
     expect(stats.exports).toBe(1);
     expect(stats.updates).toBe(1);
+  });
+
+  it("mascara CPF/e-mail e oculta hash na UI de auditoria", () => {
+    const changes = getAuditChanges(
+      { client_document: "12345678909", email: "ana@empresa.com", document_hash: "abc" },
+      { client_document: "98765432100", email: "ana@empresa.com", document_hash: "abc" },
+    );
+    expect(changes.some((c) => c.field === "document_hash")).toBe(false);
+    const documentChange = changes.find((c) => c.field === "client_document");
+    expect(documentChange?.before).toBe("***.456.789-**");
+    expect(documentChange?.after).toBe("***.654.321-**");
+    const emailChange = changes.find((c) => c.field === "email");
+    expect(emailChange).toBeUndefined();
   });
 });

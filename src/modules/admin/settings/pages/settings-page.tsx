@@ -18,6 +18,7 @@ import { MaskedField } from "@/shared/components/forms/masked-fields";
 import { FormField } from "@/shared/components/forms/form-field";
 import { companyToAddressInput } from "@/core/tenant/company-address";
 import { maskCpfCnpj } from "@/shared/lib/masks";
+import { redactDocument } from "@/shared/lib/pii";
 import { CompanyAddressFields } from "@/modules/admin/settings/components/company-address-fields";
 import { InspectionTypesSection } from "@/modules/torres-vistoria";
 import { PrivacyRightsSection } from "@/modules/admin/settings/components/privacy-rights-section";
@@ -212,19 +213,31 @@ function CompanySection({
                 {...form.register("legal_name")}
               />
             </FormField>
-            <MaskedField
-              control={form.control}
-              name="document"
-              label="CPF ou CNPJ"
-              mask="cpfCnpj"
-              placeholder="Digite o CPF ou CNPJ"
-              hint="Campo opcional. Será impresso no laudo em PDF quando informado."
-              labelClassName={SETTINGS_FIELD_LABEL_CLASS}
-              inputClassName="touch-target"
-              className="min-w-0"
-              error={form.formState.errors.document?.message}
-              disabled={!canEdit}
-            />
+            {canEdit ? (
+              <MaskedField
+                control={form.control}
+                name="document"
+                label="CPF ou CNPJ"
+                mask="cpfCnpj"
+                placeholder="Digite o CPF ou CNPJ"
+                hint="Campo opcional. Será impresso no laudo em PDF quando informado."
+                labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+                inputClassName="touch-target"
+                className="min-w-0"
+                error={form.formState.errors.document?.message}
+              />
+            ) : (
+              <FormField
+                label="CPF ou CNPJ"
+                labelClassName={SETTINGS_FIELD_LABEL_CLASS}
+                hint="Documento mascarado. O valor completo entra só no laudo em PDF."
+                className="min-w-0"
+              >
+                <p className="flex min-h-10 items-center text-sm text-foreground">
+                  {form.getValues("document") ? redactDocument(form.getValues("document")) : "—"}
+                </p>
+              </FormField>
+            )}
           </div>
           {!canEdit && (
             <SettingsNotice>

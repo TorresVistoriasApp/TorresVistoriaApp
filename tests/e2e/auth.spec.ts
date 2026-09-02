@@ -29,5 +29,13 @@ test.describe("Autenticação", () => {
       await page.goto("/financeiro/despesas");
       await expect(page.getByText("Acesso negado")).toBeVisible();
     });
+
+    test("vistoriador não acessa usuários nem auditoria", async ({ page }) => {
+      await loginAsDemo(page, "vistoriador");
+      await page.goto("/usuarios");
+      await expect(page.getByText("Acesso negado")).toBeVisible();
+      await page.goto("/auditoria");
+      await expect(page.getByText("Acesso negado")).toBeVisible();
+    });
   });
 });

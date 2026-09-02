@@ -1,4 +1,5 @@
 import { formatCurrency, formatDateTime } from "@/shared/lib/formatters";
+import { PII_HIDDEN_FIELDS, redactKnownPiiValue } from "@/shared/lib/pii";
 import { ChecklistStatus, getChecklistStatusLabel } from "@/modules/torres-vistoria";
 import type { AuditAction } from "@/core/audit/audit-actions";
 import type { AuditLog } from "@/core/audit/audit-service";
@@ -79,6 +80,7 @@ const IGNORED_FIELDS = new Set([
   "deleted_at",
   "id",
   "tenant_id",
+  ...PII_HIDDEN_FIELDS,
 ]);
 
 export function getEntityLabel(entityType: string): string {
@@ -136,6 +138,11 @@ export function getAuditChanges(
 
     let beforeFormatted = formatAuditValue(before);
     let afterFormatted = formatAuditValue(after);
+
+    const beforeMasked = redactKnownPiiValue(field, before);
+    const afterMasked = redactKnownPiiValue(field, after);
+    if (beforeMasked !== null) beforeFormatted = beforeMasked;
+    if (afterMasked !== null) afterFormatted = afterMasked;
 
     if (field === "amount" && (typeof before === "number" || typeof after === "number")) {
       beforeFormatted = before != null ? formatCurrency(Number(before)) : "—";
@@ -212,10 +219,10 @@ export function getAuditMetadataEntries(
   };
 
   return Object.entries(data)
-    .filter(([, value]) => value != null && value !== "")
+    .filter(([key, value]) => value != null && value !== "" && !PII_HIDDEN_FIELDS.has(key))
     .map(([key, value]) => ({
       label: labelMap[key] ?? getFieldLabel(key),
-      value: formatAuditValue(value),
+      value: redactKnownPiiValue(key, value) ?? formatAuditValue(value),
     }));
 }
 

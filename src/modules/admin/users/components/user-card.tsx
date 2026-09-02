@@ -3,6 +3,7 @@ import { UserRole } from "@/core/rbac/roles";
 import { RoleBadge } from "@/core/tenant/components/role-badge";
 import { cn } from "@/shared/lib/utils";
 import { formatDate } from "@/shared/lib/formatters";
+import { redactEmail, redactPhone } from "@/shared/lib/pii";
 import type { TeamProfile } from "@/modules/admin/users/services/user-service";
 import { Button } from "@/shared/ui/button";
 
@@ -34,8 +35,10 @@ export function UserCard({
               <span className="ui-chip-negative uppercase tracking-wide">Inativo</span>
             )}
           </div>
-          <p className="truncate text-sm text-muted-foreground">{user.email ?? "—"}</p>
-          {user.phone && <p className="truncate text-sm text-muted-foreground">{user.phone}</p>}
+          <p className="truncate text-sm text-muted-foreground">{redactEmail(user.email)}</p>
+          {user.phone && (
+            <p className="truncate text-sm text-muted-foreground">{redactPhone(user.phone)}</p>
+          )}
           <p className="text-xs text-muted-foreground">{formatDate(user.created_at)}</p>
         </div>
 
