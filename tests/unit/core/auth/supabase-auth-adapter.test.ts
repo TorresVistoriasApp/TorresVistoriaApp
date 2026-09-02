@@ -19,7 +19,7 @@ describe("supabaseAuthAdapter.signUp", () => {
     vi.clearAllMocks();
   });
 
-  it("rejeita cadastro quando identities está vazio (e-mail já existente)", async () => {
+  it("não revela e-mail já existente no cadastro público (anti-enumeração)", async () => {
     mocks.signUp.mockResolvedValue({
       data: { user: { id: "u1", identities: [] }, session: null },
       error: null,
@@ -27,7 +27,7 @@ describe("supabaseAuthAdapter.signUp", () => {
 
     await expect(
       supabaseAuthAdapter.signUp("existente@test.com", "SenhaForte1!", { user_type: "consumer" }),
-    ).rejects.toThrow("Já existe uma conta associada a este e-mail.");
+    ).resolves.toMatchObject({ user: { id: "u1" } });
   });
 
   it("aceita cadastro quando há identity", async () => {

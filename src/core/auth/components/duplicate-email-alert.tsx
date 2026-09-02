@@ -8,17 +8,19 @@ interface DuplicateEmailAlertProps {
 }
 
 /**
- * Mensagem amigável quando o e-mail já está cadastrado no Supabase Auth.
+ * Mensagem única de cadastro público — não confirma se o e-mail já existe.
  */
 export function DuplicateEmailAlert({
   loginRoute = ROUTES.consultaLogin,
   forgotPasswordRoute = ROUTES.consultaForgotPassword,
 }: DuplicateEmailAlertProps) {
   return (
-    <div className="rounded-lg border border-warning-border bg-warning-subtle px-4 py-3 text-sm">
-      <p className="font-medium text-foreground">Já existe uma conta associada a este e-mail.</p>
+    <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
+      <p className="font-medium text-foreground">
+        Se este e-mail puder ser cadastrado, enviaremos um link de confirmação.
+      </p>
       <p className="mt-1 text-muted-foreground">
-        Você pode entrar com suas credenciais ou recuperar sua senha.
+        Verifique sua caixa de entrada. Se você já tem conta, entre ou recupere a senha.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <Button asChild size="sm" variant="default">
@@ -33,7 +35,7 @@ export function DuplicateEmailAlert({
 }
 
 export function isDuplicateEmailError(message: string): boolean {
-  return /já existe uma conta associada|já existe um usuário cadastrado|already been registered|already registered|user already exists|duplicate key|unique constraint/i.test(
+  return /já existe uma conta associada|já existe um usuário cadastrado|se este e-mail puder ser cadastrado|already been registered|already registered|user already exists|email address is already/i.test(
     message,
   );
 }

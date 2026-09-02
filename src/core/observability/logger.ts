@@ -1,18 +1,45 @@
-import { isProduction } from "@/config/env";
-
 type LogLevel = "debug" | "info" | "warn" | "error";
 
-const PII_PATTERN = /\b[\w.+-]+@[\w-]+\.\w{2,}\b|\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g;
+const EMAIL = /\b[\w.+-]+@[\w-]+\.\w{2,}\b/gi;
+const CPF = /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g;
+const CNPJ = /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/g;
+const JWT = /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g;
 
-function redact(message: string): string {
-  return message.replace(PII_PATTERN, "[redacted]");
+export function redactPii(value: string): string {
+  return value
+    .replace(EMAIL, "[redacted-email]")
+    .replace(CNPJ, "[redacted-cnpj]")
+    .replace(CPF, "[redacted-cpf]")
+    .replace(JWT, "[redacted-token]");
+}
+
+function redactUnknown(meta: unknown): unknown {
+  if (meta === null || meta === undefined) return meta;
+  if (typeof meta === "string") return redactPii(meta);
+  if (typeof meta === "number" || typeof meta === "boolean") return meta;
+  if (meta instanceof Error) {
+    return { name: meta.name, message: redactPii(meta.message) };
+  }
+  if (Array.isArray(meta)) return meta.map(redactUnknown);
+  if (typeof meta === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [key, nested] of Object.entries(meta as Record<string, unknown>)) {
+      if (/email|document|cpf|cnpj|password|token|jwt|phone|secret/i.test(key)) {
+        out[key] = "[redacted]";
+        continue;
+      }
+      out[key] = redactUnknown(nested);
+    }
+    return out;
+  }
+  return "[redacted]";
 }
 
 function log(level: LogLevel, message: string, meta?: unknown): void {
-  if (isProduction() && level === "debug") return;
+  if (import.meta.env.PROD && level === "debug") return;
 
-  const safeMessage = isProduction() ? redact(message) : message;
-  const payload = meta !== undefined ? (isProduction() ? "[meta]" : meta) : undefined;
+  const safeMessage = redactPii(message);
+  const payload = meta !== undefined ? redactUnknown(meta) : undefined;
 
   switch (level) {
     case "debug":

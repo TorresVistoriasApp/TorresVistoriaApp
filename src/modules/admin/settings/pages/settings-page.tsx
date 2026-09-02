@@ -22,6 +22,7 @@ import { CompanyAddressFields } from "@/modules/admin/settings/components/compan
 import { InspectionTypesSection } from "@/modules/torres-vistoria";
 import { PrivacyRightsSection } from "@/modules/admin/settings/components/privacy-rights-section";
 import { ChangePasswordSection } from "@/modules/admin/settings/components/change-password-section";
+import { MfaTotpSection } from "@/core/auth/components/mfa-totp-section";
 import {
   SETTINGS_FIELD_LABEL_CLASS,
   SettingsNotice,
@@ -461,8 +462,10 @@ export function SettingsPage() {
 
       <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-stretch">
         <ChangePasswordSection className="min-w-0 h-full" />
-        <PrivacyRightsSection className="min-w-0 h-full" />
+        <MfaTotpSection className="min-w-0 h-full" />
       </div>
+
+      <PrivacyRightsSection className="min-w-0" />
 
       <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-20 border-t border-border bg-card px-4 py-3 shadow-elevated sm:hidden">
         <SaveSettingsButton

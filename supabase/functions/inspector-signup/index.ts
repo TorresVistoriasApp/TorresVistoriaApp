@@ -9,6 +9,7 @@ import {
   rateLimitedResponse,
 } from "../_shared/rate-limit.ts";
 import { TurnstileError, verifyTurnstileToken } from "../_shared/turnstile.ts";
+import { isDuplicateUserError } from "../_shared/duplicate-user.ts";
 import {
   isValidInspectorDocument,
   normalizeDocumentDigits,
@@ -87,7 +88,19 @@ Deno.serve(async (req) => {
       },
     });
 
-    if (createError) throw createError;
+    if (createError) {
+      if (isDuplicateUserError(createError.message ?? "")) {
+        if (intentId) {
+          await supabase.rpc("discard_inspector_signup_intent", { p_intent_id: intentId });
+          intentId = null;
+        }
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      throw createError;
+    }
     if (!created.user) throw new Error("Não foi possível concluir o cadastro.");
 
     return new Response(JSON.stringify({ success: true }), {

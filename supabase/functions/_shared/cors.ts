@@ -17,18 +17,16 @@ const PRODUCTION_ORIGINS = new Set([
   "https://torresconsultas.com.br",
   "https://www.torresconsultas.com.br",
   "https://vistoria.torresconsultas.com.br",
+  "https://torres-vistoria-app.vercel.app",
 ]);
 
-/**
- * Deploys na Vercel (*.vercel.app) e o domínio próprio da Torres Consulta.
- * SITE_URL / ALLOWED_ORIGINS continuam valendo normalmente.
- */
-function isVercelAppOrigin(origin: string): boolean {
+function isHttpsProductionSite(): boolean {
+  if (!DEFAULT_ORIGIN.startsWith("https://")) return false;
   try {
-    const url = new URL(origin);
-    return url.protocol === "https:" && url.hostname.endsWith(".vercel.app");
+    const host = new URL(DEFAULT_ORIGIN).hostname;
+    return host !== "localhost" && host !== "127.0.0.1";
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -36,15 +34,15 @@ function isAllowedOrigin(origin: string): boolean {
   if (!origin) return false;
   if (DEFAULT_ORIGIN && origin === DEFAULT_ORIGIN) return true;
   if (EXTRA_ORIGINS.includes(origin)) return true;
-  if (LOCAL_ORIGINS.has(origin)) return true;
   if (PRODUCTION_ORIGINS.has(origin)) return true;
-  if (isVercelAppOrigin(origin)) return true;
+  if (!isHttpsProductionSite() && LOCAL_ORIGINS.has(origin)) return true;
   return false;
 }
 
 /**
  * CORS refletido só para origens conhecidas.
- * Não usa "*" — sem match, responde "null" e o browser bloqueia a leitura.
+ * Não usa "*" nem curingas de preview da Vercel — cada preview entra em ALLOWED_ORIGINS.
+ * Sem match, responde "null" e o browser bloqueia a leitura.
  */
 export function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("Origin") ?? "";

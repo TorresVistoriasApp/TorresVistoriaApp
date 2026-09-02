@@ -7,6 +7,7 @@ import { AVATARS_BUCKET } from "@/infra/storage/buckets";
 import { platformAdminService } from "@/core/auth/platform-admin-service";
 import { inspectorAuthService } from "@/core/auth/services/inspector-auth-service";
 import { auditService } from "@/core/audit/audit-service";
+import { finalizeSession } from "@/core/auth/finalize-session";
 import { getAppUrl } from "@/config/env";
 import type { Profile } from "@/core/auth/types";
 import type { ChangePasswordInput } from "@/core/auth/schemas/auth";
@@ -75,6 +76,7 @@ export const authService = {
     await auditService.recordEvent({ action: "LOGOUT", entityType: "auth" }).catch(() => undefined);
     const { error } = await db.auth.signOut();
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
+    await finalizeSession();
   },
 
   async resetPassword(email: string, redirectTo: string, captchaToken?: string): Promise<void> {

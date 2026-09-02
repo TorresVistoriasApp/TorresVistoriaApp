@@ -109,6 +109,26 @@ describe("consumerAuthService", () => {
     ).resolves.toEqual({ needsEmailConfirmation: false });
   });
 
+  it("signUp não enumera e-mail já existente (identities vazio)", async () => {
+    mocks.signUp.mockResolvedValue({
+      session: { user: { id: "user-1" } },
+      user: { id: "user-1", identities: [] },
+    });
+
+    await expect(
+      consumerAuthService.signUp({
+        name: "Consumidor",
+        email: "existente@test.com",
+        password: "SenhaForte1!",
+        confirmPassword: "SenhaForte1!",
+        acceptTerms: true,
+      }),
+    ).resolves.toEqual({ needsEmailConfirmation: true });
+
+    expect(mocks.signOut).toHaveBeenCalled();
+    expect(mocks.getSelf).not.toHaveBeenCalled();
+  });
+
   it("signIn permite conta em exclusão pendente dentro do prazo", async () => {
     mocks.signInWithPassword.mockResolvedValue({ user: { id: "user-1" } });
     mocks.getSelf.mockResolvedValue({

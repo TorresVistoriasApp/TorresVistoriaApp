@@ -47,20 +47,11 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
+            // URL assinada é por sessão. CacheFirst vazaria foto/laudo após logout.
             urlPattern: ({ url }) =>
               url.pathname.includes("/storage/v1/object/sign/") ||
               url.pathname.includes("/storage/v1/object/public/"),
-            handler: "CacheFirst",
-            options: {
-              cacheName: "supabase-storage",
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60,
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
+            handler: "NetworkOnly",
           },
           {
             urlPattern: ({ url }) => url.pathname.startsWith("/images/consultations/"),

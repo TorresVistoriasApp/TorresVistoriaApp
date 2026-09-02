@@ -123,6 +123,12 @@ export async function getSignedUrls(
 }
 
 /** Chamado no logout: as URLs assinadas herdam a sessão de quem as gerou. */
-export function clearSignedUrlCache(): void {
+export async function clearSignedUrlCache(): Promise<void> {
   cache.clear();
+  if (typeof caches === "undefined") return;
+  try {
+    await caches.delete("supabase-storage");
+  } catch {
+    // Cache Storage pode falhar em contexto privado; o Map em memória já foi limpo.
+  }
 }

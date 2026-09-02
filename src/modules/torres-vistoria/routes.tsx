@@ -72,13 +72,18 @@ export const torresVistoriaRoutes: ModuleRoutes = {
     },
     {
       path: ROUTES.financial,
-      element: lazyRoute(() => import("@/modules/torres-vistoria/pages/financial-page"), "FinancialPage"),
+      element: lazyRoute(
+        () => import("@/modules/torres-vistoria/pages/financial-page"),
+        "FinancialPage",
+        { anyOf: ["financial.manage", "financial.read.own"] },
+      ),
     },
     {
       path: ROUTES.financialRevenue,
       element: lazyRoute(
         () => import("@/modules/torres-vistoria/pages/financial-revenue-page"),
         "FinancialRevenuePage",
+        { permission: "financial.manage" },
       ),
     },
     {
@@ -86,11 +91,16 @@ export const torresVistoriaRoutes: ModuleRoutes = {
       element: lazyRoute(
         () => import("@/modules/torres-vistoria/pages/financial-expenses-page"),
         "FinancialExpensesPage",
+        { permission: "financial.manage" },
       ),
     },
     {
       path: ROUTES.reports,
-      element: lazyRoute(() => import("@/modules/torres-vistoria/pages/reports-page"), "ReportsPage"),
+      element: lazyRoute(
+        () => import("@/modules/torres-vistoria/pages/reports-page"),
+        "ReportsPage",
+        { permission: "reports.export" },
+      ),
     },
   ],
 };

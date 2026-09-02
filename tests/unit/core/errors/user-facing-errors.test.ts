@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 
 describe("formatUserFacingError", () => {
-  it("traduz e-mail já cadastrado para português formal", () => {
+  it("traduz e-mail já cadastrado sem confirmar existência da conta", () => {
     expect(
       formatUserFacingError("A user with this email address has already been registered"),
-    ).toBe("Já existe uma conta associada a este e-mail.");
+    ).toBe(
+      "Se este e-mail puder ser cadastrado, enviaremos um link de confirmação. Verifique sua caixa de entrada.",
+    );
   });
 
   it("preserva mensagens já em português", () => {

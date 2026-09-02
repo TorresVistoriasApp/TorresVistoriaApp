@@ -5,6 +5,7 @@ import { USER_MESSAGES } from "@/core/errors/user-facing-errors";
 import { consumerProfileService } from "@/core/auth/consumer-profile-service";
 import { inspectorRegistrationService } from "@/core/auth/inspector-registration-service";
 import { supabaseAuthAdapter } from "@/core/auth/services/supabase-auth-adapter";
+import { finalizeSession } from "@/core/auth/finalize-session";
 import { ConsumerAccountStatus } from "@/core/auth/types";
 import type {
   ConsumerForgotPasswordInput,
@@ -91,20 +92,19 @@ export const consumerAuthService = {
       captchaToken,
     );
 
-    if (session?.user?.id) {
+    const identities = user?.identities;
+    const looksLikeExistingEmail = Array.isArray(identities) && identities.length === 0;
+
+    if (session?.user?.id && !looksLikeExistingEmail) {
       await waitForConsumerProfile(session.user.id);
       return { needsEmailConfirmation: false };
     }
 
-    // Confirmação por e-mail: encerra sessão parcial para não travar a tela de cadastro.
+    // Confirmação por e-mail (ou e-mail já existente): mesma resposta, sem enumerar.
     try {
       await supabaseAuthAdapter.signOut();
     } catch {
       // Sem sessão ativa — segue para a tela de confirmação.
-    }
-
-    if (user?.id) {
-      await waitForConsumerProfile(user.id).catch(() => undefined);
     }
 
     return { needsEmailConfirmation: true };
@@ -112,6 +112,7 @@ export const consumerAuthService = {
 
   async signOut(): Promise<void> {
     await supabaseAuthAdapter.signOut();
+    await finalizeSession();
   },
 
   async resetPassword(
