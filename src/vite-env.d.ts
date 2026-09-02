@@ -11,6 +11,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_NAME?: string;
   readonly VITE_APP_URL?: string;
   readonly VITE_DEMO_MODE?: string;
+  readonly VITE_TURNSTILE_SITE_KEY?: string;
   /** Feature flags: VITE_FF_TORRES_CONSULTA, VITE_FF_PAYMENTS, etc. */
   readonly VITE_FF_TORRES_CONSULTA?: string;
   readonly VITE_FF_TORRES_CONSULTA_OFFICIAL_API?: string;

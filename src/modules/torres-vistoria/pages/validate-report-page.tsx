@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { CheckCircle, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 import { ROUTES } from "@/config/routes";
+import { useTurnstile } from "@/core/security/use-turnstile";
 import type { ReportValidationResult } from "@/modules/torres-vistoria/domain/laudo/validation-types";
 import { cn } from "@/shared/lib/utils";
 
@@ -20,6 +21,7 @@ function ValidationField({ label, value }: { label: string; value: string }) {
 
 export function ValidateReportPage() {
   const { codigo } = useParams<{ codigo: string }>();
+  const turnstile = useTurnstile("validate-report");
   const [result, setResult] = useState<ReportValidationResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +32,31 @@ export function ValidateReportPage() {
       return;
     }
 
+    if (turnstile.required && !turnstile.token) {
+      setLoading(true);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
     void inspectionService
-      .validateReport(decodeURIComponent(codigo))
-      .then((data) => setResult(data as ReportValidationResult))
-      .catch((err) => setError(err instanceof Error ? err.message : "Erro ao validar"))
-      .finally(() => setLoading(false));
-  }, [codigo]);
+      .validateReport(decodeURIComponent(codigo), turnstile.token ?? undefined)
+      .then((data) => {
+        if (!cancelled) setResult(data as ReportValidationResult);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Erro ao validar");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [codigo, turnstile.required, turnstile.token]);
 
   if (!codigo) {
     return (
@@ -47,7 +68,14 @@ export function ValidateReportPage() {
     );
   }
 
-  if (loading) return <LoadingSpinner label="Verificando laudo..." />;
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {turnstile.field}
+        <LoadingSpinner label="Verificando laudo..." />
+      </div>
+    );
+  }
 
   if (error) {
     return (

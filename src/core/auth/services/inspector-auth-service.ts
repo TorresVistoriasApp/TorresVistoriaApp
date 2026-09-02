@@ -22,7 +22,7 @@ const REJECTED_MESSAGE =
  * Autenticação e cadastro de vistoriador (self-signup B2B com aprovação).
  */
 export const inspectorAuthService = {
-  async signUp(input: InspectorRegisterInput): Promise<void> {
+  async signUp(input: InspectorRegisterInput, captchaToken?: string): Promise<void> {
     const documentDigits = normalizeInspectorDocument(input.document, input.documentType);
 
     await supabaseAuthAdapter.signUpInspector({
@@ -33,6 +33,7 @@ export const inspectorAuthService = {
       documentType: input.documentType,
       password: input.password,
       acceptTerms: input.acceptTerms,
+      ...(captchaToken ? { captchaToken } : {}),
     });
   },
 

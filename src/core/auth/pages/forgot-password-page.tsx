@@ -7,6 +7,7 @@ import { checkRateLimit, tooManyAttemptsMessage } from "@/core/auth/rate-limit";
 import { forgotPasswordSchema, type ForgotPasswordInput } from "@/core/auth/schemas/auth";
 import { EmailField } from "@/core/auth/components/email-field";
 import { TenantAuthPanel } from "@/core/auth/components/tenant-auth-panel";
+import { useTurnstile } from "@/core/security/use-turnstile";
 import { AppError, getErrorMessage } from "@/core/errors/app-error";
 import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 import { Button } from "@/shared/ui/button";
@@ -16,6 +17,7 @@ export function ForgotPasswordPage() {
   const { resetPassword } = useAuth();
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const turnstile = useTurnstile("reset-tenant");
   const {
     register,
     handleSubmit,
@@ -36,7 +38,7 @@ export function ForgotPasswordPage() {
     }
 
     try {
-      await resetPassword(email);
+      await resetPassword(email, turnstile.ensureToken());
       setMessage("Se o e-mail estiver cadastrado, enviaremos um link de recuperação.");
     } catch (err) {
       const message =
@@ -62,6 +64,7 @@ export function ForgotPasswordPage() {
         />
         {message && <p className="text-sm text-success">{message}</p>}
         {error && <p className="text-sm text-destructive">{error}</p>}
+        {turnstile.field}
         <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
           {isSubmitting ? "Enviando..." : "Enviar link"}
         </Button>

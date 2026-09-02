@@ -1,5 +1,11 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { checkRateLimit, clientKey } from "../_shared/rate-limit.ts";
+import {
+  checkRateLimit,
+  clientKey,
+  consumePersistentRateLimit,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
+import { TurnstileError, verifyTurnstileToken } from "../_shared/turnstile.ts";
 import { createServiceClient } from "../_shared/supabase-client.ts";
 
 async function sha256Hex(data: ArrayBuffer): Promise<string> {
@@ -29,28 +35,29 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const limit = checkRateLimit(`validate:${clientKey(req)}`, 30, 60_000);
-    if (!limit.allowed) {
-      return new Response(
-        JSON.stringify({ error: "Muitas tentativas. Aguarde e tente novamente." }),
-        {
-          headers: {
-            ...jsonHeaders,
-            "Retry-After": String(limit.retryAfterSec),
-          },
-          status: 429,
-        },
-      );
+    const ip = clientKey(req);
+    const memoryLimit = checkRateLimit(`validate:${ip}`, 20, 60_000);
+    if (!memoryLimit.allowed) {
+      return rateLimitedResponse(corsHeaders, memoryLimit.retryAfterSec);
+    }
+
+    const supabase = createServiceClient();
+    const persisted = await consumePersistentRateLimit(supabase, `validate:${ip}`, 20, 60);
+    if (!persisted.allowed) {
+      return rateLimitedResponse(corsHeaders, persisted.retryAfterSec);
     }
 
     const body = req.method === "GET"
-      ? { verificationCode: new URL(req.url).searchParams.get("code") }
+      ? {
+          verificationCode: new URL(req.url).searchParams.get("code"),
+          captchaToken: new URL(req.url).searchParams.get("captchaToken"),
+        }
       : await req.json();
+
+    await verifyTurnstileToken(body?.captchaToken, ip);
 
     const verificationCode = String(body?.verificationCode ?? "").trim();
     if (!verificationCode) throw new Error("Código de verificação é obrigatório");
-
-    const supabase = createServiceClient();
 
     const { data: report, error: reportError } = await supabase
       .from("inspection_reports")
@@ -137,9 +144,10 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro desconhecido";
+    const status = error instanceof TurnstileError ? 403 : 400;
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
+      status,
     });
   }
 });

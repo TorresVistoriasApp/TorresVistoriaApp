@@ -22,6 +22,7 @@ import { FormError } from "@/core/auth/components/form-error";
 import { PasswordStrengthInput, PasswordRulesBar } from "@/core/auth/components/password-strength-input";
 import { useSession } from "@/core/auth/session-context";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
+import { useTurnstile } from "@/core/security/use-turnstile";
 import { checkRateLimit, tooManyAttemptsMessage } from "@/core/auth/rate-limit";
 import {
   consumerRegisterSchema,
@@ -51,6 +52,7 @@ export function ClienteRegisterPage() {
   const [isFinalizingSignup, setIsFinalizingSignup] = useState(false);
   const [resendPending, setResendPending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const turnstile = useTurnstile("signup-consumer");
 
   const {
     register,
@@ -85,7 +87,10 @@ export function ClienteRegisterPage() {
 
     setIsFinalizingSignup(true);
     try {
-      const { needsEmailConfirmation } = await consumerAuthService.signUp(values);
+      const { needsEmailConfirmation } = await consumerAuthService.signUp(
+        values,
+        turnstile.ensureToken(),
+      );
       if (needsEmailConfirmation) {
         setSuccessEmail(values.email);
         return;
@@ -228,6 +233,8 @@ export function ClienteRegisterPage() {
         >
           <AuthRegisterTermsLinks />
         </AuthRegisterLegal>
+
+        {turnstile.field}
 
         <AuthRegisterSubmitBar loginTo={ROUTES.consultaLogin}>
           <Button type="submit" className="h-11 sm:min-w-[15rem]" size="lg" disabled={isSubmitting}>

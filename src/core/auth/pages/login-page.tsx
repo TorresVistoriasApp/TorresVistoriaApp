@@ -13,6 +13,7 @@ import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
 import { PasswordField } from "@/core/auth/components/password-field";
 import { TenantAuthPanel } from "@/core/auth/components/tenant-auth-panel";
+import { useTurnstile } from "@/core/security/use-turnstile";
 import { Button } from "@/shared/ui/button";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { ROUTES } from "@/config/routes";
@@ -22,6 +23,7 @@ export function LoginPage() {
   const { signIn, session, loading } = useAuth();
   const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
+  const turnstile = useTurnstile("login-tenant");
   const {
     register,
     handleSubmit,
@@ -50,7 +52,7 @@ export function LoginPage() {
       return;
     }
     try {
-      await signIn(values.email, values.password);
+      await signIn(values.email, values.password, turnstile.ensureToken());
       saveLgpdConsent(false);
       resetRateLimit("login");
     } catch (err) {
@@ -175,6 +177,8 @@ export function LoginPage() {
         )}
 
         {error && <FormError message={error} />}
+
+        {turnstile.field}
 
         <Button type="submit" className="h-12 w-full shadow-glow" size="lg" disabled={isSubmitting}>
           {isSubmitting ? (

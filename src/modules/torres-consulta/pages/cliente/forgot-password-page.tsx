@@ -11,6 +11,7 @@ import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
 import { checkRateLimit, tooManyAttemptsMessage } from "@/core/auth/rate-limit";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
+import { useTurnstile } from "@/core/security/use-turnstile";
 import {
   consumerForgotPasswordSchema,
   type ConsumerForgotPasswordInput,
@@ -21,6 +22,7 @@ import { ConsumerAuthPanel } from "@/modules/torres-consulta/components/consumer
 export function ClienteForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const turnstile = useTurnstile("reset-consumer");
 
   const {
     register,
@@ -44,7 +46,7 @@ export function ClienteForgotPasswordPage() {
 
     try {
       const redirectTo = getAuthRedirectUrl(ROUTES.consultaResetPassword);
-      await consumerAuthService.resetPassword(values, redirectTo);
+      await consumerAuthService.resetPassword(values, redirectTo, turnstile.ensureToken());
       setSent(true);
     } catch (err) {
       const message =
@@ -78,6 +80,7 @@ export function ClienteForgotPasswordPage() {
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
           <EmailField error={errors.email?.message} {...register("email")} />
           {error && <FormError message={error} />}
+          {turnstile.field}
           <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Enviando..." : "Enviar link de recuperação"}
           </Button>

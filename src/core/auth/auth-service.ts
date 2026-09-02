@@ -43,9 +43,13 @@ function assertAllowedAuthRedirectUrl(redirectTo: string): void {
 }
 
 export const authService = {
-  async signIn(email: string, password: string): Promise<void> {
+  async signIn(email: string, password: string, captchaToken?: string): Promise<void> {
     const safeEmail = sanitizeEmail(email);
-    const { data, error } = await db.auth.signInWithPassword({ email: safeEmail, password });
+    const { data, error } = await db.auth.signInWithPassword({
+      email: safeEmail,
+      password,
+      options: captchaToken ? { captchaToken } : {},
+    });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
 
     const profile = await authService.getProfile(data.user.id);
@@ -73,10 +77,13 @@ export const authService = {
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },
 
-  async resetPassword(email: string, redirectTo: string): Promise<void> {
+  async resetPassword(email: string, redirectTo: string, captchaToken?: string): Promise<void> {
     assertAllowedAuthRedirectUrl(redirectTo);
     const safeEmail = sanitizeEmail(email);
-    const { error } = await db.auth.resetPasswordForEmail(safeEmail, { redirectTo });
+    const { error } = await db.auth.resetPasswordForEmail(safeEmail, {
+      redirectTo,
+      ...(captchaToken ? { captchaToken } : {}),
+    });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },
 

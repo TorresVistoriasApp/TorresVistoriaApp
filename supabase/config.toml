@@ -55,10 +55,20 @@ otp_length = 8
 otp_expiry = 3600
 
 [auth.rate_limit]
+# Janela GoTrue: sign-in/sign-up por IP a cada 5 minutos (default 30).
 sign_in_sign_ups = 10
-token_verifications = 20
-# Com Send Email Hook (Resend), aumentar limite para dev/testes — padrão remoto é ~2/h.
-email_sent = 100
+token_verifications = 10
+# SMTP próprio (Resend). 100/h era abuso-friendly; 30/h é o default com SMTP custom.
+email_sent = 30
+
+# Camada 4 — Turnstile no Auth. Fica desligado até existirem
+# TURNSTILE_SECRET_KEY (Dashboard Auth + secrets das Edges) e
+# VITE_TURNSTILE_SITE_KEY no frontend. Ligar `enabled = true` sem as chaves
+# derruba login/cadastro/recuperação.
+[auth.captcha]
+enabled = false
+provider = "turnstile"
+secret = "env(TURNSTILE_SECRET_KEY)"
 
 [auth.mfa.totp]
 enroll_enabled = true
@@ -103,15 +113,13 @@ verify_jwt = false
 # Este hook é chamado pelo Supabase Auth para eventos de e-mail (ex.: signup,
 # recovery). A função send-email deve ser verificada por secret para evitar abuse.
 #
-# Observação: o secret do hook HTTPS deve ser configurado no Dashboard
-# (Authentication → Hooks → Send Email). NÃO use secrets = "env(...)" aqui —
-# o config push remoto pode sobrescrever o secret do Dashboard com valor vazio.
-#
-# Desabilitado no config versionado: o hook de produção vive no Dashboard.
-# Isso permite `supabase start` / `npm run test:db` local sem secrets no repo.
+# Secret só no Dashboard (Authentication → Hooks → Send Email).
+# NÃO use secrets = "env(...)" aqui — o config push pode zerar o secret remoto.
+# enabled = true precisa permanecer alinhado à produção; `config push` com false
+# derruba confirmação de e-mail e recuperação de senha.
 #
 [auth.hook.send_email]
-enabled = false
+enabled = true
 uri = "https://ljzttzfjtskblxekmquu.supabase.co/functions/v1/send-email"
 
 [functions.send-email]

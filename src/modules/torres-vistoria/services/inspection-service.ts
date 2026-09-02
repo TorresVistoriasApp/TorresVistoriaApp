@@ -251,10 +251,10 @@ export const inspectionService = {
     }
   },
 
-  async validateReport(verificationCode: string) {
+  async validateReport(verificationCode: string, captchaToken?: string) {
     try {
       const { data, error } = await db.functions.invoke("validate-report", {
-        body: { verificationCode },
+        body: { verificationCode, captchaToken },
       });
       return await throwIfEdgeError(error, data as Record<string, unknown> | null);
     } catch (error) {

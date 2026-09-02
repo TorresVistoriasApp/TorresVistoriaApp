@@ -42,8 +42,12 @@ const ERROR_TRANSLATIONS: Array<{ pattern: RegExp; message: string }> = [
   },
   {
     pattern:
-      /over_email_send_rate_limit|over_request_rate_limit|email rate limit exceeded|too many emails|rate limit/i,
+      /over_email_send_rate_limit|over_request_rate_limit|email rate limit exceeded|too many emails|rate limit|muitas consultas|muitas tentativas/i,
     message: TOO_MANY_EMAIL_ATTEMPTS,
+  },
+  {
+    pattern: /captcha|turnstile|anti-bot/i,
+    message: "Conclua a verificação anti-bot antes de continuar.",
   },
   {
     pattern:

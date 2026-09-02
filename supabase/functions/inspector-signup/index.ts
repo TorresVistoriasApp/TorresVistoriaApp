@@ -3,6 +3,13 @@ import { jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { validatePassword } from "../_shared/password-policy.ts";
 import { createServiceClient } from "../_shared/supabase-client.ts";
 import {
+  checkRateLimit,
+  clientKey,
+  consumePersistentRateLimit,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
+import { TurnstileError, verifyTurnstileToken } from "../_shared/turnstile.ts";
+import {
   isValidInspectorDocument,
   normalizeDocumentDigits,
 } from "../_shared/inspector-document-validate.ts";
@@ -21,7 +28,23 @@ Deno.serve(async (req) => {
   const supabase = createServiceClient();
 
   try {
+    const ip = clientKey(req);
+    const memoryLimit = checkRateLimit(`inspector-signup:${ip}`, 5, 15 * 60 * 1000);
+    if (!memoryLimit.allowed) {
+      return rateLimitedResponse(corsHeaders, memoryLimit.retryAfterSec);
+    }
+    const persisted = await consumePersistentRateLimit(
+      supabase,
+      `inspector-signup:${ip}`,
+      5,
+      15 * 60,
+    );
+    if (!persisted.allowed) {
+      return rateLimitedResponse(corsHeaders, persisted.retryAfterSec);
+    }
+
     const body = (await req.json()) as Record<string, unknown>;
+    await verifyTurnstileToken(body.captchaToken, ip);
     const name = String(body.name ?? "").trim();
     const email = sanitizeEmail(body.email);
     const phone = String(body.phone ?? "").trim();
@@ -76,6 +99,7 @@ Deno.serve(async (req) => {
       await supabase.rpc("discard_inspector_signup_intent", { p_intent_id: intentId });
     }
     const message = error instanceof Error ? error.message : "Erro desconhecido";
-    return jsonErrorResponse(message, corsHeaders);
+    const status = error instanceof TurnstileError ? 403 : 400;
+    return jsonErrorResponse(message, corsHeaders, status);
   }
 });
