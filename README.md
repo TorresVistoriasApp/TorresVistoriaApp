@@ -62,3 +62,7 @@ Copie `.env.example` para `.env.local`. Nunca commite secrets.
 | `VITE_API_ANON_KEY` | Chave pública do cliente |
 | `VITE_APP_URL` | URL pública do app (redirects de auth) |
 | `VITE_DEMO_MODE` | `false` em produção |
+
+## Produção
+
+O front fica na Vercel. O domínio `torresconsultas.com.br` passa pelo Cloudflare (DNS, SSL, WAF, DDoS). Passo a passo: [docs/cloudflare.md](docs/cloudflare.md).

@@ -39,6 +39,10 @@ additional_redirect_urls = [
   "https://torresconsultas.com.br/consulta/redefinir-senha",
   "https://torres-vistoria-app.vercel.app",
   "https://torres-vistoria-app.vercel.app/**",
+  "https://vistoria.torresconsultas.com.br",
+  "https://vistoria.torresconsultas.com.br/**",
+  "https://vistoria.torresconsultas.com.br/recuperar-senha",
+  "https://vistoria.torresconsultas.com.br/redefinir-senha",
 ]
 
 [auth.email]
