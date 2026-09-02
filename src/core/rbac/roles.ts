@@ -1,13 +1,4 @@
-/**
- * Catálogo de identidades e papéis do Ecossistema Torres.
- *
- * O modelo separa **quem é** o autenticado (`PrincipalType`) de **o que ele
- * pode fazer dentro de um tenant** (`UserRole`). Essa separação existe porque
- * nem toda identidade pertence a uma empresa: o operador do SaaS atua acima dos
- * tenants e o cliente final do Torres Consulta não pertence a nenhum.
- */
-
-/** Natureza da identidade autenticada. Determina em qual área ela navega. */
+/** Quem é o autenticado — distinto do papel dentro do tenant (`UserRole`). */
 export const PrincipalType = {
   /** Opera o SaaS: enxerga todos os tenants, não pertence a nenhum. */
   PLATFORM_ADMIN: "PLATFORM_ADMIN",
@@ -20,23 +11,14 @@ export const PrincipalType = {
 } as const;
 export type PrincipalType = (typeof PrincipalType)[keyof typeof PrincipalType];
 
-/**
- * Papéis de tenant com permissões e UI ativas hoje.
- *
- * Corresponde a um subconjunto do enum PostgreSQL `public.tenant_role`.
- */
+/** Subconjunto de `public.tenant_role` com UI ativa. */
 export const UserRole = {
   SUPER_ADMIN: "SUPER_ADMIN",
   INSPECTOR: "INSPECTOR",
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
-/**
- * Papéis já reservados no enum `public.tenant_role`, sem permissões nem UI.
- *
- * Ativar um deles é uma mudança local: adicioná-lo a `UserRole` e incluí-lo nas
- * entradas desejadas da matriz em `@/core/rbac/permissions`.
- */
+/** Códigos já no enum `public.tenant_role`, sem UI ainda. */
 export const FutureUserRole = {
   /** Gestão financeira sem acesso operacional à vistoria. */
   FINANCIAL: "FINANCIAL",
@@ -54,13 +36,7 @@ export type FutureUserRole = (typeof FutureUserRole)[keyof typeof FutureUserRole
 /** União de todos os códigos aceitos pelo enum `public.tenant_role`. */
 export type TenantRoleCode = UserRole | FutureUserRole;
 
-/**
- * Papéis de identidades que não pertencem a um tenant.
- *
- * Reservado para o Torres Consulta B2C. Deliberadamente fora de
- * `TenantRoleCode`: o enum do banco não os aceita, e persistir um cliente final
- * como membro de empresa quebraria o isolamento multi-tenant.
- */
+/** Papéis B2C — fora de `TenantRoleCode` (o enum do banco não os aceita). */
 export const CustomerRole = {
   /** Pessoa física ou jurídica que compra consultas avulsas. */
   CLIENT: "CLIENT",

@@ -3,11 +3,7 @@ import { logger } from "@/core/observability/logger";
 
 type MetricTags = Record<string, string | number | boolean | undefined>;
 
-/**
- * Métricas operacionais (contadores / timings).
- *
- * Stub pronto para um backend (Datadog, OTel). Não lança e não bloqueia.
- */
+/** Contadores / timings. No-op em produção até haver backend. */
 export function increment(name: string, value = 1, tags?: MetricTags): void {
   if (!isProduction()) {
     logger.debug(`[metrics] increment ${name}=${value}`, tags);

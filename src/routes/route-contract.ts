@@ -1,14 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import type { Permission } from "@/core/rbac/permissions";
 
-/**
- * Contrato que todo módulo publica para se registrar no roteador.
- *
- * O módulo declara **onde** suas telas vivem em termos de área de acesso, mas
- * nunca instancia layouts nem guardas: essa composição é responsabilidade
- * exclusiva de `@/routes/router`. Assim um módulo pode ser adicionado ou
- * removido sem que nenhum layout precise ser alterado.
- */
 export interface ModuleRoutes {
   /** Landing e páginas de marketing: layout próprio, sem shell do tenant. */
   marketing?: RouteObject[];
@@ -29,11 +21,6 @@ export interface ModuleRoutes {
   consumer?: RouteObject[];
 }
 
-/**
- * Metadados de autorização de uma rota. Mantidos junto da definição da rota
- * para que a decisão de acesso fique no manifesto do módulo, e não espalhada
- * dentro dos componentes de tela.
- */
 export interface RouteAccess {
   /** Exige esta permissão específica. */
   permission?: Permission;

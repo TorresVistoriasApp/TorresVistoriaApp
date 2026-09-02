@@ -1,11 +1,3 @@
-/**
- * API pública da camada de integrações (arquitetura de portas e adaptadores).
- *
- * Módulos consomem capacidades externas exclusivamente por aqui. Nenhum módulo
- * importa um SDK de provedor diretamente — assim trocar de fornecedor não
- * atravessa a base de código.
- */
-
 export {
   getIntegration,
   registerIntegration,

@@ -1,11 +1,3 @@
-/**
- * Design system do Ecossistema Torres.
- *
- * Tokens são a fonte de verdade tipada. Primitives vivem em `shared/ui` e são
- * reexportados aqui como contrato público recomendado para módulos novos —
- * sem mover arquivos nesta rodada (risco alto de churn).
- */
-
 export {
   colorTokens,
   spacingTokens,

@@ -1,16 +1,10 @@
 /**
- * Catálogo único de URLs da aplicação.
+ * Catálogo de URLs. Esta camada não importa `modules/` nem `core/`.
  *
- * Camada de configuração: não importa nada de `modules/` nem de `core/`, para
- * que qualquer módulo possa referenciar rotas sem criar acoplamento reverso.
- *
- * Árvores canônicas (cada identidade só navega na sua):
  * - Marketing B2C: `/`, `/sobre`, `/como-funciona`, ...
- * - Consumidor (Torres Consulta): `/consulta/login`, `/consulta/app/*`
- * - Empresa (Torres Vistoria): `/login`, `/dashboard`, `/vistorias/*`, `/consulta/nova`
+ * - Consumidor: `/consulta/login`, `/consulta/app/*`
+ * - Empresa: `/login`, `/dashboard`, `/vistorias/*`, `/consulta/nova`
  * - Plataforma: `/admin/*`
- *
- * Destino por identidade: `@/routes/panel`.
  */
 
 export const ROUTE_SLUGS = {

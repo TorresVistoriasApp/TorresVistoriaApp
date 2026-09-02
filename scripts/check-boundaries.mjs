@@ -1,20 +1,11 @@
 /**
- * Verifica as fronteiras entre as camadas da arquitetura.
- *
- * O ESLint já bloqueia a maioria dos casos durante a edição; este script existe
- * para o CI ter uma checagem independente do editor, e para descrever as regras
- * em um único lugar legível:
- *
- *   config  <- não depende de ninguém
+ * Fronteiras de camada (CI, independente do ESLint):
+ *   config  <- ninguém
  *   core    <- config, shared
  *   infra   <- config, core, shared
- *   shared  <- config e ele mesmo (nunca core, infra, modules, layouts, routes)
- *   modules <- tudo acima; entre módulos, só pelo barrel público
- *   layouts/routes/providers <- tudo acima
- *
- * A regra do barrel é a mais importante: um módulo pode consumir outro, mas só
- * pelo que ele decidiu expor em `index.ts`. Importar um arquivo interno
- * transforma detalhe de implementação em contrato e trava refatorações.
+ *   shared  <- config
+ *   modules <- camadas acima; entre módulos, só pelo barrel
+ *   layouts/routes/providers <- camadas acima
  */
 import fs from "node:fs";
 import path from "node:path";

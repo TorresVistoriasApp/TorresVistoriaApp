@@ -1,9 +1,6 @@
 /**
- * API pública do módulo Admin.
- *
- * Outros módulos consomem apenas o que está exportado aqui. As rotas ficam de
- * fora de propósito: o roteador importa `@/modules/admin/routes` para não
- * puxar o chunk de páginas no barrel.
+ * Rotas ficam fora: o roteador importa `@/modules/admin/routes` para não
+ * puxar o chunk de páginas neste barrel.
  */
 
 export { CompanyAddressFields } from "@/modules/admin/settings";
