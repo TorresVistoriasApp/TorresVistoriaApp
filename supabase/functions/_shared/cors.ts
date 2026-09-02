@@ -16,6 +16,7 @@ const LOCAL_ORIGINS = new Set([
 const PRODUCTION_ORIGINS = new Set([
   "https://torresconsultas.com.br",
   "https://www.torresconsultas.com.br",
+  "https://vistoria.torresconsultas.com.br",
 ]);
 
 /**
