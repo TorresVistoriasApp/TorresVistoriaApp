@@ -6,12 +6,7 @@ export type Span = {
   end: (error?: unknown) => void;
 };
 
-/**
- * Tracing distribuído (stub).
- *
- * `withSpan` mede duração e engole erros de instrumentação — nunca deve
- * alterar o resultado do callback de negócio.
- */
+/** Tracing. Instrumentação nunca deve alterar o resultado do callback. */
 export function startSpan(name: string, attrs?: Record<string, unknown>): Span {
   const started = performance.now();
   let closed = false;

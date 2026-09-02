@@ -1,8 +1,5 @@
 /**
- * Catálogo canônico de nomes de evento do Ecossistema Torres.
- *
- * Convenção: `<domínio>.<verbo-no-passado>`. Novos eventos entram aqui antes
- * de qualquer handler — evita strings mágicas espalhadas pelos módulos.
+ * Convenção: `<domínio>.<verbo-no-passado>`.
  */
 export const EventNames = {
   CONSULTA_REQUESTED: "consulta.requested",

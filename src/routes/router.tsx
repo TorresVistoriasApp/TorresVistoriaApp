@@ -19,12 +19,6 @@ import { torresConsultaRoutes } from "@/modules/torres-consulta/routes";
 import { adminRoutes } from "@/modules/admin/routes";
 import { PanelRedirect } from "@/routes/panel-redirect";
 
-/**
- * Registro de módulos da aplicação.
- *
- * Adicionar um produto ao Ecossistema Torres significa acrescentar uma entrada
- * aqui — nenhum layout, guarda ou módulo existente precisa ser tocado.
- */
 const MODULES: ModuleRoutes[] = [
   authRoutes,
   complianceRoutes,

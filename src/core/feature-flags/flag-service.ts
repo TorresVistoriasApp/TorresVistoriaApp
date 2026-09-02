@@ -10,12 +10,7 @@ export type FlagResolution = {
   source: FlagSource;
 };
 
-/**
- * Resolve se uma flag está ligada.
- *
- * Ordem: override runtime → env → default. O contexto (tenant/plano) está na
- * assinatura para o dia em que flags forem por tenant; hoje o default não o usa.
- */
+/** Ordem: override runtime → env → default. */
 export function resolveFlag(
   flag: FeatureFlag,
   _ctx?: FeatureFlagContext,

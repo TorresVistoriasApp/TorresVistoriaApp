@@ -45,7 +45,6 @@ export function createTechnicalGuide(input: GuideInput): PhotoTechnicalGuide {
       direction: input.camera?.direction ?? defaults.direction,
       targetLabel: input.camera?.targetLabel ?? input.highlightLabel ?? defaults.targetLabel,
     },
-    future: {},
   };
 }
 

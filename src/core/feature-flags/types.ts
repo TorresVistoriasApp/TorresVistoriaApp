@@ -1,8 +1,3 @@
-/**
- * Flags conhecidas do Ecossistema Torres.
- *
- * Adicionar uma flag aqui é o contrato; defaults e overrides vivem no registry.
- */
 export const FEATURE_FLAGS = [
   "torres-consulta",
   "torres-consulta.official-api",

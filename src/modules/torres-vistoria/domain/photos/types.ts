@@ -1,13 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import type { TechnicalIllustrationId } from "@/modules/torres-vistoria/domain/photos/illustrations/types";
 
-/** Tipo de slot de captura — preparado para regras distintas por categoria. */
 export type PhotoCategoryType = "SINGLE" | "MULTI" | "DAMAGE" | "COMPLEMENTARY";
 
-/** Status operacional de uma seção durante a captura. */
 export type PhotoSectionStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "NEEDS_REVIEW";
 
-/** Status de uma fotografia individual — extensível para validação por IA. */
 export type PhotoCaptureStatus =
   | "PENDING"
   | "CAPTURED"
@@ -52,25 +49,12 @@ export type CameraAngleGuide = {
   targetLabel?: string;
 };
 
-/** Extensões futuras — animação, 3D, AR, IA (não implementadas). */
-export type PhotoGuideFutureConfig = {
-  animationUrl?: string;
-  model3dUrl?: string;
-  arConfig?: Record<string, unknown>;
-  aiValidationRules?: Record<string, unknown>;
-  framingRules?: Record<string, unknown>;
-};
-
-/** Guia técnico completo de captura por categoria. */
 export type PhotoTechnicalGuide = {
-  /** Ilustração vetorial mestre — estilo manual automotivo. */
   illustrationId: TechnicalIllustrationId;
-  /** ID da peça destacada dentro da ilustração (animação/IA/AR futuros). */
   highlightPartId: string;
   highlightLabel?: string;
   instruction: string;
   exampleImageUrl?: string | null;
-  future?: PhotoGuideFutureConfig;
   /** @deprecated Use illustrationId + highlightPartId */
   view?: WireframeView;
   highlight?: WireframeHighlight;
@@ -106,7 +90,6 @@ export type PhotoSubsectionDefinition = {
   visibleWhen?: PhotoVisibilityCondition;
 };
 
-/** Categoria configurável — futuramente carregada do banco (SaaS). */
 export type PhotoCategoryDefinition = {
   key: string;
   sectionKey: string;

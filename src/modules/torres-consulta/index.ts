@@ -1,12 +1,6 @@
 /**
- * API pública do módulo Torres Consulta.
- *
- * Outros módulos consomem apenas o que está exportado aqui; alcançar arquivos
- * internos é o que transforma módulos em um monólito acoplado.
- *
- * As rotas não entram no barrel: elas registram `import()` preguiçosos no topo
- * do arquivo e arrastariam o módulo inteiro para o chunk de quem importar.
- * O roteador usa `@/modules/torres-consulta/routes`.
+ * Rotas ficam fora: `routes.tsx` tem import() no topo e puxaria o módulo
+ * inteiro para o chunk de quem importasse este barrel.
  */
 
 export {

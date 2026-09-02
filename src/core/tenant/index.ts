@@ -1,10 +1,3 @@
-/**
- * API pública do isolamento multi-tenant.
- *
- * A entidade de negócio no banco continua sendo `companies`; o que este barrel
- * expõe é o contrato de sessão/tenant no frontend.
- */
-
 export {
   TenantProvider,
   useTenantContext,

@@ -1,13 +1,6 @@
 import { hasPermission, type Permission } from "@/core/rbac/permissions";
 import { ASSIGNABLE_ROLES, UserRole } from "@/core/rbac/roles";
 
-/**
- * Regras de negócio de acesso que combinam mais de uma permissão ou dependem de
- * dados do recurso. Ficam aqui — e não dentro das telas — para que a resposta a
- * "por que este botão sumiu?" esteja sempre no mesmo lugar.
- */
-
-/** Escopo de leitura aplicado a listagens do tenant. */
 export const AccessScope = {
   /** Enxerga todos os registros da empresa. */
   COMPANY: "COMPANY",

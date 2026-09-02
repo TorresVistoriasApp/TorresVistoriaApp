@@ -1,11 +1,3 @@
-/**
- * API pública do subsistema de autorização.
- *
- * Módulos devem importar daqui em vez de alcançar arquivos internos, para que a
- * implementação da matriz possa evoluir (ex.: grants vindos do banco) sem
- * ondas de refatoração pelo resto do código.
- */
-
 export {
   PrincipalType,
   UserRole,

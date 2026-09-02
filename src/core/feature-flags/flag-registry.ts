@@ -36,7 +36,7 @@ export function envOverride(flag: FeatureFlag): boolean | undefined {
 
 const runtimeOverrides = new Map<FeatureFlag, boolean>();
 
-/** Override em runtime (testes, painel futuro de ops). */
+/** Override em runtime (testes). */
 export function setFlagOverride(flag: FeatureFlag, enabled: boolean): void {
   runtimeOverrides.set(flag, enabled);
 }

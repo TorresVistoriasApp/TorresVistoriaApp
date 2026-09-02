@@ -25,10 +25,6 @@ function installChunkRecovery() {
   });
 }
 
-/**
- * Ponto de partida da aplicação: valida o ambiente, registra os adaptadores de
- * integração e só então monta o React.
- */
 export function bootstrap() {
   if (typeof window !== "undefined") {
     installChunkRecovery();

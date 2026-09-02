@@ -1,19 +1,8 @@
 import type { UserRole } from "@/core/rbac/roles";
 
 /**
- * Matriz de autorização do Ecossistema Torres — fonte única de verdade.
- *
- * Toda decisão de acesso da aplicação resolve nesta tabela. Componentes, hooks
- * e rotas perguntam por *permissão* (`inspections.read.all`), nunca por papel
- * (`role === "SUPER_ADMIN"`); assim ativar um novo perfil é editar este arquivo
- * e nada mais.
- *
- * As seções espelham os módulos para manter a leitura próxima do produto, mas a
- * tabela permanece centralizada de propósito: uma varredura única responde
- * "quem pode fazer o quê" em toda a plataforma.
- *
- * Convenção dos nomes: `<recurso>.<ação>[.<escopo>]`, onde `own` restringe ao
- * registro do próprio usuário e `all` abrange toda a empresa.
+ * Matriz de autorização. Decida por permissão (`inspections.read.all`), nunca
+ * por papel. Convenção: `<recurso>.<ação>[.<escopo>]` (`own` | `all`).
  */
 export const PERMISSIONS = {
   // ── Torres Vistoria ───────────────────────────────────────────────────────

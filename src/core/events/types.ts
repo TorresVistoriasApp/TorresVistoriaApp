@@ -1,11 +1,3 @@
-/**
- * Contrato de eventos de domínio in-process.
- *
- * Sem broker externo nesta fase: o bus vive na memória do cliente e serve para
- * desacoplar use-cases de side-effects (dashboard, e-mail, log). Quando um
- * backend de mensageria existir, estes tipos continuam válidos — só o transporte muda.
- */
-
 export type EventName = string;
 
 export type DomainEvent<TName extends EventName = EventName, TPayload = unknown> = {

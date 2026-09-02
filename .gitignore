@@ -55,4 +55,7 @@ tmp-*.pdf
 
 # Supabase
 .supabase
+supabase/.temp/
+
+# Hosting
 .vercel
