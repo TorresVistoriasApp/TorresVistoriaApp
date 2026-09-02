@@ -1,4 +1,4 @@
-import { Check, Coins } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { QUERY_CATALOG } from "@/modules/torres-consulta/domain/query-catalog";
 import type { VehicleQueryType } from "@/core/integrations/ports/vehicle-lookup";
@@ -32,10 +32,6 @@ export function QueryTypeSelector({ value, onChange }: QueryTypeSelectorProps) {
               {selected && <Check className="h-4 w-4 shrink-0 text-primary" />}
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">{item.description}</p>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-              <Coins className="h-3.5 w-3.5" />
-              {item.credits} {item.credits === 1 ? "crédito" : "créditos"}
-            </span>
           </button>
         );
       })}

@@ -42,6 +42,7 @@ describe("classificação de paths", () => {
     expect(isTenantAppPath(ROUTES.dashboard)).toBe(true);
     expect(isTenantAppPath(ROUTES.consultaNew)).toBe(true);
     expect(isTenantAppPath(ROUTES.consultaHistory)).toBe(true);
+    expect(isTenantAppPath(ROUTES.consultaServices)).toBe(true);
     expect(isTenantAppPath(ROUTES.consultaDetail("abc-123"))).toBe(true);
     expect(isTenantAppPath(ROUTES.consultaApp)).toBe(false);
     expect(isTenantAppPath(ROUTES.consultaLogin)).toBe(false);

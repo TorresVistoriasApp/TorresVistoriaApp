@@ -7,9 +7,7 @@ import { Card, CardContent } from "@/shared/ui/card";
 import { ROUTES } from "@/config/routes";
 import { getErrorMessage } from "@/core/errors/app-error";
 import { ConsultaForm } from "@/modules/torres-consulta/components/consulta-form";
-import { CreditBalanceCard } from "@/modules/torres-consulta/components/credit-balance-card";
 import { IntegrationPendingNotice } from "@/modules/torres-consulta/components/integration-pending-notice";
-import { useCreditBalance } from "@/modules/torres-consulta/hooks/use-credit-balance";
 import { useRequestConsulta } from "@/modules/torres-consulta/hooks/use-consultas";
 import { isConsultaAvailable } from "@/modules/torres-consulta/services/consulta-service";
 import type { ConsultaRequestInput } from "@/modules/torres-consulta/schemas/consulta";
@@ -18,7 +16,6 @@ import { ConsultaFeatureGate } from "@/modules/torres-consulta/components/consul
 export function ConsultaNewPage() {
   const navigate = useNavigate();
   const available = isConsultaAvailable();
-  const { data: balance } = useCreditBalance();
   const requestConsulta = useRequestConsulta();
   const [error, setError] = useState<string | null>(null);
 
@@ -50,23 +47,16 @@ export function ConsultaNewPage() {
         />
 
         {available ? (
-          <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
-            <Card>
-              <CardContent>
-                <ConsultaForm
-                  onSubmit={handleSubmit}
-                  submitting={requestConsulta.isPending}
-                  availableCredits={balance?.available ?? null}
-                />
-                {error && (
-                  <p className="mt-4 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
-                    {error}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-            <CreditBalanceCard />
-          </div>
+          <Card>
+            <CardContent>
+              <ConsultaForm onSubmit={handleSubmit} submitting={requestConsulta.isPending} />
+              {error && (
+                <p className="mt-4 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+            </CardContent>
+          </Card>
         ) : (
           <IntegrationPendingNotice />
         )}

@@ -49,7 +49,7 @@ describe("requestConsumerConsulta", () => {
     mocks.getCreditBalance.mockResolvedValue({ available: 5, pending: 0 });
   });
 
-  it("registra consulta em PROCESSING quando integração indisponível sem exigir créditos", async () => {
+  it("registra consulta em PROCESSING quando integração indisponível", async () => {
     mocks.isConsultaAvailable.mockReturnValue(false);
 
     const result = await requestConsumerConsulta("consumer-1", {
@@ -65,7 +65,7 @@ describe("requestConsumerConsulta", () => {
     expect(result.failureReason).toContain("integração");
   });
 
-  it("persiste consulta quando integração está ativa (B2C sem saldo de créditos)", async () => {
+  it("persiste consulta quando integração está ativa", async () => {
     mocks.isConsultaAvailable.mockReturnValue(true);
 
     const result = await requestConsumerConsulta("consumer-1", {

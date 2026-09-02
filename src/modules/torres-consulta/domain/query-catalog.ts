@@ -1,17 +1,17 @@
 import { VehicleQueryType } from "@/core/integrations/ports/vehicle-lookup";
 
 /**
- * Catálogo comercial das consultas.
+ * Catálogo técnico das consultas veiculares.
  *
- * Preço em créditos e texto de vitrine vivem aqui, separados do contrato técnico
- * em `@/core/integrations/ports/vehicle-lookup`: o provedor define o que é
- * possível apurar, o catálogo define o que a Torres vende e por quanto.
+ * A precificação comercial da empresa é por serviço (somente laudo ou laudo +
+ * consulta), em `platform_services`. Os tipos abaixo descrevem o que o provedor
+ * consegue apurar; `credits` é custo interno do ledger, quando ele existir.
  */
 export interface QueryTypeDefinition {
   type: VehicleQueryType;
   label: string;
   description: string;
-  /** Custo em créditos. Fonte de verdade da precificação no frontend. */
+  /** Custo interno do ledger, se o adaptador de créditos estiver conectado. */
   credits: number;
   /** Destaca a opção recomendada na vitrine. */
   highlighted?: boolean;

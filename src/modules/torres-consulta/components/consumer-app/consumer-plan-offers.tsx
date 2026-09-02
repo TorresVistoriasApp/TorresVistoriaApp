@@ -89,7 +89,7 @@ export function ConsumerPlanOffersSection() {
     <section aria-label="Planos avulsos">
       <ConsumerSectionHeading
         title="Planos avulsos"
-        description="Pague só pela consulta — sem pacote de créditos."
+        description="Pague só pela consulta, no cartão ou PIX."
       />
 
       <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:gap-4">

@@ -48,7 +48,7 @@ const TENANT_APP_ROOTS = [
   ROUTES.changePassword,
   ROUTES.consultaNew,
   ROUTES.consultaHistory,
-  ROUTES.consultaCredits,
+  ROUTES.consultaServices,
 ] as const;
 
 export function homeForPrincipal(principalType: PrincipalType | null | undefined): string {

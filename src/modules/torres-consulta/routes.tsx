@@ -205,10 +205,10 @@ export const torresConsultaRoutes: ModuleRoutes = {
       ),
     },
     {
-      path: ROUTES.consultaCredits,
+      path: ROUTES.consultaServices,
       element: lazyRoute(
-        () => import("@/modules/torres-consulta/pages/consulta-credits-page"),
-        "ConsultaCreditsPage",
+        () => import("@/modules/torres-consulta/pages/consulta-services-page"),
+        "ConsultaServicesPage",
         { anyOf: ["consulta.read.all", "consulta.read.own"] },
       ),
     },

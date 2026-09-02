@@ -84,8 +84,7 @@ export function ConsultaAppNovaConsultaPage() {
       <div className="flex items-start gap-3 rounded-xl border border-success-border bg-success-subtle px-4 py-3.5">
         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" />
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Compra avulsa por consulta. Pacotes com créditos são exclusivos para vistoriadores na Torres
-          Vistoria — em breve.
+          Compra avulsa por consulta, no cartão ou PIX.
         </p>
       </div>
 
