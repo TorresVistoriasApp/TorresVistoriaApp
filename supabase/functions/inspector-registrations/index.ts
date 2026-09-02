@@ -1,20 +1,17 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { requirePlatformAdmin } from "../_shared/require-platform-admin.ts";
+import {
+  hmacInspectorDocument,
+  indexInspectorDocumentHashes,
+  legacySha256DocumentHex,
+} from "../_shared/inspector-document-hash.ts";
 
 const ALLOWED_ROLES = ["SUPER_ADMIN", "INSPECTOR"] as const;
 type AllowedRole = (typeof ALLOWED_ROLES)[number];
 
 function normalizeDocumentDigits(value: string | null | undefined): string {
   return String(value ?? "").replace(/\D/g, "");
-}
-
-async function hashDocumentDigits(digits: string): Promise<string> {
-  const data = new TextEncoder().encode(digits);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
 }
 
 Deno.serve(async (req) => {
@@ -51,11 +48,21 @@ Deno.serve(async (req) => {
       if (companiesError) throw companiesError;
 
       const companyByHash = new Map<string, { id: string; trade_name: string }>();
+      const hmacByDigits = new Map<string, string>();
       for (const company of companies ?? []) {
         const digits = normalizeDocumentDigits(company.document);
         if (!digits) continue;
-        const hash = await hashDocumentDigits(digits);
-        companyByHash.set(hash, { id: company.id, trade_name: company.trade_name });
+        let hmacHex = hmacByDigits.get(digits);
+        if (!hmacHex) {
+          hmacHex = await hmacInspectorDocument(supabase, digits);
+          hmacByDigits.set(digits, hmacHex);
+        }
+        const legacySha256Hex = await legacySha256DocumentHex(digits);
+        indexInspectorDocumentHashes(
+          companyByHash,
+          { id: company.id, trade_name: company.trade_name },
+          [hmacHex, legacySha256Hex],
+        );
       }
 
       const items = (registrations ?? []).map((registration) => {

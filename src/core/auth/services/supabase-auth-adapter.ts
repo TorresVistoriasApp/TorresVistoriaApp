@@ -1,5 +1,5 @@
 import { db } from "@/infra/supabase/client";
-import { AppError, getErrorMessage } from "@/core/errors/app-error";
+import { AppError, getErrorMessage, throwIfEdgeError } from "@/core/errors/app-error";
 import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 import { sanitizeEmail } from "@/shared/lib/sanitize";
 import { getAppUrl } from "@/config/env";
@@ -42,6 +42,33 @@ export const supabaseAuthAdapter = {
     }
 
     return data;
+  },
+
+  /**
+   * Cadastro de vistoriador: o documento vai só à Edge (HMAC + intent).
+   * Nunca entra em Auth metadata, JWT ou sessão.
+   */
+  async signUpInspector(input: {
+    name: string;
+    email: string;
+    phone?: string;
+    document: string;
+    documentType: "cpf" | "cnpj";
+    password: string;
+    acceptTerms: boolean;
+  }): Promise<void> {
+    const { data, error } = await db.functions.invoke("inspector-signup", {
+      body: {
+        name: input.name,
+        email: sanitizeEmail(input.email),
+        phone: input.phone?.trim() || undefined,
+        document: input.document,
+        documentType: input.documentType,
+        password: input.password,
+        acceptTerms: input.acceptTerms,
+      },
+    });
+    await throwIfEdgeError(error, (data ?? null) as Record<string, unknown> | null);
   },
 
   async signOut(): Promise<void> {
@@ -99,5 +126,20 @@ export const supabaseAuthAdapter = {
     const { data, error } = await db.auth.getSession();
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
     return data.session;
+  },
+
+  /**
+   * Remove `document` do metadata da própria conta e recarrega o JWT.
+   * Sem sessão (confirmação de e-mail pendente) o trigger já apagou no banco.
+   */
+  async stripOwnAuthDocumentMetadata(): Promise<void> {
+    const session = await supabaseAuthAdapter.getSession();
+    if (!session) return;
+
+    const { error } = await db.rpc("strip_own_auth_document_metadata");
+    if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
+
+    const { error: refreshError } = await db.auth.refreshSession();
+    if (refreshError) throw new AppError(formatUserFacingError(getErrorMessage(refreshError)));
   },
 };

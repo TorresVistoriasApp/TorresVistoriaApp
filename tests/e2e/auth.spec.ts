@@ -4,9 +4,9 @@ import { e2eCredentialsConfigured, loginAsDemo } from "./helpers";
 test.describe("Autenticação", () => {
   test("exibe formulário de login", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.getByTestId("login-form")).toBeVisible();
-    await expect(page.getByLabel("E-mail")).toBeVisible();
-    await expect(page.getByLabel("Senha", { exact: true })).toBeVisible();
+    await expect(page.locator("#conteudo").getByTestId("login-form")).toBeVisible();
+    await expect(page.locator("#conteudo").getByLabel("E-mail")).toBeVisible();
+    await expect(page.locator("#conteudo").getByLabel("Senha", { exact: true })).toBeVisible();
   });
 
   test.describe("fluxos autenticados", () => {
