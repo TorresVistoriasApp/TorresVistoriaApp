@@ -18,6 +18,7 @@ import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
 import { ConsumerAuthPanel } from "@/modules/torres-consulta/components/consumer-app/consumer-auth-panel";
+import { useTurnstile } from "@/core/security/use-turnstile";
 import { resolvePostAuthPath } from "@/routes/panel";
 
 export function ClienteLoginPage() {
@@ -27,6 +28,7 @@ export function ClienteLoginPage() {
   const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const turnstile = useTurnstile("login-consumer");
 
   const from = (location.state as { from?: { pathname: string; search?: string } } | null)?.from;
   const postAuthPath = resolvePostAuthPath(principalType ?? PrincipalType.CUSTOMER, from);
@@ -56,7 +58,7 @@ export function ClienteLoginPage() {
     setError(null);
     setIsSigningIn(true);
     try {
-      await consumerAuthService.signIn(values);
+      await consumerAuthService.signIn(values, turnstile.ensureToken());
       navigate(postAuthPath, { replace: true });
     } catch (err) {
       setError(
@@ -179,6 +181,8 @@ export function ClienteLoginPage() {
         )}
 
         {error && <FormError message={error} />}
+
+        {turnstile.field}
 
         <Button
           type="submit"

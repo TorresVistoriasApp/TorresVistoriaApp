@@ -110,10 +110,19 @@ Se a tela ficar em branco: Rocket Loader ou Auto Minify ainda ligados, ou CSP bl
 
 Se login/auth falhar: SSL não está em Full (strict), ou o Host chegou na Vercel diferente do domínio cadastrado.
 
-## 8. Fora deste desenho (depois)
+## 8. Turnstile (Camada 4)
+
+1. Cloudflare → Turnstile → **Add widget** (domínio `torresconsultas.com.br` + `vistoria.torresconsultas.com.br`).
+2. Vercel → `VITE_TURNSTILE_SITE_KEY` = site key do widget.
+3. Supabase → `npx supabase secrets set TURNSTILE_SECRET_KEY=<secret>` (Edges `inspector-signup` e `validate-report`).
+4. Dashboard Supabase → Authentication → Attack Protection / Captcha: provider **Turnstile**, mesmo secret.
+5. Em `supabase/config.toml`, `[auth.captcha] enabled = true` e `npx supabase config push`.
+
+Sem as duas chaves, o widget não aparece e o GoTrue **não** deve ter captcha ligado — senão login/cadastro/recuperação falham.
+
+## 9. Fora deste desenho (depois)
 
 - Domínio próprio na API (`api.torresconsultas.com.br` → Supabase) — exige plano Pro no Supabase, cache bypass total e cuidado com Realtime.
-- Cloudflare Turnstile nos formulários públicos.
 - Cloudflare Access só na área admin.
 - Migrar o front da Vercel para Cloudflare Pages.
 

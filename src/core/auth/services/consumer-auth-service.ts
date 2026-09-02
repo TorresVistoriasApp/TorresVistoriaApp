@@ -36,8 +36,12 @@ async function waitForConsumerProfile(userId: string): Promise<void> {
  * Usa Supabase Auth + validação de identidade em consumer_profiles.
  */
 export const consumerAuthService = {
-  async signIn(input: ConsumerLoginInput): Promise<void> {
-    const { user } = await supabaseAuthAdapter.signInWithPassword(input.email, input.password);
+  async signIn(input: ConsumerLoginInput, captchaToken?: string): Promise<void> {
+    const { user } = await supabaseAuthAdapter.signInWithPassword(
+      input.email,
+      input.password,
+      captchaToken,
+    );
     if (!user) throw new AppError(USER_MESSAGES.notAuthenticated);
 
     const profile = await consumerProfileService.getSelf(user.id);
@@ -69,7 +73,10 @@ export const consumerAuthService = {
     }
   },
 
-  async signUp(input: ConsumerRegisterInput): Promise<{ needsEmailConfirmation: boolean }> {
+  async signUp(
+    input: ConsumerRegisterInput,
+    captchaToken?: string,
+  ): Promise<{ needsEmailConfirmation: boolean }> {
     const emailRedirectTo =
       typeof window !== "undefined" ? getAuthRedirectUrl(ROUTES.consultaApp) : undefined;
 
@@ -81,6 +88,7 @@ export const consumerAuthService = {
         user_type: "consumer",
       },
       emailRedirectTo,
+      captchaToken,
     );
 
     if (session?.user?.id) {
@@ -106,8 +114,12 @@ export const consumerAuthService = {
     await supabaseAuthAdapter.signOut();
   },
 
-  async resetPassword(input: ConsumerForgotPasswordInput, redirectTo: string): Promise<void> {
-    await supabaseAuthAdapter.resetPasswordForEmail(input.email, redirectTo);
+  async resetPassword(
+    input: ConsumerForgotPasswordInput,
+    redirectTo: string,
+    captchaToken?: string,
+  ): Promise<void> {
+    await supabaseAuthAdapter.resetPasswordForEmail(input.email, redirectTo, captchaToken);
   },
 
   async updatePassword(input: ConsumerResetPasswordInput): Promise<void> {

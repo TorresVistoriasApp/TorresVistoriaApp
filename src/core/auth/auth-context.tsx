@@ -28,9 +28,9 @@ interface AuthContextValue {
   isPlatformAdmin: boolean;
   /** Sessão + identidade (perfil / platform admin) resolvidos. */
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<void>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  resetPassword: (email: string, captchaToken?: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -116,8 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [loading]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    await authService.signIn(email, password);
+  const signIn = useCallback(async (email: string, password: string, captchaToken?: string) => {
+    await authService.signIn(email, password, captchaToken);
   }, []);
 
   const signOut = useCallback(async () => {
@@ -129,8 +129,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPlatformAdmin(null);
   }, []);
 
-  const resetPassword = useCallback(async (email: string) => {
-    await authService.resetPassword(email, `${window.location.origin}${ROUTES.resetPassword}`);
+  const resetPassword = useCallback(async (email: string, captchaToken?: string) => {
+    await authService.resetPassword(
+      email,
+      `${window.location.origin}${ROUTES.resetPassword}`,
+      captchaToken,
+    );
   }, []);
 
   const value = useMemo(

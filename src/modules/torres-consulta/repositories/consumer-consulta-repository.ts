@@ -2,13 +2,12 @@ import { db } from "@/infra/supabase/client";
 import type { Database, Json } from "@/infra/supabase/database.types";
 import { AppError, getErrorMessage } from "@/core/errors/app-error";
 import { formatUserFacingError } from "@/core/errors/user-facing-errors";
-import { ConsultaStatus } from "@/modules/torres-consulta/domain/entities/consulta";
+import type { ConsultaStatus } from "@/modules/torres-consulta/domain/entities/consulta";
 import type { ConsumerConsulta } from "@/modules/torres-consulta/domain/entities/consumer-consulta";
 import type { ConsumerConsultaRepository } from "@/modules/torres-consulta/domain/repositories/consumer-consulta-repository";
 import type { VehicleQueryType } from "@/core/integrations/ports/vehicle-lookup";
 
 type ConsumerConsultaRow = Database["public"]["Tables"]["consumer_consultas"]["Row"];
-type ConsumerConsultaInsert = Database["public"]["Tables"]["consumer_consultas"]["Insert"];
 
 type ConsumerCreditBalanceRow = {
   available: number;
@@ -37,23 +36,6 @@ function mapRow(row: ConsumerConsultaRow): ConsumerConsulta {
     resultPayload: mapResultPayload(row.result_payload),
     createdAt: row.created_at,
     completedAt: row.completed_at,
-  };
-}
-
-function mapToRow(consulta: ConsumerConsulta): ConsumerConsultaInsert {
-  return {
-    id: consulta.id,
-    consumer_id: consulta.consumerId,
-    plan_name: consulta.planName,
-    query_type: consulta.queryType,
-    plate: consulta.plate,
-    chassis: consulta.chassis,
-    status: consulta.status,
-    credits_charged: consulta.creditsCharged,
-    failure_reason: consulta.failureReason,
-    document_url: consulta.documentUrl,
-    result_payload: consulta.resultPayload as Json | null,
-    completed_at: consulta.completedAt,
   };
 }
 
@@ -100,12 +82,11 @@ export function createSupabaseConsumerConsultaRepository(): ConsumerConsultaRepo
     },
 
     async save(consulta) {
-      const payload = mapToRow(consulta);
-      const { data, error } = await db
-        .from("consumer_consultas")
-        .insert(payload)
-        .select("*")
-        .single();
+      const { data, error } = await db.rpc("request_consumer_consulta", {
+        p_plan_name: consulta.planName,
+        p_plate: consulta.plate ?? undefined,
+        p_chassis: consulta.chassis ?? undefined,
+      });
 
       if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
       return mapRow(data as ConsumerConsultaRow);

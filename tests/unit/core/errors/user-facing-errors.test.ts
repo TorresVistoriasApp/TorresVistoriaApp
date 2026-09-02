@@ -28,4 +28,10 @@ describe("formatUserFacingError", () => {
       "Muitas tentativas realizadas. Aguarde um momento e tente novamente.",
     );
   });
+
+  it("traduz falha de captcha/Turnstile", () => {
+    expect(formatUserFacingError("captcha verification process failed")).toBe(
+      "Conclua a verificação anti-bot antes de continuar.",
+    );
+  });
 });

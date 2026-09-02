@@ -4,16 +4,21 @@ import { formatUserFacingError } from "@/core/errors/user-facing-errors";
 import { sanitizeEmail } from "@/shared/lib/sanitize";
 import { getAppUrl } from "@/config/env";
 
+function captchaOptions(captchaToken?: string) {
+  return captchaToken ? { captchaToken } : {};
+}
+
 /**
  * Operações comuns de Supabase Auth compartilhadas entre produtos do ecossistema.
  * Não contém regras de negócio por identidade — apenas chamadas ao Auth.
  */
 export const supabaseAuthAdapter = {
-  async signInWithPassword(email: string, password: string) {
+  async signInWithPassword(email: string, password: string, captchaToken?: string) {
     const safeEmail = sanitizeEmail(email);
     const { data, error } = await db.auth.signInWithPassword({
       email: safeEmail,
       password,
+      options: captchaOptions(captchaToken),
     });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
     return data;
@@ -24,6 +29,7 @@ export const supabaseAuthAdapter = {
     password: string,
     metadata?: Record<string, unknown>,
     emailRedirectTo?: string,
+    captchaToken?: string,
   ) {
     const safeEmail = sanitizeEmail(email);
     const { data, error } = await db.auth.signUp({
@@ -32,6 +38,7 @@ export const supabaseAuthAdapter = {
       options: {
         data: metadata,
         ...(emailRedirectTo ? { emailRedirectTo } : {}),
+        ...captchaOptions(captchaToken),
       },
     });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
@@ -56,6 +63,7 @@ export const supabaseAuthAdapter = {
     documentType: "cpf" | "cnpj";
     password: string;
     acceptTerms: boolean;
+    captchaToken?: string;
   }): Promise<void> {
     const { data, error } = await db.functions.invoke("inspector-signup", {
       body: {
@@ -66,6 +74,7 @@ export const supabaseAuthAdapter = {
         documentType: input.documentType,
         password: input.password,
         acceptTerms: input.acceptTerms,
+        ...(input.captchaToken ? { captchaToken: input.captchaToken } : {}),
       },
     });
     await throwIfEdgeError(error, (data ?? null) as Record<string, unknown> | null);
@@ -76,7 +85,11 @@ export const supabaseAuthAdapter = {
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },
 
-  async resetPasswordForEmail(email: string, redirectTo: string): Promise<void> {
+  async resetPasswordForEmail(
+    email: string,
+    redirectTo: string,
+    captchaToken?: string,
+  ): Promise<void> {
     // Defesa em profundidade contra open-redirect.
     if (!redirectTo || typeof redirectTo !== "string") throw new AppError("redirectTo inválido");
 
@@ -107,7 +120,10 @@ export const supabaseAuthAdapter = {
     }
 
     const safeEmail = sanitizeEmail(email);
-    const { error } = await db.auth.resetPasswordForEmail(safeEmail, { redirectTo });
+    const { error } = await db.auth.resetPasswordForEmail(safeEmail, {
+      redirectTo,
+      ...captchaOptions(captchaToken),
+    });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
   },
 

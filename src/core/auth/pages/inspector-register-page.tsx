@@ -22,6 +22,7 @@ import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
 import { PasswordStrengthInput, PasswordRulesBar } from "@/core/auth/components/password-strength-input";
 import { inspectorAuthService } from "@/core/auth/services/inspector-auth-service";
+import { useTurnstile } from "@/core/security/use-turnstile";
 import {
   inspectorRegisterSchema,
   type InspectorRegisterInput,
@@ -49,6 +50,7 @@ export function InspectorRegisterPage() {
   const [successEmail, setSuccessEmail] = useState<string | null>(null);
   const [resendPending, setResendPending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
+  const turnstile = useTurnstile("signup-inspector");
 
   const {
     register,
@@ -88,7 +90,7 @@ export function InspectorRegisterPage() {
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
     try {
-      await inspectorAuthService.signUp(values);
+      await inspectorAuthService.signUp(values, turnstile.ensureToken());
       setSuccessEmail(values.email);
     } catch (err) {
       setError(
@@ -236,6 +238,8 @@ export function InspectorRegisterPage() {
         >
           <AuthRegisterTermsLinks />
         </AuthRegisterLegal>
+
+        {turnstile.field}
 
         <AuthRegisterSubmitBar loginTo={ROUTES.login}>
           <Button type="submit" className="h-11 sm:min-w-[15rem]" size="lg" disabled={isSubmitting}>

@@ -2615,6 +2615,10 @@ export type Database = {
         }
         Returns: number
       }
+      consume_rate_limit: {
+        Args: { p_key: string; p_max: number; p_window_seconds: number }
+        Returns: Json
+      }
       dashboard_inspector_scope: { Args: never; Returns: string }
       discard_inspector_signup_intent: {
         Args: { p_intent_id: string }
@@ -2753,6 +2757,31 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "consumer_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      request_consumer_consulta: {
+        Args: { p_chassis?: string; p_plan_name: string; p_plate?: string }
+        Returns: {
+          chassis: string | null
+          completed_at: string | null
+          consumer_id: string
+          created_at: string
+          credits_charged: number
+          deleted_at: string | null
+          document_url: string | null
+          failure_reason: string | null
+          id: string
+          plan_name: string
+          plate: string | null
+          query_type: string
+          result_payload: Json | null
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "consumer_consultas"
           isOneToOne: true
           isSetofReturn: false
         }
