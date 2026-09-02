@@ -13,6 +13,7 @@ import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
 import { PasswordField } from "@/core/auth/components/password-field";
 import { TenantAuthPanel } from "@/core/auth/components/tenant-auth-panel";
+import { MfaChallengeForm } from "@/core/auth/components/mfa-challenge-form";
 import { useTurnstile } from "@/core/security/use-turnstile";
 import { Button } from "@/shared/ui/button";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
@@ -20,7 +21,7 @@ import { ROUTES } from "@/config/routes";
 import { homeForPrincipal } from "@/routes/panel";
 
 export function LoginPage() {
-  const { signIn, session, loading } = useAuth();
+  const { signIn, session, loading, mfaPending, completeMfa, signOut } = useAuth();
   const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
   const turnstile = useTurnstile("login-tenant");
@@ -40,6 +41,18 @@ export function LoginPage() {
       </div>
     );
   }
+  if (session && mfaPending) {
+    return (
+      <TenantAuthPanel
+        title="Confirme o acesso"
+        meta="Verificação em duas etapas"
+        description="Abra o aplicativo autenticador e informe o código de 6 dígitos."
+      >
+        <MfaChallengeForm onVerify={completeMfa} onCancel={signOut} />
+      </TenantAuthPanel>
+    );
+  }
+
   if (session && principalType) {
     return <Navigate to={homeForPrincipal(principalType)} replace />;
   }

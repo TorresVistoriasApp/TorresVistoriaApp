@@ -4,7 +4,8 @@ const TOO_MANY_EMAIL_ATTEMPTS =
 const ERROR_TRANSLATIONS: Array<{ pattern: RegExp; message: string }> = [
   {
     pattern: /already been registered|already registered|user already exists|email address is already/i,
-    message: "Já existe uma conta associada a este e-mail.",
+    message:
+      "Se este e-mail puder ser cadastrado, enviaremos um link de confirmação. Verifique sua caixa de entrada.",
   },
   {
     pattern: /invalid login credentials|invalid credentials/i,

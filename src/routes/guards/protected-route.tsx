@@ -1,7 +1,9 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useTenantBoot } from "@/core/tenant/use-tenant-boot";
+import { useAuth } from "@/core/auth/use-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
+import { MfaChallengeScreen } from "@/core/auth/components/mfa-challenge-form";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
 
@@ -13,6 +15,7 @@ import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
  */
 export function ProtectedRoute() {
   const { session, isPlatformAdmin, loading: tenantBootLoading } = useTenantBoot();
+  const { mfaPending, completeMfa, signOut } = useAuth();
   const { principalType, loading: principalLoading } = usePrincipal();
   const location = useLocation();
 
@@ -38,6 +41,10 @@ export function ProtectedRoute() {
   // na área do tenant (que assume `profile` preenchido em toda a UI).
   if (isPlatformAdmin) {
     return <Navigate to={homeForPrincipal(PrincipalType.PLATFORM_ADMIN)} replace />;
+  }
+
+  if (mfaPending) {
+    return <MfaChallengeScreen onVerify={completeMfa} onCancel={signOut} />;
   }
 
   return <Outlet />;

@@ -114,13 +114,15 @@ verify_jwt = false
 # recovery). A função send-email deve ser verificada por secret para evitar abuse.
 #
 # Secret só no Dashboard (Authentication → Hooks → Send Email).
-# NÃO use secrets = "env(...)" aqui — o config push pode zerar o secret remoto.
+# O campo `secrets` existe porque o CLI exige no `db push`.
+# NÃO rode `config push` — o placeholder do env pode zerar o secret remoto.
 # enabled = true precisa permanecer alinhado à produção; `config push` com false
 # derruba confirmação de e-mail e recuperação de senha.
 #
 [auth.hook.send_email]
 enabled = true
 uri = "https://ljzttzfjtskblxekmquu.supabase.co/functions/v1/send-email"
+secrets = "env(SEND_EMAIL_HOOK_SECRET)"
 
 [functions.send-email]
 verify_jwt = false

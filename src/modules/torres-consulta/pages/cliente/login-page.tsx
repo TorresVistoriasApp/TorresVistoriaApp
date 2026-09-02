@@ -1,13 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { EmailField } from "@/core/auth/components/email-field";
 import { FormError } from "@/core/auth/components/form-error";
 import { PasswordField } from "@/core/auth/components/password-field";
 import { useSession } from "@/core/auth/session-context";
+import { useAuth } from "@/core/auth/use-auth";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import {
   consumerLoginSchema,
@@ -16,22 +17,21 @@ import {
 import { Button } from "@/shared/ui/button";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { usePrincipal } from "@/core/auth/use-principal";
-import { PrincipalType } from "@/core/rbac/roles";
 import { ConsumerAuthPanel } from "@/modules/torres-consulta/components/consumer-app/consumer-auth-panel";
+import { MfaChallengeForm } from "@/core/auth/components/mfa-challenge-form";
 import { useTurnstile } from "@/core/security/use-turnstile";
 import { resolvePostAuthPath } from "@/routes/panel";
 
 export function ClienteLoginPage() {
   const location = useLocation();
-  const navigate = useNavigate();
   const { session, loading: sessionLoading } = useSession();
+  const { mfaPending, completeMfa, signOut, loading: authLoading } = useAuth();
   const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const turnstile = useTurnstile("login-consumer");
 
   const from = (location.state as { from?: { pathname: string; search?: string } } | null)?.from;
-  const postAuthPath = resolvePostAuthPath(principalType ?? PrincipalType.CUSTOMER, from);
 
   const {
     register,
@@ -42,11 +42,23 @@ export function ClienteLoginPage() {
     defaultValues: { acceptTerms: false },
   });
 
-  if (sessionLoading || isSigningIn) {
+  if (sessionLoading || isSigningIn || authLoading) {
     return (
       <div className="flex flex-1 justify-center py-12">
         <LoadingSpinner label={isSigningIn ? "Entrando..." : "Carregando..."} />
       </div>
+    );
+  }
+
+  if (session && mfaPending) {
+    return (
+      <ConsumerAuthPanel
+        title="Confirme o acesso"
+        meta="Verificação em duas etapas"
+        description="Abra o aplicativo autenticador e informe o código de 6 dígitos."
+      >
+        <MfaChallengeForm onVerify={completeMfa} onCancel={signOut} />
+      </ConsumerAuthPanel>
     );
   }
 
@@ -59,7 +71,6 @@ export function ClienteLoginPage() {
     setIsSigningIn(true);
     try {
       await consumerAuthService.signIn(values, turnstile.ensureToken());
-      navigate(postAuthPath, { replace: true });
     } catch (err) {
       setError(
         err instanceof Error

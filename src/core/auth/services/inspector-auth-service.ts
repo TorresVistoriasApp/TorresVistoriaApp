@@ -6,6 +6,7 @@ import {
   isRejectedInspectorRegistration,
 } from "@/core/auth/inspector-registration-service";
 import { supabaseAuthAdapter } from "@/core/auth/services/supabase-auth-adapter";
+import { finalizeSession } from "@/core/auth/finalize-session";
 import { normalizeInspectorDocument } from "@/core/auth/validators/document";
 import type { InspectorRegisterInput } from "@/core/auth/schemas/inspector-auth";
 
@@ -59,6 +60,7 @@ export const inspectorAuthService = {
 
   async signOut(): Promise<void> {
     await supabaseAuthAdapter.signOut();
+    await finalizeSession();
   },
 
   async resendVerificationEmail(email: string): Promise<void> {

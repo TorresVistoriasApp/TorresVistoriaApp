@@ -25,11 +25,19 @@ export const adminRoutes: ModuleRoutes = {
     },
     {
       path: ROUTES.users,
-      element: lazyRoute(() => import("@/modules/admin/users/pages/users-page"), "UsersPage"),
+      element: lazyRoute(
+        () => import("@/modules/admin/users/pages/users-page"),
+        "UsersPage",
+        { permission: "users.manage" },
+      ),
     },
     {
       path: ROUTES.audit,
-      element: lazyRoute(() => import("@/modules/admin/audit/pages/audit-page"), "AuditPage"),
+      element: lazyRoute(
+        () => import("@/modules/admin/audit/pages/audit-page"),
+        "AuditPage",
+        { permission: "users.manage" },
+      ),
     },
     // Endereços antigos preservados para não invalidar links já compartilhados.
     { path: ROUTES.legacySettingsUsers, element: <Navigate to={ROUTES.users} replace /> },

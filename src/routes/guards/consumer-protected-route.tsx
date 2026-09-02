@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSession } from "@/core/auth/session-context";
+import { useAuth } from "@/core/auth/use-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
 import { PrincipalType } from "@/core/rbac/roles";
+import { MfaChallengeScreen } from "@/core/auth/components/mfa-challenge-form";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
 
@@ -13,11 +15,12 @@ import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
  */
 export function ConsumerProtectedRoute() {
   const { session, loading: sessionLoading } = useSession();
+  const { mfaPending, completeMfa, signOut, loading: authLoading } = useAuth();
   const { principalType, loading: principalLoading } = usePrincipal();
   const location = useLocation();
   const isSigningOut = useRef(false);
 
-  const loading = sessionLoading || principalLoading;
+  const loading = sessionLoading || principalLoading || authLoading;
   const isForeignPrincipal =
     principalType === PrincipalType.TENANT_MEMBER ||
     principalType === PrincipalType.PLATFORM_ADMIN ||
@@ -57,6 +60,10 @@ export function ConsumerProtectedRoute() {
         <LoadingSpinner label="Encerrando sessão inválida..." />
       </div>
     );
+  }
+
+  if (mfaPending) {
+    return <MfaChallengeScreen onVerify={completeMfa} onCancel={signOut} />;
   }
 
   return <Outlet />;

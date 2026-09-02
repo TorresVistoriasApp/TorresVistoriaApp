@@ -11,10 +11,8 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useSession } from "@/core/auth/session-context";
 import { authService } from "@/core/auth/auth-service";
 import { platformAdminService } from "@/core/auth/platform-admin-service";
+import { isMfaChallengeRequired, verifyMfaTotpCode } from "@/core/auth/mfa";
 import { useAuthStore } from "@/core/auth/auth-store";
-import { clearSignedUrlCache } from "@/infra/storage/signed-url";
-import { runSessionCleanup } from "@/core/auth/session-cleanup";
-import { queryClient } from "@/infra/query/query-client";
 import { logger } from "@/core/observability/logger";
 import { ROUTES } from "@/config/routes";
 import type { PlatformAdmin, Profile } from "@/core/auth/types";
@@ -28,7 +26,10 @@ interface AuthContextValue {
   isPlatformAdmin: boolean;
   /** Sessão + identidade (perfil / platform admin) resolvidos. */
   loading: boolean;
+  /** Senha ok, mas AAL2 ainda pendente. */
+  mfaPending: boolean;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<void>;
+  completeMfa: (code: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string, captchaToken?: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -70,7 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [platformAdmin, setPlatformAdmin] = useState<PlatformAdmin | null>(null);
   const [identityResolved, setIdentityResolved] = useState(false);
-  const loading = sessionLoading || (!!session?.user.id && !identityResolved);
+  const [mfaPending, setMfaPending] = useState(false);
+  const [mfaResolved, setMfaResolved] = useState(false);
+  const loading =
+    sessionLoading ||
+    (!!session?.user.id && !identityResolved) ||
+    (!!session?.user.id && !mfaResolved);
 
   const refreshProfile = useCallback(async () => {
     if (!session?.user.id) {
@@ -111,6 +117,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session?.user.id]);
 
   useEffect(() => {
+    if (!session?.user.id) {
+      setMfaPending(false);
+      setMfaResolved(true);
+      return;
+    }
+
+    let isActive = true;
+    setMfaResolved(false);
+    void isMfaChallengeRequired()
+      .then((required) => {
+        if (isActive) setMfaPending(required);
+      })
+      .catch(() => {
+        // Falha na consulta de AAL não deve bloquear quem não tem MFA.
+        if (isActive) setMfaPending(false);
+      })
+      .finally(() => {
+        if (isActive) setMfaResolved(true);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [session?.user.id, session?.access_token]);
+
+  useEffect(() => {
     if (!loading) {
       useAuthStore.getState().setInitialized(true);
     }
@@ -120,13 +152,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authService.signIn(email, password, captchaToken);
   }, []);
 
+  const completeMfa = useCallback(async (code: string) => {
+    await verifyMfaTotpCode(code);
+    setMfaPending(false);
+  }, []);
+
   const signOut = useCallback(async () => {
     await authService.signOut();
-    clearSignedUrlCache();
-    await runSessionCleanup();
-    queryClient.clear();
     setProfile(null);
     setPlatformAdmin(null);
+    setMfaPending(false);
+    setMfaResolved(true);
   }, []);
 
   const resetPassword = useCallback(async (email: string, captchaToken?: string) => {
@@ -145,12 +181,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       platformAdmin,
       isPlatformAdmin: !!platformAdmin,
       loading,
+      mfaPending,
       signIn,
+      completeMfa,
       signOut,
       resetPassword,
       refreshProfile,
     }),
-    [session, user, profile, platformAdmin, loading, signIn, signOut, resetPassword, refreshProfile],
+    [
+      session,
+      user,
+      profile,
+      platformAdmin,
+      loading,
+      mfaPending,
+      signIn,
+      completeMfa,
+      signOut,
+      resetPassword,
+      refreshProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

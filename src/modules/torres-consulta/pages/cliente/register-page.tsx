@@ -101,6 +101,10 @@ export function ClienteRegisterPage() {
         err instanceof Error
           ? err.message
           : "Não foi possível concluir o cadastro. Verifique os dados e tente novamente.";
+      if (isDuplicateEmailError(message)) {
+        setSuccessEmail(values.email);
+        return;
+      }
       setError(message);
     } finally {
       setIsFinalizingSignup(false);

@@ -43,11 +43,6 @@ export const supabaseAuthAdapter = {
     });
     if (error) throw new AppError(formatUserFacingError(getErrorMessage(error)));
 
-    // Supabase não retorna erro explícito (anti-enumeração): identities vazio = e-mail já cadastrado.
-    if (data.user?.identities?.length === 0) {
-      throw new AppError("Já existe uma conta associada a este e-mail.");
-    }
-
     return data;
   },
 
