@@ -9,6 +9,7 @@ import { Button } from "@/shared/ui/button";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { useToast } from "@/shared/hooks/use-toast";
 import { formatUserFacingError } from "@/core/errors/user-facing-errors";
+import { redactEmail } from "@/shared/lib/pii";
 import type { OnboardCompanyInput } from "@/modules/admin/platform/schemas/platform-admin";
 
 export function AdminCompaniesPage() {
@@ -75,7 +76,7 @@ export function AdminCompaniesPage() {
               />
 
               {company.email && (
-                <p className="truncate text-sm text-muted-foreground">{company.email}</p>
+                <p className="truncate text-sm text-muted-foreground">{redactEmail(company.email)}</p>
               )}
             </div>
           ))}

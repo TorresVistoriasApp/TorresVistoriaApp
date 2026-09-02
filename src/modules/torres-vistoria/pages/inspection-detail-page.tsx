@@ -5,13 +5,8 @@ import { PermissionGuard } from "@/core/rbac/components/permission-guard";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import {
-  formatDate,
-  formatDocument,
-  formatKM,
-  formatPhone,
-  formatPlate,
-} from "@/shared/lib/formatters";
+import { formatDate, formatKM, formatPlate } from "@/shared/lib/formatters";
+import { redactDocument, redactEmail, redactPhone } from "@/shared/lib/pii";
 import { hasLaudoValue } from "@/modules/torres-vistoria/domain/laudo/laudo-field-utils";
 import { ROUTES } from "@/config/routes";
 import { Camera, ClipboardList, Edit, FileText, ArrowLeft } from "lucide-react";
@@ -125,10 +120,13 @@ export function InspectionDetailPage() {
         <CardContent className="space-y-1 text-sm">
           <p className="font-medium">{inspection.client_name}</p>
           {hasLaudoValue(inspection.client_document) && (
-            <p className="text-muted-foreground">{formatDocument(inspection.client_document)}</p>
+            <p className="text-muted-foreground">{redactDocument(inspection.client_document)}</p>
           )}
           {inspection.client_phone && (
-            <p className="text-muted-foreground">{formatPhone(inspection.client_phone)}</p>
+            <p className="text-muted-foreground">{redactPhone(inspection.client_phone)}</p>
+          )}
+          {inspection.client_email && (
+            <p className="text-muted-foreground">{redactEmail(inspection.client_email)}</p>
           )}
         </CardContent>
       </Card>

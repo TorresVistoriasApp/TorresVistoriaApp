@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { redactEmail, redactPhone } from "@/shared/lib/pii";
 
 function formatDocumentLabel(item: InspectorRegistrationListItem): string {
   const label = item.document_type === "cnpj" ? "CNPJ" : "CPF";
@@ -133,14 +134,16 @@ export function AdminInspectorRegistrationsPage() {
             <Card key={item.id}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">{item.full_name}</CardTitle>
-                <p className="text-sm text-muted-foreground">{item.email}</p>
+                <p className="text-sm text-muted-foreground">{redactEmail(item.email)}</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-4 text-sm">
                   <span className="rounded-full bg-muted px-3 py-1 font-medium">
                     {formatDocumentLabel(item)}
                   </span>
-                  {item.phone && <span className="text-muted-foreground">Tel: {item.phone}</span>}
+                  {item.phone && (
+                    <span className="text-muted-foreground">Tel: {redactPhone(item.phone)}</span>
+                  )}
                   {item.suggestedTenantName && (
                     <span className="text-success">Sugestão: {item.suggestedTenantName}</span>
                   )}

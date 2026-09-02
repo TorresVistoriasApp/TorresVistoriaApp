@@ -2,7 +2,8 @@ import type { Inspection } from "@/modules/torres-vistoria/services/inspection-s
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
 import { summarizeLaudoChecklist, getOpinionLabel } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
-import { formatDate, formatDocument, formatPlate } from "@/shared/lib/formatters";
+import { formatDate, formatPlate } from "@/shared/lib/formatters";
+import { redactDocument } from "@/shared/lib/pii";
 import { hasLaudoValue } from "@/modules/torres-vistoria/domain/laudo/laudo-field-utils";
 import { cn } from "@/shared/lib/utils";
 
@@ -14,7 +15,7 @@ export function LaudoDataSummary({ inspection }: { inspection: Inspection }) {
     {
       label: "Documento",
       value: hasLaudoValue(inspection.client_document)
-        ? formatDocument(inspection.client_document)
+        ? redactDocument(inspection.client_document)
         : null,
     },
     {

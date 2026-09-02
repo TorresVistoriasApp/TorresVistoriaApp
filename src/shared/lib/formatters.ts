@@ -64,7 +64,7 @@ export function formatCNPJ(cnpj: string | null | undefined): string {
   return cnpj;
 }
 
-/** Formata CPF ou CNPJ conforme o tamanho do documento. */
+/** Formata CPF ou CNPJ completo — Nível 1 (laudo/PDF e documentos oficiais). */
 export function formatDocument(doc: string | null | undefined): string {
   if (!doc) return "-";
   if (isFieldNA(doc)) return "Não informado";
