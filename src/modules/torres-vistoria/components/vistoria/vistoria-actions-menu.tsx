@@ -83,11 +83,7 @@ export function VistoriaActionsMenu({
 
   return (
     <>
-      <div
-        className={cn(className)}
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
+      <div className={cn(className)}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -97,6 +93,8 @@ export function VistoriaActionsMenu({
               className={cn("h-8 w-8 shrink-0", triggerClassName)}
               aria-label="Ações da vistoria"
               disabled={isPending}
+              onClick={(event) => event.stopPropagation()}
+              onPointerDown={(event) => event.stopPropagation()}
             >
               <MoreVertical className="h-4 w-4" />
             </Button>

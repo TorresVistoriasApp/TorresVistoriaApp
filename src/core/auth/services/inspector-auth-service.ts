@@ -25,12 +25,14 @@ export const inspectorAuthService = {
   async signUp(input: InspectorRegisterInput): Promise<void> {
     const documentDigits = normalizeInspectorDocument(input.document, input.documentType);
 
-    await supabaseAuthAdapter.signUp(input.email, input.password, {
-      full_name: input.name,
+    await supabaseAuthAdapter.signUpInspector({
+      name: input.name,
+      email: input.email,
       phone: input.phone?.trim() || undefined,
-      user_type: "inspector",
-      document_type: input.documentType,
       document: documentDigits,
+      documentType: input.documentType,
+      password: input.password,
+      acceptTerms: input.acceptTerms,
     });
   },
 
@@ -40,6 +42,8 @@ export const inspectorAuthService = {
       await supabaseAuthAdapter.signOut();
       throw new AppError(INSPECTOR_LOGIN_DENIED);
     }
+
+    await supabaseAuthAdapter.stripOwnAuthDocumentMetadata();
 
     const registration = await inspectorRegistrationService.getSelf(userId);
     if (isPendingInspectorRegistration(registration)) {

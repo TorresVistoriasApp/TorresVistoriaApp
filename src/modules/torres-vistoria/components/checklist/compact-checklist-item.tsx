@@ -109,7 +109,6 @@ function CompactChecklistItemComponent({
           needsIssue && "border-warning",
         )}
         onFocusCapture={() => onActivate?.(item.id)}
-        onClick={() => onActivate?.(item.id)}
       >
         <span
           className={cn("absolute inset-y-0 left-0 w-1", statusMeta.itemAccent)}
@@ -117,7 +116,11 @@ function CompactChecklistItemComponent({
         />
 
         <div className="space-y-1.5 pl-1.5">
-          <div className="min-w-0">
+          <button
+            type="button"
+            className="min-w-0 w-full rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={() => onActivate?.(item.id)}
+          >
             <p className="text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
               {item.item_name}
             </p>
@@ -126,7 +129,7 @@ function CompactChecklistItemComponent({
                 {criteria}
               </p>
             )}
-          </div>
+          </button>
 
           <ChecklistStatusToggle
             value={item.status}

@@ -32,11 +32,12 @@ export async function loginAsDemo(page: Page, role: DemoRole = "vistoriador"): P
   const { email, password, profileName } = credentialsFor(role);
 
   await page.goto("/login");
-  await expect(page.getByTestId("login-form")).toBeVisible();
-  await page.getByLabel("E-mail").fill(email);
-  await page.getByLabel("Senha", { exact: true }).fill(password);
-  await page.getByRole("checkbox").check();
-  await page.getByRole("button", { name: /^Entrar$/i }).click();
+  const login = page.locator("#conteudo");
+  await expect(login.getByTestId("login-form")).toBeVisible();
+  await login.getByLabel("E-mail").fill(email);
+  await login.getByLabel("Senha", { exact: true }).fill(password);
+  await login.getByRole("checkbox").check();
+  await login.getByRole("button", { name: /entrar/i }).click();
   await expect(page).toHaveURL("/dashboard", { timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 
