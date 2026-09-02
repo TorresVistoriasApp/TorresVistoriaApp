@@ -13,6 +13,13 @@
 export { InspectionTypesSection } from "@/modules/torres-vistoria/components/settings/inspection-types-section";
 
 export {
+  formatServicePrice,
+  type PlatformService,
+} from "@/modules/torres-vistoria/services/platform-service-service";
+
+export { usePlatformServices } from "@/modules/torres-vistoria/hooks/use-platform-services";
+
+export {
   ChecklistStatus,
   InspectionStatus,
   InspectionOpinion,

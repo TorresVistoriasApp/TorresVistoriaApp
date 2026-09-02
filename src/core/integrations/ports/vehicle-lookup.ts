@@ -64,11 +64,11 @@ export interface VehicleQueryResult {
 /**
  * Porta de consulta veicular.
  *
- * Cada tipo de consulta tem preço próprio, então o custo é exposto antes da
- * execução: a UI precisa confirmar o débito de créditos com o usuário.
+ * Cada tipo de consulta tem custo interno próprio no ledger, quando ele existe.
+ * A precificação comercial da empresa é por serviço (laudo ou laudo + consulta).
  */
 export interface VehicleLookupPort {
-  /** Custo em créditos, consultado antes de executar. */
+  /** Custo interno do ledger, se o adaptador de créditos estiver conectado. */
   getQueryCost(type: VehicleQueryType): number;
 
   query(

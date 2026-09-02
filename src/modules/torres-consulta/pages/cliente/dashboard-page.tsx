@@ -81,8 +81,7 @@ export function ClienteDashboardPage() {
           {firstName ? `Olá, ${firstName}` : "Sua área"}
         </h1>
         <p className="mt-2 max-w-md text-pretty text-[15px] leading-relaxed text-muted-foreground">
-          Consulte veículos com preço fixo por plano. Sem créditos e sem pacote — você paga só
-          quando for consultar.
+          Consulte veículos com preço fixo por plano. Você paga só quando for consultar.
         </p>
 
         <Link

@@ -1,5 +1,5 @@
 import { publish } from "@/core/events";
-import { getIntegration } from "@/core/integrations/registry";
+import { getIntegration, isIntegrationAvailable } from "@/core/integrations/registry";
 import type { IntegrationContext } from "@/core/integrations/ports/shared";
 import { AppError } from "@/core/errors/app-error";
 import { metrics, withSpan } from "@/core/observability";
@@ -16,10 +16,10 @@ import { getConsultaRepository } from "@/modules/torres-consulta/repositories/co
 import type { ConsultaRequestInput } from "@/modules/torres-consulta/schemas/consulta";
 
 /**
- * Caso de uso: comprar/executar uma consulta veicular.
+ * Caso de uso: executar uma consulta veicular no painel da empresa.
  *
- * Orquestra créditos → provedor → persistência → eventos de domínio.
- * Side-effects (e-mail, dashboard) devem se inscrever no event bus, não aqui.
+ * A precificação comercial é por serviço (laudo ou laudo + consulta), não por
+ * saldo. O ledger de créditos, se existir, só registra o consumo interno.
  */
 export async function requestConsulta(
   context: IntegrationContext,
@@ -34,11 +34,11 @@ export async function requestConsulta(
     }
 
     const repository = getConsultaRepository();
-    const credits = getIntegration("credits");
     const provider = getIntegration("vehicleLookup");
+    const credits = isIntegrationAvailable("credits") ? getIntegration("credits") : null;
 
     const id = globalThis.crypto.randomUUID();
-    const cost = getQueryCost(input.type);
+    const cost = credits ? getQueryCost(input.type) : 0;
 
     const pending = createPendingConsulta({
       id,
@@ -62,28 +62,34 @@ export async function requestConsulta(
       { tenantId: context.tenantId, correlationId: id },
     );
 
-    const reservation = await credits.reserve(context, cost, id);
-    if (!reservation.ok) {
-      const failed = await repository.save(markConsultaFailed(pending, reservation.message));
-      await publish(
-        ConsultaDomainEvents.failed,
-        {
-          consultaId: id,
-          type: input.type,
-          reason: reservation.message,
-          status: failed.status,
-        },
-        { tenantId: context.tenantId, correlationId: id },
-      );
-      metrics.increment("consulta.failed", 1, { reason: "credits" });
-      return failed;
+    let reservationId: string | null = null;
+    if (credits) {
+      const reservation = await credits.reserve(context, cost, id);
+      if (!reservation.ok) {
+        const failed = await repository.save(markConsultaFailed(pending, reservation.message));
+        await publish(
+          ConsultaDomainEvents.failed,
+          {
+            consultaId: id,
+            type: input.type,
+            reason: reservation.message,
+            status: failed.status,
+          },
+          { tenantId: context.tenantId, correlationId: id },
+        );
+        metrics.increment("consulta.failed", 1, { reason: "credits" });
+        return failed;
+      }
+      reservationId = reservation.data.reservationId;
     }
 
     const identifier = input.plate ? { plate: input.plate } : { chassis: input.chassis! };
     const result = await provider.query(context, { identifier, type: input.type });
 
     if (!result.ok) {
-      await credits.release(context, reservation.data.reservationId);
+      if (credits && reservationId) {
+        await credits.release(context, reservationId);
+      }
       const failed = await repository.save(markConsultaFailed(pending, result.message));
       await publish(
         ConsultaDomainEvents.failed,
@@ -99,7 +105,9 @@ export async function requestConsulta(
       return failed;
     }
 
-    await credits.settle(context, reservation.data.reservationId);
+    if (credits && reservationId) {
+      await credits.settle(context, reservationId);
+    }
 
     const completed = await repository.save(
       markConsultaCompleted(pending, {

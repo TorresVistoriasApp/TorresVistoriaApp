@@ -15,7 +15,7 @@ const INTEGRATION_PENDING_MESSAGE =
 
 /**
  * Solicita uma consulta veicular B2C.
- * Cobrança avulsa por plano (gateway futuro) — não usa saldo de créditos do consumidor.
+ * Cobrança avulsa por plano (gateway futuro) — preço em reais, sem saldo.
  */
 export async function requestConsumerConsulta(
   consumerId: string,

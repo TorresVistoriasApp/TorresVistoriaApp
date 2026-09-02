@@ -5,11 +5,11 @@ import type {
 } from "@/core/integrations/ports/vehicle-lookup";
 
 export const ConsultaStatus = {
-  /** Créditos reservados, aguardando resposta do provedor. */
+  /** Aguardando resposta do provedor. */
   PROCESSING: "PROCESSING",
   /** Resultado disponível. */
   COMPLETED: "COMPLETED",
-  /** Provedor recusou ou falhou; créditos devolvidos. */
+  /** Provedor recusou ou falhou. */
   FAILED: "FAILED",
 } as const;
 export type ConsultaStatus = (typeof ConsultaStatus)[keyof typeof ConsultaStatus];

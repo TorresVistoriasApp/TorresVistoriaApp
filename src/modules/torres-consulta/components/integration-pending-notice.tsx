@@ -6,7 +6,6 @@ import {
 
 const REASON_LABELS: Record<ConsultaUnavailableReason, string> = {
   [ConsultaUnavailableReason.PROVIDER]: "Provedor de consulta veicular",
-  [ConsultaUnavailableReason.CREDITS]: "Sistema de créditos",
 };
 
 /**

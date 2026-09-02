@@ -9,7 +9,6 @@ import { cn } from "@/shared/lib/utils";
 import { maskChassis, maskPlate } from "@/shared/lib/masks";
 import { VehicleQueryType } from "@/core/integrations/ports/vehicle-lookup";
 import { QueryTypeSelector } from "@/modules/torres-consulta/components/query-type-selector";
-import { getQueryCost } from "@/modules/torres-consulta/domain/query-catalog";
 import {
   consultaFormSchema,
   toConsultaRequest,
@@ -20,8 +19,6 @@ import {
 interface ConsultaFormProps {
   onSubmit: (input: ConsultaRequestInput) => Promise<void> | void;
   submitting?: boolean;
-  /** Saldo disponível; quando informado, bloqueia consulta sem crédito. */
-  availableCredits?: number | null;
 }
 
 const SEARCH_MODES = [
@@ -29,23 +26,18 @@ const SEARCH_MODES = [
   { id: "chassis", label: "Por chassi" },
 ] as const;
 
-export function ConsultaForm({ onSubmit, submitting, availableCredits }: ConsultaFormProps) {
+export function ConsultaForm({ onSubmit, submitting }: ConsultaFormProps) {
   const [searchBy, setSearchBy] = useState<"plate" | "chassis">("plate");
 
   const {
     control,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<ConsultaFormInput>({
     resolver: zodResolver(consultaFormSchema),
     defaultValues: { searchBy: "plate", plate: "", chassis: "", type: VehicleQueryType.BASIC },
   });
-
-  const selectedType = watch("type");
-  const cost = getQueryCost(selectedType);
-  const insufficientCredits = availableCredits !== null && availableCredits !== undefined && availableCredits < cost;
 
   const switchMode = (mode: "plate" | "chassis") => {
     setSearchBy(mode);
@@ -127,15 +119,9 @@ export function ConsultaForm({ onSubmit, submitting, availableCredits }: Consult
         />
       </div>
 
-      {insufficientCredits && (
-        <p className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
-          Saldo insuficiente: esta consulta custa {cost} créditos e você tem {availableCredits}.
-        </p>
-      )}
-
-      <Button type="submit" size="lg" disabled={submitting || insufficientCredits}>
+      <Button type="submit" size="lg" disabled={submitting}>
         <Search className="h-4 w-4" />
-        {submitting ? "Consultando..." : `Consultar por ${cost} créditos`}
+        {submitting ? "Consultando..." : "Consultar"}
       </Button>
     </form>
   );

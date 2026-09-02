@@ -87,6 +87,21 @@ describe("requestConsulta", () => {
     expect(completed).toHaveBeenCalledOnce();
   });
 
+  it("executa consulta sem ledger quando só o provedor está configurado", async () => {
+    resetIntegrations();
+    setConsultaRepository(createInMemoryConsultaRepository());
+    registerIntegration("vehicleLookup", vehicleStub);
+
+    const result = await requestConsulta(context, {
+      type: VehicleQueryType.BASIC,
+      plate: "ABC1D23",
+      chassis: null,
+    });
+
+    expect(result.status).toBe(ConsultaStatus.COMPLETED);
+    expect(result.creditsCharged).toBe(0);
+  });
+
   it("falha quando integração falta", async () => {
     resetIntegrations();
     await expect(
