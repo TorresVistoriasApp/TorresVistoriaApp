@@ -12,6 +12,8 @@ interface ImportMetaEnv {
   readonly VITE_APP_URL?: string;
   readonly VITE_DEMO_MODE?: string;
   readonly VITE_TURNSTILE_SITE_KEY?: string;
+  /** true = recusar submit sem widget/token (produção). Sem site key também recusa. */
+  readonly VITE_TURNSTILE_REQUIRED?: string;
   /** Feature flags: VITE_FF_TORRES_CONSULTA, VITE_FF_PAYMENTS, etc. */
   readonly VITE_FF_TORRES_CONSULTA?: string;
   readonly VITE_FF_TORRES_CONSULTA_OFFICIAL_API?: string;

@@ -40,4 +40,10 @@ O código impresso no PDF aponta para `/validar/{codigo}`. O hash SHA-256 fica n
 
 ## Namespace `pending/`
 
-Não aceitar mais laudo em `pending/`. Arquivos antigos **não** são apagados. SELECT autenticado exige path `{tenant}/{inspection}/*.pdf`. Remoção física fica para um script de limpeza posterior.
+Não aceitar mais laudo em `pending/`. Arquivos antigos **não** são apagados. SELECT autenticado exige path `{tenant}/{inspection}/*.pdf`. Diagnóstico (somente lista, sem exclusão):
+
+```
+npm run db:diagnose-legacy-storage
+```
+
+Remoção física fica para autorização explícita posterior.

@@ -120,13 +120,22 @@ O código do widget e a verificação nas Edges já existem. Ligar de verdade:
 4. Dashboard Supabase → Authentication → Attack Protection / Captcha: provider **Turnstile**, mesmo secret.
 5. Só então: `npx supabase secrets set TURNSTILE_REQUIRED=true` e republicar as Edges.
    Sem esse flag, as Edges **não** derrubam cadastro/validação se o secret ainda não existir.
-6. **Não** use `npx supabase config push` neste projeto (`config.toml` tem `env(SECRET)`).
+6. Vercel → `VITE_TURNSTILE_REQUIRED=true` (rebuild). Sem site key, o frontend **recusa** o submit.
+7. **Não** use `npx supabase config push` neste projeto (`config.toml` tem `env(SECRET)`).
 
 Sem as duas chaves, o widget não aparece e o GoTrue não deve exigir captcha.
 
-**Código vs produção:** o widget, a verificação nas Edges e o fail-closed (`TURNSTILE_REQUIRED`) estão no repositório. Ativação real (site key na Vercel, secret + flag no Supabase, captcha no GoTrue) **REQUER DASHBOARD** — não inventar chaves.
+**Código vs produção:** o widget, a verificação nas Edges e o fail-closed (`TURNSTILE_REQUIRED` / `VITE_TURNSTILE_REQUIRED`) estão no repositório. Ativação real (site key na Vercel, secret + flag no Supabase, captcha no GoTrue) **REQUER DASHBOARD** — não inventar chaves.
 
-## 9. Fora deste desenho (depois)
+## 9. CSP (`vercel.json`)
+
+`img-src` está restrito ao host do projeto Supabase. `style-src 'unsafe-inline'` permanece: o Tailwind v4 e os componentes atuais injetam CSS inline. Remover isso sem nonce/`style-src-elem` quebra o layout.
+
+Caminho futuro: Tailwind com CSS extraído + nonces no HTML gerado no build. Não é desta fase.
+
+HTML autenticado já vai com `Cache-Control: max-age=0, must-revalidate`. Assets hashed em `/assets/` são imutáveis.
+
+## 10. Fora deste desenho (depois)
 
 - Domínio próprio na API (`api.torresconsultas.com.br` → Supabase) — exige plano Pro no Supabase, cache bypass total e cuidado com Realtime.
 - Cloudflare Access só na área admin.

@@ -58,6 +58,15 @@ export function redactEmail(value: string | null | undefined): string {
   return `${keep}*****@${domain}`;
 }
 
+/** Chassi mascarado em listagens/dashboards: 4 + bullets + 4. */
+export function redactChassis(value: string | null | undefined): string {
+  const empty = emptyDisplay(value);
+  if (empty) return empty;
+  const chassis = value!.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  if (chassis.length < 8) return "***";
+  return `${chassis.slice(0, 4)}${"•".repeat(chassis.length - 8)}${chassis.slice(-4)}`;
+}
+
 /** Telefone mascarado: DDD visível, meio oculto, quatro finais visíveis. */
 export function redactPhone(value: string | null | undefined): string {
   const empty = emptyDisplay(value);
@@ -83,6 +92,7 @@ export const PII_MASK_FIELDS = new Set([
   "seller_document",
   "cpf",
   "cnpj",
+  "chassis",
 ]);
 
 export const PII_HIDDEN_FIELDS = new Set([
@@ -102,5 +112,6 @@ export function redactKnownPiiValue(field: string, value: unknown): string | nul
   if (value === "[redacted]") return value;
   if (field.includes("email")) return redactEmail(value);
   if (field.includes("phone")) return redactPhone(value);
+  if (field.includes("chassis") || field.includes("chassi")) return redactChassis(value);
   return redactDocument(value);
 }

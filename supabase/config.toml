@@ -49,8 +49,11 @@ additional_redirect_urls = [
 enable_signup = true
 enable_confirmations = true
 double_confirm_changes = true
-# Ligar só no Dashboard Auth depois de exigir senha atual / nonce no cliente.
+# Ligar só no Dashboard Auth (Authentication → Providers / Email) depois de:
+# 1) o cliente enviar senha atual ou nonce (reauth) em must_change_password,
+#    recovery e settings; 2) testar o fluxo de primeiro acesso.
 # `config push` aqui pode quebrar must_change_password e recovery.
+# NÃO marcar como ativo só porque o código existe — é PENDENTE DE CONFIGURAÇÃO.
 secure_password_change = false
 max_frequency = "1m0s"
 otp_length = 8

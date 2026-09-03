@@ -25,3 +25,15 @@ export function jsonErrorResponse(
     status,
   });
 }
+
+export function jsonAuthGateResponse(
+  failure: { error: string; status: number; code?: string },
+  corsHeaders: Record<string, string>,
+): Response {
+  const body: { error: string; code?: string } = { error: failure.error };
+  if (failure.code) body.code = failure.code;
+  return new Response(JSON.stringify(body), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: failure.status,
+  });
+}

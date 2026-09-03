@@ -1,5 +1,5 @@
-import { getCorsHeaders } from "../_shared/cors.ts";
-import { jsonErrorResponse } from "../_shared/auth-errors.ts";
+import { getCorsHeaders, rejectNonPost } from "../_shared/cors.ts";
+import { jsonAuthGateResponse, jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { validatePassword } from "../_shared/password-policy.ts";
 import { requirePlatformAdmin } from "../_shared/require-platform-admin.ts";
 import { enforceCallerRateLimit } from "../_shared/rate-limit.ts";
@@ -15,15 +15,13 @@ const DEFAULT_INSPECTION_TYPES = [
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const methodError = rejectNonPost(req, corsHeaders);
+  if (methodError) return methodError;
 
   try {
     const auth = await requirePlatformAdmin(req);
     if ("error" in auth) {
-      return new Response(JSON.stringify({ error: auth.error }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: auth.status,
-      });
+      return jsonAuthGateResponse(auth, corsHeaders);
     }
 
     const { supabase, adminId } = auth;

@@ -6,7 +6,7 @@ import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { formatDate, formatKM, formatPlate } from "@/shared/lib/formatters";
-import { redactDocument, redactEmail, redactPhone } from "@/shared/lib/pii";
+import { redactDocument, redactEmail, redactPhone, redactChassis } from "@/shared/lib/pii";
 import { hasLaudoValue } from "@/modules/torres-vistoria/domain/laudo/laudo-field-utils";
 import { ROUTES } from "@/config/routes";
 import { Camera, ClipboardList, Edit, FileText, ArrowLeft } from "lucide-react";
@@ -164,7 +164,7 @@ export function InspectionDetailPage() {
               <p className="font-medium">{formatKM(inspection.mileage)}</p>
             </div>
           </div>
-          <p className="font-mono text-xs text-muted-foreground">{inspection.chassis}</p>
+          <p className="font-mono text-xs text-muted-foreground">{redactChassis(inspection.chassis)}</p>
         </CardContent>
       </Card>
 

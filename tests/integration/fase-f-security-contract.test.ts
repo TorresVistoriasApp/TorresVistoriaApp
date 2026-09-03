@@ -55,7 +55,8 @@ describe("Fase F — invite-user", () => {
   it("SUPER_ADMIN inativo não convida", () => {
     const guard = readRepo("supabase/functions/_shared/require-super-admin.ts");
     expect(guard).toContain("is_active");
-    expect(guard).toContain("Esta conta está desativada.");
+    expect(guard).toContain("evaluatePrivilegedGate");
+    expect(readRepo("supabase/functions/_shared/aal.ts")).toContain("Esta conta está desativada.");
   });
 });
 

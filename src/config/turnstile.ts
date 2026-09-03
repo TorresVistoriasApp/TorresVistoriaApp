@@ -3,7 +3,15 @@ export function getTurnstileSiteKey(): string | undefined {
   return key || undefined;
 }
 
-/** Widget e token só quando a site key existe. Sem chave, o login não quebra. */
+/**
+ * Fail-closed no frontend quando a produção exige Turnstile.
+ * Sem site key + flag ligada, o submit é recusado (não segue sem captcha).
+ */
+export function isTurnstileRequired(): boolean {
+  return import.meta.env.VITE_TURNSTILE_REQUIRED?.trim() === "true";
+}
+
+/** Widget quando há site key. Obrigatório também se VITE_TURNSTILE_REQUIRED=true. */
 export function isTurnstileEnabled(): boolean {
-  return Boolean(getTurnstileSiteKey());
+  return Boolean(getTurnstileSiteKey()) || isTurnstileRequired();
 }

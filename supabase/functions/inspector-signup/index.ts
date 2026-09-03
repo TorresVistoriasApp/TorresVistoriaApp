@@ -1,4 +1,4 @@
-import { getCorsHeaders } from "../_shared/cors.ts";
+import { getCorsHeaders, rejectNonPost } from "../_shared/cors.ts";
 import { jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { validatePassword } from "../_shared/password-policy.ts";
 import { createServiceClient } from "../_shared/supabase-client.ts";
@@ -23,7 +23,8 @@ function sanitizeEmail(value: unknown): string {
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const methodError = rejectNonPost(req, corsHeaders);
+  if (methodError) return methodError;
 
   let intentId: string | null = null;
   const supabase = createServiceClient();

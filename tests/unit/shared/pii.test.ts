@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   redactCnpj,
   redactCpf,
+  redactChassis,
   redactDocument,
   redactEmail,
   redactKnownPiiValue,
@@ -31,6 +32,11 @@ describe("PII — máscaras de interface (Nível 2)", () => {
 
   it("não vaza dígitos demais em documento incompleto", () => {
     expect(redactDocument("12345")).toBe("***");
+  });
+
+  it("mascara o miolo do chassi em listagens", () => {
+    expect(redactChassis("9BWZZZ377VT004251")).toBe("9BWZ•••••••••4251");
+    expect(redactKnownPiiValue("chassis", "9BWZZZ377VT004251")).toBe("9BWZ•••••••••4251");
   });
 });
 

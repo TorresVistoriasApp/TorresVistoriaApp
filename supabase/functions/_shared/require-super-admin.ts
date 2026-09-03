@@ -1,4 +1,5 @@
 import { createServiceClient, createUserClient } from "./supabase-client.ts";
+import { evaluatePrivilegedGate, extractAalFromRequest } from "./aal.ts";
 
 export async function requireSuperAdmin(req: Request) {
   const userClient = createUserClient(req);
@@ -8,7 +9,12 @@ export async function requireSuperAdmin(req: Request) {
   } = await userClient.auth.getUser();
 
   if (authError || !user) {
-    return { error: "Sessão não autenticada. Efetue login novamente.", status: 401 as const };
+    return evaluatePrivilegedGate({
+      hasUser: false,
+      isActive: false,
+      roleAuthorized: false,
+      aal: null,
+    });
   }
 
   const supabase = createServiceClient();
@@ -20,12 +26,14 @@ export async function requireSuperAdmin(req: Request) {
     .single();
 
   if (profileError) throw profileError;
-  if (profile?.is_active === false) {
-    return { error: "Esta conta está desativada.", status: 403 as const };
-  }
-  if (profile?.role !== "SUPER_ADMIN") {
-    return { error: "Você não possui permissão para executar esta operação.", status: 403 as const };
-  }
+
+  const gate = evaluatePrivilegedGate({
+    hasUser: true,
+    isActive: profile?.is_active !== false,
+    roleAuthorized: profile?.role === "SUPER_ADMIN",
+    aal: extractAalFromRequest(req),
+  });
+  if (!gate.ok) return gate;
 
   return { supabase, adminProfile: profile, adminId: user.id };
 }

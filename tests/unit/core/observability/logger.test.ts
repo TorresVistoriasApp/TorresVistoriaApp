@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { redactPii } from "@/core/observability/logger";
+import { redactLogMeta, redactPii } from "@/core/observability/logger";
 
 describe("redactPii", () => {
   it("redige e-mail, CPF, CNPJ e JWT", () => {
@@ -12,5 +12,18 @@ describe("redactPii", () => {
     expect(redacted).toContain("[redacted-token]");
     expect(redacted).not.toContain("contato@empresa.com");
     expect(redacted).not.toContain("123.456.789-09");
+  });
+
+  it("redige chaves de chassi, placa e service_role no meta", () => {
+    const meta = redactLogMeta({
+      chassis: "9BWZZZ377VT004251",
+      plate: "ABC1D23",
+      service_role: "ey-secret",
+      inspectionId: "ok",
+    }) as Record<string, unknown>;
+    expect(meta.chassis).toBe("[redacted]");
+    expect(meta.plate).toBe("[redacted]");
+    expect(meta.service_role).toBe("[redacted]");
+    expect(meta.inspectionId).toBe("ok");
   });
 });
