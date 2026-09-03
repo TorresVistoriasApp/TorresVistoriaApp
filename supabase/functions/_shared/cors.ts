@@ -67,3 +67,22 @@ export function getCorsHeaders(req: Request): Record<string, string> {
     Vary: "Origin",
   };
 }
+
+/** OPTIONS passa; qualquer outro método que não seja POST devolve 405. */
+export function rejectNonPost(
+  req: Request,
+  corsHeaders: Record<string, string>,
+): Response | null {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Método não permitido." }), {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        Allow: "POST, OPTIONS",
+      },
+      status: 405,
+    });
+  }
+  return null;
+}

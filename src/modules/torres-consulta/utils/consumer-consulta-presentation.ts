@@ -1,6 +1,7 @@
 import { ConsultaStatus } from "@/modules/torres-consulta/domain/entities/consulta";
 import type { ConsumerConsulta } from "@/modules/torres-consulta/domain/entities/consumer-consulta";
 import { formatDate } from "@/shared/lib/formatters";
+import { maskChassisForDisplay } from "@/modules/torres-consulta/domain/value-objects";
 
 export const CONSUMER_CONSULTA_STATUS_LABELS: Record<ConsultaStatus, string> = {
   [ConsultaStatus.PROCESSING]: "Processando",
@@ -24,8 +25,13 @@ export function getConsumerConsultaStatusClass(status: ConsultaStatus): string {
   }
 }
 
-export function getConsumerConsultaIdentifier(consulta: ConsumerConsulta): string {
-  return consulta.plate ?? consulta.chassis ?? "—";
+export function getConsumerConsultaIdentifier(
+  consulta: ConsumerConsulta,
+  options?: { revealChassis?: boolean },
+): string {
+  if (consulta.plate) return consulta.plate;
+  if (!consulta.chassis) return "—";
+  return options?.revealChassis ? consulta.chassis : maskChassisForDisplay(consulta.chassis);
 }
 
 export function formatConsumerConsultaDate(createdAt: string): string {

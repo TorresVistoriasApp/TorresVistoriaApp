@@ -13,22 +13,26 @@ export function redactPii(value: string): string {
     .replace(JWT, "[redacted-token]");
 }
 
-function redactUnknown(meta: unknown): unknown {
+export function redactLogMeta(meta: unknown): unknown {
   if (meta === null || meta === undefined) return meta;
   if (typeof meta === "string") return redactPii(meta);
   if (typeof meta === "number" || typeof meta === "boolean") return meta;
   if (meta instanceof Error) {
     return { name: meta.name, message: redactPii(meta.message) };
   }
-  if (Array.isArray(meta)) return meta.map(redactUnknown);
+  if (Array.isArray(meta)) return meta.map(redactLogMeta);
   if (typeof meta === "object") {
     const out: Record<string, unknown> = {};
     for (const [key, nested] of Object.entries(meta as Record<string, unknown>)) {
-      if (/email|document|cpf|cnpj|password|token|jwt|phone|secret/i.test(key)) {
+      if (
+        /email|document|cpf|cnpj|password|token|jwt|phone|secret|chassis|chassi|plate|placa|renavam|service_role|access_token|refresh_token/i.test(
+          key,
+        )
+      ) {
         out[key] = "[redacted]";
         continue;
       }
-      out[key] = redactUnknown(nested);
+      out[key] = redactLogMeta(nested);
     }
     return out;
   }
@@ -39,7 +43,7 @@ function log(level: LogLevel, message: string, meta?: unknown): void {
   if (import.meta.env.PROD && level === "debug") return;
 
   const safeMessage = redactPii(message);
-  const payload = meta !== undefined ? redactUnknown(meta) : undefined;
+  const payload = meta !== undefined ? redactLogMeta(meta) : undefined;
 
   switch (level) {
     case "debug":

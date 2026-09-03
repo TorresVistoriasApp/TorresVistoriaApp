@@ -17,6 +17,11 @@ export function useTurnstile(action: string): {
 
   function ensureToken(): string | undefined {
     if (!required) return undefined;
+    if (!siteKey) {
+      throw new AppError(
+        "Verificação anti-bot obrigatória, mas a site key não está configurada.",
+      );
+    }
     if (!token) {
       throw new AppError("Conclua a verificação anti-bot antes de continuar.");
     }

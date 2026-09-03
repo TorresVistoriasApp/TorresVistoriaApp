@@ -1,3 +1,5 @@
+import { logger } from "@/core/observability/logger";
+
 type SyncLogLevel = "info" | "warn" | "error";
 
 export type SyncLogEntry = {
@@ -21,8 +23,7 @@ function pushLog(level: SyncLogLevel, message: string, context?: Record<string, 
   if (logs.length > MAX_LOGS) logs.pop();
 
   if (import.meta.env.DEV) {
-    const fn = level === "error" ? console.error : level === "warn" ? console.warn : console.info;
-    fn(`[sync] ${message}`, context ?? "");
+    logger[level](`[sync] ${message}`, context);
   }
 }
 

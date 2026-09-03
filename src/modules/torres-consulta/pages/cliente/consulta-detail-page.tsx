@@ -51,7 +51,7 @@ export function ClienteConsultaDetailPage() {
     );
   }
 
-  const identifier = getConsumerConsultaIdentifier(consulta);
+  const identifier = getConsumerConsultaIdentifier(consulta, { revealChassis: true });
   const statusLabel = getConsumerConsultaStatusLabel(consulta.status);
 
   return (

@@ -1,4 +1,5 @@
 import { createServiceClient, createUserClient } from "./supabase-client.ts";
+import { evaluatePrivilegedGate, extractAalFromRequest } from "./aal.ts";
 
 export async function requirePlatformAdmin(req: Request) {
   const userClient = createUserClient(req);
@@ -8,7 +9,12 @@ export async function requirePlatformAdmin(req: Request) {
   } = await userClient.auth.getUser();
 
   if (authError || !user) {
-    return { error: "Sessão não autenticada. Efetue login novamente.", status: 401 as const };
+    return evaluatePrivilegedGate({
+      hasUser: false,
+      isActive: false,
+      roleAuthorized: false,
+      aal: null,
+    });
   }
 
   const supabase = createServiceClient();
@@ -20,8 +26,21 @@ export async function requirePlatformAdmin(req: Request) {
     .maybeSingle();
 
   if (adminError) throw adminError;
-  if (!admin || admin.is_active === false) {
-    return { error: "Você não possui permissão para executar esta operação.", status: 403 as const };
+
+  const gate = evaluatePrivilegedGate({
+    hasUser: true,
+    isActive: !admin || admin.is_active !== false,
+    roleAuthorized: Boolean(admin),
+    aal: extractAalFromRequest(req),
+  });
+  if (!gate.ok) return gate;
+  if (!admin) {
+    return evaluatePrivilegedGate({
+      hasUser: true,
+      isActive: true,
+      roleAuthorized: false,
+      aal: extractAalFromRequest(req),
+    });
   }
 
   return { supabase, admin, adminId: user.id };

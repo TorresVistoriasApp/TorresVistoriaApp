@@ -145,7 +145,9 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      console.error("[send-email] resend error", error);
+    console.error("[send-email] resend error", {
+      name: error instanceof Error ? error.name : "ResendError",
+    });
       return new Response(JSON.stringify({ error: "Resend delivery failed" }), {
         headers: { "Content-Type": "application/json" },
         status: 500,
@@ -157,7 +159,9 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    console.error("[send-email] unexpected error", error);
+    console.error("[send-email] unexpected error", {
+      name: error instanceof Error ? error.name : "Error",
+    });
     return new Response(JSON.stringify({ error: "Internal error" }), {
       headers: { "Content-Type": "application/json" },
       status: 500,

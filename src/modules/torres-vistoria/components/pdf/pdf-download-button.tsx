@@ -6,6 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { Download } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
+import { logger } from "@/core/observability/logger";
 import { pdfService } from "@/modules/torres-vistoria/services/pdf-service";
 
 interface PdfDownloadButtonProps {
@@ -48,7 +49,7 @@ export function PdfDownloadButton({
         `laudo-${inspection.inspection_number}-${inspection.plate}.pdf`,
       );
     } catch (error) {
-      console.error("[PdfDownloadButton]", error);
+      logger.error("Falha ao gerar prévia do laudo");
       throw error;
     } finally {
       setLoading(false);

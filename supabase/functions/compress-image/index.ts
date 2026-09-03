@@ -1,4 +1,4 @@
-import { getCorsHeaders } from "../_shared/cors.ts";
+import { getCorsHeaders, rejectNonPost } from "../_shared/cors.ts";
 import { isAuthFailure, requireCaller } from "../_shared/require-caller.ts";
 import { enforceCallerRateLimit } from "../_shared/rate-limit.ts";
 
@@ -6,7 +6,8 @@ const MAX_BASE64_CHARS = 200_000;
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const methodError = rejectNonPost(req, corsHeaders);
+  if (methodError) return methodError;
 
   try {
     const caller = await requireCaller(req);

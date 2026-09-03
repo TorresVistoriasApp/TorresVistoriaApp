@@ -20,7 +20,8 @@
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
     "db:seed": "supabase db seed",
-    "db:migrate-legacy-storage": "node scripts/migrate-legacy-storage.mjs"
+    "db:migrate-legacy-storage": "node scripts/migrate-legacy-storage.mjs",
+    "db:diagnose-legacy-storage": "node scripts/diagnose-legacy-storage.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

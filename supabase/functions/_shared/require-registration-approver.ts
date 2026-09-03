@@ -1,4 +1,5 @@
 import { createServiceClient, createUserClient } from "./supabase-client.ts";
+import { evaluatePrivilegedGate, extractAalFromRequest } from "./aal.ts";
 
 export type RegistrationApprover = {
   supabase: ReturnType<typeof createServiceClient>;
@@ -19,7 +20,12 @@ export async function requireRegistrationApprover(req: Request) {
   } = await userClient.auth.getUser();
 
   if (authError || !user) {
-    return { error: "Sessão não autenticada. Efetue login novamente.", status: 401 as const };
+    return evaluatePrivilegedGate({
+      hasUser: false,
+      isActive: false,
+      roleAuthorized: false,
+      aal: null,
+    });
   }
 
   const supabase = createServiceClient();
@@ -31,7 +37,17 @@ export async function requireRegistrationApprover(req: Request) {
     .maybeSingle();
 
   if (adminError) throw adminError;
-  if (platformAdmin && platformAdmin.is_active !== false) {
+
+  const aal = extractAalFromRequest(req);
+
+  if (platformAdmin) {
+    const gate = evaluatePrivilegedGate({
+      hasUser: true,
+      isActive: platformAdmin.is_active !== false,
+      roleAuthorized: true,
+      aal,
+    });
+    if (!gate.ok) return gate;
     return { supabase, adminId: user.id, lockedTenantId: null } satisfies RegistrationApprover;
   }
 
@@ -43,16 +59,26 @@ export async function requireRegistrationApprover(req: Request) {
     .maybeSingle();
 
   if (profileError) throw profileError;
-  if (profile?.is_active === false) {
-    return { error: "Esta conta está desativada.", status: 403 as const };
-  }
-  if (profile?.role === "SUPER_ADMIN" && profile.tenant_id) {
-    return {
-      supabase,
-      adminId: user.id,
-      lockedTenantId: profile.tenant_id,
-    } satisfies RegistrationApprover;
+
+  const gate = evaluatePrivilegedGate({
+    hasUser: true,
+    isActive: profile?.is_active !== false,
+    roleAuthorized: profile?.role === "SUPER_ADMIN" && Boolean(profile.tenant_id),
+    aal,
+  });
+  if (!gate.ok) return gate;
+  if (!profile?.tenant_id) {
+    return evaluatePrivilegedGate({
+      hasUser: true,
+      isActive: true,
+      roleAuthorized: false,
+      aal,
+    });
   }
 
-  return { error: "Você não possui permissão para executar esta operação.", status: 403 as const };
+  return {
+    supabase,
+    adminId: user.id,
+    lockedTenantId: profile.tenant_id,
+  } satisfies RegistrationApprover;
 }

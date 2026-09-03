@@ -1,4 +1,4 @@
-import { canonicalAppOrigin, getCorsHeaders } from "../_shared/cors.ts";
+import { canonicalAppOrigin, getCorsHeaders, rejectNonPost } from "../_shared/cors.ts";
 import {
   canAccessInspection,
   isAuthFailure,
@@ -81,7 +81,8 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const methodError = rejectNonPost(req, corsHeaders);
+  if (methodError) return methodError;
 
   try {
     const caller = await requireCaller(req);
