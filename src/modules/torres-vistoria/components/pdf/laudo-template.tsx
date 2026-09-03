@@ -9,7 +9,8 @@ import {
 import { isOpinionReproved, isOpinionWithObservations } from "@/modules/torres-vistoria/domain/inspection-opinion-labels";
 import { getChecklistStatusLabel } from "@/modules/torres-vistoria/domain/checklist/checklist-status";
 import { ChecklistStatus } from "@/modules/torres-vistoria/domain/enums";
-import { formatDate, formatDocument, formatKM, formatPlate, getDocumentTypeLabel } from "@/shared/lib/formatters";
+import { formatDate, formatKM, formatPlate, getDocumentTypeLabel } from "@/shared/lib/formatters";
+import { redactDocument } from "@/shared/lib/pii";
 import { cn } from "@/shared/lib/utils";
 import { getBrandLogoPath } from "@/modules/torres-vistoria/domain/vehicle-brand-logos";
 
@@ -39,6 +40,9 @@ export function LaudoTemplate({
 
   return (
     <article className="overflow-hidden rounded-xl border-2 border-border bg-card shadow-sm">
+      <p className="bg-amber-50 px-4 py-1.5 text-center text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+        Prévia — não é o laudo oficial
+      </p>
       <header className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-4 py-4 sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
@@ -53,7 +57,7 @@ export function LaudoTemplate({
             </p>
             {company?.document && (
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {getDocumentTypeLabel(company.document)}: {formatDocument(company.document)}
+                {getDocumentTypeLabel(company.document)}: {redactDocument(company.document)}
               </p>
             )}
           </div>

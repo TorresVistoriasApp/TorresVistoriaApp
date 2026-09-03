@@ -32,9 +32,18 @@ export function checkRateLimit(
 }
 
 export function clientKey(req: Request): string {
-  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const cf = req.headers.get("cf-connecting-ip")?.trim();
+  if (cf) return cf;
   const realIp = req.headers.get("x-real-ip")?.trim();
-  return forwarded || realIp || "unknown";
+  if (realIp) return realIp;
+  // Último hop: o primeiro IP de XFF é forjável pelo cliente.
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const parts = forwarded.split(",").map((part) => part.trim()).filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (last) return last;
+  }
+  return "unknown";
 }
 
 type RateLimitRow = { allowed?: boolean; retry_after_seconds?: number };

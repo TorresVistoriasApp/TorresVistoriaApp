@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { AppError } from "@/core/errors/app-error";
-import { isTurnstileEnabled } from "@/config/turnstile";
+import { getTurnstileSiteKey, isTurnstileEnabled } from "@/config/turnstile";
 import { TurnstileWidget } from "@/core/security/turnstile-widget";
 
 export function useTurnstile(action: string): {
@@ -11,8 +11,9 @@ export function useTurnstile(action: string): {
 } {
   const required = isTurnstileEnabled();
   const [token, setToken] = useState<string | null>(null);
+  const siteKey = getTurnstileSiteKey();
 
-  const field = required ? <TurnstileWidget action={action} onToken={setToken} /> : null;
+  const field = required && siteKey ? <TurnstileWidget action={action} onToken={setToken} /> : null;
 
   function ensureToken(): string | undefined {
     if (!required) return undefined;

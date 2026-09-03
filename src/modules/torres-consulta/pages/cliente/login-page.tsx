@@ -10,6 +10,7 @@ import { PasswordField } from "@/core/auth/components/password-field";
 import { useSession } from "@/core/auth/session-context";
 import { useAuth } from "@/core/auth/use-auth";
 import { consumerAuthService } from "@/core/auth/services/consumer-auth-service";
+import { checkRateLimit, tooManyAttemptsMessage } from "@/core/auth/rate-limit";
 import {
   consumerLoginSchema,
   type ConsumerLoginInput,
@@ -68,6 +69,11 @@ export function ClienteLoginPage() {
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
+    const limit = checkRateLimit("consulta-login", 5, 15 * 60 * 1000);
+    if (!limit.allowed) {
+      setError(tooManyAttemptsMessage(limit.retryAfterMs));
+      return;
+    }
     setIsSigningIn(true);
     try {
       await consumerAuthService.signIn(values, turnstile.ensureToken());

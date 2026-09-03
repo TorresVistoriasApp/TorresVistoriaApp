@@ -31,12 +31,19 @@ describe("Fase D — máscara padrão na UI, valor completo só no documento ofi
     );
     expect(registrations).toContain("redactEmail");
     expect(registrations).toContain("document_tail");
+
+    const preview = readRepo("src/modules/torres-vistoria/components/pdf/laudo-template.tsx");
+    expect(preview).toContain("redactDocument");
+    expect(preview).not.toContain("formatDocument");
   });
 
-  it("PDF/laudo oficial continua com formatDocument (Nível 1)", () => {
-    const pdf = readRepo("src/modules/torres-vistoria/domain/laudo/laudo-doc-definition.ts");
-    expect(pdf).toContain("formatDocument");
-    expect(pdf).not.toContain("redactDocument");
+  it("PDF/laudo oficial continua com documento completo (Nível 1)", () => {
+    const official = readRepo("supabase/functions/_shared/official-laudo-pdf.ts");
+    expect(official).toContain("company?.document");
+    expect(official).not.toContain("redactDocument");
+    const previewVisual = readRepo("src/modules/torres-vistoria/domain/laudo/laudo-doc-definition.ts");
+    expect(previewVisual).toContain("formatDocument");
+    expect(previewVisual).not.toContain("redactDocument");
     const rows = readRepo("src/modules/torres-vistoria/domain/laudo/laudo-field-utils.ts");
     expect(rows).toContain("formatDocument");
     expect(rows).not.toContain("redactDocument");

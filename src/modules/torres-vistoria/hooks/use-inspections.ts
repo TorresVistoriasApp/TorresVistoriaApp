@@ -92,8 +92,8 @@ export function useUnarchiveInspection() {
 export function useGenerateReport() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ inspectionId, storagePath }: { inspectionId: string; storagePath?: string }) =>
-      inspectionService.generateReport(inspectionId, storagePath),
+    mutationFn: ({ inspectionId }: { inspectionId: string }) =>
+      inspectionService.generateReport(inspectionId),
     onSuccess: (_, { inspectionId }) => {
       invalidateInspectionQueries(qc, inspectionId);
       invalidateDashboardQueries(qc);

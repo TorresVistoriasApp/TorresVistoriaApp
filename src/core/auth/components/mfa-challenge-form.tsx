@@ -4,6 +4,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { FormError } from "@/core/auth/components/form-error";
+import { MfaEnrollForm } from "@/core/auth/components/mfa-enroll-form";
 
 export function MfaChallengeForm({
   onVerify,
@@ -85,6 +86,39 @@ export function MfaChallengeScreen({
           </div>
         </div>
         <MfaChallengeForm onVerify={onVerify} onCancel={onCancel} />
+      </div>
+    </div>
+  );
+}
+
+export function MfaEnrollScreen({
+  onEnrolled,
+  onCancel,
+}: {
+  onEnrolled: () => void | Promise<void>;
+  onCancel: () => Promise<void> | void;
+}) {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-canvas px-4">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-soft">
+        <div className="mb-5 flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ShieldCheck className="h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
+              Conta privilegiada
+            </p>
+            <h1 className="mt-1 text-lg font-bold text-foreground">Ative a verificação em duas etapas</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Administradores precisam de um autenticador além da senha para acessar o painel.
+            </p>
+          </div>
+        </div>
+        <MfaEnrollForm onEnrolled={onEnrolled} />
+        <Button type="button" variant="outline" className="mt-3 w-full" onClick={() => void onCancel()}>
+          Cancelar e sair
+        </Button>
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useSession } from "@/core/auth/session-context";
 import { authService } from "@/core/auth/auth-service";
 import { platformAdminService } from "@/core/auth/platform-admin-service";
-import { isMfaChallengeRequired, verifyMfaTotpCode } from "@/core/auth/mfa";
+import { isMfaChallengeRequired, hasVerifiedTotpFactor, isPrivilegedAccount, verifyMfaTotpCode } from "@/core/auth/mfa";
 import { useAuthStore } from "@/core/auth/auth-store";
 import { logger } from "@/core/observability/logger";
 import { ROUTES } from "@/config/routes";
@@ -28,8 +28,11 @@ interface AuthContextValue {
   loading: boolean;
   /** Senha ok, mas AAL2 ainda pendente. */
   mfaPending: boolean;
+  /** SUPER_ADMIN / platform admin sem TOTP verificado. */
+  mfaEnrollmentRequired: boolean;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<void>;
   completeMfa: (code: string) => Promise<void>;
+  completeMfaEnrollment: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string, captchaToken?: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -72,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [platformAdmin, setPlatformAdmin] = useState<PlatformAdmin | null>(null);
   const [identityResolved, setIdentityResolved] = useState(false);
   const [mfaPending, setMfaPending] = useState(false);
+  const [mfaEnrollmentRequired, setMfaEnrollmentRequired] = useState(false);
   const [mfaResolved, setMfaResolved] = useState(false);
   const loading =
     sessionLoading ||
@@ -119,28 +123,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!session?.user.id) {
       setMfaPending(false);
+      setMfaEnrollmentRequired(false);
       setMfaResolved(true);
+      return;
+    }
+
+    if (!identityResolved) {
+      setMfaResolved(false);
       return;
     }
 
     let isActive = true;
     setMfaResolved(false);
-    void isMfaChallengeRequired()
-      .then((required) => {
-        if (isActive) setMfaPending(required);
-      })
-      .catch(() => {
-        // Falha na consulta de AAL não deve bloquear quem não tem MFA.
-        if (isActive) setMfaPending(false);
-      })
-      .finally(() => {
-        if (isActive) setMfaResolved(true);
-      });
+    void (async () => {
+      const challenge = await isMfaChallengeRequired().catch(() => false);
+      if (!isActive) return;
+
+      const privileged = isPrivilegedAccount(profile, !!platformAdmin);
+      if (challenge) {
+        setMfaPending(true);
+        setMfaEnrollmentRequired(false);
+        setMfaResolved(true);
+        return;
+      }
+
+      setMfaPending(false);
+      if (!privileged) {
+        setMfaEnrollmentRequired(false);
+        setMfaResolved(true);
+        return;
+      }
+
+      const hasFactor = await hasVerifiedTotpFactor();
+      if (!isActive) return;
+      setMfaEnrollmentRequired(hasFactor === false);
+      setMfaResolved(true);
+    })();
 
     return () => {
       isActive = false;
     };
-  }, [session?.user.id, session?.access_token]);
+  }, [session?.user.id, session?.access_token, identityResolved, profile, platformAdmin]);
 
   useEffect(() => {
     if (!loading) {
@@ -157,11 +180,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setMfaPending(false);
   }, []);
 
+  const completeMfaEnrollment = useCallback(async () => {
+    setMfaEnrollmentRequired(false);
+    setMfaPending(false);
+  }, []);
+
   const signOut = useCallback(async () => {
     await authService.signOut();
     setProfile(null);
     setPlatformAdmin(null);
     setMfaPending(false);
+    setMfaEnrollmentRequired(false);
     setMfaResolved(true);
   }, []);
 
@@ -182,8 +211,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isPlatformAdmin: !!platformAdmin,
       loading,
       mfaPending,
+      mfaEnrollmentRequired,
       signIn,
       completeMfa,
+      completeMfaEnrollment,
       signOut,
       resetPassword,
       refreshProfile,
@@ -195,8 +226,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       platformAdmin,
       loading,
       mfaPending,
+      mfaEnrollmentRequired,
       signIn,
       completeMfa,
+      completeMfaEnrollment,
       signOut,
       resetPassword,
       refreshProfile,

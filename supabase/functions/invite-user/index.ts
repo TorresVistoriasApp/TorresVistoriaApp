@@ -1,7 +1,13 @@
-import { getCorsHeaders } from "../_shared/cors.ts";
+import { canonicalAppOrigin, getCorsHeaders } from "../_shared/cors.ts";
 import { jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { validatePassword } from "../_shared/password-policy.ts";
 import { requireSuperAdmin } from "../_shared/require-super-admin.ts";
+import {
+  checkRateLimit,
+  clientKey,
+  consumePersistentRateLimit,
+  rateLimitedResponse,
+} from "../_shared/rate-limit.ts";
 
 const ALLOWED_ROLES = ["SUPER_ADMIN", "INSPECTOR"] as const;
 
@@ -18,6 +24,21 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: auth.status,
       });
+    }
+
+    const ip = clientKey(req);
+    const memoryLimit = checkRateLimit(`invite:${auth.adminId}:${ip}`, 10, 15 * 60 * 1000);
+    if (!memoryLimit.allowed) {
+      return rateLimitedResponse(corsHeaders, memoryLimit.retryAfterSec);
+    }
+    const persisted = await consumePersistentRateLimit(
+      auth.supabase,
+      `invite:${auth.adminProfile.tenant_id}:${auth.adminId}`,
+      10,
+      15 * 60,
+    );
+    if (!persisted.allowed) {
+      return rateLimitedResponse(corsHeaders, persisted.retryAfterSec);
     }
 
     const { supabase, adminProfile, adminId } = auth;
@@ -169,13 +190,16 @@ Deno.serve(async (req) => {
     if (!email || !fullName || !role) {
       throw new Error("Informe nome, e-mail e função.");
     }
+    if (!ALLOWED_ROLES.includes(role as AllowedRole)) {
+      throw new Error("A função informada é inválida.");
+    }
 
-    const origin = req.headers.get("origin") ?? Deno.env.get("SITE_URL") ?? "";
+    const origin = canonicalAppOrigin(req);
     const { data: invited, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
       email,
       {
         data: { full_name: fullName },
-        redirectTo: origin ? `${origin}/login` : undefined,
+        redirectTo: `${origin}/login`,
       },
     );
 
