@@ -1,5 +1,6 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { isAuthFailure, requireCaller } from "../_shared/require-caller.ts";
+import { enforceCallerRateLimit } from "../_shared/rate-limit.ts";
 
 const MAX_BASE64_CHARS = 200_000;
 
@@ -15,6 +16,18 @@ Deno.serve(async (req) => {
         status: caller.status,
       });
     }
+
+    const limited = await enforceCallerRateLimit(
+      req,
+      caller.supabase,
+      "compress-image",
+      caller.userId,
+      20,
+      15 * 60,
+      corsHeaders,
+      caller.tenantId,
+    );
+    if (limited) return limited;
 
     const raw = await req.text();
     if (raw.length > MAX_BASE64_CHARS * 1.4) {

@@ -2,6 +2,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { validatePassword } from "../_shared/password-policy.ts";
 import { requirePlatformAdmin } from "../_shared/require-platform-admin.ts";
+import { enforceCallerRateLimit } from "../_shared/rate-limit.ts";
 
 const DEFAULT_INSPECTION_TYPES = [
   { name: "Vistoria Cautelar", amount: 350.0, sort_order: 1 },
@@ -25,7 +26,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { supabase } = auth;
+    const { supabase, adminId } = auth;
+    const limited = await enforceCallerRateLimit(
+      req,
+      supabase,
+      "onboard",
+      adminId,
+      5,
+      15 * 60,
+      corsHeaders,
+    );
+    if (limited) return limited;
+
     const body = await req.json();
 
     const {

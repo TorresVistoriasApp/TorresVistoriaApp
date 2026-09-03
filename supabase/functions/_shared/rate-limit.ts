@@ -76,6 +76,30 @@ export async function consumePersistentRateLimit(
   };
 }
 
+/** Memória + Postgres. Devolve Response 429 ou null se permitido. */
+export async function enforceCallerRateLimit(
+  req: Request,
+  supabase: SupabaseClient,
+  scope: string,
+  callerId: string,
+  maxAttempts: number,
+  windowSeconds: number,
+  corsHeaders: Record<string, string>,
+  tenantKey = "platform",
+): Promise<Response | null> {
+  const ip = clientKey(req);
+  const memory = checkRateLimit(`${scope}:${callerId}:${ip}`, maxAttempts, windowSeconds * 1000);
+  if (!memory.allowed) return rateLimitedResponse(corsHeaders, memory.retryAfterSec);
+  const persisted = await consumePersistentRateLimit(
+    supabase,
+    `${scope}:${tenantKey}:${callerId}`,
+    maxAttempts,
+    windowSeconds,
+  );
+  if (!persisted.allowed) return rateLimitedResponse(corsHeaders, persisted.retryAfterSec);
+  return null;
+}
+
 export function rateLimitedResponse(
   corsHeaders: Record<string, string>,
   retryAfterSec: number,

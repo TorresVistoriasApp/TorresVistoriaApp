@@ -49,6 +49,8 @@ additional_redirect_urls = [
 enable_signup = true
 enable_confirmations = true
 double_confirm_changes = true
+# Ligar só no Dashboard Auth depois de exigir senha atual / nonce no cliente.
+# `config push` aqui pode quebrar must_change_password e recovery.
 secure_password_change = false
 max_frequency = "1m0s"
 otp_length = 8
@@ -100,6 +102,9 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.compress-image]
+verify_jwt = true
+
+[functions.inspector-registrations]
 verify_jwt = true
 
 [functions.validate-report]

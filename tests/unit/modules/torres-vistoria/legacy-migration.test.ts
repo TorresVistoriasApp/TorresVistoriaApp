@@ -23,9 +23,9 @@ describe("legacy-migration path helpers", () => {
     expect(isCanonicalInspectionPhotoPath(path, COMPANY, INSPECTION)).toBe(false);
   });
 
-  it("aceita laudo canônico e pending", () => {
+  it("aceita laudo canônico e rejeita pending", () => {
     const canonical = `${COMPANY}/${INSPECTION}/laudo.pdf`;
     expect(isCanonicalReportPath(canonical, COMPANY, INSPECTION)).toBe(true);
-    expect(isCanonicalReportPath("pending/draft.pdf", COMPANY, INSPECTION)).toBe(true);
+    expect(isCanonicalReportPath("pending/draft.pdf", COMPANY, INSPECTION)).toBe(false);
   });
 });
