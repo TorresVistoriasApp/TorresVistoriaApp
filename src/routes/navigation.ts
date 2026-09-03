@@ -2,6 +2,7 @@ import {
   BarChart3,
   Car,
   ClipboardList,
+  Clock3,
   FileCheck2,
   History,
   LayoutDashboard,
@@ -146,6 +147,14 @@ export function getNavSections(access: Pick<PermissionChecker, "has" | "hasAny">
         label: "Usuários",
         shortLabel: "Usuários",
         icon: Users,
+        requiredPermission: "users.manage",
+      },
+      {
+        type: "link",
+        to: ROUTES.usersPendingRegistrations,
+        label: "Cadastros pendentes",
+        shortLabel: "Cadastros",
+        icon: Clock3,
         requiredPermission: "users.manage",
       },
       {

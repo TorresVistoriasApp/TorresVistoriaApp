@@ -104,6 +104,7 @@ export const ROUTES = {
   settingsCompany: settingsRoute(ROUTE_SLUGS.company),
   settingsProfile: settingsRoute(ROUTE_SLUGS.profile),
   users: route(ROUTE_SLUGS.users),
+  usersPendingRegistrations: route(ROUTE_SLUGS.users, ROUTE_SLUGS.adminInspectorRegistrations),
   audit: route(ROUTE_SLUGS.audit),
   legacySettingsUsers: settingsRoute(ROUTE_SLUGS.users),
   legacySettingsAudit: settingsRoute(ROUTE_SLUGS.audit),

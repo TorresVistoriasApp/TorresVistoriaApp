@@ -115,6 +115,7 @@ describe("Fase C — autorização das rotas administrativas", () => {
   it("usuários e auditoria exigem users.manage no manifesto", () => {
     const admin = readRepo("src/modules/admin/routes.tsx");
     expect(admin).toMatch(/ROUTES\.users[\s\S]*permission:\s*"users\.manage"/);
+    expect(admin).toMatch(/ROUTES\.usersPendingRegistrations[\s\S]*permission:\s*"users\.manage"/);
     expect(admin).toMatch(/ROUTES\.audit[\s\S]*permission:\s*"users\.manage"/);
   });
 

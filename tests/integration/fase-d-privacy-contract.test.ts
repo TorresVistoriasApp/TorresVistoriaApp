@@ -27,7 +27,7 @@ describe("Fase D — máscara padrão na UI, valor completo só no documento ofi
     expect(users).toContain("redactPhone");
 
     const registrations = readRepo(
-      "src/modules/admin/platform/pages/admin-inspector-registrations-page.tsx",
+      "src/modules/admin/users/components/inspector-registrations-queue.tsx",
     );
     expect(registrations).toContain("redactEmail");
     expect(registrations).toContain("document_tail");
