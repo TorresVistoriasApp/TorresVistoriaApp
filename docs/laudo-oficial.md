@@ -37,3 +37,7 @@ O PDF oficial usa `pdf-lib` (Helvetica) e lista as fotografias pelo path canôni
 ## Validação pública
 
 O código impresso no PDF aponta para `/validar/{codigo}`. O hash SHA-256 fica no servidor (`inspection_reports.integrity_hash`) e é o do arquivo gravado, não de um JSON montado no cliente.
+
+## Namespace `pending/`
+
+Não aceitar mais laudo em `pending/`. Arquivos antigos **não** são apagados. SELECT autenticado exige path `{tenant}/{inspection}/*.pdf`. Remoção física fica para um script de limpeza posterior.

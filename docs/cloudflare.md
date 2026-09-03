@@ -124,6 +124,8 @@ O código do widget e a verificação nas Edges já existem. Ligar de verdade:
 
 Sem as duas chaves, o widget não aparece e o GoTrue não deve exigir captcha.
 
+**Código vs produção:** o widget, a verificação nas Edges e o fail-closed (`TURNSTILE_REQUIRED`) estão no repositório. Ativação real (site key na Vercel, secret + flag no Supabase, captcha no GoTrue) **REQUER DASHBOARD** — não inventar chaves.
+
 ## 9. Fora deste desenho (depois)
 
 - Domínio próprio na API (`api.torresconsultas.com.br` → Supabase) — exige plano Pro no Supabase, cache bypass total e cuidado com Realtime.

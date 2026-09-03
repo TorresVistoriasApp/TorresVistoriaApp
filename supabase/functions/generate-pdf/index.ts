@@ -1,5 +1,6 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { canAccessInspection, isAuthFailure, requireCaller } from "../_shared/require-caller.ts";
+import { enforceCallerRateLimit } from "../_shared/rate-limit.ts";
 
 /**
  * Leitura autorizada da vistoria para prévia no cliente.
@@ -19,6 +20,18 @@ Deno.serve(async (req) => {
         status: caller.status,
       });
     }
+
+    const limited = await enforceCallerRateLimit(
+      req,
+      caller.supabase,
+      "generate-pdf",
+      caller.userId,
+      20,
+      15 * 60,
+      corsHeaders,
+      caller.tenantId,
+    );
+    if (limited) return limited;
 
     const body = (await req.json()) as Record<string, unknown>;
     const inspectionId = typeof body.inspectionId === "string" ? body.inspectionId.trim() : "";

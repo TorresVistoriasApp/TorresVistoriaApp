@@ -1,6 +1,7 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { jsonErrorResponse } from "../_shared/auth-errors.ts";
 import { requirePlatformAdmin } from "../_shared/require-platform-admin.ts";
+import { enforceCallerRateLimit } from "../_shared/rate-limit.ts";
 import {
   hmacInspectorDocument,
   indexInspectorDocumentHashes,
@@ -28,6 +29,17 @@ Deno.serve(async (req) => {
     }
 
     const { supabase, adminId } = auth;
+    const limited = await enforceCallerRateLimit(
+      req,
+      supabase,
+      "inspector-registrations",
+      adminId,
+      20,
+      15 * 60,
+      corsHeaders,
+    );
+    if (limited) return limited;
+
     const body = await req.json();
     const action = body.action as string | undefined;
 

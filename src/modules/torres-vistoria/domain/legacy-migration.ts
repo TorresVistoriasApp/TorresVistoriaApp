@@ -25,13 +25,13 @@ export function isCanonicalInspectionPhotoPath(
   return true;
 }
 
-/** Verifica se um path de laudo segue o layout canônico (ou pending/). */
+/** Verifica se um path de laudo segue o layout canônico. pending/ não é mais válido. */
 export function isCanonicalReportPath(
   storagePath: string,
   tenantId: string,
   inspectionId: string,
 ): boolean {
-  if (storagePath.startsWith("pending/")) return true;
+  if (storagePath.startsWith("pending/")) return false;
   const parts = storagePath.split("/").filter(Boolean);
   return (
     parts.length === 3 &&
