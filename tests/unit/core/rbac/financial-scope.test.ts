@@ -30,4 +30,11 @@ describe("financial nav visibility", () => {
     const sections = getNavSections(checker);
     expect(sections.some((section) => section.title === "Gestão")).toBe(false);
   });
+
+  it("SUPER_ADMIN vê cadastros pendentes na gestão", () => {
+    const checker = PermissionService.forRole(UserRole.SUPER_ADMIN);
+    const sections = getNavSections(checker);
+    const management = sections.find((section) => section.title === "Gestão");
+    expect(management?.items.some((item) => item.label === "Cadastros pendentes")).toBe(true);
+  });
 });

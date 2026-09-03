@@ -142,10 +142,15 @@ export function UsersPage() {
             </div>
           </div>
 
-          <Button className="touch-target shrink-0" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Novo usuário
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline" className="touch-target shrink-0" asChild>
+              <Link to={ROUTES.usersPendingRegistrations}>Cadastros pendentes</Link>
+            </Button>
+            <Button className="touch-target shrink-0" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Novo usuário
+            </Button>
+          </div>
         </div>
 
         <div className="ui-panel space-y-4 p-4 sm:p-5">

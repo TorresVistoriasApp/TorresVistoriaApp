@@ -32,6 +32,14 @@ export const adminRoutes: ModuleRoutes = {
       ),
     },
     {
+      path: ROUTES.usersPendingRegistrations,
+      element: lazyRoute(
+        () => import("@/modules/admin/users/pages/inspector-registrations-page"),
+        "InspectorRegistrationsPage",
+        { permission: "users.manage" },
+      ),
+    },
+    {
       path: ROUTES.audit,
       element: lazyRoute(
         () => import("@/modules/admin/audit/pages/audit-page"),

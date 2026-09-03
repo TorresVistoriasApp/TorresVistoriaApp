@@ -67,4 +67,10 @@ describe("Fase A — contrato da Edge de aprovação", () => {
     expect(edge).toContain("indexInspectorDocumentHashes");
     expect(edge).not.toContain("hashDocumentDigits");
   });
+
+  it("aceita Super Admin da empresa além do operador da plataforma", () => {
+    expect(edge).toContain("requireRegistrationApprover");
+    expect(edge).toContain("lockedTenantId");
+    expect(edge).not.toContain("requirePlatformAdmin");
+  });
 });

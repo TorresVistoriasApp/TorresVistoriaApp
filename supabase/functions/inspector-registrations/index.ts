@@ -1,6 +1,6 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { jsonErrorResponse } from "../_shared/auth-errors.ts";
-import { requirePlatformAdmin } from "../_shared/require-platform-admin.ts";
+import { requireRegistrationApprover } from "../_shared/require-registration-approver.ts";
 import { enforceCallerRateLimit } from "../_shared/rate-limit.ts";
 import {
   hmacInspectorDocument,
@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const auth = await requirePlatformAdmin(req);
+    const auth = await requireRegistrationApprover(req);
     if ("error" in auth) {
       return new Response(JSON.stringify({ error: auth.error }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { supabase, adminId } = auth;
+    const { supabase, adminId, lockedTenantId } = auth;
     const limited = await enforceCallerRateLimit(
       req,
       supabase,
@@ -96,9 +96,13 @@ Deno.serve(async (req) => {
     }
 
     if (action === "approve") {
-      const { registrationId, tenantId, role } = body;
+      const { registrationId, role } = body;
+      const tenantId = lockedTenantId ?? body.tenantId;
       if (!registrationId || !tenantId || !role) {
         throw new Error("Informe cadastro, empresa e função para aprovação.");
+      }
+      if (lockedTenantId && body.tenantId && body.tenantId !== lockedTenantId) {
+        throw new Error("Você só pode vincular o cadastro à sua empresa.");
       }
       if (!ALLOWED_ROLES.includes(role as AllowedRole)) {
         throw new Error("A função informada é inválida.");
