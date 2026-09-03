@@ -10,6 +10,7 @@ import { ConsumerProtectedRoute } from "@/routes/guards/consumer-protected-route
 import { ConsumerInactiveAccountRoute } from "@/routes/guards/consumer-inactive-account-route";
 import { PlatformAdminRoute } from "@/routes/guards/platform-admin-route";
 import { RequirePasswordChanged } from "@/routes/guards/require-password-changed";
+import { RequirePrivilegedMfa } from "@/routes/guards/require-privileged-mfa";
 import { TenantGuard } from "@/core/tenant/tenant-guard";
 import type { ModuleRoutes } from "@/routes/route-contract";
 import { authRoutes } from "@/core/auth/routes";
@@ -48,7 +49,12 @@ export const router = createBrowserRouter([
       // Área administrativa da plataforma — operador do SaaS.
       {
         element: <PlatformAdminRoute />,
-        children: [{ element: <AdminLayout />, children: collect("platform") }],
+        children: [
+          {
+            element: <RequirePrivilegedMfa />,
+            children: [{ element: <AdminLayout />, children: collect("platform") }],
+          },
+        ],
       },
 
       // Área autenticada do consumidor (B2C) — sem tenant.
@@ -74,8 +80,13 @@ export const router = createBrowserRouter([
             element: <RequirePasswordChanged />,
             children: [
               {
-                element: <TenantGuard />,
-                children: [{ element: <ClientLayout />, children: collect("client") }],
+                element: <RequirePrivilegedMfa />,
+                children: [
+                  {
+                    element: <TenantGuard />,
+                    children: [{ element: <ClientLayout />, children: collect("client") }],
+                  },
+                ],
               },
             ],
           },

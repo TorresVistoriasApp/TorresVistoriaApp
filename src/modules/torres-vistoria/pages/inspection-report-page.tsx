@@ -64,14 +64,9 @@ export function InspectionReportPage() {
     try {
       const result = await pdfService.registerProfessionalLaudo({
         inspection,
-        checklist,
-        photos,
-        company: laudoCompany,
-        settings,
-        inspector: laudoInspector,
       });
       setVerificationCode(result.verificationCode);
-      toast("Laudo profissional registrado e baixado com sucesso");
+      toast("Laudo oficial emitido pelo servidor e baixado");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Erro ao gerar laudo");
     } finally {

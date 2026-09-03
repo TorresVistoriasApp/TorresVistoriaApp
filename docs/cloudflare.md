@@ -110,15 +110,19 @@ Se a tela ficar em branco: Rocket Loader ou Auto Minify ainda ligados, ou CSP bl
 
 Se login/auth falhar: SSL não está em Full (strict), ou o Host chegou na Vercel diferente do domínio cadastrado.
 
-## 8. Turnstile (Camada 4)
+## 8. Turnstile (Camada 4) — ligar de verdade
 
-1. Cloudflare → Turnstile → **Add widget** (domínio `torresconsultas.com.br` + `vistoria.torresconsultas.com.br`).
-2. Vercel → `VITE_TURNSTILE_SITE_KEY` = site key do widget.
-3. Supabase → `npx supabase secrets set TURNSTILE_SECRET_KEY=<secret>` (Edges `inspector-signup` e `validate-report`).
+O código do widget e a verificação nas Edges já existem. Ligar de verdade:
+
+1. Cloudflare → Turnstile → **Add widget** (domínios `torresconsultas.com.br` + `vistoria.torresconsultas.com.br`).
+2. Vercel → `VITE_TURNSTILE_SITE_KEY` = site key do widget (rebuild).
+3. Supabase → `npx supabase secrets set TURNSTILE_SECRET_KEY=<secret>`.
 4. Dashboard Supabase → Authentication → Attack Protection / Captcha: provider **Turnstile**, mesmo secret.
-5. Em `supabase/config.toml`, `[auth.captcha] enabled = true` e `npx supabase config push`.
+5. Só então: `npx supabase secrets set TURNSTILE_REQUIRED=true` e republicar as Edges.
+   Sem esse flag, as Edges **não** derrubam cadastro/validação se o secret ainda não existir.
+6. **Não** use `npx supabase config push` neste projeto (`config.toml` tem `env(SECRET)`).
 
-Sem as duas chaves, o widget não aparece e o GoTrue **não** deve ter captcha ligado — senão login/cadastro/recuperação falham.
+Sem as duas chaves, o widget não aparece e o GoTrue não deve exigir captcha.
 
 ## 9. Fora deste desenho (depois)
 

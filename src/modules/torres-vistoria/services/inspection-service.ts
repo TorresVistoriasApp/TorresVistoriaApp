@@ -240,10 +240,10 @@ export const inspectionService = {
     }
   },
 
-  async generateReport(inspectionId: string, storagePath?: string) {
+  async generateReport(inspectionId: string) {
     try {
       const { data, error } = await db.functions.invoke("create-report", {
-        body: { inspectionId, storagePath },
+        body: { inspectionId },
       });
       return await throwIfEdgeError(error, data as Record<string, unknown> | null);
     } catch (error) {

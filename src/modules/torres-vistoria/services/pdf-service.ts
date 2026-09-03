@@ -1,5 +1,5 @@
 import { db } from "@/infra/supabase/client";
-import { AppError, getEdgeErrorMessage, getErrorMessage, throwIfEdgeError } from "@/core/errors/app-error";
+import { AppError, getErrorMessage, throwIfEdgeError } from "@/core/errors/app-error";
 import type { Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
@@ -23,11 +23,8 @@ import {
   type LaudoSectionIconDataUrls,
 } from "@/modules/torres-vistoria/domain/laudo/pdf/section-icons";
 import type { PdfIconName } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-icons";
-import { REPORTS_BUCKET, STORAGE_BUCKET } from "@/infra/storage/buckets";
-import {
-  buildInspectionPhotoThumbnailPath,
-  buildReportStoragePath,
-} from "@/infra/storage/paths";
+import { STORAGE_BUCKET } from "@/infra/storage/buckets";
+import { buildInspectionPhotoThumbnailPath } from "@/infra/storage/paths";
 
 /**
  * A logo ocupa 108pt de largura no cabeçalho compacto do laudo; rasterizar o
@@ -143,51 +140,6 @@ async function sha256Bytes(data: Blob | string): Promise<string> {
   return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-}
-
-/**
- * Hash estável do conteúdo da vistoria (exibido no PDF).
- * Diferente do hash do arquivo PDF, usado na validação pública.
- */
-async function buildContentIntegrityHash(input: {
-  verificationCode: string;
-  inspection: Inspection;
-  checklist: ChecklistItem[];
-  photos: InspectionPhoto[];
-}): Promise<string> {
-  const fingerprint = {
-    verificationCode: input.verificationCode,
-    inspectionId: input.inspection.id,
-    inspectionNumber: input.inspection.inspection_number,
-    opinion: input.inspection.opinion,
-    plate: input.inspection.plate,
-    checklist: input.checklist.map((item) => ({
-      id: item.id,
-      status: item.status,
-      notes: item.notes,
-    })),
-    photos: input.photos.map((photo) => ({
-      id: photo.id,
-      category: photo.category,
-      path: photo.storage_path,
-    })),
-  };
-  return sha256Bytes(JSON.stringify(fingerprint));
-}
-
-/** Reutiliza o código ativo em reemissões; senão gera um opaco. */
-async function resolveVerificationCode(inspectionId: string): Promise<string> {
-  const { data } = await db
-    .from("inspection_reports")
-    .select("verification_code")
-    .eq("inspection_id", inspectionId)
-    .is("deleted_at", null)
-    .order("version", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (data?.verification_code) return data.verification_code;
-  return buildVerificationCode();
 }
 
 async function downloadStorageBlob(path: string): Promise<Blob | null> {
@@ -336,7 +288,7 @@ async function getPdfMake() {
   return { engine, sourceSansReady };
 }
 
-function reportFileName(inspection: Inspection): string {
+function reportFileName(inspection: Pick<Inspection, "inspection_number" | "plate">): string {
   const safePlate = inspection.plate.replace(/[^A-Z0-9]/gi, "").toUpperCase();
   return `laudo-${inspection.inspection_number}-${safePlate}.pdf`;
 }
@@ -397,6 +349,8 @@ export const pdfService = {
       verificationCode?: string;
       integrityHash?: string;
       validationUrl?: string;
+      /** Prévia no navegador — nunca é o documento oficial. */
+      preview?: boolean;
       /** Assets já embutidos — evita refetch na 2ª passagem do laudo. */
       staticAssets?: StaticLaudoAssets;
       /** Fotos já com dataUrl — evita re-embed. */
@@ -408,8 +362,9 @@ export const pdfService = {
     docDefinition: Record<string, unknown>;
     payload: LaudoPayload;
   }> {
-    const verificationCode =
-      options.verificationCode ?? buildVerificationCode();
+    const verificationCode = options.preview
+      ? "PREVIA-NAO-OFICIAL"
+      : (options.verificationCode ?? buildVerificationCode());
     const laudoNumber = formatLaudoNumber(
       inspection.inspection_number,
       inspection.inspection_date,
@@ -451,10 +406,21 @@ export const pdfService = {
       generatedAt: new Date(),
     };
 
+    const docDefinition = buildLaudoDocDefinition(payload) as Record<string, unknown>;
+    if (options.preview) {
+      docDefinition.watermark = {
+        text: "PREVIA — NAO OFICIAL",
+        color: "#b45309",
+        opacity: 0.12,
+        bold: true,
+        fontSize: 46,
+      };
+    }
+
     return {
       verificationCode,
-      integrityHash: baseHash,
-      docDefinition: buildLaudoDocDefinition(payload),
+      integrityHash: options.preview ? "preview" : baseHash,
+      docDefinition,
       payload,
     };
   },
@@ -534,93 +500,28 @@ export const pdfService = {
   },
 
   async registerProfessionalLaudo(params: {
-    inspection: Inspection;
-    checklist: ChecklistItem[];
-    photos: InspectionPhoto[];
-    company?: LaudoCompany | null;
-    settings?: LaudoSettings | null;
-    inspector?: LaudoInspector | null;
-    validationBaseUrl?: string;
+    inspection: Pick<Inspection, "id" | "inspection_number" | "plate">;
   }): Promise<{ verificationCode: string; integrityHash: string; storagePath: string }> {
     try {
-      const verificationCode = await resolveVerificationCode(params.inspection.id);
-      const validationUrl = `${params.validationBaseUrl ?? window.location.origin}/validar/${encodeURIComponent(verificationCode)}`;
-
-      const [staticAssets, photosWithEmbeds, contentHash] = await Promise.all([
-        loadStaticLaudoAssets(),
-        loadPhotoDataUrls(params.photos),
-        buildContentIntegrityHash({
-          verificationCode,
-          inspection: params.inspection,
-          checklist: params.checklist,
-          photos: params.photos,
-        }),
-      ]);
-
-      const { docDefinition } = await this.generateLaudoPayload(
-        params.inspection,
-        params.checklist,
-        photosWithEmbeds,
-        {
-          company: params.company,
-          settings: params.settings,
-          inspector: params.inspector,
-          verificationCode,
-          validationUrl,
-          integrityHash: contentHash,
-          staticAssets,
-          photosAlreadyEmbedded: true,
-        },
-      );
-
-      const finalBlob = await this.createPdfBlob(docDefinition);
-      const fileIntegrityHash = await sha256Bytes(finalBlob);
-      const fileName = reportFileName(params.inspection);
-
-      // Baixa primeiro — libera o loading mesmo se upload/edge demorarem.
-      await this.downloadPdfBlob(finalBlob, fileName);
-
-      const storagePath = buildReportStoragePath(
-        params.inspection.tenant_id,
-        params.inspection.id,
-        `${Date.now()}-${fileName}`,
-      );
-
-      try {
-        await withTimeout(
-          (async () => {
-            const { error: uploadError } = await db.storage
-              .from(REPORTS_BUCKET)
-              .upload(storagePath, finalBlob, { contentType: "application/pdf", upsert: false });
-            if (uploadError) throw uploadError;
-
-            const { error: reportError } = await db.functions.invoke("create-report", {
-              body: {
-                inspectionId: params.inspection.id,
-                storagePath,
-                verificationCode,
-                integrityHash: fileIntegrityHash,
-                qrCodeData: validationUrl,
-                publicUrl: null,
-              },
-            });
-            if (reportError) throw new AppError(await getEdgeErrorMessage(reportError));
-          })(),
-          90_000,
-          "Registro do laudo",
-        );
-      } catch (registerError) {
-        // PDF já foi baixado — não manter spinner infinito por falha de registro.
-        throw new AppError(
-          `PDF baixado, mas o registro falhou: ${getErrorMessage(registerError)}`,
-        );
+      const { data: issuedData, error: issueError } = await db.functions.invoke("create-report", {
+        body: { inspectionId: params.inspection.id },
+      });
+      const issued = await throwIfEdgeError(issueError, issuedData as Record<string, unknown> | null);
+      const verificationCode = String(issued.verificationCode ?? "");
+      const integrityHash = String(issued.integrityHash ?? "");
+      const storagePath = String(issued.storagePath ?? "");
+      if (!verificationCode || !integrityHash || !storagePath) {
+        throw new AppError("O servidor não devolveu o laudo oficial.");
       }
 
-      return {
-        verificationCode,
-        integrityHash: fileIntegrityHash,
-        storagePath,
-      };
+      const officialBlob = await withTimeout(
+        this.downloadPdf(storagePath),
+        90_000,
+        "Download do laudo oficial",
+      );
+      await this.downloadPdfBlob(officialBlob, reportFileName(params.inspection));
+
+      return { verificationCode, integrityHash, storagePath };
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }

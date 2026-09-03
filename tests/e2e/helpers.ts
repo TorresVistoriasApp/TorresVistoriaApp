@@ -38,8 +38,25 @@ export async function loginAsDemo(page: Page, role: DemoRole = "vistoriador"): P
   await login.getByLabel("Senha", { exact: true }).fill(password);
   await login.getByRole("checkbox").check();
   await login.getByRole("button", { name: /entrar/i }).click();
-  await expect(page).toHaveURL("/dashboard", { timeout: 15_000 });
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+
+  const mfaGate = page.getByRole("heading", {
+    name: /Confirme o acesso|Ative a verificação em duas etapas/i,
+  });
+  if (role === "superAdmin") {
+    await expect(page.getByRole("heading", { name: "Dashboard" }).or(mfaGate)).toBeVisible({
+      timeout: 15_000,
+    });
+    if (await mfaGate.isVisible().catch(() => false)) {
+      throw new Error(
+        "Conta E2E_ADMIN está na tela de MFA. Ative o TOTP nessa conta ou use um admin já enrolado.",
+      );
+    }
+  } else {
+    await expect(page).toHaveURL("/dashboard", { timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  }
+
+  await expect(page).toHaveURL("/dashboard", { timeout: 5_000 });
 
   const cookieAccept = page.getByRole("button", { name: /Aceitar essenciais/i });
   if (await cookieAccept.isVisible().catch(() => false)) {

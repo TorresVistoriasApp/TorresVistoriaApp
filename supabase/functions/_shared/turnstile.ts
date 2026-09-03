@@ -7,16 +7,26 @@ export class TurnstileError extends Error {
   }
 }
 
+function isTurnstileRequired(): boolean {
+  return Deno.env.get("TURNSTILE_REQUIRED")?.trim() === "true";
+}
+
 /**
  * Verifica o token do Cloudflare Turnstile.
- * Sem TURNSTILE_SECRET_KEY (dev local) a checagem é omitida — produção deve definir o secret.
+ * Dev e produção sem TURNSTILE_REQUIRED omitem a checagem se o secret faltar.
+ * Com TURNSTILE_REQUIRED=true (depois de configurar o secret) falha fechada.
  */
 export async function verifyTurnstileToken(
   token: unknown,
   remoteIp?: string,
 ): Promise<void> {
   const secret = Deno.env.get("TURNSTILE_SECRET_KEY")?.trim();
-  if (!secret) return;
+  if (!secret) {
+    if (isTurnstileRequired()) {
+      throw new TurnstileError("Verificação anti-bot obrigatória.");
+    }
+    return;
+  }
 
   const response = typeof token === "string" ? token.trim() : "";
   if (!response) {

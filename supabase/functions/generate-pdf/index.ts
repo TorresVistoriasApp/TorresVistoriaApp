@@ -1,6 +1,10 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { canAccessInspection, isAuthFailure, requireCaller } from "../_shared/require-caller.ts";
 
+/**
+ * Leitura autorizada da vistoria para prévia no cliente.
+ * Não emite laudo, não gera código oficial e não grava arquivo.
+ */
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
@@ -16,7 +20,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { inspectionId } = await req.json();
+    const body = (await req.json()) as Record<string, unknown>;
+    const inspectionId = typeof body.inspectionId === "string" ? body.inspectionId.trim() : "";
     if (!inspectionId) throw new Error("inspectionId é obrigatório");
 
     const supabase = caller.supabase;
@@ -35,7 +40,6 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    // Mesma resposta para inexistente e sem permissão, para não revelar quais IDs existem.
     if (!inspection || !canAccessInspection(caller, inspection)) {
       return new Response(JSON.stringify({ error: "Vistoria não encontrada" }), {
         headers: jsonHeaders,
@@ -43,21 +47,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const payload = JSON.stringify(inspection);
-    const contentHash = Array.from(
-      new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(payload))),
-    )
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-
-    const verificationCode = `TV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-
     return new Response(
       JSON.stringify({
         success: true,
         inspection,
-        hash: contentHash,
-        verificationCode,
+        official: false,
         generatedAt: new Date().toISOString(),
       }),
       { headers: jsonHeaders, status: 200 },

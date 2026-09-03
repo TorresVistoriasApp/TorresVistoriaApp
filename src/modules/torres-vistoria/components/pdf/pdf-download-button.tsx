@@ -40,6 +40,7 @@ export function PdfDownloadButton({
         company,
         settings,
         inspector,
+        preview: true,
       });
       const blob = await pdfService.createPdfBlob(docDefinition);
       await pdfService.downloadPdfBlob(
@@ -67,7 +68,7 @@ export function PdfDownloadButton({
       ) : (
         <>
           <Download className="mr-2 size-5" />
-          Baixar PDF
+          Baixar prévia
         </>
       )}
     </Button>

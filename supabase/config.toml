@@ -61,10 +61,12 @@ token_verifications = 10
 # SMTP próprio (Resend). 100/h era abuso-friendly; 30/h é o default com SMTP custom.
 email_sent = 30
 
-# Camada 4 — Turnstile no Auth. Fica desligado até existirem
-# TURNSTILE_SECRET_KEY (Dashboard Auth + secrets das Edges) e
-# VITE_TURNSTILE_SITE_KEY no frontend. Ligar `enabled = true` sem as chaves
-# derruba login/cadastro/recuperação.
+# Camada 4 — Turnstile no Auth (Dashboard, não `config push`).
+# Ligar captcha no GoTrue: Authentication → Attack Protection / Captcha,
+# provider Turnstile, mesmo TURNSTILE_SECRET_KEY das Edges.
+# `enabled = true` aqui só vale após `supabase config push` — não usar: este
+# arquivo referencia secrets via env() e um push cego pode gravar placeholder.
+# Sem as duas chaves, o widget não aparece e o GoTrue não deve exigir captcha.
 [auth.captcha]
 enabled = false
 provider = "turnstile"

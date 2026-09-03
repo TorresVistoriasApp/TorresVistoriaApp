@@ -144,7 +144,7 @@ export function LaudoReviewPanel({
             ) : (
               <>
                 <FileText className="mr-2 size-4" />
-                Gerar e baixar PDF
+                Emitir laudo oficial
               </>
             )}
           </Button>

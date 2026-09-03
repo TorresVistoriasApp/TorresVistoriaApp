@@ -20,7 +20,7 @@ vi.mock("@/infra/supabase/client", () => ({
   },
 }));
 
-import { isMfaChallengeRequired, verifyMfaTotpCode } from "@/core/auth/mfa";
+import { isMfaChallengeRequired, isPrivilegedAccount, verifyMfaTotpCode } from "@/core/auth/mfa";
 
 describe("MFA TOTP", () => {
   beforeEach(() => {
@@ -47,6 +47,13 @@ describe("MFA TOTP", () => {
       error: new Error("unavailable"),
     });
     await expect(isMfaChallengeRequired()).resolves.toBe(false);
+  });
+
+  it("trata SUPER_ADMIN e operador da plataforma como conta privilegiada", () => {
+    expect(isPrivilegedAccount({ role: "SUPER_ADMIN" }, false)).toBe(true);
+    expect(isPrivilegedAccount({ role: "INSPECTOR" }, true)).toBe(true);
+    expect(isPrivilegedAccount({ role: "INSPECTOR" }, false)).toBe(false);
+    expect(isPrivilegedAccount(null, false)).toBe(false);
   });
 
   it("verifica o fator TOTP ativo", async () => {

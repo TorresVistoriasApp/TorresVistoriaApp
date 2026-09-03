@@ -30,13 +30,23 @@ function isHttpsProductionSite(): boolean {
   }
 }
 
-function isAllowedOrigin(origin: string): boolean {
+export function isAllowedOrigin(origin: string): boolean {
   if (!origin) return false;
   if (DEFAULT_ORIGIN && origin === DEFAULT_ORIGIN) return true;
   if (EXTRA_ORIGINS.includes(origin)) return true;
   if (PRODUCTION_ORIGINS.has(origin)) return true;
   if (!isHttpsProductionSite() && LOCAL_ORIGINS.has(origin)) return true;
   return false;
+}
+
+/**
+ * Origem da aplicação para redirects/QR. Nunca usa Origin cru:
+ * só devolve o header se ele já passou na allowlist; senão SITE_URL.
+ */
+export function canonicalAppOrigin(req: Request): string {
+  const origin = req.headers.get("Origin") ?? "";
+  if (isAllowedOrigin(origin)) return origin.replace(/\/$/, "");
+  return (DEFAULT_ORIGIN || "https://www.torresconsultas.com.br").replace(/\/$/, "");
 }
 
 /**

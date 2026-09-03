@@ -106,6 +106,8 @@ describe("Fase C — MFA opcional com desafio no login", () => {
     expect(readRepo("src/routes/guards/protected-route.tsx")).toContain("mfaPending");
     expect(readRepo("src/routes/guards/platform-admin-route.tsx")).toContain("mfaPending");
     expect(readRepo("src/routes/guards/consumer-protected-route.tsx")).toContain("mfaPending");
+    expect(readRepo("src/routes/guards/require-privileged-mfa.tsx")).toContain("mfaEnrollmentRequired");
+    expect(readRepo("src/core/auth/mfa.ts")).toContain("isPrivilegedAccount");
   });
 });
 

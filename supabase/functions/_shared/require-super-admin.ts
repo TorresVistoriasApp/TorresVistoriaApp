@@ -14,12 +14,15 @@ export async function requireSuperAdmin(req: Request) {
   const supabase = createServiceClient();
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("role, tenant_id")
+    .select("role, tenant_id, is_active")
     .eq("id", user.id)
     .is("deleted_at", null)
     .single();
 
   if (profileError) throw profileError;
+  if (profile?.is_active === false) {
+    return { error: "Esta conta está desativada.", status: 403 as const };
+  }
   if (profile?.role !== "SUPER_ADMIN") {
     return { error: "Você não possui permissão para executar esta operação.", status: 403 as const };
   }
