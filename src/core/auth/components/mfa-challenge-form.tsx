@@ -81,7 +81,8 @@ export function MfaChallengeScreen({
             </p>
             <h1 className="mt-1 text-lg font-bold text-foreground">Confirme o acesso</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Abra o aplicativo autenticador e informe o código de 6 dígitos.
+              E-mail e senha já foram aceitos. Contas privilegiadas precisam ainda do código de 6
+              dígitos do aplicativo autenticador (Google Authenticator, Authy ou similar).
             </p>
           </div>
         </div>
