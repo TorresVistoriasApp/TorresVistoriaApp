@@ -56,7 +56,7 @@ export function ClienteLoginPage() {
       <ConsumerAuthPanel
         title="Confirme o acesso"
         meta="Verificação em duas etapas"
-        description="Abra o aplicativo autenticador e informe o código de 6 dígitos."
+        description="E-mail e senha já foram aceitos. Informe agora o código de 6 dígitos do aplicativo autenticador."
       >
         <MfaChallengeForm onVerify={completeMfa} onCancel={signOut} />
       </ConsumerAuthPanel>
