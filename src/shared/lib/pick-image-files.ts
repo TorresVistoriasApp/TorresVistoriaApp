@@ -1,4 +1,4 @@
-import { isSupportedImageFile } from "@/shared/lib/compress-image";
+import { isSupportedImageFile } from "@/shared/lib/image-file";
 
 const IMAGE_ACCEPT =
   "image/jpeg,image/png,image/webp,image/gif,image/bmp,image/heic,image/heif,.heic,.heif";

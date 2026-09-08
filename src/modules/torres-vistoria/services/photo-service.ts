@@ -2,11 +2,7 @@ import { db } from "@/infra/supabase/client";
 import { queries } from "@/infra/supabase/queries";
 import { mutations } from "@/modules/torres-vistoria/repositories/vistoria-mutations";
 import { STORAGE_BUCKET } from "@/infra/storage/buckets";
-import {
-  getDeviceInfo,
-  preparePhotoForUpload,
-  prepareUploadAssets,
-} from "@/shared/lib/compress-image";
+import { getDeviceInfo } from "@/shared/lib/image-file";
 import {
   buildInspectionPhotoPath,
   buildInspectionPhotoThumbnailPath,
@@ -122,6 +118,9 @@ export const photoService = {
 
   async upload(file: File, params: PhotoUploadParams): Promise<InspectionPhoto> {
     try {
+      const { preparePhotoForUpload, prepareUploadAssets } = await import(
+        "@/shared/lib/compress-image"
+      );
       const webp = await runPhotoPrepare(() => preparePhotoForUpload(file));
 
       return await runPhotoUpload(async () => {

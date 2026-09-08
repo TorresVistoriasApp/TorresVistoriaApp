@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createPreviewObjectUrl } from "@/shared/lib/compress-image";
+import { createPreviewObjectUrl } from "@/shared/lib/image-file";
 import { queryKeys } from "@/infra/supabase/queries";
 import { photoService, type InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
 import { useUser } from "@/core/auth/user-context";

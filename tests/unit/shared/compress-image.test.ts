@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   isHeicFile,
   isSupportedImageFile,
-  pickWebpQuality,
   scaleDimensions,
-} from "@/shared/lib/compress-image";
+} from "@/shared/lib/image-file";
+import { pickWebpQuality } from "@/shared/lib/compress-image";
 
 describe("compress-image helpers", () => {
   it("detecta HEIC pelo tipo ou extensão", () => {

@@ -124,6 +124,8 @@ export default defineConfig({
     target: "es2020",
     sourcemap: false,
     cssCodeSplit: true,
+    // pdfmake/heic2any/exceljs já são chunks sob demanda e ficam fora do SW.
+    chunkSizeWarningLimit: 2300,
     modulePreload: {
       resolveDependencies(_filename, deps) {
         // Landing/marketing não precisa pré-carregar charts/compress no first paint.
