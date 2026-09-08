@@ -1,4 +1,4 @@
-import { getCorsHeaders } from "../_shared/cors.ts";
+import { getCorsHeaders, rejectNonPost } from "../_shared/cors.ts";
 import {
   checkRateLimit,
   clientKey,
@@ -32,7 +32,8 @@ function formatDatePtBr(isoDate: string): string {
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const methodError = rejectNonPost(req, corsHeaders);
+  if (methodError) return methodError;
 
   try {
     const ip = clientKey(req);
@@ -47,12 +48,7 @@ Deno.serve(async (req) => {
       return rateLimitedResponse(corsHeaders, persisted.retryAfterSec);
     }
 
-    const body = req.method === "GET"
-      ? {
-          verificationCode: new URL(req.url).searchParams.get("code"),
-          captchaToken: new URL(req.url).searchParams.get("captchaToken"),
-        }
-      : await req.json();
+    const body = await req.json();
 
     await verifyTurnstileToken(body?.captchaToken, ip);
 

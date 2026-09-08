@@ -12,6 +12,18 @@ export function indexInspectorDocumentHashes<T>(
   }
 }
 
+/** Cadastro pendente visível ao SUPER_ADMIN só se o CNPJ bater com a empresa do JWT. */
+export function pendingRegistrationMatchesLockedTenant(
+  registration: { document_type?: string | null; document_hash?: string | null },
+  allowedHashes: ReadonlySet<string>,
+): boolean {
+  if (allowedHashes.size === 0) return false;
+  if (registration.document_type !== "cnpj") return false;
+  const hash = registration.document_hash?.trim();
+  if (!hash) return false;
+  return allowedHashes.has(hash);
+}
+
 export async function legacySha256DocumentHex(digits: string): Promise<string> {
   const data = new TextEncoder().encode(digits);
   const digest = await crypto.subtle.digest("SHA-256", data);

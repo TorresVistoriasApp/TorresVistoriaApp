@@ -7,6 +7,7 @@ import {
   hmacInspectorDocument,
   indexInspectorDocumentHashes,
   legacySha256DocumentHex,
+  pendingRegistrationMatchesLockedTenant,
 } from "../_shared/inspector-document-hash.ts";
 
 const ALLOWED_ROLES = ["SUPER_ADMIN", "INSPECTOR"] as const;
@@ -43,23 +44,21 @@ Deno.serve(async (req) => {
     const action = body.action as string | undefined;
 
     if (action === "list") {
-      const { data: registrations, error } = await supabase
-        .from("inspector_registrations")
-        .select("*")
-        .eq("status", "pending_approval")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      const { data: companies, error: companiesError } = await supabase
+      // Escopo só do perfil/JWT. Tenant no payload do cliente não amplia a listagem.
+      let companiesQuery = supabase
         .from("companies")
         .select("id, trade_name, document")
         .is("deleted_at", null);
+      if (lockedTenantId) {
+        companiesQuery = companiesQuery.eq("id", lockedTenantId);
+      }
 
+      const { data: companies, error: companiesError } = await companiesQuery;
       if (companiesError) throw companiesError;
 
       const companyByHash = new Map<string, { id: string; trade_name: string }>();
       const hmacByDigits = new Map<string, string>();
+      const allowedHashes = new Set<string>();
       for (const company of companies ?? []) {
         const digits = normalizeDocumentDigits(company.document);
         if (!digits) continue;
@@ -74,7 +73,31 @@ Deno.serve(async (req) => {
           { id: company.id, trade_name: company.trade_name },
           [hmacHex, legacySha256Hex],
         );
+        allowedHashes.add(hmacHex);
+        allowedHashes.add(legacySha256Hex);
       }
+
+      if (lockedTenantId && allowedHashes.size === 0) {
+        return new Response(JSON.stringify({ items: [] }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      let registrationsQuery = supabase
+        .from("inspector_registrations")
+        .select("*")
+        .eq("status", "pending_approval")
+        .order("created_at", { ascending: false });
+
+      if (lockedTenantId) {
+        registrationsQuery = registrationsQuery
+          .eq("document_type", "cnpj")
+          .in("document_hash", [...allowedHashes]);
+      }
+
+      const { data: registrations, error } = await registrationsQuery;
+      if (error) throw error;
 
       const items = (registrations ?? []).map((registration) => {
         const suggested =
@@ -182,6 +205,37 @@ Deno.serve(async (req) => {
       const { registrationId, rejectionReason } = body;
       if (!registrationId) {
         throw new Error("Informe o cadastro a ser recusado.");
+      }
+
+      if (lockedTenantId) {
+        const { data: registration, error: registrationLookupError } = await supabase
+          .from("inspector_registrations")
+          .select("id, document_type, document_hash")
+          .eq("id", registrationId)
+          .eq("status", "pending_approval")
+          .maybeSingle();
+        if (registrationLookupError) throw registrationLookupError;
+
+        const { data: company, error: companyLookupError } = await supabase
+          .from("companies")
+          .select("document")
+          .eq("id", lockedTenantId)
+          .is("deleted_at", null)
+          .maybeSingle();
+        if (companyLookupError) throw companyLookupError;
+
+        const digits = normalizeDocumentDigits(company?.document);
+        const allowedHashes = new Set<string>();
+        if (digits) {
+          allowedHashes.add(await hmacInspectorDocument(supabase, digits));
+          allowedHashes.add(await legacySha256DocumentHex(digits));
+        }
+        if (
+          !registration ||
+          !pendingRegistrationMatchesLockedTenant(registration, allowedHashes)
+        ) {
+          throw new Error("Cadastro pendente não encontrado.");
+        }
       }
 
       const reason =

@@ -31,8 +31,23 @@ export function validateEnv(): void {
   }
 
   if (import.meta.env.VITE_DEMO_MODE === "true") {
-    console.warn("[Torres] VITE_DEMO_MODE=true em produção — desative para deploy real.");
+    console.warn("[Torres] VITE_DEMO_MODE=true em produção — o flag é ignorado no build de produção.");
   }
+}
+
+/**
+ * Atalhos/demo nunca ligam em build de produção, mesmo com VITE_DEMO_MODE=true.
+ * Hoje o flag não habilita bypass de auth; em PROD trata-se sempre como desligado.
+ */
+export function isDemoModeEnabled(options?: {
+  prod?: boolean;
+  demoMode?: string | undefined;
+}): boolean {
+  const prod = options?.prod ?? import.meta.env.PROD;
+  const demoMode =
+    options && "demoMode" in options ? options.demoMode : import.meta.env.VITE_DEMO_MODE;
+  if (prod) return false;
+  return demoMode === "true";
 }
 
 export function getAppUrl(): string {

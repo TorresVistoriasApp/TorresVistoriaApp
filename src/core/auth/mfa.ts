@@ -15,11 +15,38 @@ export function isPrivilegedAccount(
   return isPlatformAdmin || profile?.role === UserRole.SUPER_ADMIN;
 }
 
+export type MfaAssuranceLookup = "challenge" | "clear" | "unknown";
+
+export type PrivilegedMfaUiDecision = "challenge" | "enroll" | "allow" | "unknown";
+
 /** Conta com TOTP verificado ainda em AAL1 — senha sozinha não completa o login. */
 export async function isMfaChallengeRequired(): Promise<boolean> {
+  return (await lookupMfaAssurance()) === "challenge";
+}
+
+/** Falha da API de AAL não é “MFA desnecessário”. */
+export async function lookupMfaAssurance(): Promise<MfaAssuranceLookup> {
   const { data, error } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (error || !data) return false;
-  return data.nextLevel === "aal2" && data.currentLevel !== "aal2";
+  if (error || !data) return "unknown";
+  if (data.nextLevel === "aal2" && data.currentLevel !== "aal2") return "challenge";
+  return "clear";
+}
+
+/**
+ * UI: admin com AAL/fator inconclusivo fica bloqueado.
+ * INSPECTOR (não privilegiado) não é bloqueado por MFA ausente ou consulta falha.
+ */
+export function resolvePrivilegedMfaUi(input: {
+  privileged: boolean;
+  assurance: MfaAssuranceLookup;
+  hasVerifiedFactor: boolean | null;
+}): PrivilegedMfaUiDecision {
+  if (input.assurance === "challenge") return "challenge";
+  if (!input.privileged) return "allow";
+  if (input.assurance === "unknown") return "unknown";
+  if (input.hasVerifiedFactor === null) return "unknown";
+  if (input.hasVerifiedFactor === false) return "enroll";
+  return "allow";
 }
 
 /** `null` = consulta falhou (não assumir ausência de fator). */

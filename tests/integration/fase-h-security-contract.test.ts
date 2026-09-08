@@ -34,10 +34,10 @@ describe("Fase H — Edges, PII e storage", () => {
       "supabase/functions/compress-image/index.ts",
       "supabase/functions/inspector-signup/index.ts",
       "supabase/functions/inspector-registrations/index.ts",
+      "supabase/functions/validate-report/index.ts",
     ]) {
       expect(readRepo(file)).toContain("rejectNonPost");
     }
-    expect(readRepo("supabase/functions/validate-report/index.ts")).toContain("GET");
   });
 
   it("detalhe de vistoria mascara chassi; laudo oficial continua com valor completo", () => {

@@ -1,13 +1,14 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/core/auth/use-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
-import { MfaChallengeScreen } from "@/core/auth/components/mfa-challenge-form";
+import { MfaChallengeScreen, MfaAssuranceUnknownScreen } from "@/core/auth/components/mfa-challenge-form";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
 
 /** Protege as rotas /admin/*: só contas cadastradas em `platform_admins` entram aqui. */
 export function PlatformAdminRoute() {
-  const { session, isPlatformAdmin, loading, mfaPending, completeMfa, signOut } = useAuth();
+  const { session, isPlatformAdmin, loading, mfaPending, mfaAssuranceUnknown, completeMfa, retryMfaCheck, signOut } =
+    useAuth();
   const { principalType, loading: principalLoading } = usePrincipal();
   const location = useLocation();
 
@@ -29,6 +30,10 @@ export function PlatformAdminRoute() {
 
   if (mfaPending) {
     return <MfaChallengeScreen onVerify={completeMfa} onCancel={signOut} />;
+  }
+
+  if (mfaAssuranceUnknown) {
+    return <MfaAssuranceUnknownScreen onRetry={retryMfaCheck} onCancel={signOut} />;
   }
 
   return <Outlet />;

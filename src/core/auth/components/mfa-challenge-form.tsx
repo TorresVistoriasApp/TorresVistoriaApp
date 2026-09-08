@@ -92,6 +92,42 @@ export function MfaChallengeScreen({
   );
 }
 
+export function MfaAssuranceUnknownScreen({
+  onRetry,
+  onCancel,
+}: {
+  onRetry: () => void;
+  onCancel: () => Promise<void> | void;
+}) {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-canvas px-4">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-soft">
+        <div className="mb-5 flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ShieldCheck className="h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
+              Verificação em duas etapas
+            </p>
+            <h1 className="mt-1 text-lg font-bold text-foreground">Não foi possível confirmar o acesso</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Contas administrativas precisam da verificação em duas etapas. Não foi possível
+              confirmar o estado do autenticador. Tente de novo ou saia e entre novamente.
+            </p>
+          </div>
+        </div>
+        <Button type="button" className="h-12 w-full" size="lg" onClick={onRetry}>
+          Tentar novamente
+        </Button>
+        <Button type="button" variant="outline" className="mt-3 w-full" onClick={() => void onCancel()}>
+          Cancelar e sair
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function MfaEnrollScreen({
   onEnrolled,
   onCancel,

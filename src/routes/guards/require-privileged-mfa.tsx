@@ -1,12 +1,13 @@
 import { type ReactNode } from "react";
 import { Outlet } from "react-router-dom";
 import { useAuth } from "@/core/auth/use-auth";
-import { MfaEnrollScreen } from "@/core/auth/components/mfa-challenge-form";
+import { MfaEnrollScreen, MfaAssuranceUnknownScreen } from "@/core/auth/components/mfa-challenge-form";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 
 /** SUPER_ADMIN e operador da plataforma não entram no painel sem TOTP. */
 export function RequirePrivilegedMfa({ children }: { children?: ReactNode }) {
-  const { mfaEnrollmentRequired, completeMfaEnrollment, signOut, loading } = useAuth();
+  const { mfaEnrollmentRequired, mfaAssuranceUnknown, completeMfaEnrollment, retryMfaCheck, signOut, loading } =
+    useAuth();
 
   if (loading) {
     return (
@@ -14,6 +15,10 @@ export function RequirePrivilegedMfa({ children }: { children?: ReactNode }) {
         <LoadingSpinner />
       </div>
     );
+  }
+
+  if (mfaAssuranceUnknown) {
+    return <MfaAssuranceUnknownScreen onRetry={retryMfaCheck} onCancel={signOut} />;
   }
 
   if (mfaEnrollmentRequired) {

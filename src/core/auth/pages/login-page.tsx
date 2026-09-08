@@ -21,7 +21,8 @@ import { ROUTES } from "@/config/routes";
 import { homeForPrincipal } from "@/routes/panel";
 
 export function LoginPage() {
-  const { signIn, session, loading, mfaPending, completeMfa, signOut } = useAuth();
+  const { signIn, session, loading, mfaPending, mfaAssuranceUnknown, completeMfa, retryMfaCheck, signOut } =
+    useAuth();
   const { principalType, loading: principalLoading } = usePrincipal();
   const [error, setError] = useState<string | null>(null);
   const turnstile = useTurnstile("login-tenant");
@@ -49,6 +50,23 @@ export function LoginPage() {
         description="E-mail e senha já foram aceitos. Informe agora o código de 6 dígitos do aplicativo autenticador."
       >
         <MfaChallengeForm onVerify={completeMfa} onCancel={signOut} />
+      </TenantAuthPanel>
+    );
+  }
+
+  if (session && mfaAssuranceUnknown) {
+    return (
+      <TenantAuthPanel
+        title="Não foi possível confirmar o acesso"
+        meta="Verificação em duas etapas"
+        description="Contas administrativas precisam da verificação em duas etapas. Não foi possível confirmar o autenticador. Tente de novo ou saia."
+      >
+        <Button type="button" className="h-12 w-full" size="lg" onClick={retryMfaCheck}>
+          Tentar novamente
+        </Button>
+        <Button type="button" variant="outline" className="mt-3 w-full" onClick={() => void signOut()}>
+          Cancelar e sair
+        </Button>
       </TenantAuthPanel>
     );
   }

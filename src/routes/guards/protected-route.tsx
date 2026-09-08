@@ -3,7 +3,7 @@ import { useTenantBoot } from "@/core/tenant/use-tenant-boot";
 import { useAuth } from "@/core/auth/use-auth";
 import { usePrincipal } from "@/core/auth/use-principal";
 import { PrincipalType } from "@/core/rbac/roles";
-import { MfaChallengeScreen } from "@/core/auth/components/mfa-challenge-form";
+import { MfaChallengeScreen, MfaAssuranceUnknownScreen } from "@/core/auth/components/mfa-challenge-form";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
 import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
 
@@ -15,7 +15,7 @@ import { PANEL_AUTH, homeForPrincipal } from "@/routes/panel";
  */
 export function ProtectedRoute() {
   const { session, isPlatformAdmin, loading: tenantBootLoading } = useTenantBoot();
-  const { mfaPending, completeMfa, signOut } = useAuth();
+  const { mfaPending, mfaAssuranceUnknown, completeMfa, retryMfaCheck, signOut } = useAuth();
   const { principalType, loading: principalLoading } = usePrincipal();
   const location = useLocation();
 
@@ -45,6 +45,10 @@ export function ProtectedRoute() {
 
   if (mfaPending) {
     return <MfaChallengeScreen onVerify={completeMfa} onCancel={signOut} />;
+  }
+
+  if (mfaAssuranceUnknown) {
+    return <MfaAssuranceUnknownScreen onRetry={retryMfaCheck} onCancel={signOut} />;
   }
 
   return <Outlet />;

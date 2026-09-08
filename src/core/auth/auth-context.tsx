@@ -11,7 +11,13 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useSession } from "@/core/auth/session-context";
 import { authService } from "@/core/auth/auth-service";
 import { platformAdminService } from "@/core/auth/platform-admin-service";
-import { isMfaChallengeRequired, hasVerifiedTotpFactor, isPrivilegedAccount, verifyMfaTotpCode } from "@/core/auth/mfa";
+import {
+  lookupMfaAssurance,
+  hasVerifiedTotpFactor,
+  isPrivilegedAccount,
+  resolvePrivilegedMfaUi,
+  verifyMfaTotpCode,
+} from "@/core/auth/mfa";
 import { useAuthStore } from "@/core/auth/auth-store";
 import { logger } from "@/core/observability/logger";
 import { ROUTES } from "@/config/routes";
@@ -28,11 +34,14 @@ interface AuthContextValue {
   loading: boolean;
   /** Senha ok, mas AAL2 ainda pendente. */
   mfaPending: boolean;
+  /** SUPER_ADMIN / platform admin: AAL ou fatores não puderam ser lidos. */
+  mfaAssuranceUnknown: boolean;
   /** SUPER_ADMIN / platform admin sem TOTP verificado. */
   mfaEnrollmentRequired: boolean;
   signIn: (email: string, password: string, captchaToken?: string) => Promise<void>;
   completeMfa: (code: string) => Promise<void>;
   completeMfaEnrollment: () => Promise<void>;
+  retryMfaCheck: () => void;
   signOut: () => Promise<void>;
   resetPassword: (email: string, captchaToken?: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -75,8 +84,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [platformAdmin, setPlatformAdmin] = useState<PlatformAdmin | null>(null);
   const [identityResolved, setIdentityResolved] = useState(false);
   const [mfaPending, setMfaPending] = useState(false);
+  const [mfaAssuranceUnknown, setMfaAssuranceUnknown] = useState(false);
   const [mfaEnrollmentRequired, setMfaEnrollmentRequired] = useState(false);
   const [mfaResolved, setMfaResolved] = useState(false);
+  const [mfaRetryNonce, setMfaRetryNonce] = useState(0);
   const loading =
     sessionLoading ||
     (!!session?.user.id && !identityResolved) ||
@@ -123,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!session?.user.id) {
       setMfaPending(false);
+      setMfaAssuranceUnknown(false);
       setMfaEnrollmentRequired(false);
       setMfaResolved(true);
       return;
@@ -136,34 +148,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isActive = true;
     setMfaResolved(false);
     void (async () => {
-      const challenge = await isMfaChallengeRequired().catch(() => false);
+      const assurance = await lookupMfaAssurance();
       if (!isActive) return;
 
       const privileged = isPrivilegedAccount(profile, !!platformAdmin);
-      if (challenge) {
-        setMfaPending(true);
-        setMfaEnrollmentRequired(false);
-        setMfaResolved(true);
-        return;
-      }
-
-      setMfaPending(false);
-      if (!privileged) {
-        setMfaEnrollmentRequired(false);
-        setMfaResolved(true);
-        return;
-      }
-
-      const hasFactor = await hasVerifiedTotpFactor();
+      const hasFactor = privileged ? await hasVerifiedTotpFactor() : false;
       if (!isActive) return;
-      setMfaEnrollmentRequired(hasFactor === false);
+
+      const decision = resolvePrivilegedMfaUi({
+        privileged,
+        assurance,
+        hasVerifiedFactor: hasFactor,
+      });
+
+      setMfaPending(decision === "challenge");
+      setMfaEnrollmentRequired(decision === "enroll");
+      setMfaAssuranceUnknown(decision === "unknown");
       setMfaResolved(true);
     })();
 
     return () => {
       isActive = false;
     };
-  }, [session?.user.id, session?.access_token, identityResolved, profile, platformAdmin]);
+  }, [session?.user.id, session?.access_token, identityResolved, profile, platformAdmin, mfaRetryNonce]);
 
   useEffect(() => {
     if (!loading) {
@@ -183,6 +190,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const completeMfaEnrollment = useCallback(async () => {
     setMfaEnrollmentRequired(false);
     setMfaPending(false);
+    setMfaAssuranceUnknown(false);
+  }, []);
+
+  const retryMfaCheck = useCallback(() => {
+    setMfaResolved(false);
+    setMfaRetryNonce((n) => n + 1);
   }, []);
 
   const signOut = useCallback(async () => {
@@ -191,6 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPlatformAdmin(null);
     setMfaPending(false);
     setMfaEnrollmentRequired(false);
+    setMfaAssuranceUnknown(false);
     setMfaResolved(true);
   }, []);
 
@@ -211,10 +225,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isPlatformAdmin: !!platformAdmin,
       loading,
       mfaPending,
+      mfaAssuranceUnknown,
       mfaEnrollmentRequired,
       signIn,
       completeMfa,
       completeMfaEnrollment,
+      retryMfaCheck,
       signOut,
       resetPassword,
       refreshProfile,
@@ -226,10 +242,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       platformAdmin,
       loading,
       mfaPending,
+      mfaAssuranceUnknown,
       mfaEnrollmentRequired,
       signIn,
       completeMfa,
       completeMfaEnrollment,
+      retryMfaCheck,
       signOut,
       resetPassword,
       refreshProfile,

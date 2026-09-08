@@ -107,6 +107,10 @@ describe("Fase B — NS-006 rate limit real e Turnstile", () => {
     expect(signup).toContain("verifyTurnstileToken");
     expect(validate).toContain("consumePersistentRateLimit");
     expect(validate).toContain("verifyTurnstileToken");
+    expect(validate).not.toContain("searchParams");
+    expect(readRepo("src/modules/torres-vistoria/services/inspection-service.ts")).toContain(
+      "body: { verificationCode, captchaToken }",
+    );
   });
 
   it("cadastro de vistoriador não envia resultado de consulta nem document no Auth", () => {

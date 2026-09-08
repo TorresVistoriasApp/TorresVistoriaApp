@@ -20,7 +20,13 @@ vi.mock("@/infra/supabase/client", () => ({
   },
 }));
 
-import { isMfaChallengeRequired, isPrivilegedAccount, verifyMfaTotpCode } from "@/core/auth/mfa";
+import {
+  isMfaChallengeRequired,
+  isPrivilegedAccount,
+  lookupMfaAssurance,
+  resolvePrivilegedMfaUi,
+  verifyMfaTotpCode,
+} from "@/core/auth/mfa";
 
 describe("MFA TOTP", () => {
   beforeEach(() => {
@@ -41,12 +47,89 @@ describe("MFA TOTP", () => {
     await expect(isMfaChallengeRequired()).resolves.toBe(false);
   });
 
-  it("não exige MFA quando a consulta de AAL falha", async () => {
+  it("consulta de AAL com erro não é tratada como desafio, e sim como desconhecida", async () => {
     mocks.getAuthenticatorAssuranceLevel.mockResolvedValue({
       data: null,
       error: new Error("unavailable"),
     });
     await expect(isMfaChallengeRequired()).resolves.toBe(false);
+    await expect(lookupMfaAssurance()).resolves.toBe("unknown");
+  });
+
+  it("SUPER_ADMIN com AAL desconhecido não entra como MFA desnecessário", () => {
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: true,
+        assurance: "unknown",
+        hasVerifiedFactor: false,
+      }),
+    ).toBe("unknown");
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: true,
+        assurance: "clear",
+        hasVerifiedFactor: null,
+      }),
+    ).toBe("unknown");
+  });
+
+  it("INSPECTOR sem MFA e com AAL desconhecido permanece operacional", () => {
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: false,
+        assurance: "unknown",
+        hasVerifiedFactor: false,
+      }),
+    ).toBe("allow");
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: false,
+        assurance: "clear",
+        hasVerifiedFactor: false,
+      }),
+    ).toBe("allow");
+  });
+
+  it("SUPER_ADMIN / PLATFORM_ADMIN: AAL1 exige desafio; AAL2 com fator permite; sem fator exige enrollment", () => {
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: true,
+        assurance: "challenge",
+        hasVerifiedFactor: true,
+      }),
+    ).toBe("challenge");
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: true,
+        assurance: "clear",
+        hasVerifiedFactor: true,
+      }),
+    ).toBe("allow");
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: true,
+        assurance: "clear",
+        hasVerifiedFactor: false,
+      }),
+    ).toBe("enroll");
+  });
+
+  it("INSPECTOR em AAL1 sem fator não entra em enrollment obrigatório", () => {
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: false,
+        assurance: "challenge",
+        hasVerifiedFactor: false,
+      }),
+    ).toBe("challenge");
+    expect(
+      resolvePrivilegedMfaUi({
+        privileged: false,
+        assurance: "clear",
+        hasVerifiedFactor: false,
+      }),
+    ).toBe("allow");
+    expect(isPrivilegedAccount({ role: "INSPECTOR" }, false)).toBe(false);
   });
 
   it("trata SUPER_ADMIN e operador da plataforma como conta privilegiada", () => {

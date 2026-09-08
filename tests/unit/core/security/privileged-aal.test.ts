@@ -50,6 +50,45 @@ describe("evaluatePrivilegedGate", () => {
     });
   });
 
+  it("AAL1 + SUPER_ADMIN (roleAuthorized) e AAL1 + PLATFORM_ADMIN seguem o mesmo MFA_REQUIRED", () => {
+    const superAdminAal1 = evaluatePrivilegedGate({
+      hasUser: true,
+      isActive: true,
+      roleAuthorized: true,
+      aal: "aal1",
+    });
+    const platformAdminAal1 = evaluatePrivilegedGate({
+      hasUser: true,
+      isActive: true,
+      roleAuthorized: true,
+      aal: "aal1",
+    });
+    expect(superAdminAal1).toMatchObject({ status: 403, code: "MFA_REQUIRED" });
+    expect(platformAdminAal1).toMatchObject({ status: 403, code: "MFA_REQUIRED" });
+  });
+
+  it("AAL2 + SUPER_ADMIN/PLATFORM_ADMIN autorizado → passa; INSPECTOR em Edge privilegiada → 403 sem MFA_REQUIRED", () => {
+    expect(
+      evaluatePrivilegedGate({
+        hasUser: true,
+        isActive: true,
+        roleAuthorized: true,
+        aal: "aal2",
+      }),
+    ).toEqual({ ok: true });
+    const inspectorOnPrivilegedEdge = evaluatePrivilegedGate({
+      hasUser: true,
+      isActive: true,
+      roleAuthorized: false,
+      aal: "aal1",
+    });
+    expect(inspectorOnPrivilegedEdge).toEqual({
+      error: "Você não possui permissão para executar esta operação.",
+      status: 403,
+    });
+    expect("code" in inspectorOnPrivilegedEdge ? inspectorOnPrivilegedEdge.code : undefined).toBeUndefined();
+  });
+
   it("AAL2 + role correta → permitido", () => {
     expect(
       evaluatePrivilegedGate({
