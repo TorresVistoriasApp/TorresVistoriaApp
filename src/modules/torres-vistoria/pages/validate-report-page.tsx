@@ -7,6 +7,7 @@ import { Button } from "@/shared/ui/button";
 import { CheckCircle, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { useTurnstile } from "@/core/security/use-turnstile";
+import { getTurnstileSiteKey, isTurnstileRequired } from "@/config/turnstile";
 import type { ReportValidationResult } from "@/modules/torres-vistoria/domain/laudo/validation-types";
 import { cn } from "@/shared/lib/utils";
 
@@ -26,9 +27,19 @@ export function ValidateReportPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const turnstileMisconfigured = isTurnstileRequired() && !getTurnstileSiteKey();
+
   useEffect(() => {
     if (!codigo) {
       setLoading(false);
+      return;
+    }
+
+    if (turnstileMisconfigured) {
+      setLoading(false);
+      setError(
+        "Verificação anti-bot obrigatória, mas a site key não está configurada.",
+      );
       return;
     }
 
@@ -56,7 +67,7 @@ export function ValidateReportPage() {
     return () => {
       cancelled = true;
     };
-  }, [codigo, turnstile.required, turnstile.token]);
+  }, [codigo, turnstile.required, turnstile.token, turnstileMisconfigured]);
 
   if (!codigo) {
     return (

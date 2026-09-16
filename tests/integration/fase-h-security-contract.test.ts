@@ -9,7 +9,8 @@ function readRepo(relativePath: string): string {
 describe("Fase H — Turnstile fail-closed", () => {
   it("Edges recusam sem secret quando TURNSTILE_REQUIRED=true", () => {
     const turnstile = readRepo("supabase/functions/_shared/turnstile.ts");
-    expect(turnstile).toContain('Deno.env.get("TURNSTILE_REQUIRED")?.trim() === "true"');
+    expect(turnstile).toContain("isEnvFlagTrue");
+    expect(turnstile).toContain('Deno.env.get("TURNSTILE_REQUIRED")');
     expect(turnstile).toContain("Verificação anti-bot obrigatória.");
     expect(turnstile).not.toContain("TURNSTILE_SECRET_KEY=");
   });
