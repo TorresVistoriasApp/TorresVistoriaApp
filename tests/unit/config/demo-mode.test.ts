@@ -12,4 +12,10 @@ describe("VITE_DEMO_MODE", () => {
     expect(isDemoModeEnabled({ prod: false, demoMode: "false" })).toBe(false);
     expect(isDemoModeEnabled({ prod: false, demoMode: undefined })).toBe(false);
   });
+
+  it("valores inesperados não ligam demo nem em desenvolvimento", () => {
+    expect(isDemoModeEnabled({ prod: false, demoMode: "1" })).toBe(false);
+    expect(isDemoModeEnabled({ prod: false, demoMode: "TRUE" })).toBe(false);
+    expect(isDemoModeEnabled({ prod: true, demoMode: "1" })).toBe(false);
+  });
 });

@@ -86,6 +86,9 @@ describe("canonical photo path", () => {
     expect(photoPathBelongsToInspection(`${TENANT}/${INSPECTION}/FRENTE/extra/a.webp`, TENANT, INSPECTION)).toBe(false);
     expect(photoPathBelongsToInspection("not-a-uuid/also-bad/FRENTE/a.webp", TENANT, INSPECTION)).toBe(false);
     expect(photoPathBelongsToInspection(`${TENANT}/${INSPECTION}/FRENTE/a.webp`, "bad", INSPECTION)).toBe(false);
+    expect(parseCanonicalInspectionPhotoPath(`${valid}?x=1`)).toBeNull();
+    expect(parseCanonicalInspectionPhotoPath(`${TENANT}//${INSPECTION}/FRENTE/a.webp`)).toBeNull();
+    expect(parseCanonicalInspectionPhotoPath(`${TENANT}/${INSPECTION}//a.webp`)).toBeNull();
   });
 });
 

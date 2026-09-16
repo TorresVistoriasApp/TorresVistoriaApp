@@ -4,7 +4,7 @@
 
 BEGIN;
 
-SELECT plan(11);
+SELECT plan(20);
 
 -- Helpers IMMUTABLE de path (Storage Etapa 6)
 SELECT ok(
@@ -19,6 +19,60 @@ SELECT ok(
     'legado/95968fbc-36d7-4e21-a4ad-dabc9390c390/EXT_FRENTE/foto.webp'
   ),
   'path legado sem tenant_id é rejeitado'
+);
+
+SELECT ok(
+  public.is_canonical_inspection_photo_object_path(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/95968fbc-36d7-4e21-a4ad-dabc9390c390/EXT_FRENTE/thumbs/foto.webp'
+  ),
+  'path canônico de thumbnail é válido'
+);
+
+SELECT ok(
+  NOT public.is_canonical_inspection_photo_object_path(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/95968fbc-36d7-4e21-a4ad-dabc9390c390/EXT_FRENTE/../foto.webp'
+  ),
+  'path com .. é rejeitado'
+);
+
+SELECT ok(
+  NOT public.is_canonical_inspection_photo_object_path(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/%2e%2e/95968fbc-36d7-4e21-a4ad-dabc9390c390/EXT_FRENTE/foto.webp'
+  ),
+  'path com percent-encoding é rejeitado'
+);
+
+SELECT ok(
+  NOT public.is_canonical_inspection_photo_object_path(
+    E'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\\95968fbc-36d7-4e21-a4ad-dabc9390c390\\EXT_FRENTE\\foto.webp'
+  ),
+  'path com backslash é rejeitado'
+);
+
+SELECT ok(
+  NOT public.is_canonical_inspection_photo_object_path(
+    '/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/95968fbc-36d7-4e21-a4ad-dabc9390c390/EXT_FRENTE/foto.webp'
+  ),
+  'path absoluto é rejeitado'
+);
+
+SELECT ok(
+  NOT public.is_canonical_inspection_photo_object_path(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/95968fbc-36d7-4e21-a4ad-dabc9390c390/EXT_FRENTE/foto.webp?x=1'
+  ),
+  'path com query string é rejeitado'
+);
+
+SELECT ok(
+  NOT public.is_canonical_inspection_photo_object_path(
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa//95968fbc-36d7-4e21-a4ad-dabc9390c390/EXT_FRENTE/foto.webp'
+  ),
+  'path com // é rejeitado'
+);
+
+SELECT ok(
+  NOT has_function_privilege('authenticated', 'public.get_default_tenant_id()', 'execute'),
+  'authenticated não executa get_default_tenant_id'
 );
 
 SELECT ok(
