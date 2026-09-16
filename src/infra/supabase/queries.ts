@@ -116,6 +116,14 @@ export const queries = {
         .is("deleted_at", null)
         .order("created_at", { ascending: true });
     },
+
+    byId(id: string) {
+      return db
+        .from("inspection_photos")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+    },
   },
 
   financial: {

@@ -336,13 +336,14 @@ export async function buildOfficialLaudoPdf(input: OfficialLaudoInput): Promise<
 
   writer.heading("Fotografias registradas no banco");
   writer.paragraph(
-    "O laudo oficial lista as fotos autorizadas. As imagens em si permanecem no bucket privado; nao sao reenviadas pelo cliente.",
+    "O laudo oficial lista as categorias das fotos autorizadas. As imagens permanecem no armazenamento privado e nao sao incorporadas neste PDF.",
   );
   if (input.photos.length === 0) {
     writer.paragraph("Nenhuma fotografia registrada.");
   } else {
+    writer.kv("Quantidade", String(input.photos.length));
     for (const photo of input.photos) {
-      writer.kv(photo.category, photo.storage_path);
+      writer.kv("Categoria", photo.category);
     }
   }
 

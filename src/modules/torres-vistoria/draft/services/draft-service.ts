@@ -9,9 +9,9 @@ import { ACTIVE_DRAFT_STORAGE_KEY } from "@/modules/torres-vistoria/draft/lib/co
 import type { ActiveDraftSummary } from "@/modules/torres-vistoria/draft/types";
 import { AppError, getErrorMessage, throwIfError } from "@/core/errors/app-error";
 import { InspectionStatus } from "@/modules/torres-vistoria/domain/enums";
-import { STORAGE_BUCKET } from "@/infra/storage/buckets";
 import type { VistoriaInput, VistoriaUpdateInput } from "@/modules/torres-vistoria/schemas/vistoria";
 import { inspectionService, type Inspection } from "@/modules/torres-vistoria/services/inspection-service";
+import { photoService } from "@/modules/torres-vistoria/services/photo-service";
 
 /** Chave para persistir o serviço selecionado junto ao draft ativo. */
 export const ACTIVE_DRAFT_SERVICE_KEY = "torres_active_draft_service_id";
@@ -222,16 +222,7 @@ export const draftService = {
 
   async deleteDraft(id: string): Promise<void> {
     try {
-      const { data: photos, error: photosError } = await queries.photos.byInspection(id);
-      if (photosError) throw photosError;
-
-      const storagePaths = (photos ?? [])
-        .map((photo) => photo.storage_path)
-        .filter(Boolean);
-
-      if (storagePaths.length > 0) {
-        await db.storage.from(STORAGE_BUCKET).remove(storagePaths);
-      }
+      await photoService.purgeInspectionPhotoObjects(id);
 
       const { error } = await mutations.inspections.softDelete(id);
       if (error) throw error;
@@ -249,6 +240,18 @@ export const draftService = {
 
   async cleanupExpiredDrafts(): Promise<number> {
     try {
+      const { data: expired } = await db
+        .from("inspections")
+        .select("id")
+        .eq("status", InspectionStatus.DRAFT)
+        .not("draft_expires_at", "is", null)
+        .lt("draft_expires_at", new Date().toISOString())
+        .is("deleted_at", null);
+
+      for (const draft of expired ?? []) {
+        await photoService.purgeInspectionPhotoObjects(draft.id);
+      }
+
       const { data, error } = await db.rpc("cleanup_expired_inspection_drafts");
       if (error) throw error;
       const removed = typeof data === "number" ? data : 0;

@@ -4,6 +4,10 @@ import {
   OFFLINE_DB_VERSION,
   OFFLINE_STORES,
 } from "@/modules/torres-vistoria/draft/lib/constants";
+import {
+  isPhotoSyncClaimHeld,
+  PHOTO_SYNC_CLAIM_TTL_MS,
+} from "@/modules/torres-vistoria/domain/photos/photo-assets";
 
 export type PendingInspectionUpdate = {
   inspectionId: string;
@@ -24,6 +28,8 @@ export type PendingPhotoUpload = {
   gpsAccuracy?: number | null;
   uploadedBy?: string | null;
   createdAt: string;
+  /** Lock local entre abas do mesmo browser. Não atravessa dispositivos. */
+  syncClaimedAt?: string | null;
 };
 
 export type LocalFormSnapshot = {
@@ -127,6 +133,58 @@ export const offlineStore = {
   async removePhotoUpload(id: string): Promise<void> {
     await runTransaction(OFFLINE_STORES.photoUploads, "readwrite", (store) => {
       store.delete(id);
+    });
+  },
+
+  /**
+   * Reserva o item na IndexedDB (transação única). Duas abas no mesmo origin
+   * não processam o mesmo id ao mesmo tempo. Dispositivos distintos não compartilham IDB.
+   */
+  async tryClaimPhotoUpload(id: string, now = new Date()): Promise<PendingPhotoUpload | null> {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(OFFLINE_STORES.photoUploads, "readwrite");
+      const store = tx.objectStore(OFFLINE_STORES.photoUploads);
+      const getReq = store.get(id);
+
+      getReq.onsuccess = () => {
+        const entry = getReq.result as PendingPhotoUpload | undefined;
+        if (!entry) {
+          resolve(null);
+          return;
+        }
+        if (isPhotoSyncClaimHeld(entry.syncClaimedAt, now.getTime(), PHOTO_SYNC_CLAIM_TTL_MS)) {
+          resolve(null);
+          return;
+        }
+        const claimed: PendingPhotoUpload = {
+          ...entry,
+          syncClaimedAt: now.toISOString(),
+        };
+        store.put(claimed);
+        tx.oncomplete = () => resolve(claimed);
+      };
+      getReq.onerror = () => reject(getReq.error ?? new Error("Falha ao reservar upload offline"));
+      tx.onerror = () => reject(tx.error ?? new Error("Falha ao reservar upload offline"));
+    });
+  },
+
+  async releasePhotoUploadClaim(id: string): Promise<void> {
+    const db = await openDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(OFFLINE_STORES.photoUploads, "readwrite");
+      const store = tx.objectStore(OFFLINE_STORES.photoUploads);
+      const getReq = store.get(id);
+      getReq.onsuccess = () => {
+        const entry = getReq.result as PendingPhotoUpload | undefined;
+        if (!entry) {
+          resolve();
+          return;
+        }
+        store.put({ ...entry, syncClaimedAt: null });
+      };
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error("Falha ao liberar reserva offline"));
     });
   },
 

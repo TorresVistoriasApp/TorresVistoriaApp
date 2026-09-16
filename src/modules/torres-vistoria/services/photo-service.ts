@@ -10,6 +10,13 @@ import {
 import { runPhotoPrepare, runPhotoUpload } from "@/modules/torres-vistoria/domain/photos/upload-queue";
 import { getPhotoCategory, normalizePhotoCategory } from "@/modules/torres-vistoria/domain/photos/photo-catalog";
 import { insertInspectionPhoto } from "@/modules/torres-vistoria/domain/photos/photo-insert";
+import {
+  assertPurgePhotoSetIsOwned,
+  commitPhotoObjectsWithRollback,
+  isBenignStorageRemoveError,
+  resolvePhotoRemovalTargets,
+} from "@/modules/torres-vistoria/domain/photos/photo-assets";
+import { isWithinPhotoUploadLimit } from "@/modules/torres-vistoria/domain/photos/photo-size";
 import type { PhotoCaptureMetadata, PhotoCaptureStatus } from "@/modules/torres-vistoria/domain/photos/types";
 import { withFreshSession } from "@/core/auth/ensure-session";
 import { extractStoragePath, getSignedUrls } from "@/infra/storage/signed-url";
@@ -77,6 +84,14 @@ function resolveCategoryMeta(category: string) {
   };
 }
 
+async function removeStorageObjectsBestEffort(paths: string[]): Promise<void> {
+  if (paths.length === 0) return;
+  const { error } = await db.storage.from(STORAGE_BUCKET).remove(paths);
+  if (error && !isBenignStorageRemoveError(error)) {
+    throw error;
+  }
+}
+
 /**
  * O bucket de fotos é privado, então public_url gravada no banco não abre.
  * Toda leitura reescreve as URLs a partir do storage_path (e do path do thumb) com assinatura.
@@ -122,6 +137,11 @@ export const photoService = {
         "@/shared/lib/compress-image"
       );
       const webp = await runPhotoPrepare(() => preparePhotoForUpload(file));
+      if (!isWithinPhotoUploadLimit(webp.size)) {
+        throw new AppError(
+          "A foto continua acima de 2 MB após a compressão. Tire outra foto ou escolha uma imagem menor.",
+        );
+      }
 
       return await runPhotoUpload(async () => {
         return withFreshSession(async () => {
@@ -134,59 +154,68 @@ export const photoService = {
             categoryMeta.normalizedCategory,
             fileName,
           );
+          if (!storagePath.startsWith(`${params.tenantId}/${params.inspectionId}/`)) {
+            throw new AppError("Caminho de armazenamento inválido.");
+          }
           const thumbPath = buildInspectionPhotoThumbnailPath(storagePath);
           const { thumbnail, metadata: imageMeta } = await prepareUploadAssets(webp);
 
-          const [fullUpload, thumbUpload] = await Promise.all([
-            db.storage
-              .from(STORAGE_BUCKET)
-              .upload(storagePath, webp, { contentType: "image/webp", upsert: false }),
-            db.storage
-              .from(STORAGE_BUCKET)
-              .upload(thumbPath, thumbnail, { contentType: "image/webp", upsert: false }),
-          ]);
-          if (fullUpload.error) throw fullUpload.error;
-          if (thumbUpload.error) throw thumbUpload.error;
+          const row = await commitPhotoObjectsWithRollback({
+            fullPath: storagePath,
+            thumbPath,
+            uploadFull: async () => {
+              const { error } = await db.storage
+                .from(STORAGE_BUCKET)
+                .upload(storagePath, webp, { contentType: "image/webp", upsert: false });
+              if (error) throw error;
+            },
+            uploadThumb: async () => {
+              const { error } = await db.storage
+                .from(STORAGE_BUCKET)
+                .upload(thumbPath, thumbnail, { contentType: "image/webp", upsert: false });
+              if (error) throw error;
+            },
+            insert: async () => {
+              const now = new Date().toISOString();
+              const insertResult = await insertInspectionPhoto({
+                tenant_id: params.tenantId,
+                inspection_id: params.inspectionId,
+                category: categoryMeta.normalizedCategory,
+                section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,
+                subcategory: params.metadata?.subcategory ?? null,
+                display_name: params.metadata?.displayName ?? categoryMeta.displayName,
+                sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
+                is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
+                storage_path: storagePath,
+                public_url: storagePath,
+                thumbnail_url: thumbPath,
+                file_size: webp.size,
+                mime_type: "image/webp",
+                content_hash: imageMeta.contentHash,
+                width: imageMeta.width,
+                height: imageMeta.height,
+                resolution: imageMeta.resolution,
+                latitude: params.latitude ?? null,
+                longitude: params.longitude ?? null,
+                gps_accuracy: params.gpsAccuracy ?? null,
+                captured_at: params.metadata?.capturedAt ?? now,
+                device_model: params.metadata?.deviceModel ?? device.deviceModel,
+                device_os: params.metadata?.deviceOs ?? device.deviceOs,
+                uploaded_by: params.uploadedBy ?? null,
+                status: params.metadata?.status ?? "CAPTURED",
+                damage_location: params.metadata?.damageLocation ?? null,
+                damage_category: params.metadata?.damageCategory ?? null,
+                damage_severity: params.metadata?.damageSeverity ?? null,
+                complementary_name: params.metadata?.complementaryName ?? null,
+                complementary_category: params.metadata?.complementaryCategory ?? null,
+                ai_validation: params.metadata?.aiValidation ?? {},
+              });
+              return throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
+            },
+            rollback: (createdPaths) => removeStorageObjectsBestEffort(createdPaths),
+          });
 
-          const now = new Date().toISOString();
-          const [signed, insertResult] = await Promise.all([
-            getSignedUrls(STORAGE_BUCKET, [storagePath, thumbPath]),
-            insertInspectionPhoto({
-              tenant_id: params.tenantId,
-              inspection_id: params.inspectionId,
-              category: categoryMeta.normalizedCategory,
-              section_key: params.metadata?.sectionKey ?? categoryMeta.sectionKey,
-              subcategory: params.metadata?.subcategory ?? null,
-              display_name: params.metadata?.displayName ?? categoryMeta.displayName,
-              sort_order: params.metadata?.sortOrder ?? categoryMeta.sortOrder,
-              is_required: params.metadata?.isRequired ?? categoryMeta.isRequired,
-              storage_path: storagePath,
-              public_url: storagePath,
-              thumbnail_url: thumbPath,
-              file_size: webp.size,
-              mime_type: "image/webp",
-              content_hash: imageMeta.contentHash,
-              width: imageMeta.width,
-              height: imageMeta.height,
-              resolution: imageMeta.resolution,
-              latitude: params.latitude ?? null,
-              longitude: params.longitude ?? null,
-              gps_accuracy: params.gpsAccuracy ?? null,
-              captured_at: params.metadata?.capturedAt ?? now,
-              device_model: params.metadata?.deviceModel ?? device.deviceModel,
-              device_os: params.metadata?.deviceOs ?? device.deviceOs,
-              uploaded_by: params.uploadedBy ?? null,
-              status: params.metadata?.status ?? "CAPTURED",
-              damage_location: params.metadata?.damageLocation ?? null,
-              damage_category: params.metadata?.damageCategory ?? null,
-              damage_severity: params.metadata?.damageSeverity ?? null,
-              complementary_name: params.metadata?.complementaryName ?? null,
-              complementary_category: params.metadata?.complementaryCategory ?? null,
-              ai_validation: params.metadata?.aiValidation ?? {},
-            }),
-          ]);
-
-          const row = throwIfError(insertResult, "Erro ao registrar foto") as InspectionPhoto;
+          const signed = await getSignedUrls(STORAGE_BUCKET, [storagePath, thumbPath]);
           const signedUrl = signed.get(storagePath) ?? null;
           const signedThumb = signed.get(thumbPath) ?? signedUrl;
           return {
@@ -201,18 +230,38 @@ export const photoService = {
     }
   },
 
-  async remove(id: string, storagePath: string): Promise<void> {
+  async remove(id: string, storagePath?: string | null): Promise<void> {
     try {
       await withFreshSession(async () => {
-        const paths = [storagePath, buildInspectionPhotoThumbnailPath(storagePath)];
-        const { error: storageError } = await db.storage.from(STORAGE_BUCKET).remove(paths);
-        if (storageError) throw storageError;
-
-        const { error } = await mutations.photos.softDelete(id);
+        const { data, error } = await queries.photos.byId(id);
         if (error) throw error;
+        const row = data as {
+          id: string;
+          tenant_id: string;
+          inspection_id: string;
+          storage_path: string;
+          deleted_at?: string | null;
+        } | null;
+        const targets = resolvePhotoRemovalTargets(row, storagePath);
+        if (targets.skip) return;
+        await removeStorageObjectsBestEffort(targets.paths);
+        const { error: deleteError } = await mutations.photos.softDelete(id);
+        if (deleteError) throw deleteError;
       });
     } catch (error) {
       throw new AppError(formatUserFacingError(getErrorMessage(error)));
     }
+  },
+
+  async purgeInspectionPhotoObjects(inspectionId: string): Promise<void> {
+    const { data, error } = await queries.photos.byInspection(inspectionId);
+    if (error) throw error;
+    const photos = (data ?? []) as Array<{
+      storage_path: string;
+      tenant_id: string;
+      inspection_id: string;
+    }>;
+    const { paths } = assertPurgePhotoSetIsOwned(photos, inspectionId);
+    await removeStorageObjectsBestEffort(paths);
   },
 };

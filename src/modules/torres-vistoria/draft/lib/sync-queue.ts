@@ -4,6 +4,8 @@ import { photoService } from "@/modules/torres-vistoria/services/photo-service";
 import { inspectionService } from "@/modules/torres-vistoria/services/inspection-service";
 import type { VistoriaUpdateInput } from "@/modules/torres-vistoria/schemas/vistoria";
 
+const flushOfflineQueueInflight = new Set<string>();
+
 export async function queueInspectionUpdate(
   inspectionId: string,
   payload: Partial<VistoriaUpdateInput> & {
@@ -44,31 +46,42 @@ export async function flushOfflineQueue(options: {
     }
   }
 
+  const inflightPhotoIds = flushOfflineQueueInflight;
   const photos = await offlineStore.listPhotoUploads();
   for (const pending of photos) {
+    if (inflightPhotoIds.has(pending.id)) continue;
+    inflightPhotoIds.add(pending.id);
+    const claimed = await offlineStore.tryClaimPhotoUpload(pending.id);
+    if (!claimed) {
+      inflightPhotoIds.delete(pending.id);
+      continue;
+    }
     try {
-      const file = new File([pending.blob], pending.fileName, { type: pending.mimeType });
+      const file = new File([claimed.blob], claimed.fileName, { type: claimed.mimeType });
       await photoService.upload(file, {
-        tenantId: pending.tenantId,
-        inspectionId: pending.inspectionId,
-        category: pending.category,
-        latitude: pending.latitude,
-        longitude: pending.longitude,
-        gpsAccuracy: pending.gpsAccuracy,
-        uploadedBy: pending.uploadedBy,
+        tenantId: claimed.tenantId,
+        inspectionId: claimed.inspectionId,
+        category: claimed.category,
+        latitude: claimed.latitude,
+        longitude: claimed.longitude,
+        gpsAccuracy: claimed.gpsAccuracy,
+        uploadedBy: claimed.uploadedBy,
       });
-      await offlineStore.removePhotoUpload(pending.id);
+      await offlineStore.removePhotoUpload(claimed.id);
       synced += 1;
       syncLogger.info("Foto sincronizada", {
-        inspectionId: pending.inspectionId,
-        category: pending.category,
+        inspectionId: claimed.inspectionId,
+        category: claimed.category,
       });
     } catch (error) {
       failed += 1;
+      await offlineStore.releasePhotoUploadClaim(claimed.id);
       syncLogger.error("Falha ao sincronizar foto", {
-        id: pending.id,
+        id: claimed.id,
         error: error instanceof Error ? error.message : String(error),
       });
+    } finally {
+      inflightPhotoIds.delete(pending.id);
     }
   }
 

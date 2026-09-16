@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import {
   isHeicFile,
   isSupportedImageFile,
@@ -32,5 +34,14 @@ describe("compress-image helpers", () => {
     expect(pickWebpQuality([3_000_000, 1_500_000, 900_000, 700_000], 2 * 1024 * 1024)).toBe(0.8);
     expect(pickWebpQuality([500_000, 400_000, 300_000, 200_000], 2 * 1024 * 1024)).toBe(0.85);
     expect(pickWebpQuality([5_000_000, 4_000_000, 3_500_000, 3_000_000], 2 * 1024 * 1024)).toBe(0.72);
+  });
+
+  it("HEIC entra no pipeline e WebP pequeno não pula recodificação (privacidade)", () => {
+    const src = readFileSync(path.resolve(process.cwd(), "src/shared/lib/compress-image.ts"), "utf8");
+    expect(src).toContain("convertHeicToJpeg");
+    expect(src).toContain("toType: \"image/jpeg\"");
+    expect(src).toContain("QUALITY_STEPS");
+    expect(src).toContain("reduceWebpToLimit");
+    expect(src).not.toMatch(/source\.type === "image\/webp" && source\.size <= MAX_OUTPUT_BYTES/);
   });
 });

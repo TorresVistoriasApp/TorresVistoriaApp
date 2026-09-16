@@ -5,7 +5,7 @@ import { mutations } from "@/modules/torres-vistoria/repositories/vistoria-mutat
 import { AppError, getErrorMessage, throwIfEdgeError, throwIfError } from "@/core/errors/app-error";
 import type { VistoriaInput } from "@/modules/torres-vistoria/schemas/vistoria";
 import type { InspectionStatus } from "@/modules/torres-vistoria/domain/enums";
-import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
+import { photoService, type InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
 
 async function withInspectionPurpose<T extends Partial<VistoriaInput>>(data: T): Promise<T> {
   if (!data.inspection_type_id) return data;
@@ -233,6 +233,7 @@ export const inspectionService = {
 
   async softDelete(id: string): Promise<void> {
     try {
+      await photoService.purgeInspectionPhotoObjects(id);
       const { error } = await mutations.inspections.softDelete(id);
       if (error) throw error;
     } catch (error) {

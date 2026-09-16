@@ -19,6 +19,8 @@ const QUALITY_STEPS = [0.85, 0.8, 0.75, 0.72] as const;
 const DEFAULT_WEBP_QUALITY = 0.82;
 const FALLBACK_WEBP_QUALITY = 0.72;
 const THUMBNAIL_WEBP_QUALITY = 0.7;
+const PHOTO_OVERSIZE_MESSAGE =
+  "A foto continua acima de 2 MB após a compressão. Tire outra foto ou escolha uma imagem menor.";
 
 export type ImageMetadata = {
   width: number;
@@ -97,16 +99,25 @@ async function compressWithLibrary(file: File): Promise<File> {
   return blobToWebPFile(compressed, file.name);
 }
 
-/** Fallback local: redimensiona no draw e encoda no máximo duas vezes. */
+/** Fallback local: redimensiona no draw e percorre a ladder de qualidade (máx. QUALITY_STEPS). */
 async function compressWithCanvas(source: File): Promise<File> {
   const bitmap = await createImageBitmap(source);
   try {
-    const first = await encodeBitmapToWebP(bitmap, MAX_DIMENSION, DEFAULT_WEBP_QUALITY, source.name);
-    if (first.size <= MAX_OUTPUT_BYTES) return first;
-    return encodeBitmapToWebP(bitmap, MAX_DIMENSION, FALLBACK_WEBP_QUALITY, source.name);
+    let last: File | null = null;
+    for (const quality of QUALITY_STEPS) {
+      last = await encodeBitmapToWebP(bitmap, MAX_DIMENSION, quality, source.name);
+      if (last.size <= MAX_OUTPUT_BYTES) return last;
+    }
+    return last ?? encodeBitmapToWebP(bitmap, MAX_DIMENSION, FALLBACK_WEBP_QUALITY, source.name);
   } finally {
     bitmap.close();
   }
+}
+
+/** Recodifica WebP já gerado se ainda passar do teto — tentativas finitas. */
+async function reduceWebpToLimit(file: File): Promise<File> {
+  if (file.size <= MAX_OUTPUT_BYTES) return file;
+  return compressWithCanvas(file);
 }
 
 async function convertHeicToJpeg(file: File): Promise<File> {
@@ -138,7 +149,7 @@ export async function compressToWebP(file: File): Promise<File> {
   }
 }
 
-/** Prepara qualquer imagem da câmera ou galeria para upload (sempre WebP limpo). */
+/** Prepara qualquer imagem da câmera ou galeria para upload (sempre WebP recodificado, sem EXIF). */
 export async function preparePhotoForUpload(file: File): Promise<File> {
   if (!isSupportedImageFile(file)) {
     throw new Error("Formato não suportado. Use JPEG, PNG ou WebP.");
@@ -155,11 +166,12 @@ export async function preparePhotoForUpload(file: File): Promise<File> {
     }
   }
 
-  if (source.type === "image/webp" && source.size <= MAX_OUTPUT_BYTES) {
-    return source;
+  const webp = await compressToWebP(source);
+  const limited = await reduceWebpToLimit(webp);
+  if (limited.size > MAX_OUTPUT_BYTES) {
+    throw new Error(PHOTO_OVERSIZE_MESSAGE);
   }
-
-  return compressToWebP(source);
+  return limited;
 }
 
 export async function extractImageMetadata(file: File | Blob): Promise<ImageMetadata> {
