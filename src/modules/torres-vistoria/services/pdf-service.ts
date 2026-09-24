@@ -288,11 +288,6 @@ async function getPdfMake() {
   return { engine, sourceSansReady };
 }
 
-function reportFileName(inspection: Pick<Inspection, "inspection_number" | "plate">): string {
-  const safePlate = inspection.plate.replace(/[^A-Z0-9]/gi, "").toUpperCase();
-  return `laudo-${inspection.inspection_number}-${safePlate}.pdf`;
-}
-
 export const pdfService = {
   /** Aquece assets estáticos (chame na tela de revisão). Fontes custom ficam desligadas por padrão. */
   async prefetchAssets(): Promise<void> {
