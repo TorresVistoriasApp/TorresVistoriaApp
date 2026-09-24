@@ -38,8 +38,8 @@ describe("Fase D — máscara padrão na UI, valor completo só no documento ofi
   });
 
   it("PDF/laudo oficial continua com documento completo (Nível 1)", () => {
-    const official = readRepo("supabase/functions/_shared/official-laudo-pdf.ts");
-    expect(official).toContain("company?.document");
+    const official = readRepo("src/modules/torres-vistoria/domain/laudo/laudo-doc-definition.ts");
+    expect(official).toContain("formatDocument");
     expect(official).not.toContain("redactDocument");
     const previewVisual = readRepo("src/modules/torres-vistoria/domain/laudo/laudo-doc-definition.ts");
     expect(previewVisual).toContain("formatDocument");

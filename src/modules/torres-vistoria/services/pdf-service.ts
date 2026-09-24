@@ -25,6 +25,7 @@ import {
 import type { PdfIconName } from "@/modules/torres-vistoria/domain/laudo/pdf/pdf-icons";
 import { STORAGE_BUCKET } from "@/infra/storage/buckets";
 import { buildInspectionPhotoThumbnailPath } from "@/infra/storage/paths";
+import { applyTorresOfficialPdfBinding } from "@/shared/lib/pdf-binding-markers";
 
 /**
  * A logo ocupa 108pt de largura no cabeçalho compacto do laudo; rasterizar o
@@ -343,6 +344,8 @@ export const pdfService = {
       inspector?: LaudoInspector | null;
       verificationCode?: string;
       integrityHash?: string;
+      contentDigest?: string;
+      fileIntegrityHash?: string;
       validationUrl?: string;
       /** Prévia no navegador — nunca é o documento oficial. */
       preview?: boolean;
@@ -366,6 +369,7 @@ export const pdfService = {
     );
     const baseHash =
       options.integrityHash ??
+      options.contentDigest ??
       (await sha256Bytes(JSON.stringify({ inspection, checklist, photos, verificationCode })));
     const brandLogoPath = getBrandLogoPath(inspection.brand);
 
@@ -393,6 +397,8 @@ export const pdfService = {
       laudoNumber,
       verificationCode,
       integrityHash: baseHash,
+      contentDigest: options.contentDigest,
+      fileIntegrityHash: options.fileIntegrityHash,
       validationUrl: options.validationUrl,
       logoDataUrl: staticAssets.logoDataUrl,
       brandLogoDataUrl,
@@ -410,6 +416,8 @@ export const pdfService = {
         bold: true,
         fontSize: 46,
       };
+    } else if (options.contentDigest) {
+      applyTorresOfficialPdfBinding(docDefinition, verificationCode, options.contentDigest);
     }
 
     return {
@@ -502,7 +510,7 @@ export const pdfService = {
     settings?: LaudoSettings | null;
     inspector?: LaudoInspector | null;
   }): Promise<{ verificationCode: string; integrityHash: string; storagePath: string }> {
-    const { downloadLaudoTemplatePdf, laudoPdfBlobToBase64 } = await import(
+    const { generateLaudoPdf, laudoPdfBlobToBase64 } = await import(
       "@/modules/torres-vistoria/services/laudo-pdf-download"
     );
     try {
@@ -512,20 +520,29 @@ export const pdfService = {
       const prepared = await throwIfEdgeError(prepareError, preparedData as Record<string, unknown> | null);
       const verificationCode = String(prepared.verificationCode ?? "");
       const validationUrl = String(prepared.validationUrl ?? "");
-      if (!verificationCode || !validationUrl) {
-        throw new AppError("O servidor não liberou o código do laudo.");
+      const contentDigest = String(prepared.contentDigest ?? "");
+      const issueToken = String(prepared.issueToken ?? "");
+      if (!verificationCode || !validationUrl || !contentDigest || !issueToken) {
+        throw new AppError("O servidor não liberou o contexto de emissão do laudo.");
       }
 
-      const blob = await downloadLaudoTemplatePdf({
+      const blob = await generateLaudoPdf({
+        mode: "official",
         ...params,
-        preview: false,
         verificationCode,
         validationUrl,
+        contentDigest,
       });
       const pdfBase64 = await laudoPdfBlobToBase64(blob);
 
       const { data: sealedData, error: sealError } = await db.functions.invoke("create-report", {
-        body: { inspectionId: params.inspection.id, pdfBase64 },
+        body: {
+          inspectionId: params.inspection.id,
+          pdfBase64,
+          issueToken,
+          verificationCode,
+          contentDigest,
+        },
       });
       const sealed = await throwIfEdgeError(sealError, sealedData as Record<string, unknown> | null);
       const integrityHash = String(sealed.integrityHash ?? "");
@@ -533,6 +550,13 @@ export const pdfService = {
       if (!integrityHash || !storagePath) {
         throw new AppError("O servidor não registrou o laudo oficial.");
       }
+
+      const officialBlob = await withTimeout(
+        this.downloadPdf(storagePath),
+        90_000,
+        "Download do laudo oficial",
+      );
+      await this.downloadPdfBlob(officialBlob, `laudo-${params.inspection.inspection_number}-${params.inspection.plate}.pdf`);
 
       return { verificationCode, integrityHash, storagePath };
     } catch (error) {

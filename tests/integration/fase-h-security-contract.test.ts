@@ -45,9 +45,7 @@ describe("Fase H — Edges, PII e storage", () => {
     expect(readRepo("src/modules/torres-vistoria/pages/inspection-detail-page.tsx")).toContain(
       "redactChassis(inspection.chassis)",
     );
-    expect(readRepo("supabase/functions/_shared/official-laudo-pdf.ts")).toContain(
-      "input.inspection.chassis",
-    );
+    expect(readRepo("supabase/functions/create-report/index.ts")).toContain('"chassis"');
   });
 
   it("diagnóstico de pending/ não apaga objetos", () => {

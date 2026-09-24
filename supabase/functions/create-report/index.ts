@@ -11,9 +11,19 @@ import {
   rateLimitedResponse,
 } from "../_shared/rate-limit.ts";
 import { buildVerificationCode, sha256Hex } from "../_shared/verification-code.ts";
-import type { OfficialInspection } from "../_shared/official-laudo-pdf.ts";
+import type { OfficialInspection } from "../_shared/inspection-row.ts";
+import {
+  buildLaudoContentDigest,
+  pdfContainsBindingMarkers,
+  type ChecklistDigestRow,
+} from "../_shared/laudo-content-digest.ts";
+import {
+  issueTokenExpiresAt,
+  signReportIssueToken,
+  verifyReportIssueToken,
+} from "../_shared/report-issue-token.ts";
 
-const MAX_PDF_BYTES = 28 * 1024 * 1024;
+const MAX_PDF_BYTES = 40 * 1024 * 1024;
 
 type InspectionRow = OfficialInspection & {
   id: string;
@@ -22,6 +32,7 @@ type InspectionRow = OfficialInspection & {
   inspector_id: string | null;
   status: string;
   deleted_at: string | null;
+  updated_at: string | null;
 };
 
 const INSPECTION_SELECT = [
@@ -31,6 +42,7 @@ const INSPECTION_SELECT = [
   "inspector_id",
   "status",
   "deleted_at",
+  "updated_at",
   "inspection_number",
   "inspection_date",
   "inspection_time",
@@ -101,6 +113,43 @@ function decodePdfBase64(value: string): Uint8Array {
   return bytes;
 }
 
+async function loadIssueContext(
+  supabase: ReturnType<typeof import("../_shared/supabase-client.ts").createServiceClient>,
+  inspectionId: string,
+) {
+  const [
+    { data: checklist },
+    { data: photos },
+    { data: existingReports, error: existingError },
+  ] = await Promise.all([
+    supabase
+      .from("inspection_checklists")
+      .select("id, category, item_name, status, notes")
+      .eq("inspection_id", inspectionId)
+      .is("deleted_at", null)
+      .order("category", { ascending: true }),
+    supabase
+      .from("inspection_photos")
+      .select("id")
+      .eq("inspection_id", inspectionId)
+      .is("deleted_at", null),
+    supabase
+      .from("inspection_reports")
+      .select("id, version, verification_code, storage_path, integrity_hash")
+      .eq("inspection_id", inspectionId)
+      .is("deleted_at", null)
+      .order("version", { ascending: false }),
+  ]);
+
+  if (existingError) throw existingError;
+
+  return {
+    checklist: (checklist ?? []) as ChecklistDigestRow[],
+    photoCount: photos?.length ?? 0,
+    existingReports: existingReports ?? [],
+  };
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
@@ -132,6 +181,12 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as Record<string, unknown>;
     const inspectionId = typeof body.inspectionId === "string" ? body.inspectionId.trim() : "";
     const pdfBase64 = typeof body.pdfBase64 === "string" ? body.pdfBase64.trim() : "";
+    const issueToken = typeof body.issueToken === "string" ? body.issueToken.trim() : "";
+    const verificationCodeBody =
+      typeof body.verificationCode === "string" ? body.verificationCode.trim() : "";
+    const contentDigestBody =
+      typeof body.contentDigest === "string" ? body.contentDigest.trim() : "";
+
     if (!inspectionId) throw new Error("inspectionId é obrigatório");
     if (pdfBase64.length > MAX_PDF_BYTES * 1.4) {
       throw new Error("PDF excede o tamanho máximo permitido.");
@@ -157,31 +212,65 @@ Deno.serve(async (req) => {
       return jsonError(corsHeaders, 409, "Vistoria arquivada não pode emitir laudo.");
     }
 
-    const { data: existingReports, error: existingError } = await supabase
-      .from("inspection_reports")
-      .select("id, version, verification_code")
-      .eq("inspection_id", inspectionId)
-      .is("deleted_at", null)
-      .order("version", { ascending: false });
-
-    if (existingError) throw existingError;
-
-    const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
-    const code = existingReports?.[0]?.verification_code || buildVerificationCode();
+    const { checklist, photoCount, existingReports } = await loadIssueContext(supabase, inspectionId);
+    const nextVersion = (existingReports[0]?.version ?? 0) + 1;
+    const code = existingReports[0]?.verification_code || buildVerificationCode();
     const origin = canonicalAppOrigin(req);
     const validationUrl = `${origin}/validar/${encodeURIComponent(code)}`;
 
+    const contentDigest = await buildLaudoContentDigest({
+      inspection: row,
+      checklist,
+      photoCount,
+      verificationCode: code,
+      nextVersion,
+    });
+
     if (!pdfBase64) {
+      const expMs = issueTokenExpiresAt();
+      const issueTokenSigned = await signReportIssueToken({
+        inspectionId,
+        tenantId: row.tenant_id,
+        verificationCode: code,
+        contentDigest,
+        nextVersion,
+        expMs,
+      });
+
       return new Response(
         JSON.stringify({
           success: true,
           needsClientPdf: true,
           verificationCode: code,
           validationUrl,
+          contentDigest,
+          issueToken: issueTokenSigned,
+          nextVersion,
           official: true,
         }),
         { headers: jsonHeaders, status: 200 },
       );
+    }
+
+    if (!issueToken || !verificationCodeBody || !contentDigestBody) {
+      throw new Error("Emissão incompleta: token, código e digest são obrigatórios.");
+    }
+
+    const tokenPayload = await verifyReportIssueToken(issueToken);
+    if (tokenPayload.inspectionId !== inspectionId) {
+      throw new Error("Token de emissão não corresponde à vistoria.");
+    }
+    if (tokenPayload.tenantId !== row.tenant_id) {
+      throw new Error("Token de emissão inválido para este tenant.");
+    }
+    if (tokenPayload.verificationCode !== verificationCodeBody || tokenPayload.verificationCode !== code) {
+      throw new Error("Código de verificação divergente.");
+    }
+    if (tokenPayload.contentDigest !== contentDigestBody || tokenPayload.contentDigest !== contentDigest) {
+      throw new Error("Os dados da vistoria mudaram desde o início da emissão. Gere o laudo novamente.");
+    }
+    if (tokenPayload.nextVersion !== nextVersion) {
+      throw new Error("Versão de emissão desatualizada. Gere o laudo novamente.");
     }
 
     const pdfBytes = decodePdfBase64(pdfBase64);
@@ -190,6 +279,10 @@ Deno.serve(async (req) => {
     }
     if (pdfBytes[0] !== 0x25 || pdfBytes[1] !== 0x50 || pdfBytes[2] !== 0x44 || pdfBytes[3] !== 0x46) {
       throw new Error("O conteúdo enviado não é um PDF.");
+    }
+
+    if (!(await pdfContainsBindingMarkers(pdfBytes, verificationCodeBody, contentDigestBody))) {
+      throw new Error("O PDF não contém o código e o digest oficiais desta vistoria.");
     }
 
     const storagePath = buildStoragePath(row.tenant_id, row.id, nextVersion);
@@ -202,7 +295,7 @@ Deno.serve(async (req) => {
     if (uploadError) throw uploadError;
 
     const supersededAt = new Date().toISOString();
-    if (existingReports && existingReports.length > 0) {
+    if (existingReports.length > 0) {
       const { error: supersedeError } = await supabase
         .from("inspection_reports")
         .update({ deleted_at: supersededAt, deleted_by: caller.userId })
@@ -247,9 +340,10 @@ Deno.serve(async (req) => {
         report,
         verificationCode: code,
         integrityHash,
+        contentDigest,
         storagePath,
         validationUrl,
-        supersededPrevious: (existingReports?.length ?? 0) > 0,
+        supersededPrevious: existingReports.length > 0,
         official: true,
       }),
       { headers: jsonHeaders, status: 200 },
@@ -259,4 +353,3 @@ Deno.serve(async (req) => {
     return jsonError(corsHeaders, 400, message);
   }
 });
-

@@ -43,14 +43,13 @@ describe("Fase G hardening — Edges e laudo", () => {
     expect(shared).toContain("consumePersistentRateLimit");
   });
 
-  it("create-report continua só com inspectionId e PDF oficial no servidor", () => {
+  it("create-report usa template canônica via seal do PDF do cliente", () => {
     const edge = readRepo("supabase/functions/create-report/index.ts");
-    expect(edge).toContain("buildOfficialLaudoPdf");
-    expect(edge).not.toContain('action === "seal"');
-    expect(edge).not.toContain("body.verificationCode");
-    expect(readRepo("src/modules/torres-vistoria/services/pdf-service.ts")).toContain(
-      "body: { inspectionId: params.inspection.id }",
-    );
+    expect(edge).toContain("needsClientPdf");
+    expect(edge).toContain("issueToken");
+    expect(edge).toContain("contentDigest");
+    expect(edge).not.toContain("buildOfficialLaudoPdf");
+    expect(readRepo("src/modules/torres-vistoria/services/pdf-service.ts")).toContain("generateLaudoPdf");
   });
 
   it("invite-user mantém SUPER_ADMIN, role e origem canônica", () => {

@@ -48,6 +48,10 @@ export type LaudoPayload = {
   /** Código opaco usado no QR e na URL /validar. */
   verificationCode: string;
   integrityHash: string;
+  /** Digest canônico do snapshot da vistoria (servidor). */
+  contentDigest?: string;
+  /** SHA-256 do arquivo registrado no Storage (pós-seal). */
+  fileIntegrityHash?: string;
   validationUrl?: string;
   logoDataUrl?: string;
   brandLogoDataUrl?: string;

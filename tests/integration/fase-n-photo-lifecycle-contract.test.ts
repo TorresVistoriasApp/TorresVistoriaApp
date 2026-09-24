@@ -44,10 +44,11 @@ describe("Fase N — ciclo de vida das fotos (contrato)", () => {
     expect(readRepo("src/config/env.ts")).not.toContain("SERVICE_ROLE");
   });
 
-  it("laudo oficial não imprime storage_path da foto", () => {
-    const pdf = readRepo("supabase/functions/_shared/official-laudo-pdf.ts");
-    expect(pdf).not.toContain("writer.kv(photo.category, photo.storage_path)");
-    expect(pdf).toContain('writer.kv("Categoria", photo.category)');
+  it("laudo PDF canônico não imprime storage_path da foto", () => {
+    const pdf = readRepo("src/modules/torres-vistoria/domain/laudo/laudo-doc-definition.ts");
+    const layout = readRepo("src/modules/torres-vistoria/domain/photos/pdf-photo-layout.ts");
+    expect(pdf).not.toContain("storage_path");
+    expect(layout).not.toContain("storage_path");
   });
 
   it("remove amarra ID ao storage_path da linha e o matcher de 404 não cobre autorização", () => {

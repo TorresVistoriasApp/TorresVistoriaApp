@@ -29,8 +29,10 @@ describe("Fase F — create-report server-authoritative", () => {
     expect(issueCall).toContain("body: { inspectionId: params.inspection.id }");
     expect(issueCall).not.toContain('action: "seal"');
     expect(issueCall).not.toContain(".upload(");
-    expect(issueCall).toContain("downloadLaudoTemplatePdf");
-    expect(issueCall).toContain("preview: false");
+    expect(issueCall).toContain("generateLaudoPdf");
+    expect(issueCall).toContain("issueToken");
+    expect(issueCall).toContain("contentDigest");
+    expect(issueCall).toContain('mode: "official"');
     expect(pdf).not.toContain("buildReportStoragePath");
 
     const service = readRepo("src/modules/torres-vistoria/services/inspection-service.ts");

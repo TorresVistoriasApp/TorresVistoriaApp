@@ -4,17 +4,22 @@ import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-s
 import type { LaudoCompany, LaudoInspector, LaudoSettings } from "@/modules/torres-vistoria/domain/laudo/laudo-model";
 import { pdfService } from "@/modules/torres-vistoria/services/pdf-service";
 
-export type LaudoTemplateDownloadParams = {
+export type LaudoPdfMode = "preview" | "official";
+
+export type GenerateLaudoPdfParams = {
+  mode: LaudoPdfMode;
   inspection: Inspection;
   checklist: ChecklistItem[];
   photos?: InspectionPhoto[];
   company?: LaudoCompany | null;
   settings?: LaudoSettings | null;
   inspector?: LaudoInspector | null;
-  preview: boolean;
   verificationCode?: string;
-  integrityHash?: string;
   validationUrl?: string;
+  /** Digest canônico devolvido pelo servidor no prepare. */
+  contentDigest?: string;
+  /** SHA-256 do arquivo após o seal (exibido como referência; validação usa o arquivo no Storage). */
+  fileIntegrityHash?: string;
 };
 
 function reportFileName(inspection: Pick<Inspection, "inspection_number" | "plate">): string {
@@ -22,8 +27,16 @@ function reportFileName(inspection: Pick<Inspection, "inspection_number" | "plat
   return `laudo-${inspection.inspection_number}-${safePlate}.pdf`;
 }
 
-/** Mesmo pipeline do botão "Baixar prévia" — única diferença é `preview` (marca d'água e códigos). */
-export async function downloadLaudoTemplatePdf(params: LaudoTemplateDownloadParams): Promise<Blob> {
+/**
+ * Pipeline única da template canônica (pdfmake / buildLaudoDocDefinition).
+ * Prévia e oficial diferem apenas em metadados e marca d'água.
+ */
+export async function generateLaudoPdf(params: GenerateLaudoPdfParams): Promise<Blob> {
+  const preview = params.mode === "preview";
+  const integrityHash = preview
+    ? "preview"
+    : params.fileIntegrityHash ?? params.contentDigest ?? "PENDENTE";
+
   const { docDefinition } = await pdfService.generateLaudoPayload(
     params.inspection,
     params.checklist,
@@ -32,15 +45,34 @@ export async function downloadLaudoTemplatePdf(params: LaudoTemplateDownloadPara
       company: params.company,
       settings: params.settings,
       inspector: params.inspector,
-      preview: params.preview,
+      preview,
       verificationCode: params.verificationCode,
-      integrityHash: params.integrityHash,
       validationUrl: params.validationUrl,
+      integrityHash,
+      contentDigest: preview ? undefined : params.contentDigest,
+      fileIntegrityHash: preview ? undefined : params.fileIntegrityHash,
     },
   );
-  const blob = await pdfService.createPdfBlob(docDefinition);
+
+  return pdfService.createPdfBlob(docDefinition);
+}
+
+export async function downloadLaudoPdf(
+  params: GenerateLaudoPdfParams,
+): Promise<Blob> {
+  const blob = await generateLaudoPdf(params);
   await pdfService.downloadPdfBlob(blob, reportFileName(params.inspection));
   return blob;
+}
+
+/** @deprecated use downloadLaudoPdf */
+export async function downloadLaudoTemplatePdf(
+  params: GenerateLaudoPdfParams & { preview: boolean },
+): Promise<Blob> {
+  return downloadLaudoPdf({
+    ...params,
+    mode: params.preview ? "preview" : "official",
+  });
 }
 
 export async function laudoPdfBlobToBase64(blob: Blob): Promise<string> {

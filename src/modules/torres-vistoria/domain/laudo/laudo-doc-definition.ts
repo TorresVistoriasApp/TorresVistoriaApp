@@ -843,17 +843,45 @@ function buildAuthenticitySection(payload: LaudoPayload, view: LaudoReportViewMo
                   valueColor: PDF_COLOR.navy,
                   margin: [0, 0, 0, PDF_SPACE.md],
                 }),
+                ...(payload.contentDigest
+                  ? [
+                      {
+                        text: "HASH SHA-256 (CONTEUDO CERTIFICADO)",
+                        fontSize: PDF_FONT.micro,
+                        bold: true,
+                        color: PDF_COLOR.muted,
+                        characterSpacing: PDF_TRACKING.wide,
+                        margin: [0, 0, 0, PDF_SPACE.xs],
+                      },
+                      codeBlock(payload.contentDigest, { fontSize: PDF_FONT.micro }),
+                    ]
+                  : [
+                      {
+                        text: "HASH SHA-256",
+                        fontSize: PDF_FONT.micro,
+                        bold: true,
+                        color: PDF_COLOR.muted,
+                        characterSpacing: PDF_TRACKING.wide,
+                        margin: [0, 0, 0, PDF_SPACE.xs],
+                      },
+                      codeBlock(payload.integrityHash, { fontSize: PDF_FONT.micro }),
+                    ]),
+                ...(payload.fileIntegrityHash
+                  ? [
+                      {
+                        text: "HASH SHA-256 (ARQUIVO REGISTRADO)",
+                        fontSize: PDF_FONT.micro,
+                        bold: true,
+                        color: PDF_COLOR.muted,
+                        characterSpacing: PDF_TRACKING.wide,
+                        margin: [PDF_SPACE.md, PDF_SPACE.md, 0, PDF_SPACE.xs],
+                      },
+                      codeBlock(payload.fileIntegrityHash, { fontSize: PDF_FONT.micro }),
+                    ]
+                  : []),
                 {
-                  text: "HASH SHA-256",
-                  fontSize: PDF_FONT.micro,
-                  bold: true,
-                  color: PDF_COLOR.muted,
-                  characterSpacing: PDF_TRACKING.wide,
-                  margin: [0, 0, 0, PDF_SPACE.xs],
-                },
-                codeBlock(payload.integrityHash, { fontSize: PDF_FONT.micro }),
-                {
-                  text: "Documento verificável na plataforma Torres.",
+                  text:
+                    "A integridade do arquivo armazenado e validada publicamente em /validar usa o hash do arquivo registrado no servidor.",
                   fontSize: PDF_FONT.small,
                   color: PDF_COLOR.muted,
                   margin: [0, PDF_SPACE.md, 0, 0],

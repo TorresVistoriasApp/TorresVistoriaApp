@@ -21,9 +21,10 @@ describe("Fase G — laudo oficial só no servidor", () => {
     expect(edge).toContain("inspectionId é obrigatório");
     expect(edge).not.toContain("providedVerificationCode");
     expect(edge).not.toContain("providedIntegrityHash");
-    expect(edge).not.toContain("body.verificationCode");
     expect(edge).not.toContain("body.integrityHash");
     expect(edge).not.toContain("body.storagePath");
+    expect(edge).toContain("issueToken");
+    expect(edge).toContain("contentDigest");
     expect(edge).not.toContain('action === "seal"');
     expect(edge).toContain("needsClientPdf");
     expect(edge).toContain("pdfBase64");
@@ -43,7 +44,7 @@ describe("Fase G — laudo oficial só no servidor", () => {
     expect(edge).toContain("pdfBase64");
     expect(edge).toContain("row.tenant_id");
     expect(edge).toContain("row.created_by");
-    expect(edge).not.toContain("body.verificationCode");
+    expect(edge).toContain("verifyReportIssueToken");
   });
 
   it("cliente envia o PDF do template e não força hash, código nem path", () => {
@@ -55,8 +56,8 @@ describe("Fase G — laudo oficial só no servidor", () => {
     expect(official).not.toContain("integrityHash: params");
     expect(official).not.toContain("verificationCode: params");
     expect(official).not.toContain("storagePath: params");
-    expect(official).toContain("downloadLaudoTemplatePdf");
-    expect(official).toContain("preview: false");
+    expect(official).toContain("generateLaudoPdf");
+    expect(official).toContain('mode: "official"');
   });
 
   it("prévia do navegador não se apresenta como oficial", () => {
@@ -64,7 +65,7 @@ describe("Fase G — laudo oficial só no servidor", () => {
     expect(pdf).toContain("PREVIA-NAO-OFICIAL");
     expect(pdf).toContain("options.preview");
     expect(readRepo("src/modules/torres-vistoria/components/pdf/pdf-download-button.tsx")).toContain(
-      "preview: true",
+      'mode: "preview"',
     );
     expect(readRepo("src/modules/torres-vistoria/components/pdf/laudo-template.tsx")).toContain(
       "Prévia — não é o laudo oficial",

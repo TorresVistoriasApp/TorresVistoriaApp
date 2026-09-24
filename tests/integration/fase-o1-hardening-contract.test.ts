@@ -89,12 +89,12 @@ describe("Fase O.1 — service_role e demo mode", () => {
   });
 });
 
-describe("Fase O.1 — PDF oficial não vaza path interno", () => {
-  it("não interpola storage_path, UUID de tenant ou signed URL nas fotos", () => {
-    const pdf = readRepo("supabase/functions/_shared/official-laudo-pdf.ts");
-    expect(pdf).not.toContain("photo.storage_path");
-    expect(pdf).not.toContain("signedUrl");
-    expect(pdf).toContain('writer.kv("Categoria", photo.category)');
-    expect(pdf).toContain('writer.kv("Quantidade", String(input.photos.length))');
+describe("Fase O.1 — PDF canônico não vaza path interno", () => {
+  it("não interpola storage_path ou signed URL no layout de fotos", () => {
+    const layout = readRepo("src/modules/torres-vistoria/domain/photos/pdf-photo-layout.ts");
+    const service = readRepo("src/modules/torres-vistoria/services/pdf-service.ts");
+    expect(layout).not.toContain("storage_path");
+    expect(service).not.toContain("signedUrl");
+    expect(readRepo("supabase/functions/_shared/laudo-content-digest.ts")).not.toContain("storage_path");
   });
 });
