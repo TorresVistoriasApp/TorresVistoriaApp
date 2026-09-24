@@ -190,13 +190,19 @@ Deno.serve(async (req) => {
     const officialChecklist = (checklist ?? []) as OfficialChecklistItem[];
     const officialPhotos: OfficialPhotoItem[] = [];
     for (const photo of photos ?? []) {
-      const row = photo as { category?: string; storage_path?: string };
+      const source = photo as { category?: string; storage_path?: string };
       let jpeg: Uint8Array | null = null;
-      if (row.storage_path) {
-        const { data: file } = await supabase.storage.from("inspection-photos").download(row.storage_path);
-        if (file) jpeg = await imageBytesToJpeg(new Uint8Array(await file.arrayBuffer()));
+      const storagePath = source.storage_path ?? "";
+      const thumb = storagePath.includes("/thumbs/")
+        ? storagePath
+        : storagePath.replace(/\/([^/]+)$/, "/thumbs/$1");
+      if (thumb) {
+        const { data: file } = await supabase.storage.from("inspection-photos").download(thumb);
+        if (file && file.size <= 400_000) {
+          jpeg = await imageBytesToJpeg(new Uint8Array(await file.arrayBuffer()));
+        }
       }
-      officialPhotos.push({ category: row.category ?? "Geral", jpeg });
+      officialPhotos.push({ category: source.category ?? "Geral", jpeg });
     }
     const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
     const code = existingReports?.[0]?.verification_code || buildVerificationCode();

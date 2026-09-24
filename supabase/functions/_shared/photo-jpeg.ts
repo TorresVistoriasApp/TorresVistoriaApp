@@ -1,7 +1,8 @@
 import { decode as decodeWebp } from "https://esm.sh/@jsquash/webp@1.4.0";
 import { encode as encodeJpeg } from "https://esm.sh/jpeg-js@0.4.4";
 
-const MAX_EDGE = 640;
+const MAX_EDGE = 420;
+const MAX_INPUT_BYTES = 400_000;
 
 function sniff(bytes: Uint8Array): "jpeg" | "png" | "webp" | "unknown" {
   if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpeg";
@@ -49,13 +50,14 @@ function downsample(
 
 /** Converte a foto persistida (WebP) em JPEG para o pdf-lib embutir. */
 export async function imageBytesToJpeg(bytes: Uint8Array): Promise<Uint8Array | null> {
+  if (bytes.byteLength > MAX_INPUT_BYTES) return null;
   const kind = sniff(bytes);
   if (kind === "jpeg") return bytes;
   if (kind !== "webp") return null;
   try {
     const decoded = await decodeWebp(bytes);
     const sized = downsample(decoded.data, decoded.width, decoded.height);
-    const jpeg = encodeJpeg({ data: sized.data, width: sized.width, height: sized.height }, 70);
+    const jpeg = encodeJpeg({ data: sized.data, width: sized.width, height: sized.height }, 55);
     return jpeg.data;
   } catch {
     return null;
