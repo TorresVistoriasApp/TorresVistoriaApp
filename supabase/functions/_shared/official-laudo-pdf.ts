@@ -29,7 +29,8 @@ export type OfficialChecklistItem = {
 
 export type OfficialPhotoItem = {
   category: string;
-  storage_path: string;
+  /** JPEG já decodificado no servidor. Nunca carrega path de storage. */
+  jpeg: Uint8Array | null;
 };
 
 export type OfficialCompany = {
@@ -64,6 +65,24 @@ export type OfficialInspection = {
   manufacture_year?: number | null;
   model_year?: number | null;
   mileage?: number | null;
+  motor_number?: string | null;
+  vehicle_uf?: string | null;
+  registration_city_uf?: string | null;
+  vehicle_category?: string | null;
+  vehicle_species?: string | null;
+  passenger_capacity?: number | null;
+  power_cv?: number | null;
+  engine_displacement?: number | null;
+  situation?: string | null;
+  market_fipe_value?: number | null;
+  market_average_value?: number | null;
+  insurance_acceptance_percent?: number | null;
+  vehicle_condition?: string | null;
+  is_armored?: boolean | null;
+  buyer_name?: string | null;
+  buyer_document?: string | null;
+  seller_name?: string | null;
+  seller_document?: string | null;
   client_name?: string | null;
   client_document?: string | null;
   client_phone?: string | null;
@@ -274,6 +293,52 @@ class OfficialPdfWriter {
     });
     this.y = PAGE_HEIGHT - 96;
   }
+
+  async photoGrid(photos: OfficialPhotoItem[]) {
+    const gap = 12;
+    const colW = (PAGE_WIDTH - MARGIN * 2 - gap) / 2;
+    const imgH = 148;
+    for (let index = 0; index < photos.length; index += 2) {
+      this.ensure(imgH + 36);
+      const row = photos.slice(index, index + 2);
+      const top = this.y;
+      for (let column = 0; column < row.length; column++) {
+        const item = row[column];
+        const x = MARGIN + column * (colW + gap);
+        if (item.jpeg && item.jpeg.byteLength > 0) {
+          try {
+            const image = await this.doc.embedJpg(item.jpeg);
+            const scale = Math.min(colW / image.width, imgH / image.height);
+            const width = image.width * scale;
+            const height = image.height * scale;
+            this.page.drawImage(image, {
+              x,
+              y: top - height,
+              width,
+              height,
+            });
+          } catch {
+            this.page.drawText("Foto indisponivel", {
+              x,
+              y: top - 14,
+              size: 8,
+              font: this.font,
+              color: MUTED,
+            });
+          }
+        }
+        const caption = pdfText(item.category) || "-";
+        this.page.drawText(caption.slice(0, 42), {
+          x,
+          y: top - imgH - 14,
+          size: 8,
+          font: this.font,
+          color: MUTED,
+        });
+      }
+      this.y = top - imgH - 28;
+    }
+  }
 }
 
 export async function buildOfficialLaudoPdf(input: OfficialLaudoInput): Promise<Uint8Array> {
@@ -313,6 +378,23 @@ export async function buildOfficialLaudoPdf(input: OfficialLaudoInput): Promise<
   writer.kv("Cor / combustivel", `${input.inspection.color ?? "-"} / ${input.inspection.fuel ?? "-"}`);
   writer.kv("Ano fab. / modelo", `${input.inspection.manufacture_year ?? "-"} / ${input.inspection.model_year ?? "-"}`);
   writer.kv("Km", input.inspection.mileage);
+  writer.kv("Motor", input.inspection.motor_number);
+  writer.kv("UF / municipio", `${input.inspection.vehicle_uf ?? "-"} / ${input.inspection.registration_city_uf ?? "-"}`);
+  writer.kv("Categoria / especie", `${input.inspection.vehicle_category ?? "-"} / ${input.inspection.vehicle_species ?? "-"}`);
+  writer.kv("Lotacao", input.inspection.passenger_capacity);
+  writer.kv("Potencia / cilindrada", `${input.inspection.power_cv ?? "-"} cv / ${input.inspection.engine_displacement ?? "-"}`);
+  writer.kv("Situacao", input.inspection.situation);
+  writer.kv("Condicao", input.inspection.vehicle_condition);
+  writer.kv("Blindado", input.inspection.is_armored ? "Sim" : "Nao");
+  writer.kv("FIPE", input.inspection.market_fipe_value);
+  writer.kv("Media de mercado", input.inspection.market_average_value);
+  writer.kv("Aceite de seguro (%)", input.inspection.insurance_acceptance_percent);
+
+  writer.heading("Comprador e vendedor");
+  writer.kv("Comprador", input.inspection.buyer_name);
+  writer.kv("Documento do comprador", input.inspection.buyer_document);
+  writer.kv("Vendedor", input.inspection.seller_name);
+  writer.kv("Documento do vendedor", input.inspection.seller_document);
 
   writer.heading("Checklist tecnico");
   if (input.checklist.length === 0) {
@@ -334,10 +416,7 @@ export async function buildOfficialLaudoPdf(input: OfficialLaudoInput): Promise<
     }
   }
 
-  writer.heading("Fotografias registradas no banco");
-  writer.paragraph(
-    "O laudo oficial lista as categorias das fotos autorizadas. As imagens permanecem no armazenamento privado e nao sao incorporadas neste PDF.",
-  );
+  writer.heading("Registro fotografico");
   if (input.photos.length === 0) {
     writer.paragraph("Nenhuma fotografia registrada.");
   } else {
@@ -345,6 +424,7 @@ export async function buildOfficialLaudoPdf(input: OfficialLaudoInput): Promise<
     for (const photo of input.photos) {
       writer.kv("Categoria", photo.category);
     }
+    await writer.photoGrid(input.photos);
   }
 
   writer.heading("Parecer tecnico");

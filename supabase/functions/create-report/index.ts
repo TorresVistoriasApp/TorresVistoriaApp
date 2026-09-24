@@ -18,6 +18,7 @@ import {
   type OfficialInspection,
   type OfficialPhotoItem,
 } from "../_shared/official-laudo-pdf.ts";
+import { imageBytesToJpeg } from "../_shared/photo-jpeg.ts";
 
 type InspectionRow = OfficialInspection & {
   id: string;
@@ -51,6 +52,24 @@ const INSPECTION_SELECT = [
   "manufacture_year",
   "model_year",
   "mileage",
+  "motor_number",
+  "vehicle_uf",
+  "registration_city_uf",
+  "vehicle_category",
+  "vehicle_species",
+  "passenger_capacity",
+  "power_cv",
+  "engine_displacement",
+  "situation",
+  "market_fipe_value",
+  "market_average_value",
+  "insurance_acceptance_percent",
+  "vehicle_condition",
+  "is_armored",
+  "buyer_name",
+  "buyer_document",
+  "seller_name",
+  "seller_document",
   "client_name",
   "client_document",
   "client_phone",
@@ -169,7 +188,16 @@ Deno.serve(async (req) => {
     if (existingError) throw existingError;
 
     const officialChecklist = (checklist ?? []) as OfficialChecklistItem[];
-    const officialPhotos = (photos ?? []) as OfficialPhotoItem[];
+    const officialPhotos: OfficialPhotoItem[] = [];
+    for (const photo of photos ?? []) {
+      const row = photo as { category?: string; storage_path?: string };
+      let jpeg: Uint8Array | null = null;
+      if (row.storage_path) {
+        const { data: file } = await supabase.storage.from("inspection-photos").download(row.storage_path);
+        if (file) jpeg = await imageBytesToJpeg(new Uint8Array(await file.arrayBuffer()));
+      }
+      officialPhotos.push({ category: row.category ?? "Geral", jpeg });
+    }
     const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
     const code = existingReports?.[0]?.verification_code || buildVerificationCode();
     const storagePath = buildStoragePath(row.tenant_id, row.id, nextVersion);

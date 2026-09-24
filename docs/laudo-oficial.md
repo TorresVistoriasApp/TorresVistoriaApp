@@ -32,7 +32,7 @@ Cliente
 
 `pdfmake` + fontes custom + dezenas de fotos rasterizadas não cabem de forma confiável no tempo e na memória de uma Edge Function.
 
-O PDF oficial usa `pdf-lib` (Helvetica) e lista as fotografias pelo path canônico do banco. As imagens continuam no bucket privado `inspection-photos`. A prévia visual rica permanece no frontend e **não** é o documento oficial.
+O PDF oficial usa `pdf-lib` (Helvetica). As fotos saem do bucket privado `inspection-photos`, são convertidas para JPEG no servidor e entram no arquivo. A prévia visual rica permanece no frontend e **não** é o documento oficial.
 
 ## Validação pública
 
