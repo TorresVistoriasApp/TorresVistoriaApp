@@ -53,7 +53,8 @@ describe("Fase G — laudo oficial só no servidor", () => {
     expect(official).not.toContain("integrityHash: params");
     expect(official).not.toContain("verificationCode: params");
     expect(official).not.toContain("storagePath: params");
-    expect(official).toContain("downloadPdf(storagePath)");
+    expect(official).toContain("generateLaudoPayload");
+    expect(official).toContain("preview: false");
   });
 
   it("prévia do navegador não se apresenta como oficial", () => {

@@ -18,7 +18,6 @@ import {
   type OfficialInspection,
   type OfficialPhotoItem,
 } from "../_shared/official-laudo-pdf.ts";
-import { imageBytesToJpeg } from "../_shared/photo-jpeg.ts";
 
 type InspectionRow = OfficialInspection & {
   id: string;
@@ -188,22 +187,10 @@ Deno.serve(async (req) => {
     if (existingError) throw existingError;
 
     const officialChecklist = (checklist ?? []) as OfficialChecklistItem[];
-    const officialPhotos: OfficialPhotoItem[] = [];
-    for (const photo of photos ?? []) {
-      const source = photo as { category?: string; storage_path?: string };
-      let jpeg: Uint8Array | null = null;
-      const storagePath = source.storage_path ?? "";
-      const thumb = storagePath.includes("/thumbs/")
-        ? storagePath
-        : storagePath.replace(/\/([^/]+)$/, "/thumbs/$1");
-      if (thumb) {
-        const { data: file } = await supabase.storage.from("inspection-photos").download(thumb);
-        if (file && file.size <= 400_000) {
-          jpeg = await imageBytesToJpeg(new Uint8Array(await file.arrayBuffer()));
-        }
-      }
-      officialPhotos.push({ category: source.category ?? "Geral", jpeg });
-    }
+    const officialPhotos: OfficialPhotoItem[] = (photos ?? []).map((photo) => {
+      const source = photo as { category?: string };
+      return { category: source.category ?? "Geral", jpeg: null };
+    });
     const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
     const code = existingReports?.[0]?.verification_code || buildVerificationCode();
     const storagePath = buildStoragePath(row.tenant_id, row.id, nextVersion);

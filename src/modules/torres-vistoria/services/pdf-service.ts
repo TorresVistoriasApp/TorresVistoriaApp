@@ -500,7 +500,12 @@ export const pdfService = {
   },
 
   async registerProfessionalLaudo(params: {
-    inspection: Pick<Inspection, "id" | "inspection_number" | "plate">;
+    inspection: Inspection;
+    checklist: ChecklistItem[];
+    photos?: InspectionPhoto[];
+    company?: LaudoCompany | null;
+    settings?: LaudoSettings | null;
+    inspector?: LaudoInspector | null;
   }): Promise<{ verificationCode: string; integrityHash: string; storagePath: string }> {
     try {
       const { data: issuedData, error: issueError } = await db.functions.invoke("create-report", {
@@ -510,16 +515,27 @@ export const pdfService = {
       const verificationCode = String(issued.verificationCode ?? "");
       const integrityHash = String(issued.integrityHash ?? "");
       const storagePath = String(issued.storagePath ?? "");
+      const validationUrl = String(issued.validationUrl ?? "");
       if (!verificationCode || !integrityHash || !storagePath) {
         throw new AppError("O servidor não devolveu o laudo oficial.");
       }
 
-      const officialBlob = await withTimeout(
-        this.downloadPdf(storagePath),
-        90_000,
-        "Download do laudo oficial",
+      const { docDefinition } = await this.generateLaudoPayload(
+        params.inspection,
+        params.checklist,
+        params.photos ?? [],
+        {
+          company: params.company,
+          settings: params.settings,
+          inspector: params.inspector,
+          verificationCode,
+          integrityHash,
+          validationUrl,
+          preview: false,
+        },
       );
-      await this.downloadPdfBlob(officialBlob, reportFileName(params.inspection));
+      const blob = await this.createPdfBlob(docDefinition);
+      await this.downloadPdfBlob(blob, reportFileName(params.inspection));
 
       return { verificationCode, integrityHash, storagePath };
     } catch (error) {
