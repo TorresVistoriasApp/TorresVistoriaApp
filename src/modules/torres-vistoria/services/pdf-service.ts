@@ -507,35 +507,37 @@ export const pdfService = {
     settings?: LaudoSettings | null;
     inspector?: LaudoInspector | null;
   }): Promise<{ verificationCode: string; integrityHash: string; storagePath: string }> {
+    const { downloadLaudoTemplatePdf, laudoPdfBlobToBase64 } = await import(
+      "@/modules/torres-vistoria/services/laudo-pdf-download"
+    );
     try {
-      const { data: issuedData, error: issueError } = await db.functions.invoke("create-report", {
+      const { data: preparedData, error: prepareError } = await db.functions.invoke("create-report", {
         body: { inspectionId: params.inspection.id },
       });
-      const issued = await throwIfEdgeError(issueError, issuedData as Record<string, unknown> | null);
-      const verificationCode = String(issued.verificationCode ?? "");
-      const integrityHash = String(issued.integrityHash ?? "");
-      const storagePath = String(issued.storagePath ?? "");
-      const validationUrl = String(issued.validationUrl ?? "");
-      if (!verificationCode || !integrityHash || !storagePath) {
-        throw new AppError("O servidor não devolveu o laudo oficial.");
+      const prepared = await throwIfEdgeError(prepareError, preparedData as Record<string, unknown> | null);
+      const verificationCode = String(prepared.verificationCode ?? "");
+      const validationUrl = String(prepared.validationUrl ?? "");
+      if (!verificationCode || !validationUrl) {
+        throw new AppError("O servidor não liberou o código do laudo.");
       }
 
-      const { docDefinition } = await this.generateLaudoPayload(
-        params.inspection,
-        params.checklist,
-        params.photos ?? [],
-        {
-          company: params.company,
-          settings: params.settings,
-          inspector: params.inspector,
-          verificationCode,
-          integrityHash,
-          validationUrl,
-          preview: false,
-        },
-      );
-      const blob = await this.createPdfBlob(docDefinition);
-      await this.downloadPdfBlob(blob, reportFileName(params.inspection));
+      const blob = await downloadLaudoTemplatePdf({
+        ...params,
+        preview: false,
+        verificationCode,
+        validationUrl,
+      });
+      const pdfBase64 = await laudoPdfBlobToBase64(blob);
+
+      const { data: sealedData, error: sealError } = await db.functions.invoke("create-report", {
+        body: { inspectionId: params.inspection.id, pdfBase64 },
+      });
+      const sealed = await throwIfEdgeError(sealError, sealedData as Record<string, unknown> | null);
+      const integrityHash = String(sealed.integrityHash ?? "");
+      const storagePath = String(sealed.storagePath ?? "");
+      if (!integrityHash || !storagePath) {
+        throw new AppError("O servidor não registrou o laudo oficial.");
+      }
 
       return { verificationCode, integrityHash, storagePath };
     } catch (error) {

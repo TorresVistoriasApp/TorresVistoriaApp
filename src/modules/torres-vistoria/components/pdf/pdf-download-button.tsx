@@ -7,7 +7,7 @@ import { Download } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/shared/lib/utils";
 import { logger } from "@/core/observability/logger";
-import { pdfService } from "@/modules/torres-vistoria/services/pdf-service";
+import { downloadLaudoTemplatePdf } from "@/modules/torres-vistoria/services/laudo-pdf-download";
 
 interface PdfDownloadButtonProps {
   inspection: Inspection;
@@ -37,17 +37,15 @@ export function PdfDownloadButton({
   const handleDownload = async () => {
     setLoading(true);
     try {
-      const { docDefinition } = await pdfService.generateLaudoPayload(inspection, checklist, photos, {
+      await downloadLaudoTemplatePdf({
+        inspection,
+        checklist,
+        photos,
         company,
         settings,
         inspector,
         preview: true,
       });
-      const blob = await pdfService.createPdfBlob(docDefinition);
-      await pdfService.downloadPdfBlob(
-        blob,
-        `laudo-${inspection.inspection_number}-${inspection.plate}.pdf`,
-      );
     } catch (error) {
       logger.error("Falha ao gerar prévia do laudo");
       throw error;

@@ -25,7 +25,8 @@ describe("Fase G — laudo oficial só no servidor", () => {
     expect(edge).not.toContain("body.integrityHash");
     expect(edge).not.toContain("body.storagePath");
     expect(edge).not.toContain('action === "seal"');
-    expect(edge).toContain("buildOfficialLaudoPdf");
+    expect(edge).toContain("needsClientPdf");
+    expect(edge).toContain("pdfBase64");
     expect(edge).toContain("buildVerificationCode");
     expect(edge).toContain("buildStoragePath");
     expect(edge).toContain("sha256Hex(pdfBytes)");
@@ -34,26 +35,27 @@ describe("Fase G — laudo oficial só no servidor", () => {
     expect(edge).toContain("consumePersistentRateLimit");
   });
 
-  it("PDF oficial é montado com dados do banco, não do body", () => {
+  it("servidor valida a vistoria e grava o PDF do template enviado pelo cliente", () => {
     const edge = readRepo("supabase/functions/create-report/index.ts");
     expect(edge).toContain('from("inspections")');
-    expect(edge).toContain('from("inspection_checklists")');
-    expect(edge).toContain('from("inspection_photos")');
-    expect(edge).toContain('from("companies")');
-    expect(edge).toContain('from("profiles")');
+    expect(edge).toContain('from("inspection_reports")');
+    expect(edge).toContain("needsClientPdf");
+    expect(edge).toContain("pdfBase64");
     expect(edge).toContain("row.tenant_id");
     expect(edge).toContain("row.created_by");
+    expect(edge).not.toContain("body.verificationCode");
   });
 
-  it("cliente não envia PDF, hash, código nem path", () => {
+  it("cliente envia o PDF do template e não força hash, código nem path", () => {
     const pdf = readRepo("src/modules/torres-vistoria/services/pdf-service.ts");
     const official = pdf.slice(pdf.indexOf("registerProfessionalLaudo"));
     expect(official).toContain("body: { inspectionId: params.inspection.id }");
+    expect(official).toContain("pdfBase64");
     expect(official).not.toContain(".upload(");
     expect(official).not.toContain("integrityHash: params");
     expect(official).not.toContain("verificationCode: params");
     expect(official).not.toContain("storagePath: params");
-    expect(official).toContain("generateLaudoPayload");
+    expect(official).toContain("downloadLaudoTemplatePdf");
     expect(official).toContain("preview: false");
   });
 

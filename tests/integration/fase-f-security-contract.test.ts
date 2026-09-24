@@ -15,7 +15,7 @@ describe("Fase F — create-report server-authoritative", () => {
     expect(edge).not.toContain('action === "seal"');
     expect(edge).toContain("buildVerificationCode");
     expect(edge).toContain("buildStoragePath");
-    expect(edge).toContain("buildOfficialLaudoPdf");
+    expect(edge).toContain("pdfBase64");
     expect(edge).toContain('from("reports")');
     expect(edge).toContain("sha256Hex");
   });
@@ -29,7 +29,7 @@ describe("Fase F — create-report server-authoritative", () => {
     expect(issueCall).toContain("body: { inspectionId: params.inspection.id }");
     expect(issueCall).not.toContain('action: "seal"');
     expect(issueCall).not.toContain(".upload(");
-    expect(issueCall).toContain("generateLaudoPayload");
+    expect(issueCall).toContain("downloadLaudoTemplatePdf");
     expect(issueCall).toContain("preview: false");
     expect(pdf).not.toContain("buildReportStoragePath");
 

@@ -11,13 +11,9 @@ import {
   rateLimitedResponse,
 } from "../_shared/rate-limit.ts";
 import { buildVerificationCode, sha256Hex } from "../_shared/verification-code.ts";
-import {
-  buildOfficialLaudoPdf,
-  type OfficialChecklistItem,
-  type OfficialCompany,
-  type OfficialInspection,
-  type OfficialPhotoItem,
-} from "../_shared/official-laudo-pdf.ts";
+import type { OfficialInspection } from "../_shared/official-laudo-pdf.ts";
+
+const MAX_PDF_BYTES = 28 * 1024 * 1024;
 
 type InspectionRow = OfficialInspection & {
   id: string;
@@ -95,6 +91,16 @@ function buildStoragePath(tenantId: string, inspectionId: string, version: numbe
   return `${tenantId}/${inspectionId}/laudo-v${version}-${suffix}.pdf`;
 }
 
+function decodePdfBase64(value: string): Uint8Array {
+  const normalized = value.replace(/^data:application\/pdf;base64,/, "").trim();
+  const binary = atob(normalized);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
@@ -125,7 +131,11 @@ Deno.serve(async (req) => {
 
     const body = (await req.json()) as Record<string, unknown>;
     const inspectionId = typeof body.inspectionId === "string" ? body.inspectionId.trim() : "";
+    const pdfBase64 = typeof body.pdfBase64 === "string" ? body.pdfBase64.trim() : "";
     if (!inspectionId) throw new Error("inspectionId é obrigatório");
+    if (pdfBase64.length > MAX_PDF_BYTES * 1.4) {
+      throw new Error("PDF excede o tamanho máximo permitido.");
+    }
 
     const supabase = caller.supabase;
 
@@ -147,68 +157,42 @@ Deno.serve(async (req) => {
       return jsonError(corsHeaders, 409, "Vistoria arquivada não pode emitir laudo.");
     }
 
-    const [
-      { data: checklist },
-      { data: photos },
-      { data: company },
-      { data: inspector },
-      { data: existingReports, error: existingError },
-    ] = await Promise.all([
-      supabase
-        .from("inspection_checklists")
-        .select("id, category, item_name, status, notes")
-        .eq("inspection_id", row.id)
-        .is("deleted_at", null)
-        .order("category", { ascending: true }),
-      supabase
-        .from("inspection_photos")
-        .select("id, category, storage_path")
-        .eq("inspection_id", row.id)
-        .is("deleted_at", null)
-        .order("category", { ascending: true }),
-      supabase
-        .from("companies")
-        .select(
-          "trade_name, legal_name, document, email, phone, address, address_street, address_number, address_neighborhood, address_city, address_state, address_cep",
-        )
-        .eq("id", row.tenant_id)
-        .maybeSingle(),
-      row.inspector_id
-        ? supabase.from("profiles").select("full_name").eq("id", row.inspector_id).maybeSingle()
-        : Promise.resolve({ data: null }),
-      supabase
-        .from("inspection_reports")
-        .select("id, version, verification_code")
-        .eq("inspection_id", inspectionId)
-        .is("deleted_at", null)
-        .order("version", { ascending: false }),
-    ]);
+    const { data: existingReports, error: existingError } = await supabase
+      .from("inspection_reports")
+      .select("id, version, verification_code")
+      .eq("inspection_id", inspectionId)
+      .is("deleted_at", null)
+      .order("version", { ascending: false });
 
     if (existingError) throw existingError;
 
-    const officialChecklist = (checklist ?? []) as OfficialChecklistItem[];
-    const officialPhotos: OfficialPhotoItem[] = (photos ?? []).map((photo) => {
-      const source = photo as { category?: string };
-      return { category: source.category ?? "Geral", jpeg: null };
-    });
     const nextVersion = (existingReports?.[0]?.version ?? 0) + 1;
     const code = existingReports?.[0]?.verification_code || buildVerificationCode();
-    const storagePath = buildStoragePath(row.tenant_id, row.id, nextVersion);
     const origin = canonicalAppOrigin(req);
     const validationUrl = `${origin}/validar/${encodeURIComponent(code)}`;
-    const issuedAt = new Date().toISOString();
 
-    const pdfBytes = await buildOfficialLaudoPdf({
-      inspection: row,
-      company: (company ?? null) as OfficialCompany | null,
-      inspectorName: inspector?.full_name ?? null,
-      checklist: officialChecklist,
-      photos: officialPhotos,
-      verificationCode: code,
-      validationUrl,
-      issuedAt,
-    });
+    if (!pdfBase64) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          needsClientPdf: true,
+          verificationCode: code,
+          validationUrl,
+          official: true,
+        }),
+        { headers: jsonHeaders, status: 200 },
+      );
+    }
 
+    const pdfBytes = decodePdfBase64(pdfBase64);
+    if (pdfBytes.byteLength < 128 || pdfBytes.byteLength > MAX_PDF_BYTES) {
+      throw new Error("Arquivo PDF inválido ou fora do limite.");
+    }
+    if (pdfBytes[0] !== 0x25 || pdfBytes[1] !== 0x50 || pdfBytes[2] !== 0x44 || pdfBytes[3] !== 0x46) {
+      throw new Error("O conteúdo enviado não é um PDF.");
+    }
+
+    const storagePath = buildStoragePath(row.tenant_id, row.id, nextVersion);
     const integrityHash = await sha256Hex(pdfBytes);
 
     const { error: uploadError } = await supabase.storage.from("reports").upload(storagePath, pdfBytes, {
