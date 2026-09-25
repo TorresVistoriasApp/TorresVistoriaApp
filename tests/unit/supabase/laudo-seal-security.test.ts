@@ -202,6 +202,14 @@ describe("P.3 — simulação SEAL (token + binding)", () => {
     expect(result.ok).toBe(false);
   });
 
+  it("caso E2 — nextVersion errada → SEAL negado", async () => {
+    const { pdf, ctx } = await baseContext();
+    const result = await simulateSealGate(pdf, { ...ctx, nextVersion: 99 }, {
+      tenant_id: inspection.tenant_id,
+    });
+    expect(result.ok).toBe(false);
+  });
+
   it("caso B — token adulterado → SEAL negado", async () => {
     const { pdf, ctx } = await baseContext();
     const result = await simulateSealGate(pdf, { ...ctx, issueToken: `${ctx.issueToken}x` }, {

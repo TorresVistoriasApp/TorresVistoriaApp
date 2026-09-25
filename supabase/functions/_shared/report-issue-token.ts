@@ -50,7 +50,7 @@ export async function verifyReportIssueToken(token: string): Promise<ReportIssue
   const jsonBody = atob(encoded);
   const expected = await hmacSign(jsonBody);
   if (signature !== expected) throw new Error("Token de emissão inválido.");
-  const payload = JSON.parse(atob(body)) as ReportIssueTokenPayload;
+  const payload = JSON.parse(jsonBody) as ReportIssueTokenPayload;
   if (!payload.expMs || Date.now() > payload.expMs) {
     throw new Error("Token de emissão expirado. Gere o laudo novamente.");
   }
