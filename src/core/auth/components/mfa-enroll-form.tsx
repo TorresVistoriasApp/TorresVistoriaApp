@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { db } from "@/infra/supabase/client";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { FormError } from "@/core/auth/components/form-error";
 
+type MfaEnrollSlots = {
+  body: ReactNode;
+  footer: ReactNode;
+};
+
 export function MfaEnrollForm({
   onEnrolled,
+  slots,
 }: {
   onEnrolled?: () => void | Promise<void>;
+  slots?: (parts: MfaEnrollSlots) => ReactNode;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -67,18 +74,29 @@ export function MfaEnrollForm({
     }
   };
 
-  if (!enrolling) {
-    return (
-      <div className="space-y-3">
-        <Button type="button" className="h-12 w-full" size="lg" disabled={busy} onClick={() => void startEnroll()}>
-          {busy ? "Preparando..." : "Ativar verificação em duas etapas"}
-        </Button>
-        {error ? <FormError message={error} /> : null}
-      </div>
-    );
-  }
+  const footer = enrolling ? (
+    <Button
+      type="button"
+      className="touch-target h-12 w-full"
+      size="lg"
+      disabled={busy || code.trim().length < 6}
+      onClick={() => void confirmEnroll()}
+    >
+      {busy ? "Confirmando..." : "Confirmar"}
+    </Button>
+  ) : (
+    <Button
+      type="button"
+      className="touch-target h-12 w-full"
+      size="lg"
+      disabled={busy}
+      onClick={() => void startEnroll()}
+    >
+      {busy ? "Preparando..." : "Ativar verificação em duas etapas"}
+    </Button>
+  );
 
-  return (
+  const body = enrolling ? (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
         Escaneie o QR no autenticador e informe o código de 6 dígitos.
@@ -105,15 +123,23 @@ export function MfaEnrollForm({
         />
       </div>
       {error ? <FormError message={error} /> : null}
-      <Button
-        type="button"
-        className="h-12 w-full"
-        size="lg"
-        disabled={busy || code.trim().length < 6}
-        onClick={() => void confirmEnroll()}
-      >
-        {busy ? "Confirmando..." : "Confirmar"}
-      </Button>
+    </div>
+  ) : (
+    <div className="space-y-3">
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        Use um aplicativo autenticador, como Google Authenticator ou Authy, para gerar um código a
+        cada login. A ativação é opcional nesta etapa e pode ser feita agora ou depois.
+      </p>
+      {error ? <FormError message={error} /> : null}
+    </div>
+  );
+
+  if (slots) return slots({ body, footer });
+
+  return (
+    <div className="flex flex-col gap-4">
+      {body}
+      {footer}
     </div>
   );
 }

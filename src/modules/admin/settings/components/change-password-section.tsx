@@ -47,8 +47,23 @@ export function ChangePasswordSection({ className }: { className?: string }) {
       description="Defina uma senha forte para esta conta. A alteração vale na próxima autenticação."
       className={className}
       fillHeight
+      footer={
+        <Button
+          type="submit"
+          form="settings-change-password-form"
+          variant="outline"
+          className="touch-target w-full"
+          disabled={isSubmitting || updatePassword.isPending}
+        >
+          {isSubmitting || updatePassword.isPending ? "Salvando..." : "Atualizar senha"}
+        </Button>
+      }
     >
-      <form onSubmit={onSubmit} className="flex h-full flex-col space-y-5">
+      <form
+        id="settings-change-password-form"
+        onSubmit={onSubmit}
+        className="flex min-h-0 flex-1 flex-col gap-5"
+      >
         <div>
           <p className="mb-3 text-sm text-muted-foreground">
             Use no mínimo 8 caracteres, com letra maiúscula, minúscula, número e símbolo.
@@ -90,15 +105,6 @@ export function ChangePasswordSection({ className }: { className?: string }) {
             {formError}
           </p>
         )}
-
-        <Button
-          type="submit"
-          variant="outline"
-          className="touch-target mt-auto"
-          disabled={isSubmitting || updatePassword.isPending}
-        >
-          {isSubmitting || updatePassword.isPending ? "Salvando..." : "Atualizar senha"}
-        </Button>
       </form>
     </SettingsSection>
   );

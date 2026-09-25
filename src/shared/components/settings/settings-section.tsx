@@ -12,6 +12,7 @@ export function SettingsSection({
   children,
   className,
   action,
+  footer,
   fillHeight = false,
 }: {
   icon: LucideIcon;
@@ -20,25 +21,27 @@ export function SettingsSection({
   children: ReactNode;
   className?: string;
   action?: ReactNode;
+  footer?: ReactNode;
   fillHeight?: boolean;
 }) {
   return (
     <section
       className={cn(
         "ui-panel min-w-0 overflow-hidden",
-        fillHeight ? "flex h-full min-h-0 flex-col" : "h-fit",
+        fillHeight && "flex min-h-0 flex-col self-stretch",
+        !fillHeight && "h-fit",
         className,
       )}
     >
       <div className="shrink-0 border-b border-border px-4 py-3.5 sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-3">
-            <span className="ui-icon-box h-10 w-10" aria-hidden>
+            <span className="ui-icon-box h-10 w-10 shrink-0" aria-hidden>
               <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </span>
             <div className="min-w-0">
               <h2 className="text-[17px] font-bold text-foreground">{title}</h2>
-              <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mt-1 line-clamp-2 min-h-[2.5rem] text-[13px] leading-relaxed text-muted-foreground">
                 {description}
               </p>
             </div>
@@ -54,6 +57,16 @@ export function SettingsSection({
       >
         {children}
       </div>
+      {fillHeight || footer ? (
+        <div
+          className={cn(
+            "mt-auto shrink-0",
+            footer ? "border-t border-border px-4 py-4 sm:px-5" : "hidden lg:block",
+          )}
+        >
+          {footer}
+        </div>
+      ) : null}
     </section>
   );
 }

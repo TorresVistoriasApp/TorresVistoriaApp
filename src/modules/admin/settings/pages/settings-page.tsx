@@ -477,22 +477,22 @@ export function SettingsPage() {
           profileId={profile?.id}
           fullName={profile?.full_name}
           avatarUrl={profile?.avatar_url}
-          className="xl:col-start-1 xl:row-start-1 xl:h-full"
+          className="xl:col-start-1 xl:row-start-1 xl:self-stretch"
           fillHeight
         />
         <CompanySection
           form={companyForm}
           canEdit={canEditCompanyIdentity}
           isLoading={isCompanyLoading}
-          dataSectionClassName="xl:col-start-2 xl:row-start-1 xl:h-full"
-          addressSectionClassName="xl:col-start-2 xl:row-start-2 xl:h-full"
+          dataSectionClassName="xl:col-start-2 xl:row-start-1 xl:self-stretch"
+          addressSectionClassName="xl:col-start-2 xl:row-start-2 xl:self-stretch"
           loadingClassName="xl:col-start-2 xl:row-span-2"
           fillHeight
           onCepError={(message) => toast(message)}
         />
         <InspectionTypesSection
           canEdit={isAdmin}
-          className="xl:col-start-1 xl:row-start-2 xl:h-full"
+          className="xl:col-start-1 xl:row-start-2 xl:self-stretch"
           fillHeight
         />
       </div>
@@ -501,9 +501,9 @@ export function SettingsPage() {
         <CompanyBrandColorsSection form={companyForm} canEdit={isAdmin} className="min-w-0" />
       )}
 
-      <div className="grid min-w-0 grid-cols-1 items-stretch gap-5 lg:grid-cols-2">
-        <ChangePasswordSection className="min-w-0" />
-        <MfaTotpSection className="min-w-0" />
+      <div className="grid min-w-0 grid-cols-1 items-stretch gap-5 lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)_auto]">
+        <ChangePasswordSection className="min-w-0 lg:col-start-1 lg:row-span-3 lg:grid lg:grid-rows-subgrid" />
+        <MfaTotpSection className="min-w-0 lg:col-start-2 lg:row-span-3 lg:grid lg:grid-rows-subgrid" />
       </div>
 
       <PrivacyRightsSection className="min-w-0" />

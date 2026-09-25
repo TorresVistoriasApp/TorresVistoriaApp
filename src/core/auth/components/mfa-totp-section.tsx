@@ -57,57 +57,65 @@ export function MfaTotpSection({ className }: { className?: string }) {
   const verified = factors.filter((factor) => factor.status === "verified");
   const lockLastFactor = privileged && verified.length <= 1;
 
+  const sectionProps = {
+    icon: ShieldCheck,
+    title: "Verificação em duas etapas",
+    description: privileged
+      ? "Obrigatória para administradores. Um aplicativo autenticador confirma o login além da senha."
+      : recommend
+        ? "Recomendado para administradores. Um aplicativo autenticador confirma o login além da senha."
+        : "Um aplicativo autenticador confirma o login além da senha. Opcional nesta etapa.",
+    className,
+    fillHeight: true as const,
+  };
+
+  if (!loading && verified.length === 0) {
+    return (
+      <MfaEnrollForm
+        onEnrolled={() => void refresh()}
+        slots={({ body, footer }) => (
+          <SettingsSection {...sectionProps} footer={footer}>
+            <div className="flex min-h-0 flex-1 flex-col gap-4">
+              {body}
+              {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            </div>
+          </SettingsSection>
+        )}
+      />
+    );
+  }
+
   return (
-    <SettingsSection
-      icon={ShieldCheck}
-      title="Verificação em duas etapas"
-      description={
-        privileged
-          ? "Obrigatória para administradores. Um aplicativo autenticador confirma o login além da senha."
-          : recommend
-            ? "Recomendado para administradores. Um aplicativo autenticador confirma o login além da senha."
-            : "Um aplicativo autenticador confirma o login além da senha. Opcional nesta etapa."
-      }
-      className={className}
-      fillHeight
-    >
-      <div className="flex min-h-0 flex-1 flex-col">
+    <SettingsSection {...sectionProps}>
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
         {loading ? (
           <p className="text-sm text-muted-foreground">Carregando…</p>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col gap-4">
-            {verified.length > 0 ? (
-              <ul className="space-y-2">
-                {verified.map((factor) => (
-                  <li
-                    key={factor.id}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm"
+          <ul className="space-y-2">
+            {verified.map((factor) => (
+              <li
+                key={factor.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm"
+              >
+                <span>{factor.friendly_name || "Aplicativo autenticador"} — ativo</span>
+                {lockLastFactor ? (
+                  <span className="text-xs text-muted-foreground">Obrigatório nesta conta</span>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => void removeFactor(factor.id)}
                   >
-                    <span>{factor.friendly_name || "Aplicativo autenticador"} — ativo</span>
-                    {lockLastFactor ? (
-                      <span className="text-xs text-muted-foreground">Obrigatório nesta conta</span>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={busy}
-                        onClick={() => void removeFactor(factor.id)}
-                      >
-                        Remover
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="mt-auto flex min-h-0 flex-1 flex-col justify-end">
-                <MfaEnrollForm onEnrolled={() => void refresh()} />
-              </div>
-            )}
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          </div>
+                    Remover
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
       </div>
     </SettingsSection>
   );
