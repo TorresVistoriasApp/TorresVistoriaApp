@@ -10,14 +10,7 @@ export type LaudoProfile = {
 export function companyToLaudoCompany(company: Company | null | undefined): LaudoCompany | null {
   if (!company) return null;
 
-  const structuredAddress = buildCompanyAddress({
-    trade_name: company.trade_name,
-    legal_name: company.legal_name ?? "",
-    document: company.document ?? "",
-    primary_color: company.primary_color,
-    secondary_color: company.secondary_color,
-    ...companyToAddressInput(company),
-  });
+  const structuredAddress = buildCompanyAddress(companyToAddressInput(company));
 
   return {
     name: company.trade_name,

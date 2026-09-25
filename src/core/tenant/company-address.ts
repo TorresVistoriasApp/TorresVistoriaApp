@@ -19,7 +19,18 @@ export function buildCompanyLocation(
   return parts.length ? parts.join(" · ") : null;
 }
 
-export function buildCompanyAddress(input: CompanyInput): string | null {
+type CompanyAddressInput = Pick<
+  CompanyInput,
+  | "address_cep"
+  | "address_street"
+  | "address_number"
+  | "address_complement"
+  | "address_neighborhood"
+  | "address_city"
+  | "address_state"
+>;
+
+export function buildCompanyAddress(input: CompanyAddressInput): string | null {
   const streetLine = [input.address_street, input.address_number].filter(Boolean).join(", ");
   const locality = [input.address_neighborhood, input.address_city, input.address_state]
     .filter(Boolean)
