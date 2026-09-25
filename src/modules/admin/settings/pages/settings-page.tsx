@@ -18,6 +18,7 @@ import { MaskedField } from "@/shared/components/forms/masked-fields";
 import { FormField } from "@/shared/components/forms/form-field";
 import { companyToAddressInput } from "@/core/tenant/company-address";
 import { maskCpfCnpj } from "@/shared/lib/masks";
+import { cn } from "@/shared/lib/utils";
 import { redactDocument } from "@/shared/lib/pii";
 import { CompanyAddressFields } from "@/modules/admin/settings/components/company-address-fields";
 import { InspectionTypesSection } from "@/modules/torres-vistoria";
@@ -76,7 +77,7 @@ function ProfileSection({
       className={className}
       fillHeight={fillHeight}
     >
-      <div className="space-y-5">
+      <div className="flex min-h-0 flex-1 flex-col space-y-5">
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
           <div className="relative shrink-0">
             <UserAvatar
@@ -165,7 +166,7 @@ function CompanySection({
 }) {
   if (isLoading) {
     return (
-      <div className={loadingClassName}>
+      <div className={cn("flex min-h-[12rem] items-center justify-center", loadingClassName)}>
         <LoadingSpinner />
       </div>
     );
@@ -180,8 +181,8 @@ function CompanySection({
         className={dataSectionClassName}
         fillHeight={fillHeight}
       >
-        <div className="space-y-4">
-          <div className="grid min-w-0 gap-4">
+        <div className="flex min-h-0 flex-1 flex-col space-y-4">
+          <div className="grid min-w-0 flex-1 gap-4">
             <FormField
               label="Nome fantasia"
               labelClassName={SETTINGS_FIELD_LABEL_CLASS}
@@ -254,13 +255,15 @@ function CompanySection({
         className={addressSectionClassName}
         fillHeight={fillHeight}
       >
-        <CompanyAddressFields
-          control={form.control}
-          register={form.register}
-          setValue={form.setValue}
-          canEdit={canEdit}
-          onCepError={onCepError}
-        />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <CompanyAddressFields
+            control={form.control}
+            register={form.register}
+            setValue={form.setValue}
+            canEdit={canEdit}
+            onCepError={onCepError}
+          />
+        </div>
       </SettingsSection>
     </>
   );
@@ -468,7 +471,7 @@ export function SettingsPage() {
         }
       />
 
-      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] xl:items-stretch xl:gap-5">
+      <div className="grid min-w-0 grid-cols-1 items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] xl:gap-5">
         <ProfileSection
           form={profileForm}
           profileId={profile?.id}
@@ -498,9 +501,9 @@ export function SettingsPage() {
         <CompanyBrandColorsSection form={companyForm} canEdit={isAdmin} className="min-w-0" />
       )}
 
-      <div className="grid min-w-0 gap-5 lg:grid-cols-2 lg:items-stretch">
-        <ChangePasswordSection className="min-w-0 h-full" />
-        <MfaTotpSection className="min-w-0 h-full" />
+      <div className="grid min-w-0 grid-cols-1 items-stretch gap-5 lg:grid-cols-2">
+        <ChangePasswordSection className="min-w-0" />
+        <MfaTotpSection className="min-w-0" />
       </div>
 
       <PrivacyRightsSection className="min-w-0" />

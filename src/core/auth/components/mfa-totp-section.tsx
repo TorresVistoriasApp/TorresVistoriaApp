@@ -69,41 +69,46 @@ export function MfaTotpSection({ className }: { className?: string }) {
             : "Um aplicativo autenticador confirma o login além da senha. Opcional nesta etapa."
       }
       className={className}
+      fillHeight
     >
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Carregando…</p>
-      ) : (
-        <div className="space-y-4">
-          {verified.length > 0 ? (
-            <ul className="space-y-2">
-              {verified.map((factor) => (
-                <li
-                  key={factor.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm"
-                >
-                  <span>{factor.friendly_name || "Aplicativo autenticador"} — ativo</span>
-                  {lockLastFactor ? (
-                    <span className="text-xs text-muted-foreground">Obrigatório nesta conta</span>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => void removeFactor(factor.id)}
-                    >
-                      Remover
-                    </Button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <MfaEnrollForm onEnrolled={() => void refresh()} />
-          )}
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        </div>
-      )}
+      <div className="flex min-h-0 flex-1 flex-col">
+        {loading ? (
+          <p className="text-sm text-muted-foreground">Carregando…</p>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col gap-4">
+            {verified.length > 0 ? (
+              <ul className="space-y-2">
+                {verified.map((factor) => (
+                  <li
+                    key={factor.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm"
+                  >
+                    <span>{factor.friendly_name || "Aplicativo autenticador"} — ativo</span>
+                    {lockLastFactor ? (
+                      <span className="text-xs text-muted-foreground">Obrigatório nesta conta</span>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => void removeFactor(factor.id)}
+                      >
+                        Remover
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mt-auto flex min-h-0 flex-1 flex-col justify-end">
+                <MfaEnrollForm onEnrolled={() => void refresh()} />
+              </div>
+            )}
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          </div>
+        )}
+      </div>
     </SettingsSection>
   );
 }

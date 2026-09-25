@@ -26,7 +26,7 @@ export function SettingsSection({
     <section
       className={cn(
         "ui-panel min-w-0 overflow-hidden",
-        fillHeight ? "flex h-full flex-col" : "h-fit",
+        fillHeight ? "flex h-full min-h-0 flex-col" : "h-fit",
         className,
       )}
     >

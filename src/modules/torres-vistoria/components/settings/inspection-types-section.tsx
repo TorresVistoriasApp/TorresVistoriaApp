@@ -166,81 +166,93 @@ export function InspectionTypesSection({
         ) : undefined
       }
     >
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : types.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-muted px-4 py-8 text-center">
-          <p className="text-sm font-medium text-foreground">Nenhum tipo cadastrado</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {canEdit
-              ? "Cadastre o primeiro tipo para padronizar valores e nomenclaturas."
-              : "Aguarde o administrador configurar os tipos de vistoria."}
-          </p>
-        </div>
-      ) : (
-        <ul
-          className={cn(
-            "divide-y divide-border overflow-hidden rounded-lg border border-border bg-card",
-            fillHeight && "min-h-0 flex-1 overflow-y-auto",
-          )}
-        >
-          {types.map((type) => (
-            <li
-              key={type.id}
-              className="flex flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 sm:py-3"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground sm:text-base">{type.name}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-                  Referência:{" "}
-                  <span className="font-medium text-foreground">{formatCurrency(type.amount)}</span>
-                </p>
-              </div>
-              {canEdit && (
-                <div className="flex shrink-0 gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-9 min-h-9 flex-1 px-3 sm:flex-none"
-                    onClick={() => openEdit(type)}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                    Editar
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "h-9 min-h-9 flex-1 px-3 text-destructive hover:text-destructive sm:flex-none",
-                    )}
-                    disabled={deleteType.isPending}
-                    onClick={async () => {
-                      if (!window.confirm(`Excluir o tipo "${type.name}"?`)) return;
-                      try {
-                        await deleteType.mutateAsync(type.id);
-                        toast("Tipo de vistoria excluído");
-                      } catch (err) {
-                        toast(err instanceof Error ? err.message : "Erro ao excluir");
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Excluir
-                  </Button>
+      <div
+        className={cn(
+          "flex flex-col gap-5",
+          fillHeight && "min-h-0 flex-1",
+        )}
+      >
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : types.length === 0 ? (
+          <div
+            className={cn(
+              "rounded-lg border border-dashed border-border bg-muted px-4 py-8 text-center",
+              fillHeight && "min-h-0 flex-1",
+            )}
+          >
+            <p className="text-sm font-medium text-foreground">Nenhum tipo cadastrado</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {canEdit
+                ? "Cadastre o primeiro tipo para padronizar valores e nomenclaturas."
+                : "Aguarde o administrador configurar os tipos de vistoria."}
+            </p>
+          </div>
+        ) : (
+          <ul
+            className={cn(
+              "divide-y divide-border overflow-hidden rounded-lg border border-border bg-card",
+              fillHeight && "min-h-0 flex-1 overflow-y-auto",
+            )}
+          >
+            {types.map((type) => (
+              <li
+                key={type.id}
+                className="flex flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 sm:py-3"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground sm:text-base">{type.name}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                    Referência:{" "}
+                    <span className="font-medium text-foreground">{formatCurrency(type.amount)}</span>
+                  </p>
                 </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+                {canEdit && (
+                  <div className="flex shrink-0 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-9 min-h-9 flex-1 px-3 sm:flex-none"
+                      onClick={() => openEdit(type)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Editar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-9 min-h-9 flex-1 px-3 text-destructive hover:text-destructive sm:flex-none",
+                      )}
+                      disabled={deleteType.isPending}
+                      onClick={async () => {
+                        if (!window.confirm(`Excluir o tipo "${type.name}"?`)) return;
+                        try {
+                          await deleteType.mutateAsync(type.id);
+                          toast("Tipo de vistoria excluído");
+                        } catch (err) {
+                          toast(err instanceof Error ? err.message : "Erro ao excluir");
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Excluir
+                    </Button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
 
-      {!canEdit && (
-        <SettingsNotice className="mt-5">
-          Somente administradores podem gerenciar tipos e valores de vistoria.
-        </SettingsNotice>
-      )}
+        {!canEdit && (
+          <SettingsNotice className={fillHeight ? "mt-auto shrink-0" : undefined}>
+            Somente administradores podem gerenciar tipos e valores de vistoria.
+          </SettingsNotice>
+        )}
+      </div>
 
       {canEdit && (
         <TypeFormDialog
