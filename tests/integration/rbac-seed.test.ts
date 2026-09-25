@@ -20,6 +20,7 @@ describe("RBAC seed alignment", () => {
     "financial.read.own",
     "reports.export",
     "settings.manage",
+    "settings.company.identity",
     "users.manage",
     "consulta.create",
     "consulta.read.own",
@@ -41,6 +42,7 @@ describe("RBAC seed alignment", () => {
       "inspections.update.own",
       "financial.read.own",
       "reports.export",
+      "settings.company.identity",
       "consulta.create",
       "consulta.read.own",
     ]);

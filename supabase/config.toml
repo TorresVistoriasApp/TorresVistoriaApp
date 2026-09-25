@@ -125,6 +125,8 @@ verify_jwt = false
 #
 # Secret só no Dashboard (Authentication → Hooks → Send Email).
 # O campo `secrets` existe porque o CLI exige no `db push`.
+# Se `npm run db:push` falhar por secret ausente, use o script (já injeta placeholder)
+# ou copie supabase/.env.example → supabase/.env.local com o secret real.
 # NÃO rode `config push` — o placeholder do env pode zerar o secret remoto.
 # enabled = true precisa permanecer alinhado à produção; `config push` com false
 # derruba confirmação de e-mail e recuperação de senha.

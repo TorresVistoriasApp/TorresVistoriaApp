@@ -8,6 +8,7 @@ export {
   useTenant,
   useTenantSettings,
   useUpdateTenant,
+  useUpdateTenantIdentity,
   useUpdateTenantSettings,
   useUploadTenantAsset,
 } from "@/core/tenant/use-tenant";

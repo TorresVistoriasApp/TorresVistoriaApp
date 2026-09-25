@@ -16,6 +16,8 @@ export const PERMISSIONS = {
 
   // ── Administração do tenant ───────────────────────────────────────────────
   "settings.manage": ["SUPER_ADMIN"],
+  /** CPF/CNPJ, nome e endereço que saem no laudo em PDF — operação do vistoriador. */
+  "settings.company.identity": ["SUPER_ADMIN", "INSPECTOR"],
   "users.manage": ["SUPER_ADMIN"],
 
   // ── Torres Consulta ───────────────────────────────────────────────────────

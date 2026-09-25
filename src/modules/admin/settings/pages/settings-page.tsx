@@ -8,11 +8,11 @@ import { UserAvatar } from "@/shared/components/user-avatar";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { LoadingSpinner } from "@/shared/components/loading-spinner";
-import { useTenant, useUpdateTenant } from "@/core/tenant";
+import { useTenant, useUpdateTenant, useUpdateTenantIdentity } from "@/core/tenant";
 import { useUpdateUserProfile, useUploadUserAvatar } from "@/modules/admin/users/hooks/use-users";
 import { useToast } from "@/shared/hooks/use-toast";
 import { userProfileSchema, type UserProfileInput } from "@/modules/admin/users/schemas/user";
-import { companySchema, type CompanyInput } from "@/core/tenant/schemas/company";
+import { companySchema, companyIdentitySchema, type CompanyInput } from "@/core/tenant/schemas/company";
 import { usePermission } from "@/core/rbac/use-permission";
 import { MaskedField } from "@/shared/components/forms/masked-fields";
 import { FormField } from "@/shared/components/forms/form-field";
@@ -241,7 +241,7 @@ function CompanySection({
           </div>
           {!canEdit && (
             <SettingsNotice>
-              Somente administradores podem editar os dados cadastrais da operação.
+              Você não tem permissão para editar os dados cadastrais da operação.
             </SettingsNotice>
           )}
         </div>
@@ -363,9 +363,11 @@ export function SettingsPage() {
   const { profile, refreshProfile } = useAuth();
   const { can } = usePermission();
   const isAdmin = can("settings.manage");
+  const canEditCompanyIdentity = can("settings.company.identity");
   const { data: company, isLoading: isCompanyLoading } = useTenant();
   const updateProfile = useUpdateUserProfile();
   const updateCompany = useUpdateTenant();
+  const updateCompanyIdentity = useUpdateTenantIdentity();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -396,7 +398,27 @@ export function SettingsPage() {
     if (!profile?.id) return;
 
     const profileValid = await profileForm.trigger();
-    const companyValid = isAdmin ? await companyForm.trigger() : true;
+    const companyValues = companyForm.getValues();
+    let companyValid = true;
+    if (isAdmin) {
+      companyValid = await companyForm.trigger();
+    } else if (canEditCompanyIdentity) {
+      companyValid = companyIdentitySchema.safeParse(companyValues).success;
+      if (!companyValid) {
+        await companyForm.trigger([
+          "trade_name",
+          "legal_name",
+          "document",
+          "address_cep",
+          "address_street",
+          "address_number",
+          "address_complement",
+          "address_neighborhood",
+          "address_city",
+          "address_state",
+        ]);
+      }
+    }
 
     if (!profileValid || !companyValid) {
       toast("Verifique os campos destacados antes de salvar.");
@@ -413,7 +435,9 @@ export function SettingsPage() {
       ];
 
       if (isAdmin) {
-        tasks.push(updateCompany.mutateAsync(companyForm.getValues()));
+        tasks.push(updateCompany.mutateAsync(companyValues));
+      } else if (canEditCompanyIdentity) {
+        tasks.push(updateCompanyIdentity.mutateAsync(companyIdentitySchema.parse(companyValues)));
       }
 
       await Promise.all(tasks);
@@ -426,7 +450,8 @@ export function SettingsPage() {
     }
   };
 
-  const saveDisabled = !profile?.id || (isAdmin && isCompanyLoading);
+  const saveDisabled =
+    !profile?.id || ((isAdmin || canEditCompanyIdentity) && isCompanyLoading);
 
   return (
     <div className="min-w-0 space-y-6 pb-24 sm:pb-6">
@@ -454,7 +479,7 @@ export function SettingsPage() {
         />
         <CompanySection
           form={companyForm}
-          canEdit={isAdmin}
+          canEdit={canEditCompanyIdentity}
           isLoading={isCompanyLoading}
           dataSectionClassName="xl:col-start-2 xl:row-start-1 xl:h-full"
           addressSectionClassName="xl:col-start-2 xl:row-start-2 xl:h-full"

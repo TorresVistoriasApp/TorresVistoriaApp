@@ -4,7 +4,7 @@ import { AppError, getErrorMessage, throwIfError } from "@/core/errors/app-error
 import { COMPANY_ASSETS_BUCKET } from "@/infra/storage/buckets";
 import { getSignedUrl, resolveStorageUrl, extractStoragePath } from "@/infra/storage/signed-url";
 import { buildCompanyAddress, buildCompanyLocation } from "@/core/tenant/company-address";
-import type { CompanyInput, SettingsInput } from "@/core/tenant/schemas/company";
+import type { CompanyIdentityInput, CompanyInput, SettingsInput } from "@/core/tenant/schemas/company";
 
 export type Company = {
   id: string;
@@ -62,6 +62,34 @@ export const companyService = {
           document: input.document || null,
           primary_color: input.primary_color,
           secondary_color: input.secondary_color,
+          address_cep: input.address_cep || null,
+          address_street: input.address_street || null,
+          address_number: input.address_number || null,
+          address_complement: input.address_complement || null,
+          address_neighborhood: input.address_neighborhood || null,
+          address_city: input.address_city || null,
+          address_state: input.address_state?.toUpperCase() || null,
+          location: buildCompanyLocation(input),
+          address: buildCompanyAddress(input),
+        })
+        .eq("id", tenantId)
+        .select("*")
+        .single();
+      if (error) throw error;
+      return data as Company;
+    } catch (error) {
+      throw new AppError(getErrorMessage(error));
+    }
+  },
+
+  async updateCompanyIdentity(tenantId: string, input: CompanyIdentityInput): Promise<Company> {
+    try {
+      const { data, error } = await db
+        .from("companies")
+        .update({
+          trade_name: input.trade_name,
+          legal_name: input.legal_name || null,
+          document: input.document || null,
           address_cep: input.address_cep || null,
           address_street: input.address_street || null,
           address_number: input.address_number || null,

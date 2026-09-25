@@ -3,7 +3,7 @@ import { useTenantContext } from "@/core/tenant/tenant-context";
 import { useUser } from "@/core/auth/user-context";
 import { queryKeys } from "@/infra/supabase/queries";
 import { companyService } from "@/core/tenant/company-service";
-import type { CompanyInput, SettingsInput } from "@/core/tenant/schemas/company";
+import type { CompanyIdentityInput, CompanyInput, SettingsInput } from "@/core/tenant/schemas/company";
 
 /** Dados da empresa do tenant ativo (ou de um tenant explícito). */
 export function useTenant(tenantId?: string) {
@@ -41,6 +41,23 @@ export function useUpdateTenant() {
     mutationFn: (input: CompanyInput) => {
       if (!tenantId) throw new Error("Sessão inválida");
       return companyService.updateCompany(tenantId, input);
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: queryKeys.company.detail(tenantId!) });
+      await refreshTenant();
+    },
+  });
+}
+
+export function useUpdateTenantIdentity() {
+  const qc = useQueryClient();
+  const { tenantId } = useUser();
+  const { refreshTenant } = useTenantContext();
+
+  return useMutation({
+    mutationFn: (input: CompanyIdentityInput) => {
+      if (!tenantId) throw new Error("Sessão inválida");
+      return companyService.updateCompanyIdentity(tenantId, input);
     },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: queryKeys.company.detail(tenantId!) });

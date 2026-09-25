@@ -28,11 +28,16 @@ export const companyAddressSchema = z.object({
 
 const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Cor inválida");
 
-export const companySchema = z
-  .object({
-    trade_name: z.string().min(2, "Nome fantasia obrigatório").max(200),
-    legal_name: optionalText(200),
-    document: optionalCpfCnpj,
+const companyIdentityFields = z.object({
+  trade_name: z.string().min(2, "Nome fantasia obrigatório").max(200),
+  legal_name: optionalText(200),
+  document: optionalCpfCnpj,
+});
+
+export const companyIdentitySchema = companyIdentityFields.merge(companyAddressSchema);
+
+export const companySchema = companyIdentityFields
+  .extend({
     primary_color: hexColor,
     secondary_color: hexColor,
   })
@@ -46,4 +51,5 @@ export const settingsSchema = z.object({
 });
 
 export type CompanyInput = z.infer<typeof companySchema>;
+export type CompanyIdentityInput = z.infer<typeof companyIdentitySchema>;
 export type SettingsInput = z.infer<typeof settingsSchema>;
