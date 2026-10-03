@@ -36,7 +36,7 @@ describe("Fase F — create-report server-authoritative", () => {
     expect(pdf).not.toContain("buildReportStoragePath");
 
     const service = readRepo("src/modules/torres-vistoria/services/inspection-service.ts");
-    expect(service).toContain("body: { inspectionId }");
+    expect(service).toContain("invokeCreateReport({ inspectionId })");
     expect(service).not.toContain("storagePath");
     expect(service).not.toContain("sealReport");
   });

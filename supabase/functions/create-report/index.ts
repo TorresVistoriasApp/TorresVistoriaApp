@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
     }
 
     const ip = clientKey(req);
-    const memoryLimit = checkRateLimit(`create-report:${caller.userId}:${ip}`, 8, 15 * 60 * 1000);
+    const memoryLimit = checkRateLimit(`create-report:${caller.userId}:${ip}`, 20, 15 * 60 * 1000);
     if (!memoryLimit.allowed) {
       return rateLimitedResponse(corsHeaders, memoryLimit.retryAfterSec);
     }
@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
       const persisted = await consumePersistentRateLimit(
         caller.supabase,
         `create-report:${caller.tenantId}:${caller.userId}`,
-        8,
+        20,
         15 * 60,
       );
       if (!persisted.allowed) {

@@ -46,7 +46,7 @@ export function throwIfError<T>(
 
 function edgeResponseFromError(error: unknown): Response | null {
   const context = (error as { context?: Response } | null)?.context;
-  if (context && typeof context.status === "number" && typeof context.headers?.get === "function") {
+  if (context && typeof context.status === "number") {
     return context;
   }
   return null;

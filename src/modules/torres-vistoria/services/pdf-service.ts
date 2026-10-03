@@ -521,7 +521,9 @@ export const pdfService = {
       const contentDigest = String(prepared.contentDigest ?? "");
       const issueToken = String(prepared.issueToken ?? "");
       if (!verificationCode || !validationUrl || !contentDigest || !issueToken) {
-        throw new AppError("O servidor não liberou o contexto de emissão do laudo.");
+        throw new AppError(
+          "Não foi possível iniciar a emissão do laudo. Se tentou várias vezes, aguarde alguns minutos e tente de novo.",
+        );
       }
 
       const blob = await generateLaudoPdf({

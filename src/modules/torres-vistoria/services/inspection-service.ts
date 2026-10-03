@@ -3,6 +3,7 @@ import { buildChecklistSeedRows } from "@/modules/torres-vistoria/domain/checkli
 import { queries } from "@/infra/supabase/queries";
 import { mutations } from "@/modules/torres-vistoria/repositories/vistoria-mutations";
 import { AppError, getErrorMessage, throwIfEdgeError, throwIfError } from "@/core/errors/app-error";
+import { invokeCreateReport } from "@/modules/torres-vistoria/services/create-report-client";
 import type { VistoriaInput } from "@/modules/torres-vistoria/schemas/vistoria";
 import type { InspectionStatus } from "@/modules/torres-vistoria/domain/enums";
 import { photoService, type InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
@@ -243,10 +244,7 @@ export const inspectionService = {
 
   async generateReport(inspectionId: string) {
     try {
-      const { data, error } = await db.functions.invoke("create-report", {
-        body: { inspectionId },
-      });
-      return await throwIfEdgeError(error, data as Record<string, unknown> | null);
+      return await invokeCreateReport({ inspectionId });
     } catch (error) {
       throw new AppError(getErrorMessage(error));
     }
