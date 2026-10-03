@@ -44,15 +44,47 @@ export function throwIfError<T>(
   return result.data;
 }
 
+function edgeResponseFromError(error: unknown): Response | null {
+  const context = (error as { context?: Response } | null)?.context;
+  if (context && typeof context.status === "number" && typeof context.headers?.get === "function") {
+    return context;
+  }
+  return null;
+}
+
+export function parseRetryAfterSeconds(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const seconds = Number(value.trim());
+  if (!Number.isFinite(seconds) || seconds <= 0) return null;
+  return Math.ceil(seconds);
+}
+
+export function formatRetryAfterWait(retryAfterSec: number): string {
+  const seconds = Math.max(1, Math.round(retryAfterSec));
+  if (seconds < 60) return `${seconds} segundo(s)`;
+  return `${Math.ceil(seconds / 60)} minuto(s)`;
+}
+
+export function officialLaudoRateLimitMessage(retryAfterSec?: number | null): string {
+  const wait =
+    retryAfterSec && retryAfterSec > 0
+      ? ` Tente novamente em cerca de ${formatRetryAfterWait(retryAfterSec)}.`
+      : " Aguarde alguns minutos e tente novamente.";
+  return `Não foi possível emitir o laudo agora: limite temporário de tentativas.${wait}`;
+}
+
 /**
  * O supabase-js só expõe "Edge Function returned a non-2xx status code"; a mensagem
  * real vem no corpo da resposta, que precisa ser lido de forma assíncrona.
  */
 export async function getEdgeErrorMessage(error: unknown): Promise<string> {
-  const context = (error as { context?: Response } | null)?.context;
-  if (typeof context?.json === "function") {
+  const response = edgeResponseFromError(error);
+  if (response?.status === 429) {
+    return officialLaudoRateLimitMessage(parseRetryAfterSeconds(response.headers.get("Retry-After")));
+  }
+  if (typeof response?.json === "function") {
     try {
-      const payload = (await context.json()) as { error?: string; message?: string };
+      const payload = (await response.json()) as { error?: string; message?: string };
       if (payload?.error) return String(payload.error);
       if (payload?.message) return String(payload.message);
     } catch {
@@ -70,7 +102,11 @@ export async function throwIfEdgeError<T extends Record<string, unknown>>(
     throw new AppError(await getEdgeErrorMessage(error));
   }
   if (data && "error" in data && data.error) {
-    throw new AppError(String(data.error));
+    const message = String(data.error);
+    if (/muitas tentativas/i.test(message) || /too many requests/i.test(message)) {
+      throw new AppError(officialLaudoRateLimitMessage());
+    }
+    throw new AppError(message);
   }
   if (!data) {
     throw new AppError("Resposta vazia da Edge Function");

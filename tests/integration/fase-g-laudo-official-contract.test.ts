@@ -50,7 +50,7 @@ describe("Fase G — laudo oficial só no servidor", () => {
   it("cliente envia o PDF do template e não força hash, código nem path", () => {
     const pdf = readRepo("src/modules/torres-vistoria/services/pdf-service.ts");
     const official = pdf.slice(pdf.indexOf("registerProfessionalLaudo"));
-    expect(official).toContain("body: { inspectionId: params.inspection.id }");
+    expect(official).toContain("invokeCreateReport({ inspectionId: params.inspection.id })");
     expect(official).toContain("pdfBase64");
     expect(official).not.toContain(".upload(");
     expect(official).not.toContain("integrityHash: params");

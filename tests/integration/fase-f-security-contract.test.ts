@@ -26,7 +26,7 @@ describe("Fase F — create-report server-authoritative", () => {
       pdf.indexOf("registerProfessionalLaudo"),
       pdf.indexOf("registerProfessionalLaudo") + 2500,
     );
-    expect(issueCall).toContain("body: { inspectionId: params.inspection.id }");
+    expect(issueCall).toContain("invokeCreateReport({ inspectionId: params.inspection.id })");
     expect(issueCall).not.toContain('action: "seal"');
     expect(issueCall).not.toContain(".upload(");
     expect(issueCall).toContain("generateLaudoPdf");

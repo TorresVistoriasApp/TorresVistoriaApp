@@ -1,5 +1,6 @@
 import { db } from "@/infra/supabase/client";
 import { AppError, getErrorMessage, throwIfEdgeError } from "@/core/errors/app-error";
+import { invokeCreateReport } from "@/modules/torres-vistoria/services/create-report-client";
 import type { Inspection } from "@/modules/torres-vistoria/services/inspection-service";
 import type { ChecklistItem } from "@/modules/torres-vistoria/services/checklist-service";
 import type { InspectionPhoto } from "@/modules/torres-vistoria/services/photo-service";
@@ -514,10 +515,7 @@ export const pdfService = {
       "@/modules/torres-vistoria/services/laudo-pdf-download"
     );
     try {
-      const { data: preparedData, error: prepareError } = await db.functions.invoke("create-report", {
-        body: { inspectionId: params.inspection.id },
-      });
-      const prepared = await throwIfEdgeError(prepareError, preparedData as Record<string, unknown> | null);
+      const prepared = await invokeCreateReport({ inspectionId: params.inspection.id });
       const verificationCode = String(prepared.verificationCode ?? "");
       const validationUrl = String(prepared.validationUrl ?? "");
       const contentDigest = String(prepared.contentDigest ?? "");
@@ -535,16 +533,13 @@ export const pdfService = {
       });
       const pdfBase64 = await laudoPdfBlobToBase64(blob);
 
-      const { data: sealedData, error: sealError } = await db.functions.invoke("create-report", {
-        body: {
-          inspectionId: params.inspection.id,
-          pdfBase64,
-          issueToken,
-          verificationCode,
-          contentDigest,
-        },
+      const sealed = await invokeCreateReport({
+        inspectionId: params.inspection.id,
+        pdfBase64,
+        issueToken,
+        verificationCode,
+        contentDigest,
       });
-      const sealed = await throwIfEdgeError(sealError, sealedData as Record<string, unknown> | null);
       const integrityHash = String(sealed.integrityHash ?? "");
       const storagePath = String(sealed.storagePath ?? "");
       if (!integrityHash || !storagePath) {

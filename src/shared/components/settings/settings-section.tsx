@@ -28,7 +28,7 @@ export function SettingsSection({
     <section
       className={cn(
         "ui-panel min-w-0 overflow-hidden",
-        fillHeight && "flex min-h-0 flex-col self-stretch",
+        fillHeight && "flex h-full min-h-0 flex-col",
         !fillHeight && "h-fit",
         className,
       )}
@@ -57,15 +57,8 @@ export function SettingsSection({
       >
         {children}
       </div>
-      {fillHeight || footer ? (
-        <div
-          className={cn(
-            "mt-auto shrink-0",
-            footer ? "border-t border-border px-4 py-4 sm:px-5" : "hidden lg:block",
-          )}
-        >
-          {footer}
-        </div>
+      {footer ? (
+        <div className="mt-auto shrink-0 border-t border-border px-4 py-4 sm:px-5">{footer}</div>
       ) : null}
     </section>
   );

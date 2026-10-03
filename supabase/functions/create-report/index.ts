@@ -168,15 +168,6 @@ Deno.serve(async (req) => {
     if (!memoryLimit.allowed) {
       return rateLimitedResponse(corsHeaders, memoryLimit.retryAfterSec);
     }
-    const persisted = await consumePersistentRateLimit(
-      caller.supabase,
-      `create-report:${caller.tenantId}:${caller.userId}`,
-      8,
-      15 * 60,
-    );
-    if (!persisted.allowed) {
-      return rateLimitedResponse(corsHeaders, persisted.retryAfterSec);
-    }
 
     const body = (await req.json()) as Record<string, unknown>;
     const inspectionId = typeof body.inspectionId === "string" ? body.inspectionId.trim() : "";
@@ -210,6 +201,29 @@ Deno.serve(async (req) => {
 
     if (row.status === "ARCHIVED") {
       return jsonError(corsHeaders, 409, "Vistoria arquivada não pode emitir laudo.");
+    }
+
+    // PREPARE consome a unidade persistente. SEAL da mesma emissão só fica isento
+    // se o issueToken passar HMAC e bater inspection/tenant — não basta existir no body.
+    let sealTokenOk = false;
+    if (pdfBase64 && issueToken) {
+      try {
+        const preview = await verifyReportIssueToken(issueToken);
+        sealTokenOk = preview.inspectionId === inspectionId && preview.tenantId === row.tenant_id;
+      } catch {
+        sealTokenOk = false;
+      }
+    }
+    if (!sealTokenOk) {
+      const persisted = await consumePersistentRateLimit(
+        caller.supabase,
+        `create-report:${caller.tenantId}:${caller.userId}`,
+        8,
+        15 * 60,
+      );
+      if (!persisted.allowed) {
+        return rateLimitedResponse(corsHeaders, persisted.retryAfterSec);
+      }
     }
 
     const { checklist, photoCount, existingReports } = await loadIssueContext(supabase, inspectionId);

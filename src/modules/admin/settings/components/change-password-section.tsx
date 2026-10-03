@@ -52,7 +52,7 @@ export function ChangePasswordSection({ className }: { className?: string }) {
           type="submit"
           form="settings-change-password-form"
           variant="outline"
-          className="touch-target w-full"
+          className="touch-target h-12 w-full"
           disabled={isSubmitting || updatePassword.isPending}
         >
           {isSubmitting || updatePassword.isPending ? "Salvando..." : "Atualizar senha"}

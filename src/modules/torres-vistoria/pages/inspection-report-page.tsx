@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { LaudoReviewPanel } from "@/modules/torres-vistoria/components/laudo/laudo-review-panel";
 import { getLaudoBlockerMessages, buildLaudoReadiness } from "@/modules/torres-vistoria/components/laudo/laudo-readiness";
@@ -12,6 +12,10 @@ import {
   WizardNavButtons,
 } from "@/modules/torres-vistoria/components/vistoria/inspection-wizard-shell";
 import { pdfService } from "@/modules/torres-vistoria/services/pdf-service";
+import {
+  createExclusiveGate,
+  runExclusive,
+} from "@/modules/torres-vistoria/services/official-laudo-emission-gate";
 import { companyToLaudoCompany, inspectorToLaudoInspector } from "@/modules/torres-vistoria/domain/laudo/laudo-context";
 import { ArrowLeft } from "lucide-react";
 import { ROUTES, withNewInspectionFlow } from "@/config/routes";
@@ -39,6 +43,7 @@ export function InspectionReportPage() {
   const { toast } = useToast();
   const [verificationCode, setVerificationCode] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const emissionGateRef = useRef(createExclusiveGate());
 
   const laudoCompany = useMemo(() => companyToLaudoCompany(company), [company]);
   const laudoInspector = useMemo(
@@ -60,23 +65,25 @@ export function InspectionReportPage() {
       return;
     }
 
-    setGenerating(true);
-    try {
-      const result = await pdfService.registerProfessionalLaudo({
-        inspection,
-        checklist,
-        photos,
-        company: laudoCompany,
-        settings,
-        inspector: laudoInspector,
-      });
-      setVerificationCode(result.verificationCode);
-      toast("Laudo oficial emitido no template da prévia");
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Erro ao gerar laudo");
-    } finally {
-      setGenerating(false);
-    }
+    await runExclusive(emissionGateRef.current, async () => {
+      setGenerating(true);
+      try {
+        const result = await pdfService.registerProfessionalLaudo({
+          inspection,
+          checklist,
+          photos,
+          company: laudoCompany,
+          settings,
+          inspector: laudoInspector,
+        });
+        setVerificationCode(result.verificationCode);
+        toast("Laudo oficial emitido no template da prévia");
+      } catch (err) {
+        toast(err instanceof Error ? err.message : "Erro ao gerar laudo");
+      } finally {
+        setGenerating(false);
+      }
+    });
   };
 
   const handleFixItem = (itemId: string) => {
