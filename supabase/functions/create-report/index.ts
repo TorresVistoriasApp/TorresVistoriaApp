@@ -228,7 +228,29 @@ Deno.serve(async (req) => {
 
     const { checklist, photoCount, existingReports } = await loadIssueContext(supabase, inspectionId);
     const nextVersion = (existingReports[0]?.version ?? 0) + 1;
-    const code = existingReports[0]?.verification_code || buildVerificationCode();
+
+    let sealPayload: Awaited<ReturnType<typeof verifyReportIssueToken>> | null = null;
+    if (pdfBase64) {
+      if (!issueToken || !verificationCodeBody || !contentDigestBody) {
+        throw new Error("Emissão incompleta: token, código e digest são obrigatórios.");
+      }
+      sealPayload = await verifyReportIssueToken(issueToken);
+      if (sealPayload.inspectionId !== inspectionId) {
+        throw new Error("Token de emissão não corresponde à vistoria.");
+      }
+      if (sealPayload.tenantId !== row.tenant_id) {
+        throw new Error("Token de emissão inválido para este tenant.");
+      }
+      if (sealPayload.verificationCode !== verificationCodeBody) {
+        throw new Error("Código de verificação divergente.");
+      }
+    }
+
+    // PREPARE gera o código. SEAL reutiliza o do token HMAC — nunca chama buildVerificationCode de novo.
+    const code =
+      sealPayload?.verificationCode ||
+      existingReports[0]?.verification_code ||
+      buildVerificationCode();
     const origin = canonicalAppOrigin(req);
     const validationUrl = `${origin}/validar/${encodeURIComponent(code)}`;
 
@@ -266,24 +288,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!issueToken || !verificationCodeBody || !contentDigestBody) {
-      throw new Error("Emissão incompleta: token, código e digest são obrigatórios.");
-    }
-
-    const tokenPayload = await verifyReportIssueToken(issueToken);
-    if (tokenPayload.inspectionId !== inspectionId) {
-      throw new Error("Token de emissão não corresponde à vistoria.");
-    }
-    if (tokenPayload.tenantId !== row.tenant_id) {
-      throw new Error("Token de emissão inválido para este tenant.");
-    }
-    if (tokenPayload.verificationCode !== verificationCodeBody || tokenPayload.verificationCode !== code) {
-      throw new Error("Código de verificação divergente.");
-    }
-    if (tokenPayload.contentDigest !== contentDigestBody || tokenPayload.contentDigest !== contentDigest) {
+    if (
+      !sealPayload ||
+      sealPayload.contentDigest !== contentDigestBody ||
+      sealPayload.contentDigest !== contentDigest
+    ) {
       throw new Error("Os dados da vistoria mudaram desde o início da emissão. Gere o laudo novamente.");
     }
-    if (tokenPayload.nextVersion !== nextVersion) {
+    if (sealPayload.nextVersion !== nextVersion) {
       throw new Error("Versão de emissão desatualizada. Gere o laudo novamente.");
     }
 

@@ -35,4 +35,11 @@ describe("P.5 — contrato do fluxo de emissão oficial", () => {
     expect(edge).toContain("verifyReportIssueToken");
     expect(edge).not.toContain('action === "seal"');
   });
+
+  it("SEAL reusa o verificationCode do token HMAC e não gera um segundo código", () => {
+    const edge = readRepo("supabase/functions/create-report/index.ts");
+    expect(edge).toContain("sealPayload?.verificationCode");
+    expect(edge).not.toContain("tokenPayload.verificationCode !== code");
+    expect(edge).toContain("buildVerificationCode");
+  });
 });
